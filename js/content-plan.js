@@ -279,14 +279,14 @@ add({ id: 'aft.gift', view: 'world', arc: 'after', tone: 'opportunity', chain: t
   ] });
 add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: true, repeat: 50, title: 'The Thing That Does Not Fit',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n"I can test it tonight. Don't— honestly, don't ask me how."`; },
+  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n"I can test it tonight, I can test it right now, but don't ask me how, honestly, don't, you'll say no, and I'd really like not to be told no."`; },
   choices: [
     { label: 'Test it tonight', info: [['danger', 'Unknown']], test: { base: 54, mods: [R('xenobio', 12)] },
       ok: { text: 'It was not an error. By morning there is a new page in the notebook, and three old ones crossed out.', fx: s => ({ fops: [{ id: s.last.fid, insight: 24, threat: -8 }] }) },
       bad: { text: 'It was not an error. The test drew attention, and the watch hears movement beyond the wire until dawn.', fx: s => ({ fops: [{ id: s.last.fid, insight: 6, threat: 10 }], morale: -2 }) } },
     { label: 'Write it down and tell the whole colony', hint: 'unknown', info: [['yield', 'Everyone knows what the officers know'], ['danger', 'Sleep, and nerve']], out: { text: 'It is read out at the evening meal. Everyone has a theory, and for the rest of the month people sit up arguing them when they should be asleep.', fx: s => ({ fops: [{ id: s.last.fid, insight: 10 }], morale: -2 }) } },
     { label: 'Keep it among the officers, and let the crews go on working where it matters', dark: true, note: 'If the page is right, some of the places people are posted are not safe, and moving them would say so.', hint: 'unknown', info: [['yield', 'The work is not interrupted'], ['danger', 'The crews who are not told']], out: { text: 'The page is copied once and locked away, and the rosters are left as they were. The officers watch those postings closely for a month and learn a good deal from what happens at them. One of the things that happens is a burial.', fx: s => ({ pop: -1, fops: [{ id: s.last.fid, insight: 20 }], stain: ['kept_quiet', 1] }) } },
-    { label: 'Test it properly, with someone standing where it matters', dark: true, note: s => `What ${N(s, 'xenobio')} would rather not say is that the test needs a person out past the wire, alone, after dark, who has not been told why.`, info: [['yield', 'The whole answer'], ['danger', 'Whoever is posted']],
+    { label: 'Test it properly, with someone standing where it matters', dark: true, note: s => `${N(s, 'xenobio')} admits, quickly, that the test needs a person out past the wire, alone, after dark, who has not been told why.`, info: [['yield', 'The whole answer'], ['danger', 'Whoever is posted']],
       test: { base: 66, mods: [R('xenobio', 10)] },
       ok: { text: 'One of the watch is given a post two hundred metres out and told it is a listening picket. The instruments run all night. In the morning the picket walks in, cold and bored, and half the notebook is rewritten around what happened near that post.',
         fx: s => ({ stain: ['bait', 1], fops: [{ id: s.last.fid, insight: 36, threat: -10 }] }) },
@@ -309,7 +309,7 @@ add({ id: 'aft.beds', arc: 'after', view: 'colony', tone: 'pressure', chain: tru
 add({ id: 'aft.carcass', arc: 'after', view: 'world', tone: 'pressure', chain: true, repeat: 80, title: 'The Carcass',
   when: s => !!lastF(s),
   setup: s => { const p = h.anyNamed(s, ['physician', 'xenobio']); return Object.assign({ fid: (s.last && s.last.fid) || null, was: (s.last && s.last.title) || null, hungry: h.foodDays(s) < 75 }, p ? { pid: p.id, name: p.name, first: p.first } : {}); },
-  text: (s, c) => { const f = lastF(s), d = Math.round(h.foodDays(s)); return `One of ${f.name} is lying dead outside the wire where it fell, bigger close up than anyone expected. It is most of a tonne of meat, and nobody alive can say what is in it.\n\n${c.hungry ? `There ${(m => m < 1 ? 'is less than a month of food' : m === 1 ? 'is about a month of food' : `are about ${NUM[m] || m} months of food`)(Math.round(d / 10))} in the bins. The cooks went out to look at it before the watch did, and a queue has formed behind them.` : `The cooks have already been out to look at it.`} ${Nc(s, 'xenobio')} wants a month with it before anyone puts any of it in their mouth.`; },
+  text: (s, c) => { const f = lastF(s), d = Math.round(h.foodDays(s)); return `One of ${f.name} is lying dead outside the wire where it fell, bigger close up than anyone expected. It is most of a tonne of meat, and nobody alive can say what is in it.\n\n${c.hungry ? `There ${(m => m < 1 ? 'is less than a month of food' : m === 1 ? 'is about a month of food' : `are about ${NUM[m] || m} months of food`)(Math.round(d / 10))} in the bins. The cooks went out to look at it before the watch did, and a queue has formed behind them.` : `The cooks have already been out to look at it.`} ${Nc(s, 'xenobio')} wants a month with it before anyone puts any of it in their mouth, and keeps going on about how much a carcass this fresh could tell them.`; },
   choices: [
     { label: 'Butcher it. Everyone eats tonight', hint: 'unknown', info: [['yield', 'Food'], ['danger', 'Whatever it carries, in everyone']], test: { base: 56, mods: [R('physician', 8), R('xenobio', 8)] },
       ok: { text: 'It smokes well and tastes of iron. For the first night since landing nobody leaves the table hungry. The children are told it is beef, and do not believe it.', fx: { food: 460, morale: 4 } },
@@ -327,7 +327,7 @@ add({ id: 'aft.carcass', arc: 'after', view: 'world', tone: 'pressure', chain: t
   ] });
 add({ id: 'aft.cutting', arc: 'after', view: 'colony', tone: 'opportunity', chain: true, repeat: 80, title: 'A Cutting in a Jar',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${N(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n"Could feed the wheat. Could eat it. I don't know which yet— I have to know which."`; },
+  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${N(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n"It could feed the wheat, or it could eat the wheat, I don't know which yet, and I have to know which, give me one plot and I'll find out, no wait, give me a fence and one plot."`; },
   choices: [
     { label: 'Trial it in one plot, fenced off', info: [['yield', 'Maybe better harvests']], test: { base: 50, mods: [R('botanist', 12), R('xenobio', 10)] },
       ok: { text: 'The fenced plot comes up thicker and greener than any other. The roots stop at the fence.', fx: s => ({ yield: 0.07, fops: [{ id: s.last.fid, insight: 8 }] }) },
@@ -342,7 +342,7 @@ add({ id: 'aft.cutting', arc: 'after', view: 'colony', tone: 'opportunity', chai
 add({ id: 'aft.warm', arc: 'after', view: 'world', tone: 'opportunity', chain: true, repeat: 80, title: 'It Is Still Warm',
   when: s => !!lastF(s),
   setup: s => { const p = h.anyNamed(s, ['engineer', 'xenobio']); return Object.assign({ fid: (s.last && s.last.fid) || null, was: (s.last && s.last.title) || null }, p ? { pid: p.id, name: p.name, first: p.first } : {}); },
-  text: s => { const f = lastF(s); return `Among what was brought back from ${f.name} is a palm-sized object that is warm to the touch and has not cooled in three days. ${Nc(s, 'engineer')} thinks it is a power source. ${Nc(s, 'xenobio')} thinks it is a heart.`; },
+  text: s => { const f = lastF(s); return `Among what was brought back from ${f.name} is a palm-sized object that is warm to the touch and has not cooled in three days. ${Nc(s, 'engineer')} thinks it is a power source. ${Nc(s, 'xenobio')} thinks it's a heart, and has stopped saying "thinks" about it.`; },
   choices: [
     { label: 'Wire it into the grid', info: [['danger', 'The reactor']], test: { base: 48, mods: [R('engineer', 14)] },
       ok: { text: 'It takes a load off the reactor that nobody can account for. The lights are steadier than they have been since landfall.', fx: { machine: { reactor: 10 }, cap: { reactor: 4 } } },

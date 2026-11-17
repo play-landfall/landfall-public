@@ -12,7 +12,7 @@ const FAITH = s => s.flags.und_contact ? 'the Listeners, who sit barefoot in the
 /* ================= POLITICS ================= */
 add({ id: 'pol.rations', urgent: true, arc: 'politics', tone: 'pressure', title: 'The Curve', w: 2.5,
   when: s => s.day >= 40 && foodDays(s) < 95 && !LF.lean(s),
-  text: s => `${Nc(s, 'quartermaster')} draws you a line on a slate. Stores on the left, days along the bottom. It reaches zero in about ${Math.round(foodDays(s) / 10) * 10} days.\n\n"I can move where it lands. Costs something, whichever way I do it. You'll have to say who goes short."`,
+  text: s => `${Nc(s, 'quartermaster')} draws you a line on a slate. Stores on the left, days along the bottom. It reaches zero in about ${Math.round(foodDays(s) / 10) * 10} days.\n\n"I can move where it lands, but it costs somebody whichever way I do it. You'll have to say who goes short."`,
   choices: [
     { label: 'Three-quarter rations for everyone, starting with us', note: 'The oldest and the sick feel a short ladle first.', info: [['danger', 'The weakest']],
       out: { text: 'You make a point of eating in the mess hall where people can see your plate. The oldest feel it first. One of them does not get up in the second month.', fx: { rations: 'tight', morale: -2, pop: -1, flags: { shared_hunger: true } } } },

@@ -300,7 +300,7 @@ S({ id: 'seed.spared', tone: 'opportunity', title: 'A Debt Remembered', age: see
   setup: s => { const p = s.people.find(p => p.alive && !p.away && p.marks.spared && s.day - (p.marks.spared.d || 0) >= 100 && once(s, 'repay:' + p.id)); if (!p) return {};
     const k = Object.keys(REPAY).map(k => [k, LF.cv(s, k)]).sort((a, b) => b[1] - a[1])[0]; if (k[1] < 42) return {};
     return { ok: true, pid: p.id, name: p.name, first: p.first, k: k[0], why: LF.because(s, k[0]) }; },
-  text: (s, c) => `${cap1(c.why)}. ${c.name}, whom you let off when you could have done otherwise, has been ${REPAY[c.k][0]}, without anyone asking.\n\n${Nc(s, 'quartermaster')}: "I'd never have picked ${c.first} for it. Shows what I know."`,
+  text: (s, c) => `${cap1(c.why)}. ${c.name}, whom you let off when you could have done otherwise, has been ${REPAY[c.k][0]}, without anyone asking.\n\n${Nc(s, 'quartermaster')}: "I'd never have picked ${c.first} for it. Goes to show."`,
   choices: [
     { label: 'Say so, in front of everyone', info: [['danger', 'Everyone who was punished instead']], out: { text: (s, c) => `${c.first} goes red to the ears and looks at the floor. It is the first time most of the colony has heard that name said kindly. The people who dug trenches for the same offence are in the room, and hear it too.`, fx: (s, c) => Object.assign(REPAY[c.k][1](s), { morale: 1 }, { do: s2 => { const d = REPAY[c.k][1](s2).do; if (d) d(s2); done(s2, c, 15); LF.emit(s2, 'resentment', 'seed.spared', 20, 150, `${c.name} was let off, and then praised for it`); } }) } },
     { label: 'Announce it as the officers\' scheme', dark: true, note: 'The colony needs to believe somebody is in charge of this. It does not need to know who started it.', info: [['yield', 'Morale, and credit'], ['danger', 'What was theirs']],
@@ -426,7 +426,7 @@ LF.TAGS['ep.dreams'] = ['cautious', 'cautious open', 'severe order', 'severe ord
 E({ id: 'ep.vigil', tone: 'quiet', title: 'The Lamp at the Wall',
   when: s => !!s.threads && LF.cv(s, 'grief') >= 35 && top(s, ['dark', 'scarcity', 'blackout', 'cold'])[1] >= 35,
   setup: s => ({ k: top(s, ['dark', 'scarcity', 'blackout', 'cold'])[0] }),
-  text: (s, c) => `Somebody has put a lamp at the wall of names, and somebody else has kept it filled. There are people there every night now: ${LF.because(s, 'grief')}.\n\n${Nc(s, 'quartermaster')}: "That's fuel I can barely find. You know why: ${LF.because(s, c.k)}. I'll find it if you say so. But somebody has to say."`,
+  text: (s, c) => `Somebody has put a lamp at the wall of names, and somebody else has kept it filled. There are people there every night now: ${LF.because(s, 'grief')}.\n\n${Nc(s, 'quartermaster')}: "That's fuel I can barely find, and you know why: ${LF.because(s, c.k)}. I'll find it if you say so."`,
   choices: [
     { label: 'Keep the lamp lit and find the fuel', cost: { mat: 15 }, out: { text: 'It burns all night, every night. People who never knew the names on the wall have started to learn them.', fx: s => ({ morale: 3, do: s2 => LF.ease(s2, 'grief', 'ep.vigil', 20, 200) }) } },
     { label: 'One night in seven, with everyone there', out: { text: s => `${Nc(s, 'chaplain')} says a few words the first time, and fewer the second. By the fourth it is an hour of standing together at the wall.`, fx: s => ({ morale: 1, do: s2 => LF.emit(s2, 'zeal', 'ep.vigil', 20, 200, 'the colony keeps a night for its dead') }) } },

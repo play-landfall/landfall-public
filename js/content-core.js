@@ -42,7 +42,7 @@ add({ id: 'crops.first', arc: 'crops', tone: 'pressure', title: 'The Yellow Whea
 
 add({ id: 'crops.native', arc: 'crops', tone: 'opportunity', title: 'Knucklewort',
   when: s => !s.flags.no_native && s.day >= 90 && (s.built.soillab || s.day >= 170),
-  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it. Every day, for a month. I'd do it myself if you'd let me—"\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
+  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it, every day for a month, and I'd do it myself, honestly I'd start tonight, if you'd only let me, which you won't, I can see your face."\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
   choices: [
     { label: s => `Let ${F(s, 'quartermaster')} eat it`, note: 'It is the quickest way to find out, and only one person is at risk.',
       test: { base: 55, mods: [R('physician', 12), M('medbay', 12)] },
@@ -214,7 +214,7 @@ add({ id: 'mach.lander', arc: 'machines', tone: 'pressure', title: 'Flight Hours
 /* ================= SLEEPERS ================= */
 add({ id: 'sleep.manifest', arc: 'sleepers', tone: 'opportunity', title: 'The Manifest',
   when: s => s.day >= 28 && s.sleepers >= 23 && ok(s, 'lander') && LF.canFly(s) && !s.flags.lander_grounded,
-  text: s => `The first shuttle window opens tomorrow. ${Nc(s, 'quartermaster')} has the cryo manifest: a hundred and forty names, each with a trade and a calorie cost.\n\n"Twenty seats. Whoever comes down eats from day one. Whoever doesn't stays in a bank the ship won't vouch for any more. I wouldn't promise them a second window."`,
+  text: s => `The first shuttle window opens tomorrow. ${Nc(s, 'quartermaster')} has the cryo manifest: a hundred and forty names, each with a trade and a calorie cost.\n\n"Twenty seats. Whoever comes down eats from the first day, and whoever stays up there sleeps in a bank the ship can't vouch for any more. I wouldn't promise anybody a second window."`,
   choices: [
     { label: 'Field hands and builders', out: { text: s => `Twenty strong backs walk off the ramp, squinting. By the end of the month they are ${LF.lex(s, 'burnt')} and useful. Three of the amber pods they were chosen over are dark by the next window.`, fx: { pop: 20, sleepers: -23, fly: 1, machine: { lander: -12 } } } },
     { label: 'The specialists', note: 'Fewer hands, but people who know things.',
@@ -289,7 +289,7 @@ add({ id: 'fever.spread', arc: 'fever', tone: 'crisis', chain: true, title: 'The
 /* ================= STATE-DRIVEN ================= */
 add({ id: 'state.famine', urgent: true, max: 2, arc: 'state', tone: 'crisis', title: 'The Bottom of the Bins', repeat: 75,
   when: s => foodDays(s) < 22,
-  text: s => `${Nc(s, 'quartermaster')} does not bother with the ledger. "Two months. Less, if anyone works hard enough to get hungry." Outside, a queue has formed at the stores door two hours before it opens.`,
+  text: s => `${Nc(s, 'quartermaster')} does not bother with the ledger. "Two months. Less, if folk work hard enough to get hungry." Outside, a queue has formed at the stores door two hours before it opens.`,
   choices: [
     { label: 'Eat the seed grain', note: s => s.flags.first_sow === 'half' && s.flags.seed_grain ? 'These are the lockers you sealed in the first season. You eat now and harvest less later.' : 'You eat now and harvest less later.',
       req: s => !!(s.flags.seed_grain || s.flags.crops_adapted || s.day > 300), reqText: 'There is none. It all went into the ground in the first season',

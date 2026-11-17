@@ -45,7 +45,7 @@ const nolabF = s => s.factors.filter(f => f.stage >= 1 && !f.res && !f.dormant &
 add({ id: 'bu.nolab', arc: 'bu_lab', view: 'colony', tone: 'pressure', title: 'Nowhere to Put It', gap: 40, repeat: 300, w: 1.6,
   when: s => landed(s) && s.day >= 120 && !has(s, 'lab') && !!nolabF(s) && !!P(s, 'xenobio'),
   setup: s => { const f = nolabF(s); return { fid: f.id, name: f.name, Name: f.Name, med: s.machines.medbay.up ? 'up' : s.machines.medbay.lost ? 'lost' : 'here' }; },
-  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. The soil laboratory is all seed trays and wheat, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'and the autodoc is kept for the living'}, and the colony has no laboratory.\n\n"I can do it on the seed bench. Or I can't do it at all. Those are the choices. Look at it, though. Look at it!"`,
+  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. The soil laboratory is all seed trays and wheat, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'and the autodoc is kept for the living'}, and the colony has no laboratory.\n\n"I can do it on the seed bench, or I can't do it at all, and I know those are the only two choices, but look at it, you haven't even looked, just look!"`,
   choices: [
     { label: 'Work it on the seed bench, among next season\'s stock', note: 'It gets done this month, on the only clean bench there is, next to the seed for the next sowing.', info: [['yield', (s, c) => `What ${c.name} is`], ['danger', 'The seed stock']],
       test: { base: 46, mods: [R('xenobio', 14)] },
@@ -62,7 +62,7 @@ LF.TAGS['bu.nolab'] = ['bold open', 'severe', 'cautious'];
 add({ id: 'bu.lab', arc: 'bu_lab', view: 'colony', tone: 'opportunity', title: 'The Bench at Night', gap: 40, repeat: 400, w: 1.8,
   when: s => landed(s) && has(s, 'lab') && since(s, 'lab') >= 50 && !!P(s, 'xenobio'),
   setup: s => ({ wild: LF.lex(s, 'wild1') }),
-  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n"It could feed the north field. Or it could get loose and feed everything else. Probably both! I need to grow it on to know."`,
+  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n"It could feed the north field, or it could get loose and feed everything else, probably both, honestly probably both, and I need to grow it on to know, which is the whole problem and the whole joy of it!"`,
   choices: [
     { label: 'Grow it on, in the cold room, under lock', note: 'A season of work for the laboratory, and one technician who handles it every day.', info: [['yield', 'Better harvests, if it holds'], ['danger', 'The technician who tends it']],
       test: { base: 52, mods: [R('xenobio', 14)] },
@@ -113,7 +113,7 @@ LF.TAGS['bu.comms'] = ['order', 'severe closed', 'free'];
 add({ id: 'bu.nocan', arc: 'bu_can', view: 'colony', tone: 'pressure', title: 'Soft in the Bins', gap: 40, repeat: 360, w: 2,
   when: s => landed(s) && !has(s, 'cannery') && (s.flags.harvests || 0) >= 1 && s.day % LF.SEASON < 20 && s.day >= 100 && foodDays(s) > 30,
   setup: s => ({ a: share(s, 0.12), b: share(s, 0.05) }),
-  text: s => `${Nc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n"Four's gone. Five's going. No cold room, no jars. It's rotting faster than we can eat it. Somebody eats the soft first, or nobody does."`,
+  text: s => `${Nc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n"Four's gone and five's going. No cold room, no jars, so it rots faster than we can eat it. We eat the soft first, or nobody eats it."`,
   choices: [
     { label: 'Everyone eats the soft grain first, the officers too', note: 'Nothing is thrown away. A month of sour bread, and the weakest stomachs feel it.', info: [['danger', 'The old and the sick']],
       out: { text: 'The soft grain goes into everything for a month. Nobody likes it. The clinic fills with stomachs, and one of the oldest doesn\'t get up.', fx: (s, c) => ({ food: c.b, morale: -3, pop: -1 }) } },

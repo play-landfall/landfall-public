@@ -245,7 +245,7 @@ add({ id: 'ssn.weed', arc: 'crops', tone: 'council', title: 'Everything Grows', 
 add({ id: 'ssn.tangle', arc: 'crops', tone: 'council', chain: true, title: 'What Came Up With It', view: 'colony',
   setup: s => ({ took: took(s, 0.36 + (LF.ARCHETYPES[s.world.type].yield || 0) * 1.2 + (s.flags.salted ? 0.08 : 0) + (s.flags.site_delta ? 0.06 : 0)) }),
   text: (s, c) => `${s.flags.first_sow === 'half' ? 'Of the half that was sown, ' + frac(c.took).toLowerCase() : frac(c.took)} came up as wheat. The rest came up as wheat and something else, wound together at the root, and in some of the heads the grain is the wrong colour.\n\n`
-    + voice(s, 'xenobio', `"It's crossed," ${N(s, 'xenobio')} says, turning a head over. "Or it's trying to. That shouldn't be possible. Can we keep some? Please?"`, 'Some of the wheat looks crossed with the wild. That should not be possible.'),
+    + voice(s, 'xenobio', `"It's crossed," ${N(s, 'xenobio')} says, turning a head over. "Or it's trying to, which shouldn't be possible, so either I'm wrong or this is the best thing that's happened here, and I honestly can't tell which, can we keep some? Please?"`, 'Some of the wheat looks crossed with the wild. That should not be possible.'),
   choices: [
     { label: 'Cut it all, weeds and wheat', note: 'Everything goes in the stores, and whatever is mixed into it goes into everyone who eats from them.', hint: 'good', info: [['yield', 'Food now'], ['danger', 'Everyone who eats it']],
       out: { text: 'It is cut in three days and carried in, and the wrong-coloured grain goes in with the rest. The bread is darker than it should be.',

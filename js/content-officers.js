@@ -18,11 +18,11 @@ const BREAK_SAYS = { command: `"I'm fine. I've got the numbers. I've always got 
   security: `"It was out there. You didn't hear it because you weren't listening. Somebody has to be listening."`,
   engineer: `"One of them's going to go. I don't know which. So I check them all, every night. What else am I meant to do?"`,
   doctor: `"Don't. Don't tell me to sleep. Every time I sleep, somebody on that list doesn't wake up."`,
-  scientist: `"It was in the notes. I didn't want it in the notes. Can we — can we stop talking about the notes?"`,
+  scientist: `"It was in the notes, and I didn't want it in the notes, and I know how that sounds, no, can we not do the notes, can we do anything else, ask me about anything else."`,
   crew: `"I'm praying, that's all. Leave the door. Please."` };
 const SICK_SAYS = { command: `"It's a cold. Get me the morning reports and get out."`, security: `"If I'm dying I'll let you know. Till then I'm on the rota."`,
   engineer: `"She runs rough for a bit and then she settles. So will I."`, doctor: `"I know exactly what it is. I've seen it in enough patients. I'm not telling you, because you'd take me off the ward."`,
-  scientist: `"Fascinating, actually. I've been keeping notes on it. On me."`, crew: `"My grandmother worked the harvest the week she died. It's no shame."` };
+  scientist: `"It's fascinating, actually, it comes in waves, I've been keeping notes, on me, on the, hold on, where did I put the pencil."`, crew: `"My grandmother worked the harvest the week she died. It's no shame."` };
 
 add({ id: 'off.break', view: 'people', arc: 'officers', tone: 'pressure', chain: true, repeat: 30, title: 'Not Sleeping',
   when: s => !!who(s, 'mind', p => p.mind < 27),

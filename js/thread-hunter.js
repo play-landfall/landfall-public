@@ -313,7 +313,7 @@ const WANTS = {
   command: f => `"One rifle. Two nights. Back on the third," ${f} says. "It lies up by day. I find where. Lift the bar."`,
   engineer: f => `"Forty hatches I've welded, and it's had more of us since," ${f} says. "I'm tired. Tell me what to weld next, because I'm not stopping."`,
   doctor: f => `"You keep sending me what's left of them," ${f} says. "I'm going to look at it once, before it sends me another. Open the gate."`,
-  scientist: f => `"It has to lie up somewhere, doesn't it? Everything does. Half a day out, less, and nobody's looked," ${f} says. "I won't go near it. I only want to see where it... lift the bar, will you?"`,
+  scientist: f => `"It has to lie up somewhere, doesn't it? Everything does, half a day out, less, and nobody's even looked," ${f} says. "I only want to see the place, just the place, I wouldn't touch a, no wait, lift the bar, will you?"`,
   crew: f => `"A thing that hunts has a bed," ${f} says. "You find the bed. We did it with foxes at home. I'll be back for the sowing."`,
 };
 B(['inside', 'bold'], { id: 'hu.out', tone: 'pressure', title: 'Going Out After It',

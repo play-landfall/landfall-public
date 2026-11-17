@@ -195,7 +195,7 @@ const E = st => LF.add(Object.assign({ arc: 'episode', view: 'people', x: true, 
 E({ id: 'ep.equation', tone: 'crisis', title: 'The Cold Equation',
   when: s => !!s.threads && LF.cv(s, 'hunger') >= 60 && (LF.cv(s, 'dark') >= 50 || LF.cv(s, 'confinement') >= 40 || LF.cv(s, 'siege') >= 40),
   setup: s => ({ k: ['dark', 'siege', 'confinement'].map(k => [k, LF.cv(s, k)]).sort((a, b) => b[1] - a[1])[0][0], n: Math.max(4, Math.round(LF.sized(s) / 9)) }),
-  text: (s, c) => `${Nc(s, 'quartermaster')} has done it three ways and it comes out the same. There is food for the colony less ${TH.num(c.n)}, and nothing more is coming in, ${TH.bec(s, c.k)}.\n\n"Equal shares, and we all go weak together. Or somebody decides who eats. I'll do the sums. I won't do the other part."`,
+  text: (s, c) => `${Nc(s, 'quartermaster')} has done it three ways and it comes out the same. There is food for the colony less ${TH.num(c.n)}, and nothing more is coming in, ${TH.bec(s, c.k)}.\n\n"Equal shares, and we all go weak together, or somebody decides who eats. I'll do the sums. I won't do that part."`,
   choices: [
     { label: 'Equal shares, to the gram', test: { base: 50, mods: [R('physician', 10), R('quartermaster', 10)] },
       ok: { text: 'Everyone is hungry, all the time, in the same way. There are few complaints, because everyone can see the next plate is no fuller than theirs.', fx: { morale: 2, rations: 'tight' } },

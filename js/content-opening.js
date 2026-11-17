@@ -46,7 +46,7 @@ op('world', s => s.world.type === 'ice' ? 1 : 0, { id: 'op.melt', view: 'colony'
       out: { text: 'The rota is written with the field crews left off it. The clerks, the medics and everyone over fifty haul ice before first light. Two of them are dead of the cold by the thaw. The fields are never short a hand.', fx: { pop: -2, yield: 0.03, morale: -1, stain: ['ice_rota', 1] } } },
   ] });
 op('world', s => s.world.type === 'jungle' ? 1 : 0, { id: 'op.film', view: 'colony', tone: 'pressure', title: 'It Grows on the Hull',
-  text: s => `A green-black film has crept over the lander's hull in a month. It is in the seals of the pods and the louvres of the reactor housing. ${Nc(s, 'xenobio')} scrapes a sample and it moves on the slide.\n\n"Any metal that stays warm, it'll grow on. Under a fingernail too. Two of the scraping crew have got it and it won't come off. Look at it move!"`,
+  text: s => `A green-black film has crept over the lander's hull in a month. It is in the seals of the pods and the louvres of the reactor housing. ${Nc(s, 'xenobio')} scrapes a sample and it moves on the slide.\n\n"It'll grow on any metal that stays warm, under a fingernail too, two of the scraping crew have got it and it won't come off, no wait, don't scrub it yet, look at it move!"`,
   choices: [
     { label: 'The two who have it do the scraping, and whoever catches it joins them', dark: true, note: 'It cannot be given to them twice.', info: [['yield', 'Clean metal, and clean hands for everyone else'], ['danger', 'The scraping gang']],
       out: { text: 'The two are given the scrapers and a pod of their own. The gang is five by the end of the season and eats at its own table. The hull is clean, and one of the five has it in the lungs and is dead of it.', fx: s => ({ machine: { reactor: 3, lander: 3 }, pop: -1, morale: -1, stain: ['scrapers', 1] }) } },
@@ -171,7 +171,7 @@ op('how', s => s.premise === 'astray' ? 1.2 : 0, { id: 'op.sky', view: 'world', 
     { label: 'Let the colony name the stars', out: { text: 'A box in the mess hall, a slip each. The brightest star in the west is named after a dog that died on the voyage. The length of the year goes unmeasured, and the season turns three weeks before the field crews had planned for, with the last of the crop still standing.', fx: { morale: 4, food: -90 } } },
   ] });
 op('how', s => s.premise === 'dead' ? 1.2 : 0, { id: 'op.plan', view: 'colony', tone: 'pressure', title: 'The Mission Plan',
-  text: s => `The mission plan is four hundred pages, written for the dead world the ship was sent to: where to land, what to build first, which crops in which order. ${Nc(s, 'quartermaster')} has been following it, because it is the only plan there is.\n\n${Nc(s, 'botanist')} says it is wrong about almost everything here.`,
+  text: s => `The mission plan is four hundred pages, written for the dead world the ship was sent to: where to land, what to build first, which crops in which order. ${Nc(s, 'quartermaster')} has been following it, because it is the only plan there is.\n\n${Nc(s, 'botanist')} says the ground disagrees with nearly all of it.`,
   choices: [
     { label: 'Throw it out. Plan for this world', out: { text: 'The binders go on a shelf. The officers sit up three nights and write twelve pages of their own, and argue about every one.', fx: { morale: -1, survey: 8, yield: 0.02 } } },
     { label: 'Keep its order. It was thought through', out: { text: 'The plan is followed, chapter by chapter, adjusted where it plainly fails. People find it steadying. The second sowing goes in by the book, in the month the book says, which on this world is the wrong one.', fx: { morale: 3, yield: -0.02, food: -60 } } },
@@ -251,7 +251,7 @@ op('brought', s => cargo(s, 'sleepers') && s.grounded > 0 ? 1 : 0, { id: 'op.hol
         fx: s => ({ food: 60, morale: -1, chips: [[`${Math.min(11, s.grounded || 0)} sleepers dead in the shed`, false]], stain: ['pods', 2], do: s2 => { s2.grounded = Math.max(0, (s2.grounded || 0) - 11); } }) } },
   ] });
 op('brought', s => cargo(s, 'spares') ? 1 : 0, { id: 'op.spares', view: 'colony', tone: 'opportunity', title: 'The Spares Crate',
-  text: s => `The spares crate is the colony's insurance: bearings, boards, seals, enough to keep the machines alive for years. ${Nc(s, 'engineer')} wants to keep it sealed. ${Nc(s, 'geologist')} wants some of it now, for a drill rig to find ore.\n\n"Spares run out. Give me a rig and some ore and we make our own. Think what's down there!"`,
+  text: s => `The spares crate is the colony's insurance: bearings, boards, seals, enough to keep the machines alive for years. ${Nc(s, 'engineer')} wants to keep it sealed. ${Nc(s, 'geologist')} wants some of it now, for a drill rig to find ore.\n\n"Spares run out, everything runs out, but give me a rig and some ore and we make our own, and think what else is down there, no wait, I'm getting ahead of myself, just give me the rig!"`,
   choices: [
     { label: 'Build the rig', out: { text: 'The rig goes up within the month and starts biting into the hill.', fx: s => ({ parts: -8, survey: 10, sched: s.flags.ore_found ? null : [['plan.prospect', 5, 20]] }) } },
     { label: 'Keep the crate sealed', out: { text: s => `The crate stays shut. ${Nc(s, 'engineer')} sleeps better for it. ${Nc(s, 'geologist')} goes on looking for ore with a hammer and a sample bag, and is a season behind where a rig would have been.`, fx: { morale: 1 } } },
@@ -272,7 +272,7 @@ op('brought', s => cargo(s, 'workshop') ? 1 : 0, { id: 'op.lathe', view: 'colony
         fx: s => ({ parts: 18, pop: -1, morale: -1, stain: ['night_shift', 1], do: s2 => LF.emit(s2, 'exhaustion', 'op.lathe', 20, 90, 'the machine shop runs all night') }) } },
   ] });
 op('brought', s => cargo(s, 'seedlings') ? 1 : 0, { id: 'op.trays', view: 'colony', tone: 'pressure', title: 'Three Hundred Trays',
-  text: s => `The seedlings came down alive, all three hundred trays, and they are outgrowing their pots under the grow lamps. ${Nc(s, 'botanist')} could plant them out this month, into ground nobody has grown anything in, or harden them off slowly in the shade of the lander first and lose a month.\n\n"Some'll die whichever way. How many, that's the thing. And whether we learn anything."`,
+  text: s => `The seedlings came down alive, all three hundred trays, and they are outgrowing their pots under the grow lamps. ${Nc(s, 'botanist')} could plant them out this month, into ground nobody has grown anything in, or harden them off slowly in the shade of the lander first and lose a month.\n\n"Some'll die whichever way. It's how many that matters. And whether we learn anything from it."`,
   choices: [
     { label: 'Plant them all out this month', test: { base: 55, mods: [R('botanist', 15), If(s => s.flags.site_delta, 10, 'The delta soil')] },
       ok: { text: 'Most of them take. Within a month there are green rows where there was bare ground, and the first salad of the colony is eaten standing up in the field.', fx: { food: 80, yield: 0.02, morale: 2 } },
