@@ -65,11 +65,13 @@ LF.fitAttach = function (s, ch) { const c = s.cur; if (!c || !c.attach || !c.att
 LF.SENT_REST = 2 * LF.MONTH;
 LF.spent = (s, p) => !!p.spent && p.spent > s.day;
 const couldGo = (s, p) => p.alive && p.seat && p.role && (s.cur && s.cur.aboard ? p.orbit : !p.orbit && !p.away && !LF.laidUp(s, p));
-LF.available = s => { if (LF.aloft(s)) return [];
+// A card marked alone (the voyage out, js/content-social.js) is a conversation: nobody is sent in person.
+const alone = s => !!(s.cur && LF.byId[s.cur.id] && LF.byId[s.cur.id].alone);
+LF.available = s => { if (LF.aloft(s) || alone(s)) return [];
   const w = s.cur && s.cur.aboard ? null : LF.cardWork(s);   // a card aboard the ship: only who is up there
   return s.people.filter(p => couldGo(s, p) && !LF.spent(s, p) && LF.canDo(p, w)); };
 /* The ones who would be on the strip if they had not just been out: shown greyed, with how long. */
-LF.resting = s => { if (LF.aloft(s)) return []; const w = s.cur && s.cur.aboard ? null : LF.cardWork(s);
+LF.resting = s => { if (LF.aloft(s) || alone(s)) return []; const w = s.cur && s.cur.aboard ? null : LF.cardWork(s);
   return s.people.filter(p => couldGo(s, p) && LF.spent(s, p) && LF.canDo(p, w)); };
 const CAP = 10; // a small colony only has room for so many legends
 

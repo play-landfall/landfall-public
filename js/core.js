@@ -838,7 +838,7 @@ LF.choose = function (s, i) {
   // Only a dangerous failure can hurt the people sent: a crisis, or one that costs lives. A month of readings that ends
   // in an argument about calibration kills nobody.
   const risky = st.tone === 'crisis' || !!ch.risky || !!(fx && ((fx.pop || 0) < 0 || fx.dead || fx.kill));
-  if (ch.test) LF.afterTest(s, { success: res.success, title: st.title, ap: null, f: null, crisis: st.tone === 'crisis', perk: ARC_PERK[st.arc], safe: !risky, work: LF.workOf(null, ch.test, ch.send, ch.kind) }, chips);
+  if (ch.test && !s.adrift) LF.afterTest(s, { success: res.success, title: st.title, ap: null, f: null, crisis: st.tone === 'crisis', perk: ARC_PERK[st.arc], safe: !risky, work: LF.workOf(null, ch.test, ch.send, ch.kind) }, chips);
   if (ch.send) LF.sendAway(s, { n: ch.send.n, days: LF.ri(s, ch.send.days[0], ch.send.days[1]), danger: ch.send.danger, to: ch.send.to, ret: ch.send.ret, fid: null, with: LF.attached(s).map(p => p.id) }, (t, good) => chips.push({ t, good }));
   if (LF.officerAfter) LF.officerAfter(s, { crisis: st.tone === 'crisis', dark: !!ch.dark, ok: ch.test ? res.success : null, sent: (s.cur.attach || []).slice(), dead: chips.some(c => / dead$/.test(c.t)), world: s.cur.view === 'world' }, chips);
   res.chips = chips; res.remember = !!(fx && (fx.flags || fx.sched || fx.mark));

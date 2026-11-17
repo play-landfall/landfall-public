@@ -47,8 +47,8 @@ add({ id: 'setup.wake1', view: 'people', arc: 'setup', tone: 'council', chain: t
   confirm: (s, c, picked) => { const go = picked.map(k => byPid(s, s.slate[0][k])), stay = s.people.filter(q => q.seat && q.alive && !go.includes(q));
     return { label: and3(go.map(p => p.name)), then: LF.byId['setup.sys'] ? 'setup.sys' : 'setup.hold1',
       text: `${and3(go.map(p => p.name))} are brought up out of the cold, and are on the lander's manifest by midnight.\n\n${and3(stay.map(q => q.name))} stay aboard to run the ship. ${and3(stay.map(q => LF.SEATS[q.seat].name))} below will be run by whoever is next on the list, until a shuttle run brings its officer down.`,
-      fx: { do: s2 => { for (const p of go) { p.watch = true; p.loyal = 74; for (const q of go) if (q.id < p.id) LF.bond(s2, p, q, 'friend', 'came down on the first flight'); }
-        for (const q of s2.people) if (q.seat && q.alive && !q.watch) { q.orbit = true; q.away = true; q.loyal = Math.min(q.loyal, 48); } } } }; } });
+      fx: { do: s2 => { for (const p of go) { p.watch = true; p.loyal = Math.min(100, p.loyal + 19); for (const q of go) if (q.id < p.id) LF.bond(s2, p, q, 'friend', 'came down on the first flight'); }
+        for (const q of s2.people) if (q.seat && q.alive && !q.watch) { q.orbit = true; q.away = true; q.loyal = Math.max(0, q.loyal - 7); } } } }; } });
 
 /* ---------- a seat on the lander: every flight brings one officer down from orbit (officers.js) ---------- */
 const up3 = (s, c, k) => byPid(s, (c.ids || [])[k]);

@@ -38,9 +38,20 @@ function seenThreads() { let past = []; try { past = JSON.parse(localStorage.get
   if (s && s.threads) { const now = Object.keys(s.threads).filter(id => s.threads[id].woke); if (now.length) past = [now].concat(past).slice(0, 2); }
   try { localStorage.setItem('landfall.seen', JSON.stringify(past)); } catch (e) {}
   return [].concat(...past).filter((id, i, a) => a.indexOf(id) === i); }
-function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; save(); log('new', { detail: s.premise }); if (quiet) return; render(); window.scrollTo(0, 0); intro(); }
+function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; if (LF.proDeal) LF.proDeal(s, proSeen()); save(); log('new', { detail: s.premise }); if (quiet) return; render(); window.scrollTo(0, 0); intro(); }
 function cutscene(shots, title) { if (!window.LFIntro) return; if (window.LFBoot) LFBoot.prefetch(shots.map(x => LFBoot.scene(x.pic))); LFIntro.play(shots, null, title); }
-function intro() { if (window.LFIntro) cutscene(LFIntro.opening(s), true); }
+function intro() { if (!window.LFIntro) return;
+  if (!(LF.proOn && LF.proOn(s))) return cutscene(LFIntro.opening(s), true);
+  const sh = LFIntro.departure(s); if (window.LFBoot) LFBoot.prefetch(sh.map(x => LFBoot.scene(x.pic)).concat(s.pro.deck.map(id => LFBoot.scene(id.replace(/\./g, '_')))));
+  LFIntro.play(sh, proGo, true); }
+/* The voyage out (content-social.js): three cards aboard in the first five years from Earth, then the long sleep and
+   the cutscene of what went wrong, then the adrift screen. The cards the player saw lately are dealt last. */
+function proSeen() { try { return JSON.parse(localStorage.getItem('landfall.proSeen')) || []; } catch (e) { return []; } }
+function proGo() {
+  if (LF.proNext(s)) { try { localStorage.setItem('landfall.proSeen', JSON.stringify(proSeen().concat(s.cur.id).slice(-9))); } catch (e) {} save(); return arrive(true); }
+  save(); window.scrollTo(0, 0); render(); cutscene(LFIntro.opening(s, true)); }
+function proHTML() { const y = LF.proYear(s);
+  return cardHTML() + `<section class="vw"><div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('people')}<div class="t"><b>The ${esc(s.adrift.ship)}</b><small>Year ${y} out from Earth. The senior crew awake, everyone else asleep in the cryo banks.</small></div></div></div></section>`; }
 
 const bar = (v, cls, mark) => `<div class="bar ${cls || ''}"><i style="width:${Math.max(0, Math.min(100, v))}%"></i>${mark !== undefined ? `<b style="left:${mark}%"></b>` : ''}</div>`;
 const months = d => LF.monthsWord(Math.max(1, Math.ceil(Math.max(0, d) / LF.MONTH)));
@@ -59,7 +70,7 @@ function soundBtn() { const b = $('soundBtn'); if (!b) return; const on = !!(win
 function renderChrome() {
   soundBtn();
   $('app').classList.toggle('pre', LF.aloft(s));
-  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = 'Adrift · no destination'; return; }
+  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = s.cur && LF.proYear && LF.proYear(s) ? `Year ${LF.proYear(s)} out from Earth` : 'Adrift · no destination'; return; }
   const d = LF.date(s.day), under = underWay();
   $('planet').textContent = under ? s.world.ship : s.world.planet;
   $('date').textContent = under ? `Under way · ${s.world.star}` : LF.aloft(s) ? 'In orbit' : `Year ${d.year} · month ${d.month} · ${LF.SEASONS[d.season]}`;
@@ -119,7 +130,7 @@ function sceneOf0(c) {
 }
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);
-  let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc(def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
+  let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
     h += `<p>${esc(def.text)}</p>`;
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
@@ -128,7 +139,7 @@ function cardHTML() {
       `<button disabled class="spent"><b>${esc(p.name)}</b><span>Just back · ${esc(LF.monthsWord((p.spent - s.day) / LF.MONTH))}</span></button>`).join('')}
       ${workLine()}<small>${on.length ? 'They share the risk of whatever you choose and go with any party you send. Whatever comes of it, they are not fit to go out again for two months or more.' : 'An officer counts for more in person, and can be hurt or killed even when it goes well. There is nobody to replace them.'}</small></div>`;
     // What the colony has of whatever this card spends or turns on, in words, against what is asked.
-    const g = LF.relevant(s);
+    const g = s.adrift ? [] : LF.relevant(s);   // the voyage out has no colony stores to show
     if (g.length) h += `<div class="stock">${g.map(x => `<span class="${x.lv === 0 ? 'hot' : ''}">${ic(x.k)}${esc(x.w)}</span>`).join('')}</div>`;
     const pk = LF.byId[s.cur.id] && !s.cur.gen ? LF.byId[s.cur.id].pick : 0, picked = s.cur.picked || [];
     for (const o of opts) {
@@ -604,7 +615,7 @@ function render() {
   { const over = s.over && !s.over.cont, v = peek || (s.cur && s.cur.view) || 'colony', on = !s.adrift && !surveying() && !LF.aloft(s) && !over;
     $('hud').innerHTML = on ? stockHTML() : ''; document.documentElement.style.setProperty('--head', ($('app').querySelector('header').offsetHeight || 64) + 'px'); }
   const y = window.scrollY, was = document.querySelector('#view > .vw'), top0 = was && was.getBoundingClientRect().top;
-  $('view').innerHTML = s.adrift ? adriftHTML() : surveying() ? arrivalHTML() : playHTML();
+  $('view').innerHTML = s.adrift ? (s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
   window.scrollTo(0, y);
   // A card that arrives (or changes size as it resolves) pushes the view down: the view glides from where it was.
   const vw = document.querySelector('#view > .vw');
@@ -632,7 +643,7 @@ function act(a, v, el) {
   if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
-  else if (s.adrift && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
+  else if (s.adrift && !s.cur && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
   else if (a === 'early') return bringCard();
   else if (a === 'spot') { spot = v; if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } }
   else if (a === 'poi') { poiOpen = poiOpen === v ? '' : v || ''; const p = poiOpen && LF.poi(s, poiOpen); spot = p ? p.name : '';   // a place opens under the map; the card waits while it is open
@@ -656,6 +667,7 @@ function act(a, v, el) {
     if (s.cur.id === 'landfall.site' && window.LFIntro && LF.zone) cutscene(LFIntro.descent(s, (LF.zone(s, +v) || {}).name));
     startHold(+v); }
   else if (a === 'dismiss' && s.cur && s.cur.phase === 'result') { mark = s.day; LF.dismiss(s); since = 0; save();
+    if (s.adrift) return proGo();   // the voyage out: the next card, or the long sleep
     // the crossing is over: the ship makes orbit, and the survey is read before the world is named
     if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }
     return s.cur ? arrive(true) : proceed(); }
@@ -668,16 +680,17 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); if (review) act('early'); else if (s.cur && s.cur.phase === 'result') act('dismiss'); }
-  else if (s.adrift || surveying()) return;
+  else if ((s.adrift && !s.cur) || surveying()) return;
   else if (s.cur && s.cur.phase === 'choose' && e.key >= '1' && e.key <= '9') { const o = LF.choices(s)[+e.key - 1]; if (o && !o.lock) act('choose', o.i); }
   else if (s.cur && s.cur.phase === 'result' && e.key === 'Enter') act('dismiss');
 });
 
 s = load(); if (s) { LF.dropCut(s); if (LF.migrateOrders) LF.migrateOrders(s); }
 const isNew = !s; if (isNew) fresh(true);
+const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.pro.i;   // closed before the first card of the voyage out: play it from the title
 // The first screen's pictures arrive behind a loading bar on the first visit; everything else loads as it is needed.
-const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? LFIntro.opening(s).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
-const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (isNew) intro(); };
+const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? (LF.proOn && LF.proOn(s) ? LFIntro.departure(s) : LFIntro.opening(s)).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
+const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
 if (window.LFBoot) LFBoot.first(firstPics.filter(Boolean), start); else start();
 window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, REVIEW_MS };
 })();

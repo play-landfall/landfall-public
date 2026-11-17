@@ -29,12 +29,14 @@
     cradle_rock: 1, centrifuge: 1, nursery_row: 1,
     friend_listen: 1, chalk_tally: 1, lamp_ring: 1,
     pod_strike: 1, ship_voice: 1, power_down: 1,
-    refuel: 1, tool_switch: 1, shift_bell: 1, survey_stakes: 1, long_party: 1 };
+    refuel: 1, tool_switch: 1, shift_bell: 1, survey_stakes: 1, long_party: 1,
+    supper: 1, flight_deck: 1, bandage: 1 };
   // sounds that build (crowds, hums, weather): a long fade in rather than a start
-  const SWELL = new Set(['friend_listen', 'lamp_ring', 'nursery_row', 'moon_watch', 'schoolyard', 'recital', 'row_court', 'incubator', 'ship_fall', 'white_sun', 'ground_goes', 'second_ship', 'wont_wake', 'yard_sitdown', 'core_climb', 'everything_walks', 'no_thaw', 'crowd_angry', 'council', 'funeral', 'hymn', 'chant', 'drums', 'energy', 'pulse', 'ice_storm', 'rain', 'gale',
+  const SWELL = new Set(['flight_deck', 'supper', 'friend_listen', 'lamp_ring', 'nursery_row', 'moon_watch', 'schoolyard', 'recital', 'row_court', 'incubator', 'ship_fall', 'white_sun', 'ground_goes', 'second_ship', 'wont_wake', 'yard_sitdown', 'core_climb', 'everything_walks', 'no_thaw', 'crowd_angry', 'council', 'funeral', 'hymn', 'chant', 'drums', 'energy', 'pulse', 'ice_storm', 'rain', 'gale',
     'dust', 'swarm', 'calls', 'underground', 'radio', 'beacon', 'wind', 'flood', 'creep', 'feast', 'campfire', 'cold_room', 'water', 'warren', 'silent_crowd', 'dead_hill', 'feral_young', 'thin_mess', 'mess_floor', 'scale_yard', 'pot', 'relay_tick', 'sleepwalk', 'barred_door', 'empty_shop', 'bag', 'wire_night', 'black_ground', 'tally_board', 'two_orders']);
   // per-file loudness correction, from tools/sfx-levels.html (1 = as loud as the music)
   const GAIN = {
+    supper_1: 1.54, flight_deck_1: 0.87, bandage_1: 0.35,   // the voyage out, measured with ffmpeg the way sfx-levels.html does it (2026-11-17)
     refuel_1: 0.33, tool_switch_1: 1.94, shift_bell_1: 0.42, survey_stakes_1: 0.57, long_party_1: 2.07,   // Tranche 2 orders, measured with ffmpeg the way sfx-levels.html does it
     schoolyard_1: 0.53, incubator_1: 4.89, recital_1: 2.17, row_court_1: 1.76,
     cart_creak_1: 0.53, hot_wire_1: 5.53,
@@ -74,6 +76,10 @@
 
   // cards by id (exact), then by the group before the dot
   const ID = {
+    // the voyage out (js/content-social.js): the wardroom supper, a second pair of hands, the flight deck at night
+    'soc.jar': 'supper', 'soc.grace': 'supper', 'soc.names': 'supper', 'soc.coffee': 'supper', 'soc.door': 'supper', 'soc.line': 'supper',
+    'soc.mould': 'clinic', 'soc.racks': 'garden', 'soc.broth': 'clinic', 'soc.dressing': 'bandage', 'soc.sap': 'workshop', 'soc.stores': 'keys',
+    'soc.lights': 'flight_deck', 'soc.count': 'flight_deck', 'soc.sky': 'flight_deck', 'soc.scar': 'flight_deck', 'soc.stones': 'flight_deck', 'soc.cold': 'flight_deck',
     'landfall.site': 'lander_down', 'arrive.name': 'console',
     'crops.blight': 'creep', 'crops.seedvault': 'cold_room', 'crops.assay': 'papers',
     'mach.reactor': 'alarm', 'mach.cannibal': 'breakdown', 'mach.lander': 'lander_up', 'mach.biofilm': 'water',

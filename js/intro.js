@@ -60,15 +60,22 @@ const sky = el => { if (!window.LFStars) return; for (const c of el.querySelecto
 const unsky = el => { for (const c of el.querySelectorAll('canvas.stars')) if (c._stop) { c._stop(); c._stop = null; } };
 const layered = (k, line) => Object.assign({ line }, LAYERED[k]);
 /* A new game: the ship drifting, the sleepers, three of the pool, then why it is adrift (s.premise). */
-function opening(s) {
-  const r = rng(hash(s.seed)), ship = s.adrift ? s.adrift.ship : s.world.ship, keys = Object.keys(POOL);
+/* rest: after the voyage out (js/content-social.js), the burn has been seen already: the long sleep, then what went wrong. */
+function opening(s, rest) {
+  const r = rng(hash(s.seed)), ship = s.adrift ? s.adrift.ship : s.world.ship, keys = Object.keys(POOL).filter(k => !rest || k !== 'window');   // the long sleep opens on the porthole already
   for (let i = keys.length - 1; i > 0; i--) { const q = Math.floor(r() * (i + 1)); [keys[i], keys[q]] = [keys[q], keys[i]]; }
   const PM = LF.PREMISES[s.premise] || LF.PREMISES.dead;
-  return [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` },
+  return (rest ? [{ pic: 'intro_window', move: 'push', line: 'Then the long sleep.' }] : [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` }]).concat([
     layered('cruise', `The ${ship}, forty-one years out.`),
     { pic: 'sleep_manifest', move: 'push', line: `${s.adrift ? s.adrift.kit.sleepers : s.sleepers} asleep in the cryo banks.` }]
     .concat(keys.slice(0, 3).map(k => POOL[k](s, r)))
-    .concat([Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead)]);
+    .concat([Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead)]));
+}
+/* A new game with a voyage out: the burn that leaves Earth, and the ship under way, before the first card. */
+function departure(s) {
+  const ship = s.adrift ? s.adrift.ship : s.world.ship;
+  return [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `The ${ship} lights its drive and leaves Earth.` },
+    layered('cruise', `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`)];
 }
 /* After the burn is committed: the engines, the years, the new world, and orbit. Nobody goes down yet: the survey
    from orbit and the choice of who goes first come before the descent. */
@@ -139,5 +146,5 @@ function play(shots, cb, title) {
   };
   if (!waiting) next();
 }
-window.LFIntro = { play, skip: finish, opening, arrival, descent, get playing() { return !!document.querySelector('#intro:not(.out)'); } };
+window.LFIntro = { play, skip: finish, opening, departure, arrival, descent, get playing() { return !!document.querySelector('#intro:not(.out)'); } };
 })();
