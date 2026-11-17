@@ -75,7 +75,7 @@ const REMEDY = {
 };
 X({ id: 'x.drawn', tone: 'pressure', title: 'Drawn In',
   setup: s => match(s, LOVES, 'drawn'),
-  text: (s, c) => `${MOVE[c.kind](c)} The reason lies somewhere else: ${c.why}, and ${c.clause}.\n\n${Nc(s, LEADER[c.kind])}: "We can fight ${c.g.them}. Or we go after whatever's bringing ${c.g.them} on. Not both. We can't afford both."`,
+  text: (s, c) => `${MOVE[c.kind](c)} The reason lies somewhere else: ${c.why}, and ${c.clause}.\n\n${Nc(s, LEADER[c.kind])}: ${LEADER[c.kind] === 'security' ? `"We can fight ${c.g.them}. Or we go after whatever's bringing ${c.g.them} on. Not both, because I haven't the people for both, and I won't tell you I have."` : `"We can fight ${c.g.them}. Or we go after whatever's bringing ${c.g.them} on. Not both. We can't afford both."`}`,
   choices: [
     { label: (s, c) => `Fight ${c.g.them}`, test: { base: 50, mods: [R('security', 8), R('physician', 6), R('engineer', 6)] },
       ok: { text: (s, c) => `After a hard month ${c.n} ${c.g.are} back where ${c.g.they} stood before, but whatever drew ${c.g.them} in is still there.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -14 }], do: s2 => mark(s2, `drawn:${c.fid}:${c.k}`) }) },
@@ -94,7 +94,7 @@ LF.TAGS['x.drawn'] = ['bold severe', 'cautious', 'severe cautious', 'severe orde
 const GONE = { fauna: c => `no tracks at the markers for nine days`, flora: c => `brown at the edges, and the edges have stopped moving`, plague: c => `empty beds in the clinic, and nobody new in them`, ruin: c => `no tremor on the instruments, for the first time since landfall` };
 X({ id: 'x.withers', tone: 'opportunity', title: 'A Weakness', w: 3.5,
   setup: s => match(s, HATES, 'withers'),
-  text: (s, c) => `${c.N} ${c.g.are} failing. ${Nc(s, LEADER[c.kind])} noticed it first as an absence: ${GONE[c.kind](c)}. The colony did nothing to cause it. ${cap1(c.why)}, and ${c.clause}.\n\n"It won't last. If we're doing anything about ${c.g.them}, it's now."`,
+  text: (s, c) => `${c.N} ${c.g.are} failing. ${Nc(s, LEADER[c.kind])} noticed it first as an absence: ${GONE[c.kind](c)}. The colony did nothing to cause it. ${cap1(c.why)}, and ${c.clause}.\n\n${LEADER[c.kind] === 'security' ? `"It won't last, and I don't trust it while it does, but if we're doing anything about ${c.g.them}, it's now."` : `"It won't last. If we're doing anything about ${c.g.them}, it's now."`}`,
   choices: [
     { label: (s, c) => `Move on ${c.g.them} now`, test: { base: 62, mods: [R('security', 8), R('physician', 6), R('botanist', 6)] },
       ok: { text: (s, c) => `It is the easiest fight the colony has had here. When the season turns, ${c.n} will come back to a good deal less than ${c.g.they} left.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -30 }], do: s2 => mark(s2, `withers:${c.fid}:${c.k}`) }) },
@@ -172,7 +172,7 @@ X({ id: 'x.gate', tone: 'crisis', title: 'Both at Once', w: 6,
   setup: s => { const a = s.factors.filter(f => live(f) && ['fauna', 'natives', 'humans'].includes(f.kind) && f.threat >= 26 && f.accord < 30).sort((x, y) => y.threat - x.threat);
     if (a.length < 2 || !once(s, `gate:${a[0].id}:${a[1].id}`)) return {};
     const c = fx0(a[0]), o = fx0(a[1]); return Object.assign(c, { oid: o.fid, on: o.n, oN: o.N, okind: o.kind, why: `${c.n} and ${o.n} are both pressing on the colony` }); },
-  text: (s, c) => `${c.N} on the east side and ${c.on} on the west, in the same week. Neither has anything to do with the other. ${Nc(s, 'security')} has enough people to hold one side properly.\n\n"Or we sit tight and let them find each other. They're closer to each other than to us. Might save us the bother."`,
+  text: (s, c) => `${c.N} on the east side and ${c.on} on the west, in the same week. Neither has anything to do with the other. ${Nc(s, 'security')} has enough people to hold one side properly.\n\n"Or we sit tight and let them find each other, since they're closer to each other than to us, and I'd be a very happy man if they saved me the bother."`,
   choices: [
     { label: 'Let them find each other', test: { base: 45, mods: [R('security', 8), R('xenobio', 10)] },
       ok: { text: (s, c) => `The watch pull back to the inner line and listen to it all night. In the morning there is a great deal less of both.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -22 }, { id: c.oid, threat: -22 }], do: s2 => mark(s2, `gate:${c.fid}:${c.oid}`) }) },
@@ -342,7 +342,7 @@ LF.add({ id: 'x.settle', arc: 'close', view: 'world', tone: 'pressure', title: '
   setup: s => { const f = s.factors.filter(f => met(f) && f.kind !== 'land' && !f.owned && s.storySeen['sign:' + f.id] !== undefined && s.day - s.storySeen['sign:' + f.id] >= 240 && s.day - (s.storySeen['settle:' + f.id] || -999) >= 240)
       .sort((a, b) => s.storySeen['sign:' + a.id] - s.storySeen['sign:' + b.id])[0]; if (!f) return {};
     return Object.assign(fx0(f), { ago: YEARS(s.day - s.storySeen['sign:' + f.id]), talk: f.kind === 'natives' || f.kind === 'humans', ruin: f.kind === 'ruin' }); },
-  text: (s, c) => `${c.N} ${c.g.have} been part of life here for ${c.ago}. In all that time nothing about ${c.g.them} has been decided. There is a watch rota because of ${c.g.them}, and a line on the map, and a habit of not thinking about it.\n\n${Nc(s, LEADER[c.kind])}: "We've been living with this like it's the weather. Can we actually decide something? Anything?"`,
+  text: (s, c) => `${c.N} ${c.g.have} been part of life here for ${c.ago}. In all that time nothing about ${c.g.them} has been decided. There is a watch rota because of ${c.g.them}, and a line on the map, and a habit of not thinking about it.\n\n${Nc(s, LEADER[c.kind])}: ${LEADER[c.kind] === 'security' ? `"We've been living with ${c.g.them} like it's the weather, and weather doesn't pick its moment. Can we actually decide something, anything, before ${c.g.they} ${c.g.are === 'is' ? 'decides' : 'decide'} for us?"` : `"We've been living with this like it's the weather. Can we actually decide something? Anything?"`}`,
   choices: [
     { label: (s, c) => c.talk ? 'A treaty, written to outlast everyone who signs it' : c.ruin ? 'Put it to work for the colony' : `Learn to live alongside ${c.g.them}, for good`,
       test: { base: 38, mods: [If(s => cf(s).insight >= 40, 15, 'It is well understood'), If(s => cf(s).accord >= 30, 18, 'Relations are good'), If(s => cf(s).threat < 40, 8, 'Things are calm'), R('xenobio', 8), R('teacher', 5)] },

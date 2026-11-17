@@ -42,7 +42,7 @@ add({ id: 'crops.first', arc: 'crops', tone: 'pressure', title: 'The Yellow Whea
 
 add({ id: 'crops.native', arc: 'crops', tone: 'opportunity', title: 'Knucklewort',
   when: s => !s.flags.no_native && s.day >= 90 && (s.built.soillab || s.day >= 170),
-  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it. Every day, for a month. I'd do it myself if you'd let me—"\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
+  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it, every day for a month, and I'd do it myself, honestly I'd start tonight, if you'd only let me, which you won't, I can see your face."\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
   choices: [
     { label: s => `Let ${F(s, 'quartermaster')} eat it`, note: 'It is the quickest way to find out, and only one person is at risk.',
       test: { base: 55, mods: [R('physician', 12), M('medbay', 12)] },
@@ -313,7 +313,7 @@ add({ id: 'state.unrest', urgent: true, max: 2, arc: 'state', tone: 'crisis', ti
       ok: { text: 'The watch goes down the benches with batons. There are broken hands and one broken jaw. They go back to work without looking at you.', fx: { morale: 6, flags: { crackdown: true }, stain: ['crackdown', 1] } },
       bad: { text: 'Someone throws a bench. When it is over there is blood on the mess hall floor, and it is never quite scrubbed out.', fx: { pop: -2, morale: -6, flags: { crackdown: true, blood_spilled: true }, stain: ['crackdown', 2], chron: 'A work stoppage was broken by force. Two colonists died.' } } },
     { label: 'Stand up in front of them and call elections', show: s => !s.flags.council && !s.flags.committee,
-      out: { text: s => `It takes them a moment to understand what you have said. Then the hall is very loud. ${Nc(s, 'security')} hands in the armoury key that evening and asks who it goes to now.`, fx: { morale: 18, flags: { council: true, command_rule: false }, do: s => { const p = P(s, 'security'); if (p && p.loyal !== undefined) p.loyal = LF.clamp(p.loyal - 18, 0, 100); }, chron: 'Faced with a general strike, the Administrator handed power to an elected Council.' } } },
+      out: { text: s => `It takes them a moment to understand what you have said. Then the hall is very loud. ${Nc(s, 'security')} hands in the armoury key that evening and asks, very politely, whose it is now.`, fx: { morale: 18, flags: { council: true, command_rule: false }, do: s => { const p = P(s, 'security'); if (p && p.loyal !== undefined) p.loyal = LF.clamp(p.loyal - 18, 0, 100); }, chron: 'Faced with a general strike, the Administrator handed power to an elected Council.' } } },
     { label: 'Shut the kitchen until the shift bell is answered', dark: true, note: 'Nobody is touched, and the stores keep everything that is not eaten.', info: [['yield', 'The work starts again, and the bins are fuller'], ['danger', 'The ones who hold out longest']],
       out: { text: 'The kitchen is locked and the watch is put on the door. The first day they sing. On the fourth morning the shift bell is answered by nearly everyone. The few who are not there are in their bunks, and one of them, an old fitter who had been living on the ladle, stays in it.', fx: { morale: 3, tension: -6, progress: -0.1, food: 150, pop: -1, stain: ['kitchen', 2], do: s => { s.lowMorale = 0; } } } },
   ] });

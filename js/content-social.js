@@ -97,13 +97,13 @@ const WATCH = (s, c) => `In a month the senior crew go into the cold for the lon
 
 /* ================= year 1: the wardroom supper ================= */
 S('meal', 'dahl', 'yurbin', { id: 'soc.jar', title: 'Something in a Jar',
-  text: () => `${SUPPER}\n\nGerad has brought a jar to supper and put it down beside the salt. Something no bigger than a grain of rice is swimming in it, thousands of them. Marit looks at it once and goes on eating.\n\nKasimir holds it up to the lamp. "Lovely. Dinner and a specimen. Does it eat stew, or does it eat us?"\n\n"Tardigrades. Out of the soil cores. They'll outlive the ship, Kasimir, they'll outlive all of us." Gerad takes the jar back. "Shame they don't do security. They'd be better at it."`,
+  text: () => `${SUPPER}\n\nGerad has brought a jar to supper and put it down beside the salt. Something no bigger than a grain of rice is swimming in it, thousands of them. Marit looks at it once and goes on eating.\n\nKasimir holds it up to the lamp. "Lovely. Dinner and a specimen. Does it eat stew, or does it eat us?"\n\n"Tardigrades! Out of the soil cores, and no, Kasimir, they don't eat stew, they don't eat anything, they dry themselves out and wait, which is, hold on, look at that one, it's moving, they'll outlive the ship, they'll outlive all of us." Gerad takes the jar back. "Shame they don't do security, they'd be better at it."`,
   choices: [
     { label: 'Laugh at Kasimir\'s', info: [['people', 'Kasimir'], ['danger', 'Gerad\'s pride']],
       out: { text: 'Kasimir grins and passes you the bread. Gerad puts the jar in a vest pocket and eats the rest of the meal without a word, which for Gerad is a long time.',
         fx: F({ reg: { dahl: 6, yurbin: -3 }, flags: side('dahl', 'yurbin') }) } },
     { label: 'Laugh at Gerad\'s', info: [['people', 'Gerad'], ['danger', 'Kasimir, outnumbered']],
-      out: { text: '"Fair," Kasimir says, and means it. Gerad is so pleased that the jar goes round the whole table, and Kasimir holds it up to the lamp for longer than anyone.',
+      out: { text: '"Fair," Kasimir says. "Beaten by a jar, and it didn\'t even have to try," and means it. Gerad is so pleased that the jar goes round the whole table, and Kasimir holds it up to the lamp for longer than anyone.',
         fx: F({ reg: { yurbin: 6, dahl: -2 }, flags: side('yurbin', 'dahl') }) } },
     { label: 'Ask Gerad what they are', note: 'Gerad will tell you. All of it.', info: [['yield', 'Something learned'], ['danger', 'Kasimir\'s supper']],
       out: { text: 'Gerad talks until the stew is cold: how they dry out and wait, how long they can wait, what they can wait through. Kasimir gets up halfway through to walk the cryo decks and leaves the plate. You come away knowing more about water bears than anyone ought to.',
@@ -125,7 +125,7 @@ S('meal', 'dahl', 'estrada', { id: 'soc.grace', title: 'Grace',
   ] });
 
 S('meal', 'yurbin', 'estrada', { id: 'soc.names', title: 'Names on the Racks',
-  text: () => `${SUPPER}\n\nThe hydroponics bay has its first crop up, forty racks of it, and every rack needs a label. Gerad has been writing strain codes on them. Tavi has been crossing them out and writing the names of villages back home.\n\n"You can't call a wheat Santa Rosa," Gerad says over the stew. "There are four Santa Rosas. Four, Tavi. In three countries."\n\nTavi taught Gerad half of what Gerad knows about growing things, and Gerad has never once admitted it. "Folk'll remember Santa Rosa. Nobody's going to remember TR-114."`,
+  text: () => `${SUPPER}\n\nThe hydroponics bay has its first crop up, forty racks of it, and every rack needs a label. Gerad has been writing strain codes on them. Tavi has been crossing them out and writing the names of villages back home.\n\n"You can't call a wheat Santa Rosa," Gerad says over the stew. "There are four Santa Rosas, Tavi, four, in three countries, and in a year nobody will know which wheat anyone means, a code only ever means the one thing, that's the whole beauty of it."\n\nTavi taught Gerad half of what Gerad knows about growing things, and Gerad has never once admitted it. "Folk'll remember Santa Rosa. Nobody's going to remember TR-114."`,
   choices: [
     { label: 'Gerad\'s codes', info: [['yield', 'A proper catalogue'], ['danger', 'Tavi']],
       out: { text: 'The racks get Gerad\'s codes, in Gerad\'s hand, with a line under each. The bay crews learn none of them and call every rack "the tall one" or "the sad one". The seed catalogue is the best-kept book on the ship.',
@@ -185,7 +185,7 @@ const trusts = (k, v, label) => If(s => regOf(s, k) >= 4, v, label);
 const sore = (k, v, label) => If(s => regOf(s, k) <= -3, v, label);
 
 S('help', 'yurbin', 'nakamura', { id: 'soc.mould', title: 'Under the Dressing',
-  text: (s, c) => `A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Amara has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey.\n\nGerad has a fungus out of the soil cores that grows on dead things. "It eats dead tissue. Only dead. I've had it on a dish with live cells for a month and it starves rather than touch them. It's beautiful, honestly. It knows the difference better than we do."\n\n"You want to put something out of a soil core into an open leg," Amara says. "In my sick bay. On somebody who'd like to keep both of them."`,
+  text: (s, c) => `A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Amara has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey.\n\nGerad has a fungus out of the soil cores that grows on dead things. "It eats dead tissue, only dead, I've had it on a dish with live cells for a month and it'd rather starve than touch them, and it knows the difference better than we do, isn't that beautiful?"\n\n"You want to put something out of a soil core into an open leg," Amara says. "In my sick bay. On somebody who'd like to keep both of them."`,
   choices: [
     { label: 'Let Gerad try it', test: { base: 55, mods: [trusts('nakamura', 8, 'Amara trusts you'), sore('nakamura', -8, 'Amara is cross with you')] },
       ok: { text: 'Gerad lays it in with tweezers, talking the whole time. Five days later the wound is pink and clean to the edge. Amara asks for a dish of it for the cabinet and doesn\'t say thank you, and Gerad doesn\'t need it said.',
@@ -238,7 +238,7 @@ S('help', 'nakamura', 'dahl', { id: 'soc.dressing', title: 'Field Dressing',
     { label: 'Amara\'s shifts', test: { base: 60, mods: [trusts('dahl', 8, 'Kasimir will do it for you'), sore('dahl', -8, 'Kasimir is cross with you')] },
       ok: { text: 'The detail learns it, grumbling, on each other\'s arms. Before the year is out one of them packs a gash in a rigger\'s thigh out in the spine, and the rigger walks into the sick bay on two feet. Kasimir tells it at supper as if the detail thought of it.',
         fx: F({ reg: { nakamura: 4, dahl: 2 }, native: { dahl: 3 }, bond: ['dahl', 'nakamura', 'friend', 'taught the detail to stitch'] }) },
-      bad: { text: 'On the second shift, with half the detail in the sick bay, somebody gets into the dry stores and a whole pallet of rations walks off and is never seen again. Kasimir stands in the empty bay, says "Knots," and nothing else for a day.',
+      bad: { text: 'On the second shift, with half the detail in the sick bay, somebody gets into the dry stores and a whole pallet of rations walks off and is never seen again. Kasimir stands in the empty bay, says "Knots," as if it were a curse, and nothing else for a day.',
         fx: F({ nerve: { dahl: -2 }, kit: { food: -100 } }) } },
     { label: 'The rounds first. Amara teaches whoever comes in their own time', info: [['people', 'Kasimir'], ['danger', 'Amara']],
       out: { text: 'Four of the detail come to the sick bay on their rest days. Kasimir isn\'t one of them, and says so. Amara teaches the four anyway and tells you, twice, that four isn\'t enough.',
@@ -249,7 +249,7 @@ S('help', 'nakamura', 'dahl', { id: 'soc.dressing', title: 'Field Dressing',
   ] });
 
 S('help', 'yurbin', 'kovacs', { id: 'soc.sap', title: 'Resin in the Seals',
-  text: (s, c) => `The reactor's coolant seals are perishing faster than the manual says they should, and every new one Bashir fits comes out of the spares that have to last forty years. Gerad has been growing a resin off a fungus culture that sets like rubber in an hour.\n\n"It holds heat. It holds pressure. I've boiled it for a week, Bashir, it doesn't care."\n\nBashir turns a lump of it over in one big greasy hand. "You want to put mushroom glue in my reactor. In her. In the old girl."`,
+  text: (s, c) => `The reactor's coolant seals are perishing faster than the manual says they should, and every new one Bashir fits comes out of the spares that have to last forty years. Gerad has been growing a resin off a fungus culture that sets like rubber in an hour.\n\n"It holds heat, it holds pressure, I've had it boiling for a week, Bashir, a week, and it doesn't care, it just sits there being rubber, do you know how rare that is in something that grew itself?"\n\nBashir turns a lump of it over in one big greasy hand. "You want to put mushroom glue in my reactor. In her. In the old girl."`,
   choices: [
     { label: 'Gerad\'s resin', test: { base: 52, mods: [trusts('kovacs', 8, 'Bashir trusts you')] },
       ok: { text: 'Bashir fits it in one seal, then in all of them, swearing the whole time. A month on they\'re tighter than the factory ones. "Don\'t tell Gerad I said so," Bashir tells you, and goes and tells Gerad.',
@@ -265,7 +265,7 @@ S('help', 'yurbin', 'kovacs', { id: 'soc.sap', title: 'Resin in the Seals',
   ] });
 
 S('help', 'dahl', 'estrada', { id: 'soc.stores', title: 'Short in the Stores',
-  text: () => `Things are walking out of the stores Tavi keeps: a sack of seed one week, a coil of cable the next. Tavi has started sleeping in there, which isn't helping anything.\n\nKasimir has an idea, and is enjoying it. "Leave a sack of the good stuff out. Dust the inside with dye. Whoever it is glows green for a week. Then we have a chat."\n\n"Or," Tavi says, "we ask at supper. Whoever it is, they're hungry or they're frightened. Either way they'll come and say."`,
+  text: () => `Things are walking out of the stores Tavi keeps: a sack of seed one week, a coil of cable the next. Tavi has started sleeping in there, which isn't helping anything.\n\nKasimir has an idea, and is enjoying it. "Leave a sack of the good stuff out and dust the inside with dye, and whoever it is glows green for a week, and then we have a chat, and I'll be very civil about it."\n\n"Or," Tavi says, "we ask at supper. Whoever it is, they're hungry or they're frightened. Either way they'll come and say."`,
   choices: [
     { label: 'Kasimir\'s trap', test: { base: 55, mods: [trusts('estrada', 6, 'Tavi goes along with it for you')] },
       ok: { text: 'It takes four days. A young technician comes on shift with green hands and a story about a rail, and the seed is under a bunk, traded for cigarettes nobody should still have. Kasimir has the chat. Tavi sits in on it, and the technician ends up on Tavi\'s crew instead of in the brig.',
@@ -284,7 +284,7 @@ S('help', 'dahl', 'estrada', { id: 'soc.stores', title: 'Short in the Stores',
 const steady = (a, b) => If(s => ((s.pro && s.pro.fx.mind[a]) || 0) > -3 && ((s.pro && s.pro.fx.mind[b]) || 0) > -3, 5, 'Both of them steady');
 
 S('watch', 'dahl', 'kovacs', { id: 'soc.lights', title: 'Two on the Watch',
-  text: (s, c) => `${WATCH(s, c)}\n\nKasimir is counting the amber lights on the cryo board. "Forty-one. There were thirty-nine last month. Who've we lost, Bashir?"\n\n"Nobody. Sensors. I'll get to them." Bashir passes a flask. "You count lights, I count bearings. Same job, really."`,
+  text: (s, c) => `${WATCH(s, c)}\n\nKasimir is counting the amber lights on the cryo board. "Forty-one amber, and there were thirty-nine at the last change. So who've we lost, Bashir, and when exactly were you going to mention it?"\n\n"Nobody. Sensors. I'll get to them." Bashir passes a flask. "You count lights, I count bearings. Same job, really."`,
   choices: [
     { label: 'Ask what they\'ll miss about Earth', test: { base: 55, mods: [steady('dahl', 'kovacs'), trusts('dahl', 8, 'Kasimir trusts you')] },
       ok: { text: 'Kasimir had a dog, it turns out, a stupid one, and tells you every stupid thing it ever did. Bashir has a daughter who\'ll be sixty by the time anyone wakes. They\'re still talking when the relief comes, and Bashir leaves the flask with Kasimir.',
@@ -318,7 +318,7 @@ S('watch', 'nakamura', 'solheim', { id: 'soc.count', title: 'Marit\'s Book',
   ] });
 
 S('watch', 'yurbin', 'estrada', { id: 'soc.sky', title: 'The Big Window',
-  text: (s, c) => `${WATCH(s, c)}\n\nGerad hasn't looked at the board once: the star chart in one hand, a pencil in the other, nose to the big window. Tavi is saying the night prayer, quietly, to the same stars.\n\n"There's a smudge there that isn't on the chart," Gerad says. "Nothing. Not a thing. Isn't that wonderful?"\n\nTavi finishes the prayer before answering. "It's on somebody's chart. Just not yours."`,
+  text: (s, c) => `${WATCH(s, c)}\n\nGerad hasn't looked at the board once: the star chart in one hand, a pencil in the other, nose to the big window. Tavi is saying the night prayer, quietly, to the same stars.\n\n"There's a smudge there that isn't on the chart," Gerad says. "Not in the catalogue, not on last year's plate, nothing, it's just there, and I've been looking at it for an hour and I don't want to stop, isn't that wonderful?"\n\nTavi finishes the prayer before answering. "It's on somebody's chart. Just not yours."`,
   choices: [
     { label: 'Ask Gerad to show you', test: { base: 60, mods: [trusts('estrada', 6, 'Tavi trusts you')] },
       ok: { text: 'Gerad shows you a faint smear of light that moves against the stars, slowly, and says it\'s a comet nobody on Earth has seen yet. Tavi asks what to call it. They argue about it until the relief and settle on something neither of them will tell you.',
@@ -368,7 +368,7 @@ S('watch', 'kovacs', 'estrada', { id: 'soc.stones', title: 'The Quiet Shift',
   ] });
 
 S('watch', 'solheim', 'yurbin', { id: 'soc.cold', title: 'The Last Night Up',
-  text: (s, c) => `${WATCH(s, c)}\n\nGerad doesn't want to go under. "Forty years with the instruments running and nobody reading them. Think what goes past us. Let me stay up a year on the long-watch rota, two, and I'll go under after."\n\nMarit hasn't looked away from the board. "Everyone goes under. That was the plan when you signed it, and it's the plan now."`,
+  text: (s, c) => `${WATCH(s, c)}\n\nGerad doesn't want to go under. "Forty years with the instruments running and nobody reading them, think what goes past us while we sleep, no, think what we're missing right now, let me stay up a year on the long-watch rota, two, and I'll go under after, I promise I'll go under."\n\nMarit hasn't looked away from the board. "Everyone goes under. That was the plan when you signed it, and it's the plan now."`,
   choices: [
     { label: 'Back Marit: everyone goes under', info: [['people', 'Marit'], ['danger', 'Gerad']],
       out: { text: 'Gerad goes under with everyone else the next month, last in the line, with a notebook held against the chest until the lid comes down. Marit signs the log and doesn\'t say anything about it.',

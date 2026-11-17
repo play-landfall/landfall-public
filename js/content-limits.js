@@ -612,7 +612,7 @@ add({ id: 'lim.taste', arc: 'lim.hunger', view: 'people', tone: 'quiet', title: 
 add({ id: 'lim.edible', arc: 'lim.hunger', view: 'world', tone: 'pressure', title: 'Edible', w: 3, gap: 14,
   when: s => s.day >= 120 && foodDays(s) < 95 && !!nat(s) && !!P(s, 'xenobio'),
   setup: s => { const f = nat(s); return { fid: f.id, n: f.name, N: f.Name }; },
-  text: (s, c) => `${Nc(s, 'xenobio')} asked to see you alone, and then took a long time to start. The tissue work on ${c.n} is finished. No toxins, the right amino acids, nothing the gut cannot handle.\n\n"The chemistry's perfect. They're the only big animal on this world we could actually live on. And yes, I know what else they are. I ran it twice hoping I'd botched it. Here. You decide it. Not me."`,
+  text: (s, c) => `${Nc(s, 'xenobio')} asked to see you alone, and then took a long time to start. The tissue work on ${c.n} is finished. No toxins, the right amino acids, nothing the gut cannot handle.\n\n"The chemistry's perfect, it's almost insulting how perfect, and they're the only big animal on this world we could actually live on, and yes, I know what else they are, I ran it twice hoping I'd botched it. Here. You decide it, because I can't, and I keep catching myself wanting to say yes."`,
   choices: [
     { label: 'Hunt them', dark: true, test: { base: 55, mods: [R('security', 12)] }, info: [['yield', 'Food'], ['danger', 'Lives']],
       ok: { text: (s, c) => `The watch goes out before light and is back by evening with the carts full and covered. In the kitchen it is cut small and listed as game. By now ${c.n} will have counted their dead.`,
@@ -799,7 +799,7 @@ add({ id: 'lim.roster', arc: 'lim.yoke', view: 'people', tone: 'pressure', title
 
 add({ id: 'lim.splice', arc: 'lim.yoke', view: 'colony', tone: 'opportunity', title: 'People to Find Out On', w: 3, gap: 14,
   when: s => s.day >= 180 && ok(s, 'medbay') && !!P(s, 'xenobio') && foodDays(s) < 120 && !s.flags.lim_splice && s.pop > 26,
-  text: s => `Everything that grows on this world is food for something, and none of it is food for you. ${Nc(s, 'xenobio')} has cultured the gut organisms that break it down and spliced them to live in a human. In a dish it works.\n\n"In a person? No idea. The first few die of it, I think, then I learn why, then it works. And if it works — we can eat the ground we're standing on. Think about that. I need people to find out on."`,
+  text: s => `Everything that grows on this world is food for something, and none of it is food for you. ${Nc(s, 'xenobio')} has cultured the gut organisms that break it down and spliced them to live in a human. In a dish it works.\n\n"In a person? No idea, that's the whole point, the first few die of it, I think, and then I learn why, and then it works, and if it works, hold on, think about it, we can eat the ground we're standing on. I need people to find out on, and I know how that sounds."`,
   choices: [
     { label: 'People who cannot refuse', dark: true, test: { base: 62, mods: [R('physician', 12), M('medbay', 6)] }, info: [['yield', 'Food from the ground, for good'], ['danger', 'Lives']],
       ok: { text: s => `Seven are taken from the lock-up and dosed in a locked ward. Four die in the first week, badly. ${Nc(s, 'xenobio')} changes two things and doses the other three again. They live, and each eats a bowl of boiled groundcover and keeps it down.`,
@@ -824,7 +824,7 @@ add({ id: 'lim.goat', arc: 'lim.knife', view: 'people', tone: 'pressure', title:
   setup: s => { const p = (LF.cast && LF.cast(s, { low: true, not: ['security'], free: true })) || anyNamed(s, ['security']), m = lostMachine(s);
     return Object.assign(ctxOf(p), m ? { what: `The ${LF.MACHINES[m].name} is gone and is not coming back.`, pin: 'signed off the last inspection' }
       : s.flags._starved ? { what: 'There are fresh graves and empty bins.', pin: 'held a stores key that month' } : { what: 'Too many people are dead.', pin: 'was on shift every time' }); },
-  text: (s, c) => `${c.what} People have stopped asking how and started asking who.\n\n${Nc(s, 'security')} closes the door first. "They want it to be somebody's fault. Fine. I can make it ${c.name}'s. ${c.first} ${c.pin}, talks too much, no friends on the watch. One hearing, one afternoon, and the whole colony sleeps like a baby. Or you go out there and tell them nobody did it. Go on. See how that goes."`,
+  text: (s, c) => `${c.what} People have stopped asking how and started asking who.\n\n${Nc(s, 'security')} closes the door first. "They want it to be somebody's fault, so fine, I can make it ${c.name}'s. ${c.first} ${c.pin}, talks too much, and has no friends on the watch, which is lovely for us: one hearing, one afternoon, and the whole colony sleeps like a baby. Or you can go out there and tell them nobody did it, and I'll stand by the door and enjoy how that goes."`,
   choices: [
     { label: 'A hearing, and a rope', dark: true, info: [['yield', 'Morale'], ['danger', 'An innocent']],
       out: { text: (s, c) => `The hearing takes an afternoon. ${c.name} keeps saying the dates are wrong. They are, and the hearing does not check. It is done at dusk at the edge of the yard. That night the mess hall is louder than it has been in a season.`,
@@ -863,7 +863,7 @@ add({ id: 'lim.sheet', chain: true, arc: 'lim.knife', view: 'people', tone: 'cri
 add({ id: 'lim.house', arc: 'lim.knife', view: 'people', tone: 'pressure', title: 'The Warden\'s House', w: 3, gap: 14,
   when: s => { const p = P(s, 'security'); return s.day >= 210 && !!p && !p.green && s.morale < 58 && !s.flags.lim_house && !s.flags.committee && s.pop > 26; },
   setup: s => ctxOf(P(s, 'security')),
-  text: (s, c) => `Six women have moved into the armoury annex since the season turned: two from the watch, the armourer's mate, three from the field crews. ${c.name} says they asked for protection and are getting it. None of them has been seen at a meal in a month. A scrap of paper came out in the laundry with four words on it.\n\n${c.first} put down the last trouble for you, and the watch answers to ${c.first} before it answers to anyone. ${Nc(s, 'chaplain')} wants to know what you are going to do, and how many of the watch you think will help.`,
+  text: (s, c) => `Six women have moved into the armoury annex since the season turned: two from the watch, the armourer's mate, three from the field crews. ${c.name} says they asked for protection and are getting it, and wants to know what else you'd call that. None of them has been seen at a meal in a month. A scrap of paper came out in the laundry with four words on it.\n\n${c.first} put down the last trouble for you, and the watch answers to ${c.first} before it answers to anyone. ${Nc(s, 'chaplain')} wants to know what you are going to do, and how many of the watch you think will help.`,
   choices: [
     { label: 'Go in and bring them out', info: [['danger', 'The watch may side with the Warden']],
       test: { base: 46, mods: [R('chaplain', 8), Fl('council', 10, 'The Council votes it'), If(s => s.morale >= 40, 8, 'The colony is behind you')] },
@@ -940,8 +940,8 @@ add({ id: 'lim.camp', arc: 'lim.knife', view: 'world', tone: 'opportunity', titl
   when: s => (s.deserted || 0) >= 3 && s.day >= 200 && s.pop > 20,
   setup: s => ({ n: Math.min(s.deserted, 14), hungry: foodDays(s) < 50 }),
   text: (s, c) => c.hungry
-    ? `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, a good roof, and a store of dried food that would feed this colony for a month.\n\n"Nicked our tools on the way out, didn't they," says ${N(s, 'security')}. "Four days and I'll have the lot back. People too, if you want them. Can't think why you would."`
-    : `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, thin, two graves, and a roof that will not see out the season. They have sent a runner to ask whether they can come home.\n\n"Made their bed, didn't they," says ${N(s, 'security')}. "They want back in, it's on our terms."`,
+    ? `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, a good roof, and a store of dried food that would feed this colony for a month.\n\n"They nicked our tools on the way out, and now they're sitting on a good roof and a full store, laughing at us, I'd bet," says ${N(s, 'security')}. "Four days and I'll have the lot back, and the people too if you want them, though I can't think why you would."`
+    : `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, thin, two graves, and a roof that will not see out the season. They have sent a runner to ask whether they can come home.\n\n"They made their bed, and now they'd like to lie in ours," says ${N(s, 'security')}. "Fine, but it's on our terms, and I'll be watching every one of them, because anyone who walks out once will walk out twice."`,
   choices: [
     { label: (s, c) => c.hungry ? 'Trade for some of it' : 'Open the gate', cost: (s, c) => c.hungry ? { mat: 30 } : null,
       out: { text: (s, c) => c.hungry ? 'They drive a hard bargain, and enjoy it. The cart comes back a third full.' : 'They come in through the gate in a line and are given their old bunks. The crews who stayed, and went short to stay, watch them served from the same pot.',
@@ -962,7 +962,7 @@ add({ id: 'lim.camp', arc: 'lim.knife', view: 'world', tone: 'opportunity', titl
 add({ id: 'lim.ward', arc: 'lim.knife', view: 'colony', tone: 'crisis', title: 'All in One Building', w: 3, gap: 14,
   when: s => s.day >= 100 && s.pop > 22 && !!sick(s) && sick(s).threat >= 35,
   setup: s => { const f = sick(s); return { fid: f.id, n: LF.known(s, f.id) || 'a sickness nobody has a name for yet', k: clamp(Math.round(s.pop * 0.15), 6, 14) }; },
-  text: (s, c) => `The sick house holds ${num(c.k)} tonight, and ${N(s, 'physician')} has stopped promising anything. It is ${c.n}, and nothing done so far has slowed it.\n\n${Nc(s, 'security')} says what several people have been thinking. "Look. Right now it's all in one building. That won't last."`,
+  text: (s, c) => `The sick house holds ${num(c.k)} tonight, and ${N(s, 'physician')} has stopped promising anything. It is ${c.n}, and nothing done so far has slowed it.\n\n${Nc(s, 'security')} says what several people have been thinking. "Right now it's all in one building, which is the only good news you'll get tonight, and it won't stay that way, because it never does."`,
   choices: [
     { label: 'Bar the doors and burn it', dark: true, info: [['yield', 'It ends here'], ['danger', 'Everyone inside']],
       out: { text: s => `It is done before dawn, with coolant oil. The watch stands in a ring with its backs to the building. ${Nc(s, 'physician')} has to be held.`,
@@ -1023,7 +1023,7 @@ add({ id: 'lim.organ', arc: 'lim.knife', view: 'people', tone: 'crisis', title: 
 add({ id: 'lim.nest', arc: 'lim.out', view: 'world', tone: 'pressure', title: 'So That It Is Never Done Twice', w: 3, gap: 14,
   when: s => { const f = nat(s); return s.day >= 200 && !!f && f.threat >= 30 && f.insight >= 10 && !!P(s, 'security'); },
   setup: s => { const f = nat(s); return { fid: f.id, n: f.name, N: f.Name, weak: LF.KINDS.natives.subs[f.sub].weak }; },
-  text: (s, c) => `${Nc(s, 'security')} and ${N(s, 'xenobio')} have been working on the same map from opposite ends, and tonight they bring it to you together. On it is every place where ${c.n} sleep, breed and store food, and the one thing to use against them: ${c.weak}.\n\n"A border? We'd be holding it every bloody year," says ${N(s, 'security')}. "All of them. The young too. One season, and we never do it twice. Then the ground's ours and nobody stands another night watch."`,
+  text: (s, c) => `${Nc(s, 'security')} and ${N(s, 'xenobio')} have been working on the same map from opposite ends, and tonight they bring it to you together. On it is every place where ${c.n} sleep, breed and store food, and the one thing to use against them: ${c.weak}.\n\n"A border? We'd be holding it every bloody year, and they only need to get lucky once," says ${N(s, 'security')}. "All of them, the young too. One season, and we never do it twice, and then the ground's ours and nobody stands another night watch."`,
   choices: [
     { label: 'All of them', dark: true, test: { base: 58, mods: [R('security', 12), If((s, c) => { const f = s.factors.find(x => x.id === c.fid); return !!f && f.insight >= 40; }, 8, 'They are well understood')] }, info: [['yield', 'Their ground, and no more night watch'], ['danger', 'Lives']],
       ok: { text: 'It takes nineteen days. The watch works outward from the wire, place by place, using what the map says to use. The last of it is the young, who do not run, because nothing has ever hunted them. The ground they held is clear, and the night watch is stood down.',
@@ -1040,7 +1040,7 @@ add({ id: 'lim.nest', arc: 'lim.out', view: 'world', tone: 'pressure', title: 'S
 add({ id: 'lim.coffle', arc: 'lim.out', view: 'world', tone: 'opportunity', title: 'A Bad Year for Them', w: 3, gap: 14,
   when: s => { const f = hum(s); return s.day >= 220 && !!f && (foodDays(s) < 95 || f.threat >= 35) && !!P(s, 'security'); },
   setup: s => { const f = hum(s); return { fid: f.id, n: f.name, N: f.Name }; },
-  text: (s, c) => `It has been a bad year for ${c.n}. A scout counted their fires: fewer than last season, and children doing adults' work. They have a full store and about forty people who can still stand.\n\n${Nc(s, 'security')} has thought it through. "We go in at night. The store comes back with us, and anyone fit to dig. They're people like us, aren't they? Already know the work. Saves us training them."`,
+  text: (s, c) => `It has been a bad year for ${c.n}. A scout counted their fires: fewer than last season, and children doing adults' work. They have a full store and about forty people who can still stand.\n\n${Nc(s, 'security')} has thought it through. "We go in at night, and the store comes back with us, and anyone fit to dig. They're people like us, aren't they, so they already know the work, and it saves us the training."`,
   choices: [
     { label: 'The store and the people', dark: true, test: { base: 54, mods: [R('security', 14)] }, info: [['yield', 'Food, and hands that eat half'], ['danger', 'Lives']],
       ok: { text: 'It is over before their watch can wake the camp. Twenty-six come back roped behind the food carts. The old and the very young are left the empty huts. Inside the wire the twenty-six are given numbers, a compound and a shovel.',
@@ -1159,7 +1159,7 @@ for (const [id, t] of [['state.unrest', 'severe order'], ['pol.theft', 'severe o
 const W = s => N(s, 'security'), Wc = s => Nc(s, 'security'), Dr = s => Nc(s, 'physician'), Xb = s => Nc(s, 'xenobio');
 const LIMIT = {
   natives: [
-    { k: 'vivisect', ap: 'study', v: 'severe closed', l: x => `A live one, on the table`, n: s => `${Xb(s)} would learn more in two days than in two years of watching.`, b: 70, m: ['xenobio', 'physician'],
+    { k: 'vivisect', ap: 'study', v: 'severe closed', l: x => `A live one, on the table`, n: s => `${Xb(s)} says two days with a live one on the table would teach more than two years of watching, and says it far too happily.`, b: 70, m: ['xenobio', 'physician'],
       ok: [x => `It takes two days to die, and all of it is narrated into a recorder. Everything about ${x.n} is easier after that: what hurts them, what they fear, what they will not leave behind.`, { morale: -2, stain: ['vivisect', 2], f: { insight: 45, accord: -40, harm: 15, kills: 1 } }],
       bad: [x => `It dies in the first hour and tells you nothing. The others saw it carried in.`, { stain: ['vivisect', 1], f: { accord: -50, threat: 15, kills: 1 } }] },
     { k: 'terror', ap: 'exploit', v: 'severe closed', l: x => `Heads on the wire`, n: s => `${Wc(s)} wants them to know what crossing it costs.`, b: 60, m: ['security'],

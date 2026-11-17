@@ -216,7 +216,7 @@ const STEP = { place: 'the galley step', person: true, staked: true, the: c => c
 /* ======================= SIGN: the lamp on the path ======================= */
 B('sign', { id: 'hu.first', view: 'world', tone: 'pressure', title: 'The Latrine Path',
   setup: s => Object.assign(crew(s), { ev: pickK(s, T(s)) }),
-  text: (s, c) => `${cap(c.vic)} went out to the latrine after lamp-down and did not come back. The lamp is on the path where it was set down, upright, still lit. There is no blood on the ${c.top}. The latrine door is latched from outside, and nobody in the bunk row heard anything.\n\n${c.W} has walked the wire twice and found it whole.${c.wv ? ` "Nobody walks out on us in unlaced boots," ${c.wv} says. "So that's the good news used up. What's the bad?"` : ''}`,
+  text: (s, c) => `${cap(c.vic)} went out to the latrine after lamp-down and did not come back. The lamp is on the path where it was set down, upright, still lit. There is no blood on the ${c.top}. The latrine door is latched from outside, and nobody in the bunk row heard anything.\n\n${c.W} has walked the wire twice and found it whole.${c.wv ? ` "Nobody walks out and leaves a lit lamp standing on the path, and nobody latches a door from the outside by accident," ${c.wv} says. "So that's the good news used up, and I'm bracing for the bad."` : ''}`,
   choices: [
     { label: 'Search the ground past the path at first light', note: 'The search is the day\'s field crew, and it goes looking for whatever took a grown adult without a sound.', test: { base: 52, mods: [R('security', 12), R('xenobio', 8)] },
       ok: { text: (s, c) => `${c.W} quarters the ground from the path to the wire before the crews are let out. ${ev('ground', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
@@ -292,7 +292,7 @@ B('inside', { id: 'hu.roof', tone: 'crisis', title: 'The Roof Hatch',
 const POST = { place: 'the north post', person: true, staked: true, the: c => 'the hauler' }, CHIEF = { place: 'the north post', person: true, the: c => c.w, pid: c => c.wpid }, MEAT = { place: 'the north post', person: false };
 B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post',
   setup: s => { const t = T(s), p = LF.officer(s, 'security'), up = p && LF.seatState(s, 'security') === 'here'; return Object.assign(crew(s), { trapN: t.traps, wpid: up ? p.id : null, lean: lean(t) }); },
-  text: (s, c) => `${c.W} has a plan, and does not like it. Whatever this is, it comes where the colony is thinnest: the path, the corner, the one bunk. So put something at the north post, where the ground is open on three sides, lie up with every rifle there is, and see what comes for it.${c.wv ? ` "It likes one of us on our own," ${c.wv} says. "Fine. Give it one. I've a list of who I'd miss least, if that helps you sleep."` : ' The watch has drawn up a list of who could be put there.'}\n\n${c.lean}`,
+  text: (s, c) => `${c.W} has a plan, and does not like it. Whatever this is, it comes where the colony is thinnest: the path, the corner, the one bunk. So put something at the north post, where the ground is open on three sides, lie up with every rifle there is, and see what comes for it.${c.wv ? ` "It likes one of us on our own, so fine, we give it one," ${c.wv} says. "I've a list of who I'd miss least if that helps you sleep, which I'd guess it doesn't."` : ' The watch has drawn up a list of who could be put there.'}\n\n${c.lean}`,
   choices: [
     { label: 'Tie one of the punishment detail to the post with a lamp, and lie up', dark: true, note: 'It gets what it has been coming for, with rifles over it, and somebody is tied there to be that.', info: [['yield', 'A shot at it'], ['danger', 'The one at the post']],
       test: { base: 50, mods: [R('security', 16), If(s => T(s).hurt > 0, 6, 'It has been hit before')] },
@@ -309,11 +309,11 @@ B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post'
   ] });
 
 const WANTS = {
-  security: f => `"I've stood on that wall every night watching it not be there," ${f} says. "I'm done with that. It sleeps somewhere. I'm going to go and be bloody rude to it."`,
+  security: f => `"I've stood on that wall every night watching it not be there, and I'm done with that," ${f} says, "because it sleeps somewhere, and I'm going to go and find out where and be bloody rude to it."`,
   command: f => `"One rifle. Two nights. Back on the third," ${f} says. "It lies up by day. I find where. Lift the bar."`,
   engineer: f => `"Forty hatches I've welded, and it's had more of us since," ${f} says. "I'm tired. Tell me what to weld next, because I'm not stopping."`,
   doctor: f => `"You keep sending me what's left of them," ${f} says. "I'm going to look at it once, before it sends me another. Open the gate."`,
-  scientist: f => `"It has to lie up somewhere, doesn't it? Everything does. Half a day out, less, and nobody's looked," ${f} says. "I won't go near it. I only want to see where it... lift the bar, will you?"`,
+  scientist: f => `"It has to lie up somewhere, doesn't it? Everything does, half a day out, less, and nobody's even looked," ${f} says. "I only want to see the place, just the place, I wouldn't touch a, no wait, lift the bar, will you?"`,
   crew: f => `"A thing that hunts has a bed," ${f} says. "You find the bed. We did it with foxes at home. I'll be back for the sowing."`,
 };
 B(['inside', 'bold'], { id: 'hu.out', tone: 'pressure', title: 'Going Out After It',

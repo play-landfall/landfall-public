@@ -259,7 +259,7 @@ B(['apart', 'night'], { id: 'wst.open', tone: 'pressure', title: 'No Cause Writt
 /* An officer is going the same way, and has been hiding it. */
 const CHAIR = {
   solheim: c => '"I\'m not coming off the roster," Marit says. "Give me something that works, or give me my coat."',
-  dahl: c => '"Lovely. Starved to death at a full table," Kasimir says. "Don\'t put me on that ward. I\'ve seen who comes out of it."',
+  dahl: c => '"Lovely. Starved to death at a full table," Kasimir says, "and don\'t put me on that ward, because I\'ve seen who comes out of it, and it\'s not the people who went in."',
   kovacs: c => '"I\'ve got a season in me. Less if you put me in a bed," Bashir says. "So tell me what you want fixed first."',
   nakamura: c => '"Don\'t you dare take me off the ward," Amara says. "There\'s eleven in there worse than me. Go and weigh them."',
   yurbin: c => '"It\'s interesting, though, isn\'t it? I eat more than anyone, I\'ve been writing it down," Gerad says. "Use me. I\'m the best-kept record you\'ve got."',

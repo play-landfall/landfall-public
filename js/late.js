@@ -123,7 +123,7 @@ LF.TAGS['late.fall'] = ['cautious severe', 'bold', 'bold severe'];
 /* ---------- 2. the white season ---------- */
 cal({ id: 'late.sun', view: 'world', title: 'The White Season',
   setup: s => ({ lot: part(s, 0.16, 3), old: part(s, 0.1, 2) }),
-  text: s => `The sun has been wrong since the turn of the season: whiter, and harder, and ${N(s, 'geologist')} has stopped calling it a flare, because flares end. The badges at the wire take a year's allowance every month. The crop is standing out in it and will be ready to cut inside the season.\n\n${s.built.shelter ? 'The vaults' : 'The reactor hall and the cellars under the store'} will hold everyone, standing, if nobody goes out.`,
+  text: s => `The sun has been wrong since the turn of the season: whiter, and harder, and ${N(s, 'geologist')} has stopped calling it a flare, because flares end, and keeps going back to the readings as if they were good news. The badges at the wire take a year's allowance every month. The crop is standing out in it and will be ready to cut inside the season.\n\n${s.built.shelter ? 'The vaults' : 'The reactor hall and the cellars under the store'} will hold everyone, standing, if nobody goes out.`,
   choices: [
     { label: 'Everyone under cover until it passes. The crop burns where it stands', note: 'Nobody takes the dose. The colony comes out into empty fields and eats what is in the store.', info: [['yield', 'Nobody burned'], ['danger', 'The harvest, and the hungry months after it']],
       out: { text: 'The colony lives a season under a roof, by lamp, on short water. When the badges say it is safe to come up, the fields are the colour of paper and break when they are walked on.', fx: s => ({ food: -520, morale: -5, do: s2 => { s2.crop = 0; s2.reap = 0; } }) } },
@@ -137,7 +137,7 @@ LF.TAGS['late.sun'] = ['cautious mercy', 'free', 'severe order'];
 /* ---------- 3. the ground goes ---------- */
 cal({ id: 'late.ground', view: 'colony', title: 'The Ground Goes',
   setup: s => ({ few: part(s, 0.04, 1), some: part(s, 0.14, 3), many: part(s, 0.3, 6) }),
-  text: s => `A crack opened across the yard at the turn of the month. It is wider than a cart now, it runs under the bunkhouse row and the reactor hall, and at night the whole yard can hear it working. ${Nc(s, 'geologist')} went down it on a rope and came up saying the colony is built on a roof.\n\nNobody can say how long the roof has. The far side of the crack is sound, and bare.`,
+  text: s => `A crack opened across the yard at the turn of the month. It is wider than a cart now, it runs under the bunkhouse row and the reactor hall, and at night the whole yard can hear it working. ${Nc(s, 'geologist')} went down it on a rope without asking, and was talking before reaching the top: the colony is built on a roof.\n\nNobody can say how long the roof has. The far side of the crack is sound, and bare.`,
   choices: [
     { label: 'Move the colony across, all of it, starting tonight', note: 'People first, then what can be carried. What cannot be carried in time goes in with the roof.', info: [['yield', 'Nearly everyone'], ['danger', 'The stores and the machines']],
       out: { text: (s, c) => `It takes most of the month, by hand and by cart, and the roof goes on the twentieth night with the stores half emptied and the last carrying party still under the hall. ${Num(c.few)} dead. The colony wakes on bare ground with what it carried.`,

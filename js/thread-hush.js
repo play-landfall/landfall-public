@@ -204,7 +204,7 @@ B('first', { id: 'hsh.first', tone: 'pressure', title: 'The Missed Call',
 
 B('first', { id: 'hsh.empty', tone: 'pressure', title: 'House by House',
   setup: s => { const t = T(s); return Object.assign(crew(s), draw(s, t, t.sent === 'party' ? 0.1 : 0), { name: nameOf(s, t.v1), n: t.v1n, party: t.sent === 'party' }); },
-  text: (s, c) => `${c.party ? 'The party' : 'The carter'} has been through ${c.name} house by house. There is nobody in it, alive or dead, of the ${LF.num(c.n)} on the roll. ${ev('empty', c)}\n\nThe roofs are sound and the ground is as good as it was. ${c.SV} wants to know what the colony means to do with the place.`,
+  text: (s, c) => `${c.party ? 'The party' : 'The carter'} has been through ${c.name} house by house. There is nobody in it, alive or dead, of the ${LF.num(c.n)} on the roll. ${ev('empty', c)}\n\nThe roofs are sound and the ground is as good as it was. ${c.SV} is on the doorstep already, asking what the colony means to do with the place, and would very much like first look before anyone moves a thing.`,
   choices: [
     { label: 'Strip it, and bring everything in', note: (s, c) => `It is treated as salvage while ${LF.num(c.n)} people are still only unaccounted for.`,
       out: { text: (s, c) => `Carts go out empty and come back loaded for the rest of the month: plate, glass, seed, the school's slates. In ${c.name} the frames stand open to the weather. Some of what comes in has names scratched on it, and the stores office issues it anyway.`,

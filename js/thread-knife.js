@@ -30,7 +30,7 @@ const B = (ph, st) => LF.beat(ID, ph, Object.assign({ gap: 30, w: 2.6 }, st));
 
 B('cut', { id: 'knf.cut', chain: true, tone: 'pressure', title: 'Cut Line',
   setup: s => { const p = target(s, T(s)); return { pid: p ? p.id : null, name: p ? p.name : 'One of the crew chiefs', first: p ? p.first : 'the crew chief' }; },
-  text: (s, c) => `${c.name}'s safety line was cut most of the way through, on the inside where it wouldn't show. It parted on the reactor gantry this morning, four metres up. ${cap1(c.first)} caught a rail.\n\n"Somebody did that with a blade," says ${watch(s)}. "Neat job, too."`,
+  text: (s, c) => `${c.name}'s safety line was cut most of the way through, on the inside where it wouldn't show. It parted on the reactor gantry this morning, four metres up. ${cap1(c.first)} caught a rail.\n\n"Somebody did that with a blade, and did it neatly, where it wouldn't show," says ${watch(s)}. "Lovely work. They took their time, and I don't like people who take their time."`,
   choices: [
     { label: 'Find out who', note: 'The watch asks around. Everyone will know they\'re asking.', hint: 'unknown', test: { base: 45, mods: [h.R('security', 20)] },
       ok: { text: s => `A blade with a fresh nick in it, in a tool roll that belongs to nobody. Not a name, but a place to start.`, fx: s => ({ do: s2 => { T(s2).lead++; next(s2); } }) },

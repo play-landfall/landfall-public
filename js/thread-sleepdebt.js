@@ -327,7 +327,7 @@ B(['spread', 'night', 'bill'], { id: 'sd.relay', view: 'colony', tone: 'pressure
 B(['spread', 'night', 'bill'], { id: 'sd.woken', tone: 'crisis', title: 'Woken at the Press',
   when: (s, t) => !!t.hurt && !!t.guard,
   setup: s => crew(s),
-  text: (s, c) => `One of the watch shook a sleeper awake at the drill press last night, as ordered. The sleeper came up screaming with the bit still turning, and has lost most of a hand. The watchman is sitting outside your door.\n\n${c.W} is standing. "You wanted them woken. That's what woken looks like. Half of them swing at you and the other half drop. So what's my lot meant to do now, sing to them?"`,
+  text: (s, c) => `One of the watch shook a sleeper awake at the drill press last night, as ordered. The sleeper came up screaming with the bit still turning, and has lost most of a hand. The watchman is sitting outside your door.\n\n${c.W} is standing. "You wanted them woken, and that's what woken looks like, half of them swing at you and the other half drop, so what's my lot meant to do now, apologise to them one at a time?"`,
   choices: [
     { label: 'Stop the waking, and let them work', note: 'The watch gets its nights back, and whatever the night shift is goes on with nobody standing over it.',
       out: { text: 'The watch is stood down from the shops. The night shift works unwatched, and the racks fill. The one with the hand is back at the press inside the month, asleep, working it one-handed.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.guard = 0; t.did.stopwake = true; } }) } },
@@ -344,7 +344,7 @@ B(['spread', 'night', 'bill'], { id: 'sd.woken', tone: 'crisis', title: 'Woken a
 /* ======================= NIGHT: the hall wants it ended ======================= */
 B('night', { id: 'sd.night', tone: 'crisis', title: 'The Fourth Hour',
   setup: s => { const t = T(s); return Object.assign(crew(s), { n: t.n, share: share(s, t), put: clamp(Math.round(s.pop * 0.08), 3, 10), lean: lean(t) }); },
-  text: (s, c) => `${Num(c.n)} of the colony got up last night. At the fourth hour every one of them stopped work in the same second, stood for a minute with their faces turned the same way, and went on. ${c.W} saw it from the shop door. "${cap(c.share)} of your colony's up and about with its eyes shut, and now it does drill. Lovely. What d'you want from my lot, exactly?"\n\nThe waking are in the mess hall and want it ended. ${c.lean}`,
+  text: (s, c) => `${Num(c.n)} of the colony got up last night. At the fourth hour every one of them stopped work in the same second, stood for a minute with their faces turned the same way, and went on. ${c.W} saw it from the shop door. "${cap(c.share)} of your colony's up and about with its eyes shut, and now it does drill, which is just what I needed, so what d'you want from my lot, exactly, a salute?"\n\nThe waking are in the mess hall and want it ended. ${c.lean}`,
   choices: [
     { label: 'Nobody sleeps: the whole colony on the dispensary\'s wakers until it passes', dark: true, note: 'Nothing can get up people who never lie down. The clinic has about two months of wakers, and some hearts will give out before the tablets do.', info: [['yield', 'No night shift'], ['danger', 'Weak hearts']],
       out: { text: (s, c) => `Wakers go out at every meal, two a head, and the pods are kept lit. The shops are empty at midnight for the first time in months. Before the first month is out people are talking to the walls, and a cook is found dead on the galley floor with a full pan still on the heat.`,
