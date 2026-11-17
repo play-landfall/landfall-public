@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#131b22">
+<title>Landfall</title>
+<link rel="icon" href="art/crest-icon.png">
+<link rel="preload" href="fonts/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/cinzel-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+<!-- The art is recoloured to the theme by two filters; js/theme.js writes their matrices. Kept inline so url(#...) resolves here. -->
+<style>img[src*="art/icons/"] { filter:url(#ink-icon); } img[src*=".webp"]:not(.scene), .emblem { filter:url(#ink-pic); }</style>
+<!-- Scene art (art/scenes/) is painted in full colour and is not recoloured; the Frontier theme is taken from it. -->
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="ink-icon" color-interpolation-filters="sRGB"><feColorMatrix id="ink-icon-m" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/></filter>
+  <filter id="ink-pic" color-interpolation-filters="sRGB"><feColorMatrix id="ink-pic-m" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/></filter>
+</svg>
+<script src="js/theme.js"></script>
+<div id="boot" hidden><img src="art/crest.webp" alt=""><b>Landfall</b><span class="pbar"><i></i></span><small>Waking the ship</small></div>
+<script src="js/boot.js"></script>
+<script src="js/log.js"></script>
+<script src="js/update.js"></script>
+<div id="app">
+  <header>
+    <img class="emblem" src="art/crest.webp" alt="">
+    <div class="where"><b id="planet"></b><span id="date"></span></div>
+    <button id="soundBtn" class="hbtn" data-act="sound" aria-label="Sound on" aria-pressed="true"></button>
+    <button id="menuBtn" class="hbtn" data-act="menu" aria-label="Menu">≡</button>
+    <div id="hud"></div>
+  </header>
+  <main id="view"></main>
+  <div id="sheet" hidden></div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/decisions.js"></script>
+<script src="js/officers.js"></script>
+<script src="js/world.js"></script>
+<script src="js/planet.js"></script>
+<script src="js/gen.js"></script>
+<script src="js/council.js"></script>
+<script src="js/people.js"></script>
+<script src="js/story.js"></script>
+<script src="js/generations.js"></script>
+<script src="js/society.js"></script>
+<script src="js/threads.js"></script>
+<script src="js/frames.js"></script>
+<script src="js/content-core.js"></script>
+<script src="js/content-officers.js"></script>
+<script src="js/content-society.js"></script>
+<script src="js/content-world.js"></script>
+<script src="js/content-plan.js"></script>
+<script src="js/content-setup.js"></script>
+<script src="js/content-opening.js"></script>
+<script src="js/content-season.js"></script>
+<script src="js/thread-passenger.js"></script>
+<script src="js/thread-dark.js"></script>
+<script src="js/thread-voices.js"></script>
+<script src="js/thread-deathworld.js"></script>
+<script src="js/thread-hunger.js"></script>
+<script src="js/thread-feral.js"></script>
+<script src="js/thread-hunter.js"></script>
+<script src="js/thread-children.js"></script>
+<script src="js/thread-sleepdebt.js"></script>
+<script src="js/thread-rust.js"></script>
+<script src="js/thread-charter.js"></script>
+<script src="js/thread-works.js"></script>
+<script src="js/thread-minor.js"></script>
+<script src="js/thread-people.js"></script>
+<script src="js/thread-world.js"></script>
+<script src="js/thread-lie.js"></script>
+<script src="js/thread-bargain.js"></script>
+<script src="js/thread-mind.js"></script>
+<script src="js/thread-small.js"></script>
+<script src="js/thread-turns.js"></script>
+<script src="js/thread-quiet.js"></script>
+<script src="js/crossings.js"></script>
+<script src="js/content-reports.js"></script>
+<script src="js/record.js"></script>
+<script src="js/content-limits.js"></script>
+<script src="js/content-ship.js"></script>
+<script src="js/shipplan.js"></script>
+<script src="js/thread-eaters.js"></script>
+<script src="js/thread-knife.js"></script>
+<script src="js/thread-orders.js"></script>
+<script src="js/thread-sample.js"></script>
+<script src="js/thread-bloodtest.js"></script>
+<script src="js/thread-redmoon.js"></script>
+<script src="js/thread-infra.js"></script>
+<script src="js/thread-quickening.js"></script>
+<script src="js/content-collide.js"></script>
+<script src="js/humanity.js"></script>
+<script src="js/ebb.js"></script>
+<script src="js/content-tangle.js"></script>
+<script src="js/late.js"></script>
+<script src="js/settlements.js"></script>
+<script src="js/thread-hush.js"></script>
+<script src="js/content-generations.js"></script>
+<script src="js/content-born.js"></script>
+<script src="js/thread-made.js"></script>
+<script src="js/thread-notmine.js"></script>
+<script src="js/thread-friend.js"></script>
+<script src="js/content-builds.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/places.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/colony-plan.js"></script>
+<script src="js/colony-art.js"></script>
+<script src="js/colony.js"></script>
+<script src="js/map.js"></script>
+<script src="js/world-plan.js"></script>
+<script src="js/world-art.js"></script>
+<script src="js/worldmap.js"></script>
+<script src="js/music.js"></script>
+<script src="js/sounds.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/scenes-cast.js"></script>
+<script src="js/pieces-list.js"></script>
+<script src="js/stars.js"></script>
+<script src="js/intro.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
