@@ -54,11 +54,11 @@ function proGo() {
 /* The crew file (Lachlan, 2026-11-17): before the first card, the six officers two at a time, like leafing through a dossier. */
 let dossier = -1;
 const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
-function dossierHTML() { const seats = LF.SEAT_ORDER.slice(dossier * 2, dossier * 2 + 2);
-  return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of 3</div><h2>Your officers</h2>${dossier === 0 ? '<p>Six officers keep the ship with you. They are awake together for the first two years, and after that two at a time. Every one of them is a department the colony will need, and there is nobody to replace them.</p>' : ''}
-    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)} · ${esc(LF.SEATS[seat].name)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
-    <button class="opt go" data-act="dossier">${dossier < 2 ? 'Next' : 'Begin the voyage'}</button></div>`; }
-function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier > 2) { dossier = -1; return proGo(); } render(); }
+function dossierHTML() { const pg = LF.FILE_PAGES[dossier], seats = pg.seats;
+  return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of ${LF.FILE_PAGES.length}</div><h2>${esc(pg.name)}</h2>${dossier === 0 ? '<p>Six officers keep the ship with you, all awake for the first two years and then two at a time. Nobody can replace them.</p>' : ''}
+    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
+    <button class="opt go" data-act="dossier">${dossier < LF.FILE_PAGES.length - 1 ? 'Next' : 'Begin the voyage'}</button></div>`; }
+function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier >= LF.FILE_PAGES.length) { dossier = -1; return proGo(); } render(); }
 function proHTML() { const y = LF.proYear(s);
   return cardHTML() + `<section class="vw"><div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('people')}<div class="t"><b>The ${esc(s.adrift.ship)}</b><small>Year ${y} out from Earth. ${y <= 2 ? 'All six officers awake to run the ship in' : 'Two officers on watch, four in the cold'}, everyone else asleep in the cryo banks.</small></div></div></div></section>`; }
 

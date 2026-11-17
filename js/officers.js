@@ -54,21 +54,23 @@ LF.CAST = {
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
 LF.BIO = {
-  solheim: 'Flew freight to the outer stations for twenty years and never lost a hull. Decides fast and does not apologise for it. She keeps a small notebook that nobody else is allowed to read.',
-  dahl: 'Ran security on the launch docks, and has the scar through his eyebrow to show for it. Trusts nobody, makes a joke of it, and checks every lock on the ship twice a night. Whatever is about to go wrong, he has already thought about it.',
-  kovacs: 'Helped build the Ariadne and has been fixing her ever since. Gruff, tired, and almost always right about how long a machine has left. Left a daughter on Earth, and will take your night shift without being asked.',
-  nakamura: 'A trauma surgeon who signed on the day the manifest opened. Gentle with anyone in a bed, and hard on everyone standing beside it. She has ignored orders before, and will tell you so herself.',
-  yurbin: 'Has waited his whole life to see something alive that did not come from Earth. Talks too fast, forgets to eat, and stopped hearing the word no some years ago. The jars in the wardroom are his.',
-  estrada: 'Grew up on a farm the sea took, and has carried its seed with him since. Quiet and devout, keeps the old fasts, and talks to the plants in the hydroponics bay. He will do any work without complaint, and will not stand by while the weak go short.',
+  solheim: 'Twenty years flying freight and never lost a hull. Decides fast, never apologises, and keeps a notebook nobody else may read.',
+  dahl: 'Has a scar through one eyebrow from the launch docks. Trusts nobody, makes a joke of it, and checks every lock twice a night.',
+  kovacs: 'Helped build the Ariadne and has fixed her ever since. Gruff, and right about how long a machine has left. Left a daughter on Earth.',
+  nakamura: 'Signed on the day the manifest opened. Gentle with anyone in a bed, hard on everyone beside it, and has ignored orders before.',
+  yurbin: 'Has waited his whole life to see something alive that is not from Earth. Talks too fast, forgets to eat. The jars in the wardroom are his.',
+  estrada: 'Grew up on a farm the sea took, and carries its seed. Quiet, devout, talks to the plants, and will not stand by while the weak go short.',
 };
+/* The crew file's pages: who is shown together. */
+LF.FILE_PAGES = [{ name: 'Command staff', seats: ['command', 'security'] }, { name: 'Science', seats: ['doctor', 'scientist'] }, { name: 'Crew', seats: ['engineer', 'crew'] }];
 /* The crew file's facts (Lachlan, 2026-11-17): age at departure, where from, and a short record. */
 LF.FILE = {
-  solheim: { age: 52, from: 'North American Union', record: ['Master\'s in orbital mechanics, Purdue', 'Eleven years in command of the bulk hauler Tern', 'Flew the relief run to Callisto Station after the blowout'] },
-  dahl: { age: 37, from: 'Britannic Commonwealth', record: ['Eight years in the Royal Marines', 'Head of security, Kourou launch docks', 'Found the charge in the fuel hold of the Meridian, two hours before launch'] },
-  kovacs: { age: 46, from: 'North American Union', record: ['Apprenticed at the Huntsville yards at seventeen', 'Chief of the Ariadne\'s drive refit', 'Rebuilt the cryo banks\' coolant loop in orbit, by hand'] },
-  nakamura: { age: 42, from: 'Southern African Union', record: ['Medicine, Eduardo Mondlane University, Maputo', 'Trauma surgery, Chris Hani Baragwanath, Johannesburg', 'Ran the field hospital at Beira through the floods'] },
-  yurbin: { age: 33, from: 'European Federation', record: ['PhD in astrobiology, Trinity College Dublin, at twenty-six', 'Two winters on the Antarctic lake drills', 'Wrote the contamination protocol the Ariadne flies under'] },
-  estrada: { age: 34, from: 'Pacific Compact', record: ['PhD in plant science, University of Adelaide', 'Bred the salt-tolerant wheat grown on the Murray flats', 'Kept the Ceres outpost\'s hydroponics alive through a year on battery'] },
+  solheim: { age: 52, from: 'North American Union', record: ['MSc in orbital mechanics, Purdue', 'Eleven years captain of the Tern', 'Flew the Callisto relief run'] },
+  dahl: { age: 37, from: 'Britannic Commonwealth', record: ['Eight years, Royal Marines', 'Security chief, Kourou docks', 'Found the bomb on the Meridian'] },
+  kovacs: { age: 46, from: 'North American Union', record: ['Huntsville yards at seventeen', 'Led the Ariadne\'s drive refit', 'Rebuilt her coolant loop in orbit'] },
+  nakamura: { age: 42, from: 'Southern African Union', record: ['Medicine, Eduardo Mondlane, Maputo', 'Trauma surgeon, Johannesburg', 'Ran the Beira flood hospital'] },
+  yurbin: { age: 33, from: 'European Federation', record: ['PhD in astrobiology at twenty-six', 'Two winters on the Antarctic drills', 'Wrote the Ariadne\'s quarantine rules'] },
+  estrada: { age: 34, from: 'Pacific Compact', record: ['PhD in plant science, Adelaide', 'Bred the Murray salt wheat', 'Kept Ceres fed a year on battery'] },
 };
 /* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
    changed hands shows at a glance. "Scientist (Mac)". */
