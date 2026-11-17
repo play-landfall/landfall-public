@@ -589,7 +589,7 @@ function playHTML() {
   const body = { colony: colonyView, world: worldView, people: peopleView, ship: shipView }[v]();
   // The card sits on top and the view below it: while the view is looked over, a slim bar holds the card's place.
   let h = over ? endHTML()
-    : review ? `<div class="next"><button class="arrive${review.ready ? ' ready' : ''}" data-act="early"><span class="lbl">${review.ready ? 'Decision needed' : since ? esc(daysWord(since)) : 'Now'} · ${esc(s.cur.tone === 'council' || s.cur.plan ? 'the council wants an answer' : 'something needs an answer')}</span><span class="pbar"><i style="transform:scaleX(${reviewP()})"></i></span></button></div>`
+    : review ? `<div class="next"><button class="arrive${review.ready ? ' ready' : ''}" data-act="early"${review.ready ? '' : ' disabled'}><span class="lbl">${review.ready ? 'Decision needed' : since ? esc(daysWord(since)) : 'Now'} · ${esc(s.cur.tone === 'council' || s.cur.plan ? 'the council wants an answer' : 'something needs an answer')}</span><span class="pbar"><i style="transform:scaleX(${reviewP()})"></i></span></button></div>`
     : s.cur ? cardHTML() : '';
   return h + (over ? '' : tabsHTML(v)) + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME[v]}</div>${body}${over ? '' : meanwhile()}</section>` + (review && review.ready && !over ? '<div class="decide-gap"></div><button class="decide go" data-act="early">Decision needed</button>' : '');
 }
@@ -657,7 +657,7 @@ function act(a, v, el) {
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
   else if (s.adrift && !s.cur && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
-  else if (a === 'early') return bringCard();
+  else if (a === 'early') { if (review && review.ready) bringCard(); return; }   // never before the bar is full (Lachlan, 2026-11-17)
   else if (a === 'spot') { spot = v; if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } }
   else if (a === 'poi') { poiOpen = poiOpen === v ? '' : v || ''; const p = poiOpen && LF.poi(s, poiOpen); spot = p ? p.name : '';   // a place opens under the map; the card waits while it is open
     if (poiOpen) pauseReview(); else if (!ordOpen) resumeReview(); render(); const el = poiOpen && document.getElementById('place'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'nearest' }); return; }
@@ -693,7 +693,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => {
   if (dossier >= 0) { if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); dossierGo(); } return; }
-  if (e.code === 'Space') { e.preventDefault(); if (review) act('early'); else if (s.cur && s.cur.phase === 'result') act('dismiss'); }
+  if (e.code === 'Space') { e.preventDefault(); if (review) { if (review.ready) act('early'); } else if (s.cur && s.cur.phase === 'result') act('dismiss'); }
   else if ((s.adrift && !s.cur) || surveying()) return;
   else if (s.cur && s.cur.phase === 'choose' && e.key >= '1' && e.key <= '9') { const o = LF.choices(s)[+e.key - 1]; if (o && !o.lock) act('choose', o.i); }
   else if (s.cur && s.cur.phase === 'result' && e.key === 'Enter') act('dismiss');
