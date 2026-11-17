@@ -1,7 +1,8 @@
 /* Landfall: background music. UI only (DOM, Audio); reads state, never changes it.
-   Thirty-seven instrumental cues in music/ (ElevenLabs Music, tools/music.py), one dark palette: analog synth pads, low
+   Forty-eight instrumental cues in music/ (ElevenLabs Music, tools/music.py), one dark palette: analog synth pads, low
    drones, slow arpeggiators, sub booms, cold glassy highs. The opening theme plays from the title card through the
-   adrift screen; once the ship is in orbit the director below takes over. ui.js calls LFMusic.update(s, { review })
+   star picker; a card up while adrift, the crossing and the cards before the descent have the crew's cues (melodic,
+   neither light nor drone; a crisis among them goes to the director); once the lander is down the director below takes over. ui.js calls LFMusic.update(s, { review })
    after each render. Browsers only allow sound after the first tap, so nothing plays until then.
 
    The director (Lachlan, 2026-11-16: "it needs to ratchet up, build down, swing from eerie to tense to anticipatory to
@@ -12,16 +13,21 @@
      0 steady (wonder in the first months)   1 eerie   2 tense   3 rising, then dread if it is still up there   4 dread
    Going up is quick: a short crossfade, and reaching 3 plays a cue that builds. Coming down is slow: never before the
    cue has had its time (HOLD), and from 3 or 4 it goes by way of the aftermath cue. No mood sits for more than two
-   cues running: the third swings to its neighbour and back. Loss (a named death, or several at once) and grim (below
+   cues running: the third swings to its neighbour and back, and three hot cues running (tense, rising, dread) are
+   followed by a breather unless the colony is at the top. Retuned 2026-11-17 ("only hearing the same damn tense
+   song": every death of one or two lifted the heat to tense, so bot games sat at tense or worse three quarters of the
+   time and steady under 2%): one or two dead no longer count, a light stain only reaches eerie, how the colony
+   stands can make it tense but never more, and the lines are a little higher. Loss (a named death, or several at once) and grim (below
    8% humanity) still cut across all of it. */
 (function () {
   const MOODS = {
     opening: ['opening_1', 'opening_2'],
     prologue: ['prologue_1', 'prologue_2'],   // the opening mood always starts with one of these (title card and intro)
     wonder: ['firstlight_1', 'firstlight_2', 'expanse_1'],                 // vast and cold
-    steady: ['watch_1', 'watch_2', 'perimeter_1', 'perimeter_2', 'decades_1'],   // watchful, uneasy
-    eerie: ['lull_1', 'lull_2', 'static_1', 'outside_1', 'watch_1', 'perimeter_2'],   // almost nothing, and wrong (the two stillest of the steady cues serve here too)
-    tense: ['wire_1', 'wire_2', 'breach_1', 'breach_2', 'stormfront_1', 'siege_1', 'siege_2', 'siege_3'],   // pulse, low swells, heartbeat sub; the sieges each have their own key and tempo (half of all play is spent here)
+    crew: ['company_1', 'berth_1', 'mess_1', 'longhaul_1'],               // aboard among people: melody and movement, neither light nor drone (2026-11-17)
+    steady: ['tending_1', 'furrow_1', 'longday_1', 'watch_1', 'watch_2', 'perimeter_1', 'decades_1'],   // the colony getting on with it, watchful
+    eerie: ['lull_1', 'lull_2', 'static_1', 'outside_1', 'tremor_1', 'mirror_1', 'perimeter_2'],   // almost nothing, and wrong
+    tense: ['wire_1', 'wire_2', 'breach_1', 'breach_2', 'stormfront_1', 'siege_1', 'siege_2', 'siege_3', 'fracture_1', 'undertow_1'],   // pulse, low swells, heartbeat sub
     rising: ['approach_1', 'approach_2', 'countdown_1'],                   // builds and does not arrive: something is coming
     dread: ['maw_1', 'maw_2', 'toll_1'],                                   // the peak
     after: ['ebbtide_1'],                                                  // the way back down from the top
@@ -29,11 +35,11 @@
     grim: ['ash_1', 'ash_2', 'husk_1'],                                    // below 8% humanity: the same palette gone wrong (2026-11-16)
   };
   const GAIN = { eerie: 0.9, rising: 1.05, dread: 1.15 };                  // the new cues are mastered to one loudness: the peak sits a little over, the lull a little under
-  const SWING = { wonder: 'steady', steady: 'eerie', eerie: 'tense', tense: 'eerie', dread: 'tense', grim: 'eerie' };
-  const UP = [0.16, 0.36, 0.56, 0.8], HOLD = 40000;
+  const SWING = { wonder: 'steady', steady: 'eerie', eerie: 'steady', tense: 'eerie', dread: 'tense', grim: 'eerie', crew: 'crew' };
+  const UP = [0.2, 0.42, 0.6, 0.82], HOLD = 40000, HOT = ['tense', 'rising', 'dread'];
   const VOL = 0.32, FADE = 5000, KEY = 'landfall.music';
   let on = localStorage.getItem(KEY) !== '0', unlocked = false, played = false, fx = [], mood = null, cur = null, recent = [], deaths = null, lossUntil = -1;
-  let S = null, heat = 0, spike = 0, level = 0, at = -1, queue = [], run = 0, began = 0, prev = null, special = null, fadeMs = FADE, fallen = 0, seed = null;
+  let hist = [], S = null, heat = 0, spike = 0, level = 0, at = -1, queue = [], run = 0, began = 0, prev = null, special = null, fadeMs = FADE, fallen = 0, seed = null;
 
   /* Low humanity (js/humanity.js LF.grim, 0 above 20% and 1 at nothing; Lachlan, 2026-11-16): the colony's music
      slowly goes wrong. Calm moods give way to the tense and bare cues, every cue runs a little slow and flat (no pitch
@@ -58,8 +64,9 @@
   const fell = s => (s.people || []).filter(p => p.seat && !p.alive && !p.left).length;   // officers dead
   /* The moods that are not the colony's weather: before orbit, the first sight of the world, a death that matters, the end. */
   function apart(s) {
-    if (!s || s.adrift) return 'opening';
+    if (!s || s.adrift) return s && s.cur ? 'crew' : 'opening';   // the star picker has the opening theme; a card up before it (the people aboard) has the crew's
     if (s.arrival) return 'wonder';
+    if (LF.aloft && LF.aloft(s) && !(s.cur && s.cur.phase === 'choose' && (s.cur.tone || (LF.byId[s.cur.id] || {}).tone) === 'crisis')) return 'crew';   // the crossing and the cards before the descent, unless one is a crisis
     if (s.seed !== seed) { seed = s.seed; deaths = null; lossUntil = -1; at = -1; queue = []; spike = 0; level = 0; prev = null; }   // another game: nothing of the last one carries over
     const f = fell(s);
     if (deaths !== null && s.deaths >= deaths && (f > fallen || s.deaths - deaths >= 6) && !(LF.aloft && LF.aloft(s))) lossUntil = s.day + 8;   // an officer, or many at once
@@ -71,21 +78,21 @@
   function sense(s, o) {
     const v = LF.vibes(s), lv = k => (v.find(x => x.k === k) || { lv: 3 }).lv;
     const now = { seed: s.seed, day: s.day, cards: s.dilemmas || 0, stain: (s.flags && s.flags.stain) || 0, food: s.res ? s.res.food : 1, dreads: dreads(s), deaths: s.deaths || 0 };
-    let base = (lv('danger') <= 1 ? 0.3 : lv('danger') === 2 ? 0.1 : 0) + (lv('food') === 0 ? 0.3 : lv('food') === 1 ? 0.08 : 0) + (lv('morale') === 0 ? 0.2 : 0)
-      + Math.min(0.3, 0.18 * now.dreads) + 0.25 * grim;
-    base = Math.min(0.7, base);
+    let base = (lv('danger') <= 1 ? 0.3 : lv('danger') === 2 ? 0.08 : 0) + (lv('food') === 0 ? 0.25 : lv('food') === 1 ? 0.05 : 0) + (lv('morale') === 0 ? 0.15 : 0)
+      + Math.min(0.2, 0.08 * now.dreads) + 0.25 * grim;
+    base = Math.min(0.5, base);   // how the colony stands can make it tense, never more: the build and the peak are for what happens
     if (prev && prev.seed === now.seed && now.day >= prev.day) {
-      if (now.cards > prev.cards) spike *= 0.7;                                   // every card answered lets it down a little
-      if (now.stain > prev.stain) bump(now.stain - prev.stain >= 3 ? 0.62 : now.stain - prev.stain === 2 ? 0.48 : 0.36);   // a dark choice, by its weight: an atrocity is the build, and the peak if another follows
+      if (now.cards > prev.cards) spike *= 0.6;                                   // every card answered lets it down
+      if (now.stain > prev.stain) bump(now.stain - prev.stain >= 3 ? 0.62 : now.stain - prev.stain === 2 ? 0.42 : 0.24);   // a dark choice, by its weight: an atrocity is the build, and the peak if another follows
       if (now.dreads > prev.dreads) bump(0.85);                                   // a dread has shown itself
       if (prev.food > 0 && now.food <= 0) bump(0.82);                             // the store is empty
-      if (now.deaths > prev.deaths) bump(0.42);
+      if (now.deaths - prev.deaths >= 3) bump(0.3);                              // several dead at once (one or two is the ordinary toll of the place, 2026-11-17)
     } else spike = 0;                                                             // another game, or a save loaded
     prev = now;
     // The card on the table, or on its way up while the view is looked over: a hard one is heard coming.
     const c = s.cur, st = c && LF.byId && LF.byId[c.id], tone = c ? c.tone || (st && st.tone) : null, th = st && st.thread && LF.THREADS[st.thread];
     let floor = 0;
-    if (c && c.phase === 'choose') floor = /^late\./.test(c.id || '') ? 0.9 : th && th.dread ? (tone === 'crisis' ? 0.62 : 0.42) : tone === 'crisis' ? 0.5 : tone === 'pressure' ? 0.22 : 0;   // a calamity; a dread's own card; any crisis
+    if (c && c.phase === 'choose') floor = /^late\./.test(c.id || '') ? 0.9 : th && th.dread ? (tone === 'crisis' ? 0.62 : 0.24) : tone === 'crisis' ? 0.45 : 0;   // a calamity; a dread's own card; any crisis
     heat = Math.max(base, spike, floor);
     let l = 0; for (let i = 0; i < 4; i++) if (heat >= UP[i] - (i < level ? 0.07 : 0)) l = i + 1;   // a level already reached is held a little below its line
     level = l;
@@ -123,6 +130,7 @@
     if (m === 'dread' && level < 3) m = null;                                     // the build came to nothing
     if (level < at) { const from = at; at = level; if (!m && peaked(from)) m = 'after'; }
     if (!m) { m = natural(); if (m === mood && ++run >= 2) { m = SWING[m] || m; run = 0; } else if (m !== mood) run = 0; }
+    if (level < 4 && HOT.includes(m) && hist.length >= 3 && hist.slice(0, 3).every(h => HOT.includes(h))) { m = level <= 2 ? 'steady' : 'eerie'; run = 0; }   // three hot cues running: a breather, whatever the heat
     fadeMs = FADE; next(m);
   }
   // Volume goes through Web Audio gain nodes: iOS ignores HTMLAudioElement.volume.
@@ -156,7 +164,7 @@
     cue.g.gain.cancelScheduledValues(now); cue.g.gain.setValueAtTime(cue.g.gain.value, now); cue.g.gain.linearRampToValueAtTime(0, now + ms / 1000);
     setTimeout(() => { cue.a.pause(); cue.g.disconnect(); }, ms + 100);
   }
-  function next(m) { mood = m; if (on && unlocked) play(m); }
+  function next(m) { mood = m; hist = [m, ...hist].slice(0, 4); if (on && unlocked) play(m); }
   /* Sound effects (sfx/<name>.mp3, tools/sfx.py): mastered quieter than the music and played lower still, under
      the same switch. hush() fades out whatever is still sounding (the intro calls it when it ends or is skipped). */
   const SFX_VOL = 0.45;
