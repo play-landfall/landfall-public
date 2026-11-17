@@ -43,15 +43,23 @@ function cutscene(shots, title) { if (!window.LFIntro) return; if (window.LFBoot
 function intro() { if (!window.LFIntro) return;
   if (!(LF.proOn && LF.proOn(s))) return cutscene(LFIntro.opening(s), true);
   const sh = LFIntro.departure(s); if (window.LFBoot) LFBoot.prefetch(sh.map(x => LFBoot.scene(x.pic)).concat(s.pro.deck.map(id => LFBoot.scene(id.replace(/\./g, '_')))));
-  LFIntro.play(sh, proGo, true); }
+  if (window.LFBoot) LFBoot.prefetch(LF.SEAT_ORDER.map(k => `art/scenes/cast_${LF.CAST[k][0].key}.webp`));
+  LFIntro.play(sh, () => { dossier = 0; window.scrollTo(0, 0); render(); }, true); }
 /* The voyage out (content-social.js): three cards aboard in the first five years from Earth, then the long sleep and
    the cutscene of what went wrong, then the adrift screen. The cards the player saw lately are dealt last. */
 function proSeen() { try { return JSON.parse(localStorage.getItem('landfall.proSeen')) || []; } catch (e) { return []; } }
 function proGo() {
   if (LF.proNext(s)) { try { localStorage.setItem('landfall.proSeen', JSON.stringify(proSeen().concat(s.cur.id).slice(-9))); } catch (e) {} save(); return arrive(true); }
   save(); window.scrollTo(0, 0); render(); cutscene(LFIntro.opening(s, true)); }
+/* The crew file (Lachlan, 2026-11-17): before the first card, the six officers two at a time, like leafing through a dossier. */
+let dossier = -1;
+function dossierHTML() { const seats = LF.SEAT_ORDER.slice(dossier * 2, dossier * 2 + 2);
+  return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of 3</div><h2>Your officers</h2>${dossier === 0 ? '<p>Six officers keep the ship with you. They are awake together for the first two years, and after that two at a time. Every one of them is a department the colony will need, and there is nobody to replace them.</p>' : ''}
+    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)} · ${esc(LF.SEATS[seat].name)}</span><p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
+    <button class="opt go" data-act="dossier">${dossier < 2 ? 'Next' : 'Begin the voyage'}</button></div>`; }
+function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier > 2) { dossier = -1; return proGo(); } render(); }
 function proHTML() { const y = LF.proYear(s);
-  return cardHTML() + `<section class="vw"><div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('people')}<div class="t"><b>The ${esc(s.adrift.ship)}</b><small>Year ${y} out from Earth. The senior crew awake, everyone else asleep in the cryo banks.</small></div></div></div></section>`; }
+  return cardHTML() + `<section class="vw"><div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('people')}<div class="t"><b>The ${esc(s.adrift.ship)}</b><small>Year ${y} out from Earth. ${y <= 2 ? 'All six officers awake to run the ship in' : 'Two officers on watch, four in the cold'}, everyone else asleep in the cryo banks.</small></div></div></div></section>`; }
 
 const bar = (v, cls, mark) => `<div class="bar ${cls || ''}"><i style="width:${Math.max(0, Math.min(100, v))}%"></i>${mark !== undefined ? `<b style="left:${mark}%"></b>` : ''}</div>`;
 const months = d => LF.monthsWord(Math.max(1, Math.ceil(Math.max(0, d) / LF.MONTH)));
@@ -70,7 +78,7 @@ function soundBtn() { const b = $('soundBtn'); if (!b) return; const on = !!(win
 function renderChrome() {
   soundBtn();
   $('app').classList.toggle('pre', LF.aloft(s));
-  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = s.cur && LF.proYear && LF.proYear(s) ? `Year ${LF.proYear(s)} out from Earth` : 'Adrift · no destination'; return; }
+  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = dossier >= 0 ? 'Outbound from Earth' : s.cur && LF.proYear && LF.proYear(s) ? `Year ${LF.proYear(s)} out from Earth` : 'Adrift · no destination'; return; }
   const d = LF.date(s.day), under = underWay();
   $('planet').textContent = under ? s.world.ship : s.world.planet;
   $('date').textContent = under ? `Under way · ${s.world.star}` : LF.aloft(s) ? 'In orbit' : `Year ${d.year} · month ${d.month} · ${LF.SEASONS[d.season]}`;
@@ -135,8 +143,8 @@ function cardHTML() {
     h += `<p>${esc(def.text)}</p>`;
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
     if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer in person · one at a time</div>${av.map(p =>
-      `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(p.name)}</b><span>${esc(LF.job(p))}</span></button>`).join('')}${rest.map(p =>
-      `<button disabled class="spent"><b>${esc(p.name)}</b><span>Just back · ${esc(LF.monthsWord((p.spent - s.day) / LF.MONTH))}</span></button>`).join('')}
+      `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
+      `<button disabled class="spent"><b>${esc(LF.seatTag(p))}</b><span>Just back · ${esc(LF.monthsWord((p.spent - s.day) / LF.MONTH))}</span></button>`).join('')}
       ${workLine()}<small>${on.length ? 'They share the risk of whatever you choose and go with any party you send. Whatever comes of it, they are not fit to go out again for two months or more.' : 'An officer counts for more in person, and can be hurt or killed even when it goes well. There is nobody to replace them.'}</small></div>`;
     // What the colony has of whatever this card spends or turns on, in words, against what is asked.
     const g = s.adrift ? [] : LF.relevant(s);   // the voyage out has no colony stores to show
@@ -615,7 +623,7 @@ function render() {
   { const over = s.over && !s.over.cont, v = peek || (s.cur && s.cur.view) || 'colony', on = !s.adrift && !surveying() && !LF.aloft(s) && !over;
     $('hud').innerHTML = on ? stockHTML() : ''; document.documentElement.style.setProperty('--head', ($('app').querySelector('header').offsetHeight || 64) + 'px'); }
   const y = window.scrollY, was = document.querySelector('#view > .vw'), top0 = was && was.getBoundingClientRect().top;
-  $('view').innerHTML = s.adrift ? (s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
+  $('view').innerHTML = s.adrift ? (dossier >= 0 ? dossierHTML() : s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
   window.scrollTo(0, y);
   // A card that arrives (or changes size as it resolves) pushes the view down: the view glides from where it was.
   const vw = document.querySelector('#view > .vw');
@@ -643,6 +651,7 @@ function act(a, v, el) {
   if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
+  else if (a === 'dossier') return dossierGo();
   else if (s.adrift && !s.cur && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
   else if (a === 'early') return bringCard();
   else if (a === 'spot') { spot = v; if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } }
@@ -679,6 +688,7 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (el && !el.disabled) act(el.dataset.act, el.dataset.v, el);
 });
 document.addEventListener('keydown', e => {
+  if (dossier >= 0) { if (e.code === 'Space' || e.key === 'Enter') { e.preventDefault(); dossierGo(); } return; }
   if (e.code === 'Space') { e.preventDefault(); if (review) act('early'); else if (s.cur && s.cur.phase === 'result') act('dismiss'); }
   else if ((s.adrift && !s.cur) || surveying()) return;
   else if (s.cur && s.cur.phase === 'choose' && e.key >= '1' && e.key <= '9') { const o = LF.choices(s)[+e.key - 1]; if (o && !o.lock) act('choose', o.i); }

@@ -421,3 +421,9 @@ html.grim2 h2 { letter-spacing:.01em; }
 .place .psend { margin:12px 0 0; } .place .psend > .lbl { margin:0 2px 2px; } .place .psend .opt.ord { margin-top:8px; }
 .prow { cursor:pointer; } .prow.on .t b { color:var(--rust); }
 .box .pbtn.more { margin:8px auto 2px; display:block; }
+/* the crew file before the voyage out (js/ui.js dossierHTML): two officers a page */
+.dossier .file { display:flex; gap:14px; align-items:flex-start; padding:12px; margin:12px 0; border-radius:14px; background:var(--raise); box-shadow:var(--rest); animation-delay:calc(120ms + var(--i, 0) * 110ms) !important; }
+.dossier .file .face { width:92px; height:116px; border-radius:10px; object-fit:cover; flex:none; background:var(--raise); }
+.dossier .file .t { min-width:0; } .dossier .file b { display:block; font-size:18px; line-height:1.2; } .dossier .file .lbl { display:block; color:var(--rust); margin:3px 0 0; }
+.dossier .file p { margin:7px 0 0; font-size:14.5px; line-height:1.42; text-wrap:pretty; }
+.dossier .opt.go { margin-top:6px; }

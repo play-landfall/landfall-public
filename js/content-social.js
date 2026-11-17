@@ -1,12 +1,12 @@
 /* Landfall — the voyage out (Lachlan, 2026-11-17; DESIGN.md "The voyage out"). An ease-in for new players, before
-   anything goes wrong: three small social scenes aboard the Ariadne in the first five years out from Earth, while the
-   senior crew are awake to run the ship in. The player meets the six as people and learns how a card works (options,
+   anything goes wrong: three small social scenes aboard the Ariadne in the first five years out from Earth: two while
+   all six officers are awake to run the ship in, one from the watches that follow. The player meets the six as people and learns how a card works (options,
    what each risks, odds and what bends them) with nothing much at stake. Then the long sleep, and the disaster that
    leaves the ship adrift (s.premise, js/intro.js).
      year 1, the wardroom supper: the six at one table; whose joke you laugh at, or whose side you take on a small point.
-     year 3, a second pair of hands: one officer brings their trade to another's problem; help or hinder.
-     year 5, the last watches before the cold: two on the flight deck at night talk something through; it can go
-       well or badly.
+     year 2, a second pair of hands: one officer brings their trade to another's problem; help or hinder.
+     year 5, a year of the watch: by now the six keep the ship two at a time (two years awake each, a year with the
+       one before and a year with the one after), and the two on the flight deck at night talk something through.
    Eighteen cards, six a slot; three are dealt a run (LF.proDeal): one a slot, the three pairs between them covering
    all six officers, and the cards the player saw in the last games dealt last (the UI passes them).
    The officers do not exist yet (LF.makeOfficers runs at LF.land), so what a card does is kept in s.pro.fx and paid at
@@ -19,7 +19,7 @@ const FIRST = {}; for (const seat in LF.CAST) for (const c of LF.CAST[seat]) FIR
 // a stable draw from the seed (never s.rng)
 const hash = (seed, k) => { let x = ((seed | 0) ^ 0x9e3779b9) >>> 0; for (const ch of k) x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; x ^= x >>> 13; x = Math.imul(x, 0x5bd1e995) >>> 0; return ((x ^ (x >>> 15)) >>> 0) / 4294967296; };
 
-const YEAR_OF = { meal: 1, help: 3, watch: 5 };
+const YEAR_OF = { meal: 1, help: 2, watch: 5 };
 const CARDS = { meal: [], help: [], watch: [] };
 LF.PRO_CARDS = CARDS;
 const blank = () => ({ reg: {}, mind: {}, body: {}, native: {}, bonds: [] });
@@ -92,8 +92,8 @@ const S = (slot, a, b, st) => {
   return add(Object.assign({ view: 'colony', arc: 'voyage', tone: 'quiet', chain: true, alone: true, slot, kicker: `Year ${YEAR_OF[slot]} out from Earth` }, st,
     { setup: s => Object.assign({ a, b }, setup0 ? setup0(s) : {}) }));
 };
-const SUPPER = 'The Sun is a bright star behind the ship now. For the first five years the senior crew stay awake to run the Ariadne in, and every evening the six of them eat together in the wardroom with you: one table, one pot.';
-const WATCH = (s, c) => `In a month the senior crew go into the cold for the long sleep. Tonight the watch on the flight deck is ${FIRST[c.a]} and ${FIRST[c.b]}, and you've come up with three mugs.`;
+const SUPPER = 'The Sun is a bright star behind the ship now. For the first two years all six of your officers stay awake to run the Ariadne in, and every evening they eat together in the wardroom with you: one table, one pot.';
+const WATCH = (s, c) => `The six keep the ship two at a time now: two years awake each, a year with the one before and a year with the one after. This year the watch is ${FIRST[c.a]} and ${FIRST[c.b]}, and the other four are in the cold. Tonight you've come up to the flight deck with three mugs.`;
 
 /* ================= year 1: the wardroom supper ================= */
 S('meal', 'dahl', 'yurbin', { id: 'soc.jar', title: 'Something in a Jar',
@@ -180,7 +180,7 @@ S('meal', 'nakamura', 'solheim', { id: 'soc.line', title: 'The Wardroom',
         fx: F({ reg: { nakamura: 2, solheim: 2 } }) } },
   ] });
 
-/* ================= year 3: a second pair of hands ================= */
+/* ================= year 2: a second pair of hands (all six still awake, and the crews running the ship in) ================= */
 const trusts = (k, v, label) => If(s => regOf(s, k) >= 4, v, label);
 const sore = (k, v, label) => If(s => regOf(s, k) <= -3, v, label);
 
@@ -280,30 +280,30 @@ S('help', 'dahl', 'estrada', { id: 'soc.stores', title: 'Short in the Stores',
         fx: F({ reg: { estrada: -3, dahl: -2 }, kit: { food: -60 } }) } },
   ] });
 
-/* ================= year 5: the last watches before the cold ================= */
+/* ================= year 5: a year of the watch (two awake, four in the cold) ================= */
 const steady = (a, b) => If(s => ((s.pro && s.pro.fx.mind[a]) || 0) > -3 && ((s.pro && s.pro.fx.mind[b]) || 0) > -3, 5, 'Both of them steady');
 
 S('watch', 'dahl', 'kovacs', { id: 'soc.lights', title: 'Two on the Watch',
   text: (s, c) => `${WATCH(s, c)}\n\nKasimir is counting the amber lights on the cryo board. "Forty-one amber, and there were thirty-nine at the last change. So who've we lost, Bashir, and when exactly were you going to mention it?"\n\n"Nobody. Sensors. I'll get to them." Bashir passes a flask. "You count lights, I count bearings. Same job, really."`,
   choices: [
     { label: 'Ask what they\'ll miss about Earth', test: { base: 55, mods: [steady('dahl', 'kovacs'), trusts('dahl', 8, 'Kasimir trusts you')] },
-      ok: { text: 'Kasimir had a dog, it turns out, a stupid one, and tells you every stupid thing it ever did. Bashir has a daughter who\'ll be sixty by the time anyone wakes. They\'re still talking when the relief comes, and Bashir leaves the flask with Kasimir.',
-        fx: F({ reg: { dahl: 3, kovacs: 3 }, bond: ['dahl', 'kovacs', 'friend', 'stood the last watches together'] }) },
-      bad: { text: 'Kasimir says nobody back home will remember they ever existed, and that it\'s better that way. Bashir gets up and goes to check a panel that doesn\'t need checking, and doesn\'t come back until the relief.',
+      ok: { text: 'Kasimir had a dog, it turns out, a stupid one, and tells you every stupid thing it ever did. Bashir has a daughter who\'ll be sixty by the time anyone wakes. They\'re still talking at ship\'s morning, and Bashir leaves the flask with Kasimir.',
+        fx: F({ reg: { dahl: 3, kovacs: 3 }, bond: ['dahl', 'kovacs', 'friend', 'stood a watch together'] }) },
+      bad: { text: 'Kasimir says nobody back home will remember they ever existed, and that it\'s better that way. Bashir gets up and goes to check a panel that doesn\'t need checking, and doesn\'t come back until morning.',
         fx: F({ nerve: { dahl: -4, kovacs: -4 } }) } },
     { label: 'Ask Bashir straight how long the reactor has', info: [['people', 'Bashir'], ['danger', 'Kasimir\'s sleep']],
       out: { text: '"Forty-five years. Long enough, just, if I keep my hands on her." Bashir says it flat, like a weather report. Kasimir laughs a little too long and asks for the flask back.',
         fx: F({ reg: { kovacs: 5 }, nerve: { dahl: -2 } }) } },
     { label: 'Leave them the flask and take the far console', info: [['people', 'The two of them'], ['danger', 'Nothing in it for you']],
       out: { text: 'You take the far console. When you look over they\'re arguing about something with real heat and enjoying it, and neither of them looks up.',
-        fx: F({ bond: ['dahl', 'kovacs', 'friend', 'stood the last watches together'] }) } },
+        fx: F({ bond: ['dahl', 'kovacs', 'friend', 'stood a watch together'] }) } },
   ] });
 
 S('watch', 'nakamura', 'solheim', { id: 'soc.count', title: 'Marit\'s Book',
-  text: (s, c) => `${WATCH(s, c)}\n\nAmara has found Marit's notebook, the one nobody else sees. It has nine lines in it, one for every death since the burn: the pods that failed in the first year, the rigger crushed in the spine, each with a name. Marit is standing with a hand out for it.\n\n"The crew should hear it," Amara says. "Before we go under. All of it, out loud. They're not yours to carry, Marit."\n\n"Give it back," Marit says, very quietly.`,
+  text: (s, c) => `${WATCH(s, c)}\n\nAmara has found Marit's notebook, the one nobody else sees. It has nine lines in it, one for every death since the burn: the pods that failed in the first year, the rigger crushed in the spine, each with a name. Marit is standing with a hand out for it.\n\n"The others should hear it," Amara says. "Wake them for one supper and read it out loud, all of it. They're not yours to carry, Marit."\n\n"Give it back," Marit says, very quietly.`,
   choices: [
-    { label: 'Back Amara: read it out at the last supper', test: { base: 50, mods: [trusts('solheim', 10, 'Marit trusts you'), sore('solheim', -10, 'Marit is cross with you')] },
-      ok: { text: 'Marit takes the notebook back, looks at it a long time, and says, "Last supper, then. I\'ll read it." At the last supper before the cold Marit does, all nine, without stopping. Half the ship is crying by the end of it, and Marit looks ten years lighter.',
+    { label: 'Back Amara: wake the six for one supper, and read it out', test: { base: 50, mods: [trusts('solheim', 10, 'Marit trusts you'), sore('solheim', -10, 'Marit is cross with you')] },
+      ok: { text: 'Marit takes the notebook back, looks at it a long time, and says, "One supper, then. I\'ll read it." The four are brought up out of the cold for a night, and Marit reads all nine without stopping. Amara is crying by the end of it, and Marit looks ten years lighter.',
         fx: F({ reg: { nakamura: 4, solheim: 3 }, bond: ['nakamura', 'solheim', 'friend', 'read the dead out together'] }) },
       bad: { text: 'Marit takes the notebook, puts it inside the flight jacket and leaves the flight deck without a word. The next morning there\'s a new lock on Marit\'s locker. Amara tells you you\'ve made it worse, and is probably right.',
         fx: F({ reg: { solheim: -5, nakamura: -2 }, nerve: { solheim: -4 } }) } },
@@ -311,9 +311,9 @@ S('watch', 'nakamura', 'solheim', { id: 'soc.count', title: 'Marit\'s Book',
       out: { text: 'Amara hands it back. Marit puts it away and says "Thank you," to you, not to Amara. Amara doesn\'t speak to either of you for the rest of the watch.',
         fx: F({ reg: { solheim: 6, nakamura: -4 }, nerve: { solheim: -2 } }) } },
     { label: 'Ask Marit to read you one', test: { base: 60, mods: [trusts('solheim', 6, 'Marit trusts you')] },
-      ok: { text: 'Marit opens it at the first page and reads one name. Amara knew them, as it turns out, and tells you about them. Then Marit reads another. By the relief they\'ve done all nine, and Marit is the one turning the pages.',
+      ok: { text: 'Marit opens it at the first page and reads one name. Amara knew them, as it turns out, and tells you about them. Then Marit reads another. By ship\'s morning they\'ve done all nine, and Marit is the one turning the pages.',
         fx: F({ reg: { solheim: 2 }, bond: ['nakamura', 'solheim', 'friend', 'read the dead out together'] }) },
-      bad: { text: 'Marit reads them all, in order, flat, and then reads them again and doesn\'t stop when Amara asks. Neither of them looks at you when the relief comes.',
+      bad: { text: 'Marit reads them all, in order, flat, and then reads them again and doesn\'t stop when Amara asks. Neither of them looks at you when the lamps come up.',
         fx: F({ nerve: { solheim: -4, nakamura: -4 } }) } },
   ] });
 
@@ -321,7 +321,7 @@ S('watch', 'yurbin', 'estrada', { id: 'soc.sky', title: 'The Big Window',
   text: (s, c) => `${WATCH(s, c)}\n\nGerad hasn't looked at the board once: the star chart in one hand, a pencil in the other, nose to the big window. Tavi is saying the night prayer, quietly, to the same stars.\n\n"There's a smudge there that isn't on the chart," Gerad says. "Not in the catalogue, not on last year's plate, nothing, it's just there, and I've been looking at it for an hour and I don't want to stop, isn't that wonderful?"\n\nTavi finishes the prayer before answering. "It's on somebody's chart. Just not yours."`,
   choices: [
     { label: 'Ask Gerad to show you', test: { base: 60, mods: [trusts('estrada', 6, 'Tavi trusts you')] },
-      ok: { text: 'Gerad shows you a faint smear of light that moves against the stars, slowly, and says it\'s a comet nobody on Earth has seen yet. Tavi asks what to call it. They argue about it until the relief and settle on something neither of them will tell you.',
+      ok: { text: 'Gerad shows you a faint smear of light that moves against the stars, slowly, and says it\'s a comet nobody on Earth has seen yet. Tavi asks what to call it. They argue about it until morning and settle on something neither of them will tell you.',
         fx: F({ reg: { yurbin: 3 }, native: { yurbin: 3 }, bond: ['yurbin', 'estrada', 'friend', 'named a comet together'] }) },
       bad: { text: 'Gerad gets going on how far the light has come and how long its star has been dead, and somewhere in it says there\'s nobody out here to hear a prayer. Tavi stops talking. Gerad doesn\'t notice for an hour, and then can\'t take it back.',
         fx: F({ reg: { estrada: -2 }, nerve: { estrada: -4 } }) } },
@@ -337,7 +337,7 @@ S('watch', 'dahl', 'nakamura', { id: 'soc.scar', title: 'Stitches',
   text: (s, c) => `${WATCH(s, c)}\n\nAmara put Kasimir back together once, on the launch docks, and Kasimir has never said thank you. The scar through the eyebrow is from that night. Neither of them has mentioned it in four hours.\n\nKasimir is cleaning a sidearm that's already clean. Amara watches. "You'll wear the barrel through, Kasimir. Put it down and eat something."\n\n"Then I'll have a job tomorrow." Kasimir doesn't look up. "Lovely night for it."`,
   choices: [
     { label: 'Ask Kasimir about the scar', test: { base: 50, mods: [trusts('dahl', 10, 'Kasimir trusts you'), sore('dahl', -10, 'Kasimir is cross with you')] },
-      ok: { text: 'Kasimir tells it badly, then Amara tells it properly: a riot on the cargo dock, a pipe wrench, nine stitches and Kasimir complaining through every one. By the end they\'re both laughing. At the relief Kasimir says "Thanks, doc," to nobody in particular.',
+      ok: { text: 'Kasimir tells it badly, then Amara tells it properly: a riot on the cargo dock, a pipe wrench, nine stitches and Kasimir complaining through every one. By the end they\'re both laughing. At ship\'s morning Kasimir says "Thanks, doc," to nobody in particular.',
         fx: F({ reg: { dahl: 3 }, bond: ['dahl', 'nakamura', 'friend', 'laughed about the stitches'] }) },
       bad: { text: 'Kasimir says it\'s none of your business, then says something worse about Amara\'s sick bay that isn\'t true. Amara leaves the flight deck. Kasimir finishes the sidearm and starts it again.',
         fx: F({ reg: { dahl: -4 }, nerve: { dahl: -3, nakamura: -3 } }) } },
@@ -345,8 +345,8 @@ S('watch', 'dahl', 'nakamura', { id: 'soc.scar', title: 'Stitches',
       out: { text: 'Kasimir hands you the log and goes to bed without arguing, which says enough. Amara tells you Kasimir hasn\'t slept a whole night since the burn. You hadn\'t known.',
         fx: F({ reg: { nakamura: 3, dahl: 2 } }) } },
     { label: 'Leave them be', info: [['people', 'The two of them'], ['danger', 'Nothing in it for you']],
-      out: { text: 'You take your mug and go. Not much is said on the flight deck that night, but Amara is up there again the next night, off the roster, with two mugs.',
-        fx: F({ bond: ['dahl', 'nakamura', 'friend', 'stood the last watches together'] }) } },
+      out: { text: 'You take your mug and go. Not much is said on the flight deck that night, but Amara is up there again the next night with two mugs.',
+        fx: F({ bond: ['dahl', 'nakamura', 'friend', 'stood a watch together'] }) } },
   ] });
 
 S('watch', 'kovacs', 'estrada', { id: 'soc.stones', title: 'The Quiet Shift',
@@ -367,21 +367,21 @@ S('watch', 'kovacs', 'estrada', { id: 'soc.stones', title: 'The Quiet Shift',
         fx: F({ bond: ['kovacs', 'estrada', 'friend', 'stood the quiet shift together'] }) } },
   ] });
 
-S('watch', 'solheim', 'yurbin', { id: 'soc.cold', title: 'The Last Night Up',
-  text: (s, c) => `${WATCH(s, c)}\n\nGerad doesn't want to go under. "Forty years with the instruments running and nobody reading them, think what goes past us while we sleep, no, think what we're missing right now, let me stay up a year on the long-watch rota, two, and I'll go under after, I promise I'll go under."\n\nMarit hasn't looked away from the board. "Everyone goes under. That was the plan when you signed it, and it's the plan now."`,
+S('watch', 'solheim', 'yurbin', { id: 'soc.cold', title: 'One More Year',
+  text: (s, c) => `${WATCH(s, c)}\n\nGerad's two years are up at the end of the month, and Gerad doesn't want to go under. "Years at a time with the instruments running and nobody reading them, think what goes past while I'm asleep, no, think what we're missing right now, let me stay up through the next watch, one more year, and I'll go under after, I promise I'll go under."\n\nMarit hasn't looked away from the board. "Two years up, then under. That was the rota when you signed it, and it's the rota now."`,
   choices: [
-    { label: 'Back Marit: everyone goes under', info: [['people', 'Marit'], ['danger', 'Gerad']],
-      out: { text: 'Gerad goes under with everyone else the next month, last in the line, with a notebook held against the chest until the lid comes down. Marit signs the log and doesn\'t say anything about it.',
+    { label: 'Back Marit: two years, then under', info: [['people', 'Marit'], ['danger', 'Gerad']],
+      out: { text: 'Gerad goes under on the day, with a notebook held against the chest until the lid comes down. Marit signs the log and doesn\'t say anything about it.',
         fx: F({ reg: { solheim: 4, yurbin: -4 }, nerve: { yurbin: -2 } }) } },
     { label: 'Back Gerad: one more year up', test: { base: 50, mods: [trusts('solheim', 10, 'Marit will hear you out')] },
       ok: { text: 'Marit gives it a year and not a day more. Gerad fills four notebooks with things nobody alive has seen and goes under on the day, grinning, with the notebooks in the pod.',
         fx: F({ reg: { yurbin: 6, solheim: -2 }, native: { yurbin: 6 } }) },
-      bad: { text: 'A year awake with a sleeping ship is a long time. By the end Gerad is talking to the instruments and sleeping under the big window, and has to be talked into the pod a day at a time.',
+      bad: { text: 'A third year awake on a sleeping ship is a long time. By the end Gerad is talking to the instruments and sleeping under the big window, and has to be talked into the pod a day at a time.',
         fx: F({ reg: { yurbin: 3 }, nerve: { yurbin: -10 }, body: { yurbin: -4 } }) } },
     { label: 'Ask Gerad what it is really', test: { base: 55, mods: [trusts('yurbin', 8, 'Gerad trusts you')] },
-      ok: { text: 'It takes a while. Gerad is afraid of the lid coming down and never coming up. Marit listens to all of it, then says, "So am I. Every time." They go under on the same day, side by side, and Marit holds Gerad\'s hand until the frost comes.',
+      ok: { text: 'It takes a while. Gerad is afraid of the lid coming down and never coming up. Marit listens to all of it, then says, "So am I. Every time." At the end of the month Marit walks Gerad down to the bay herself, and holds Gerad\'s hand until the frost comes.',
         fx: F({ bond: ['solheim', 'yurbin', 'friend', 'went into the cold together'] }) },
-      bad: { text: 'Gerad laughs it off, says it\'s the instruments and only the instruments, and talks about the instruments until the relief. You don\'t get any further, and neither does Marit.',
+      bad: { text: 'Gerad laughs it off, says it\'s the instruments and only the instruments, and talks about the instruments until morning. You don\'t get any further, and neither does Marit.',
         fx: F({ nerve: { yurbin: -3 } }) } },
   ] });
 })();

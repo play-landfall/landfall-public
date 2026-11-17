@@ -228,14 +228,14 @@ function reading(s, k, actual, j) {
    comes down with a lower ceiling. */
 LF.PREMISES = {
   dead:    { name: 'A dead world', intro: 'The target world has no air and no oceans.',
-    text: s => `The ${s} woke you early. The world you were sent to is where the survey said it would be, but the air is gone, and whatever took it took the oceans too.`,
+    text: s => `The two on watch woke you early, and then the other four. The world you were sent to is where the survey said it would be, but the air is gone, and whatever took it took the oceans too.`,
     chron: 'The world the mission was sent to was dead when the ship arrived.', report: 'Somebody has started a list, pinned in the mess hall, of theories about what killed the first world. It runs to three pages so far.' },
   meteor:  { name: 'A meteor strike', intro: 'Something small and very fast went through the forward hull.',
     text: s => `Eleven days short of the target, something the size of a fist went through the ${s}'s forward hull at a speed nobody wants to say out loud. The hull patch is holding, but the navigation array failed and the ship overshot, and the target is behind you now, with no mass to turn back for it.`,
     chron: 'A meteor struck the ship on the approach and carried it past the world it was sent to.', report: 'The meteor patch on the ship\'s forward hull glints when it passes overhead at dusk. People point it out to the sleepers they wake.',
     touch: (s, ids) => { const id = LF.pick(s, ids); s.machines[id].cap = Math.max(60, s.machines[id].cap - 8); s.machines[id].hp = Math.min(s.machines[id].hp, s.machines[id].cap); LF.log(s, `The ${LF.MACHINES[id].name} still has meteor fragments in its housing, and it has run rough ever since.`, 'bad'); } },
   engine:  { name: 'A failing engine', intro: 'The main engine has one burn left in it.',
-    text: s => `The ${s}'s main engine is failing. The engineers give it one more long burn before the bearings seize, and the target is two burns away. Whatever world the ship burns for next is where it will stay.`,
+    text: s => `The ${s}'s main engine is failing. Bashir gives it one more long burn before the bearings seize, and the target is two burns away. Whatever world the ship burns for next is where it will stay.`,
     chron: 'The main engine had one burn left in it, and the target was two burns away.', report: 'The engineers have taken the old main engine\'s bearing out of the ship\'s memory and drawn it full size on the workshop wall, with the worn faces shaded in.' },
   cryo:    { name: 'Failing cryo', intro: 'The cryo banks are failing faster than anyone promised.',
     text: s => `The ${s}'s cryo banks are failing faster than the mission promised. At this rate the sleepers will not last the thirty years still to go. There has to be somewhere closer.`,
@@ -247,8 +247,8 @@ LF.PREMISES = {
     text: s => `The star field does not match the charts. Some time in the last forty-one years a navigation fault crept in, and the ${s} has woken in a system nobody planned for, eleven light-years from where it should be. The target is too far to reach now.`,
     chron: 'The ship woke in the wrong system, decades off course.', report: 'The pilot still runs the old navigation fault in simulation some nights, looking for the moment it went wrong.' },
   bloom:   { name: 'Mould in the stores', intro: 'Something grey is growing in the hydroponics.',
-    text: s => `A grey mould got into the ${s}'s hydroponics and the seed stores, and the watch crew were woken to fight it. They saved most of the seed, but not enough food to reach the target, sixty years on.`,
-    chron: 'A mould in the ship\'s stores woke the watch crew early and put the target out of reach.', report: 'The agronomists still burn a sample of every harvest, looking for the grey mould that nearly ended the mission. Every sample so far has been clean.' },
+    text: s => `A grey mould got into the ${s}'s hydroponics and the seed stores, and all six of your officers were woken to fight it. They saved most of the seed, but not enough food to reach the target, sixty years on.`,
+    chron: 'A mould in the ship\'s stores woke all six officers early and put the target out of reach.', report: 'The agronomists still burn a sample of every harvest, looking for the grey mould that nearly ended the mission. Every sample so far has been clean.' },
 };
 LF.premiseOf = seed => { const k = Object.keys(LF.PREMISES); let h = 2166136261; for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return k[(h >>> 0) % k.length]; };
 LF.makeAdrift = function (s) {
@@ -267,7 +267,7 @@ LF.makeAdrift = function (s) {
   s.adrift = { ship: LF.SHIP, cands, kit: { pop: ri(s, 56, 64), food: ri(s, 40, 46) * 100, parts: ri(s, 28, 34), mat: ri(s, 58, 72), sleepers: ri(s, 13, 15) * 10 } };
 };
 LF.transitRisk = c => ({ lo: Math.round(100 * (0.02 + 0.15 * c.j) * 0.6), hi: Math.round(100 * (0.02 + 0.15 * c.j) * 1.4), wear: c.j < 0.34 ? 'light' : c.j < 0.67 ? 'moderate' : 'heavy' });
-/* Commit to one candidate. The burn costs sleepers, a few of the watch, stores and machine life, in proportion
+/* Commit to one candidate. The burn costs sleepers, a few of those thawed for the landing, stores and machine life, in proportion
    to its length; never ruinously. */
 LF.embark = function (s, i) {
   const c = s.adrift.cands[i], k = s.adrift.kit, j = c.j, A = LF.ARCHETYPES[c.type];
@@ -353,7 +353,7 @@ LF.arrivalNotes = function (s) {
 LF.transitText = function (s) {
   const t = s.world.transit, N = n => ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][n] || String(n);
   const V = s.voyage || {}, how = ((LF.CROSSING || {})[V.mode] || {}).how || '';   // the ways across, content-setup.js
-  return `${how} ${t.years} years under way. ${t.lostS ? `${N(t.lostS)} of the sleepers did not survive ${t.lostS === 1 ? 'the' : 'their'} cryo bank${t.lostS === 1 ? '' : 's'} failing` : 'Every cryo bank held'}${t.lostP ? `, and ${N(t.lostP).toLowerCase()} of the watch crew died on shift along the way` : ''}. The machines are ${t.years} years older than they were built to be at landfall.`.trim();
+  return `${how} ${t.years} years under way. ${t.lostS ? `${N(t.lostS)} of the sleepers did not survive ${t.lostS === 1 ? 'the' : 'their'} cryo bank${t.lostS === 1 ? '' : 's'} failing` : 'Every cryo bank held'}${t.lostP ? `, and ${N(t.lostP).toLowerCase()} of those awake for it did not live to see orbit` : ''}. The machines are ${t.years} years older than they were built to be at landfall.`.trim();
 };
 /* The anomaly: the one thing orbit saw and could not explain. A landing zone "beside the anomaly" means this, so
    the survey has to say what it is before it names the zone. Null when the world shows nothing of the kind. */

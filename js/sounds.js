@@ -80,7 +80,7 @@
     'soc.jar': 'supper', 'soc.grace': 'supper', 'soc.names': 'supper', 'soc.coffee': 'supper', 'soc.door': 'supper', 'soc.line': 'supper',
     'soc.mould': 'clinic', 'soc.racks': 'garden', 'soc.broth': 'clinic', 'soc.dressing': 'bandage', 'soc.sap': 'workshop', 'soc.stores': 'keys',
     'soc.lights': 'flight_deck', 'soc.count': 'flight_deck', 'soc.sky': 'flight_deck', 'soc.scar': 'flight_deck', 'soc.stones': 'flight_deck', 'soc.cold': 'flight_deck',
-    'landfall.site': 'lander_down', 'arrive.name': 'console',
+    'landfall.site': 'lander_down', 'arrive.name': 'console', 'land.eulogy': 'funeral',
     'crops.blight': 'creep', 'crops.seedvault': 'cold_room', 'crops.assay': 'papers',
     'mach.reactor': 'alarm', 'mach.cannibal': 'breakdown', 'mach.lander': 'lander_up', 'mach.biofilm': 'water',
     'sleep.manifest': 'papers', 'sleep.lights': 'radar',

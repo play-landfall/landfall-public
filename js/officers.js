@@ -52,6 +52,19 @@ LF.CAST = {
   crew: [C('estrada', 'Tavi', 'Estrada', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
     'Tavi is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Tavi turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.')],
 };
+/* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
+LF.BIO = {
+  solheim: 'Flew freight to the outer stations for twenty years and never lost a hull. Decides fast and does not apologise for it. She keeps a small notebook that nobody else is allowed to read.',
+  dahl: 'Ran security on the launch docks, and has the scar through his eyebrow to show for it. Trusts nobody, makes a joke of it, and checks every lock on the ship twice a night. Whatever is about to go wrong, he has already thought about it.',
+  kovacs: 'Helped build the Ariadne and has been fixing her ever since. Gruff, tired, and almost always right about how long a machine has left. Left a daughter on Earth, and will take your night shift without being asked.',
+  nakamura: 'A trauma surgeon who signed on the day the manifest opened. Gentle with anyone in a bed, and hard on everyone standing beside it. She has ignored orders before, and will tell you so herself.',
+  yurbin: 'Has waited his whole life to see something alive that did not come from Earth. Talks too fast, forgets to eat, and stopped hearing the word no some years ago. The jars in the wardroom are his.',
+  estrada: 'Grew up on a farm the sea took, and has carried its seed with him since. Quiet and devout, keeps the old fasts, and talks to the plants in the hydroponics bay. He will do any work without complaint, and will not stand by while the weak go short.',
+};
+/* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
+   changed hands shows at a glance. "Scientist (Gerad)". */
+LF.SEAT_SHORT = { command: 'Commander', security: 'Security', engineer: 'Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
+LF.seatTag = p => p && p.seat && p.role ? `${LF.SEAT_SHORT[p.seat]} (${p.first})` : p ? p.name : '';
 function seatPerson(s, seat, n) { const c = LF.CAST[seat][n];
   const p = { id: 'p' + s.people.length, key: c.key, first: c.first, last: c.last, name: c.first + ' ' + c.last, role: c.role, seat, title: c.title, trait: c.trait,
     alive: true, green: false, marks: {}, perks: [LF.SEATS[seat].perk].concat(c.perks.filter(k => k !== LF.SEATS[seat].perk)), deeds: [], known: s.day || 1,
