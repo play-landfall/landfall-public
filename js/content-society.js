@@ -65,7 +65,7 @@ add({ id: 'pol.burial', arc: 'politics', tone: 'quiet', title: 'What We Do With 
   ] });
 add({ id: 'pol.faith', arc: 'politics', tone: 'quiet', title: 'A Congregation',
   when: s => s.day >= 200,
-  text: s => `A fifth of the colony now: ${FAITH(s)}. ${P(s, 'chaplain') && P(s, 'chaplain').trait === 'devout' ? `${N(s, 'chaplain')} is one of them, and no longer hides it.` : `${Nc(s, 'chaplain')} calls it a healthy response to an unhealthy amount of sky.`}\n\nThey ask for a hall of their own and one rest day in ten.`,
+  text: s => `A fifth of the colony now: ${FAITH(s)}. ${P(s, 'chaplain') && P(s, 'chaplain').trait === 'devout' ? `${N(s, 'chaplain')} is one of them, and no longer hides it.` : `${Nc(s, 'chaplain')} calls it a healthy response to an unhealthy amount of sky, and would sooner see them with a hall than a grievance.`}\n\nThey ask for a hall of their own and one rest day in ten.`,
   choices: [
     { label: 'Grant the hall and the rest day', out: { text: 'The hall goes up within the month. They build it themselves, after shift, singing. One day in ten the fields are a fifth short of hands.', fx: { mat: -15, food: -70, morale: 7, flags: { faith_strong: true }, chron: s => `A meeting hall was raised for ${FAITH(s).split(',')[0]}.` } } },
     { label: 'They may meet. They get no hall and no day', note: 'They will meet outdoors before the dawn shift, whatever the weather.', info: [['danger', 'The oldest of them']],

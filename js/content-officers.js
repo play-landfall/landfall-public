@@ -21,7 +21,7 @@ const BREAK_SAYS = { command: `"I'm fine. I've got the numbers. I've always got 
   scientist: `"It was in the notes. I didn't want it in the notes. Can we — can we stop talking about the notes?"`,
   crew: `"I'm praying, that's all. Leave the door. Please."` };
 const SICK_SAYS = { command: `"It's a cold. Get me the morning reports and get out."`, security: `"If I'm dying I'll let you know. Till then I'm on the rota."`,
-  engineer: `"She runs rough for a bit and then she settles. So will I."`, doctor: `"I know exactly what it is. That's why I'm not telling you."`,
+  engineer: `"She runs rough for a bit and then she settles. So will I."`, doctor: `"I know exactly what it is. I've seen it in enough patients. I'm not telling you, because you'd take me off the ward."`,
   scientist: `"Fascinating, actually. I've been keeping notes on it. On me."`, crew: `"My grandmother worked the harvest the week she died. It's no shame."` };
 
 add({ id: 'off.break', view: 'people', arc: 'officers', tone: 'pressure', chain: true, repeat: 30, title: 'Not Sleeping',

@@ -139,7 +139,7 @@ S('meal', 'yurbin', 'estrada', { id: 'soc.names', title: 'Names on the Racks',
   ] });
 
 S('meal', 'kovacs', 'nakamura', { id: 'soc.coffee', title: 'The Last Tin',
-  text: () => `${SUPPER}\n\nThe real coffee ran out in month nine. Bashir has found one more tin at the back of an engineering locker, and it's on the table between Bashir and Amara, and neither of them has let go of it.\n\n"The night shift in the sick bay hasn't slept in a month," Amara says. "It's theirs."\n\n"The night shift on the reactor hasn't slept in a month either. My locker, my tin." Bashir doesn't let go. "She's got a temper at three in the morning, the old girl. So have I."`,
+  text: () => `${SUPPER}\n\nThe real coffee ran out in month nine. Bashir has found one more tin at the back of an engineering locker, and it's on the table between Bashir and Amara, and neither of them has let go of it.\n\n"The night shift in the sick bay hasn't slept in a month, Bashir," Amara says. "They're the ones holding people's hands at three in the morning. It's theirs."\n\n"The night shift on the reactor hasn't slept in a month either. My locker, my tin." Bashir doesn't let go. "She's got a temper at three in the morning, the old girl. So have I."`,
   choices: [
     { label: 'The sick bay\'s', info: [['people', 'Amara'], ['danger', 'Bashir']],
       out: { text: 'Bashir lets go of the tin one finger at a time. The sick bay\'s night shift drinks it a spoon a night for a month and won\'t hear a word against you. Bashir brings it up twice more, and not as a joke.',
@@ -167,7 +167,7 @@ S('meal', 'kovacs', 'solheim', { id: 'soc.door', title: 'Half a Door',
   ] });
 
 S('meal', 'nakamura', 'solheim', { id: 'soc.line', title: 'The Wardroom',
-  text: () => `${SUPPER}\n\nThe waking crew eat in the mess two decks down. The officers eat up here, behind a hatch, and Amara wants it stopped.\n\n"They want to see us in the line with a tray," Amara says. "Eating what they're eating. That's all it is, Marit."\n\n"We eat here. We talk shop. Nobody down there wants us looking at their tray." Marit doesn't look up from the stores sheet. "Ten minutes. Then the reactor report."`,
+  text: () => `${SUPPER}\n\nThe waking crew eat in the mess two decks down. The officers eat up here, behind a hatch, and Amara wants it stopped.\n\n"They want to see us in the line with a tray, Marit," Amara says. "Eating what they're eating. That's all it is, and I don't know what it costs you to give them that."\n\n"We eat here. We talk shop. Nobody down there wants us looking at their tray." Marit doesn't look up from the stores sheet. "Ten minutes. Then the reactor report."`,
   choices: [
     { label: 'Down to the mess with everyone', info: [['people', 'Amara, and the crew'], ['danger', 'Marit']],
       out: { text: 'The officers queue with a tray from the next night on. The crew are stiff about it for a week and then forget to be. Marit eats standing up and leaves first, every time.',
@@ -185,7 +185,7 @@ const trusts = (k, v, label) => If(s => regOf(s, k) >= 4, v, label);
 const sore = (k, v, label) => If(s => regOf(s, k) <= -3, v, label);
 
 S('help', 'yurbin', 'nakamura', { id: 'soc.mould', title: 'Under the Dressing',
-  text: (s, c) => `A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Amara has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey.\n\nGerad has a fungus out of the soil cores that grows on dead things. "It eats dead tissue. Only dead. I've had it on a dish with live cells for a month and it starves rather than touch them. It's beautiful, honestly. It knows the difference better than we do."\n\n"You want to put something out of a soil core into an open leg," Amara says. "In my sick bay."`,
+  text: (s, c) => `A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Amara has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey.\n\nGerad has a fungus out of the soil cores that grows on dead things. "It eats dead tissue. Only dead. I've had it on a dish with live cells for a month and it starves rather than touch them. It's beautiful, honestly. It knows the difference better than we do."\n\n"You want to put something out of a soil core into an open leg," Amara says. "In my sick bay. On somebody who'd like to keep both of them."`,
   choices: [
     { label: 'Let Gerad try it', test: { base: 55, mods: [trusts('nakamura', 8, 'Amara trusts you'), sore('nakamura', -8, 'Amara is cross with you')] },
       ok: { text: 'Gerad lays it in with tweezers, talking the whole time. Five days later the wound is pink and clean to the edge. Amara asks for a dish of it for the cabinet and doesn\'t say thank you, and Gerad doesn\'t need it said.',
@@ -217,7 +217,7 @@ S('help', 'kovacs', 'estrada', { id: 'soc.racks', title: 'Water for the Racks',
   ] });
 
 S('help', 'estrada', 'nakamura', { id: 'soc.broth', title: 'Lamps and Broth',
-  text: (s, c) => `Amara has five in the sick bay who aren't getting better and aren't getting worse: a crushed hand, a bad back, a fever that comes and goes. Tavi has been sitting with them at the end of every shift.\n\n"Get them out of here. Sit them in the hydroponics bay under the lamps, where it's warm and it smells of something growing. Feed them broth with the greens off the racks. My grandmother kept a ward. Nobody in it stayed in bed."\n\n"They're not well enough to move," Amara says. "And your bay isn't clean."`,
+  text: (s, c) => `Amara has five in the sick bay who aren't getting better and aren't getting worse: a crushed hand, a bad back, a fever that comes and goes. Tavi has been sitting with them at the end of every shift.\n\n"Get them out of here. Sit them in the hydroponics bay under the lamps, where it's warm and it smells of something growing. Feed them broth with the greens off the racks. My grandmother kept a ward. Nobody in it stayed in bed."\n\n"They're not well enough to move," Amara says. "I'm glad you sit with them, Tavi, I am. But your bay isn't clean, and I'm not putting a fever in among the greens."`,
   choices: [
     { label: 'Tavi\'s way: the lamps and the broth', test: { base: 55, mods: [trusts('nakamura', 8, 'Amara trusts you')] },
       ok: { text: 'The five sit in a row of chairs between the racks every morning, wrapped up, with a cup of broth each. Inside the month two are back on light work and the fever has gone. Amara comes up to see it, and stays to help with the pruning.',
@@ -334,7 +334,7 @@ S('watch', 'yurbin', 'estrada', { id: 'soc.sky', title: 'The Big Window',
   ] });
 
 S('watch', 'dahl', 'nakamura', { id: 'soc.scar', title: 'Stitches',
-  text: (s, c) => `${WATCH(s, c)}\n\nAmara put Kasimir back together once, on the launch docks, and Kasimir has never said thank you. The scar through the eyebrow is from that night. Neither of them has mentioned it in four hours.\n\nKasimir is cleaning a sidearm that's already clean. Amara watches. "You'll wear the barrel through."\n\n"Then I'll have a job tomorrow." Kasimir doesn't look up. "Lovely night for it."`,
+  text: (s, c) => `${WATCH(s, c)}\n\nAmara put Kasimir back together once, on the launch docks, and Kasimir has never said thank you. The scar through the eyebrow is from that night. Neither of them has mentioned it in four hours.\n\nKasimir is cleaning a sidearm that's already clean. Amara watches. "You'll wear the barrel through, Kasimir. Put it down and eat something."\n\n"Then I'll have a job tomorrow." Kasimir doesn't look up. "Lovely night for it."`,
   choices: [
     { label: 'Ask Kasimir about the scar', test: { base: 50, mods: [trusts('dahl', 10, 'Kasimir trusts you'), sore('dahl', -10, 'Kasimir is cross with you')] },
       ok: { text: 'Kasimir tells it badly, then Amara tells it properly: a riot on the cargo dock, a pipe wrench, nine stitches and Kasimir complaining through every one. By the end they\'re both laughing. At the relief Kasimir says "Thanks, doc," to nobody in particular.',

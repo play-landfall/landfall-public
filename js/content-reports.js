@@ -14,7 +14,7 @@ rep('w.reclaimer', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'recl
 rep('w.hydro', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'hydroponics', 40), text: s => `A third of the hydroponic lamps are dark. ${Nc(s, 'botanist')} is rotating trays by hand.` });
 rep('w.medbay', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'medbay', 40), text: s => `The autodoc refused a routine procedure today, citing its own calibration. ${Nc(s, 'physician')} did it by hand.` });
 rep('w.fab', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'fabricator', 40), text: s => `The fabricator's reject bin is filling faster than its output tray.` });
-rep('w.morale', { urgent: true, repeat: 45, k: 'bad', when: s => s.morale < 32, text: s => `${Nc(s, 'chaplain')}: "Nobody's come in to complain all week. Nobody. You want something to worry about, worry about that."` });
+rep('w.morale', { urgent: true, repeat: 45, k: 'bad', when: s => s.morale < 32, text: s => `${Nc(s, 'chaplain')}: "Nobody's come in to complain all month. Nobody. You want something to worry about, worry about that."` });
 
 /* ---- texture: small things that happen in a place where people live ---- */
 rep('t.cat', { when: s => s.day > 20, text: s => `The ship's cat, smuggled down in a tool bag, has had kittens under the reactor hall. Nobody will admit to the smuggling.` });

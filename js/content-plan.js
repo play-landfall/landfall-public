@@ -296,7 +296,7 @@ add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: t
 
 /* Frame-specific aftermaths (LF.aftermath, AFT_KIND in council.js) */
 add({ id: 'aft.beds', arc: 'after', view: 'colony', tone: 'pressure', chain: true, repeat: 60, title: 'Every Bed Taken',
-  text: s => `"${wasT(s)}" went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nc(s, 'physician')} wants the Autodoc run day and night.`,
+  text: s => `"${wasT(s)}" went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nc(s, 'physician')} says the Autodoc runs day and night until the corridor is empty, and is not asking.`,
   choices: [
     { label: 'Run the Autodoc until they are all on their feet', hint: 'unknown', info: [['yield', 'Everyone walks out'], ['danger', 'The Autodoc, and whoever needs it next year']], out: { text: 'It runs for nine days without stopping. Everyone walks out. The Autodoc makes a new noise when it starts up now, and the physician has started a list of what it should no longer be asked to do.', fx: { machine: { medbay: -9 }, cap: { medbay: -3 }, morale: 3 } } },
     { label: 'Stitch them by hand and send the walking ones back to their shifts', dark: true, note: 'The machine is saved and the work is not lost, and people who should be lying down are carrying loads.', hint: 'unknown', info: [['yield', 'The Autodoc spared, the shifts filled'], ['danger', 'The ones who open up again']], test: { base: 62, mods: [R('physician', 16)] },

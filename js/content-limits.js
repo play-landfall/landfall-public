@@ -782,7 +782,7 @@ add({ id: 'lim.small', arc: 'lim.yoke', view: 'colony', tone: 'crisis', title: '
 
 add({ id: 'lim.roster', arc: 'lim.yoke', view: 'people', tone: 'pressure', title: 'A List on the Clinic Door', w: 3, gap: 14,
   when: s => s.day >= 300 && s.pop < 52 && s.pop >= 18 && !s.flags.lim_roster && !s.flags.gn_duty && !s.flags.lim_incubate && !s.flags.qk_open && !!P(s, 'physician'),   // gn_duty: the same law was put on The Pairing Board first (js/content-generations.js)
-  text: s => `${Nc(s, 'physician')} puts the count in front of you: ${s.pop} alive, ${s.deaths} buried, and too few births to notice. "At this rate there's nobody here in forty years. Doesn't matter what else we get right."\n\nThe proposal fits on one page. Every woman who can carry a child does, starting this year. Pairings are drawn from the gene registry for spread and not left to anybody's preference. Refusing is treated like refusing a shift.`,
+  text: s => `${Nc(s, 'physician')} puts the count in front of you: ${s.pop} alive, ${s.deaths} buried, and too few births to notice. "At this rate there's nobody here in forty years, and I hate that I'm the one who has to say it. Doesn't matter what else we get right."\n\nThe proposal fits on one page. Every woman who can carry a child does, starting this year. Pairings are drawn from the gene registry for spread and not left to anybody's preference. Refusing is treated like refusing a shift.`,
   choices: [
     { label: 'Make it law', dark: true, info: [['yield', 'More hands, in time'], ['danger', 'Morale']],
       out: { text: 'It is read out at the evening meal. In the morning there is a list on the clinic door, and beside it a second, shorter list of the people who have been told who.',
@@ -1004,7 +1004,7 @@ const organPick = s => s.people.find(p => p.alive && !p.away && p.role && !['pil
 add({ id: 'lim.organ', arc: 'lim.knife', view: 'people', tone: 'crisis', title: 'Pod Sixty-One', w: 3, gap: 14,
   when: s => s.day >= 150 && s.sleepers > 0 && ok(s, 'lander') && s.machines.lander.hp > 15 && ok(s, 'medbay') && !!organPick(s),
   setup: s => { const a = s.people.filter(p => p.alive && !p.away && p.role && !['pilot', 'physician'].includes(p.role)); return ctxOf(LF.pick(s, a)); },
-  text: (s, c) => `${c.name} went under a slipped load an hour ago and is bleeding inside. The autodoc can hold ${c.first} for a day. It cannot print a liver.\n\nThe cryo index has a match: pod sixty-one, a hydrologist, twenty-nine years old, asleep. ${Nc(s, 'pilot')} can have the pod on the pad in six hours. ${Nc(s, 'physician')} points out that the hydrologist does not wake up afterwards.`,
+  text: (s, c) => `${c.name} went under a slipped load an hour ago and is bleeding inside. The autodoc can hold ${c.first} for a day. It cannot print a liver.\n\nThe cryo index has a match: pod sixty-one, a hydrologist, twenty-nine years old, asleep. ${Nc(s, 'pilot')} can have the pod on the pad in six hours. ${Nc(s, 'physician')} points out that the hydrologist does not wake up afterwards, and asks you to say that out loud before you decide.`,
   choices: [
     { label: 'Fly. Take it', dark: true, info: [['danger', 'A sleeper']],
       out: { text: (s, c) => `The pod comes down sealed and goes into the autodoc bay sealed. ${c.name} is on light duties within the month. ${c.merciful ? `${c.first} finds out whose liver it is from the cryo index, and does not thank you.` : `${c.first} asks once whose it was, nods, and goes back to work.`}`,
