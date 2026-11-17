@@ -695,7 +695,7 @@ document.addEventListener('keydown', e => {
   else if (s.cur && s.cur.phase === 'result' && e.key === 'Enter') act('dismiss');
 });
 
-s = load(); if (s) { LF.dropCut(s); if (LF.migrateOrders) LF.migrateOrders(s); }
+s = load(); if (s) { LF.dropCut(s); if (LF.migrateOrders) LF.migrateOrders(s); LF.renameCast(s); }
 const isNew = !s; if (isNew) fresh(true);
 const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.pro.i;   // closed before the first card of the voyage out: play it from the title
 // The first screen's pictures arrive behind a loading bar on the first visit; everything else loads as it is needed.

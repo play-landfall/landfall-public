@@ -235,7 +235,7 @@ LF.PREMISES = {
     chron: 'A meteor struck the ship on the approach and carried it past the world it was sent to.', report: 'The meteor patch on the ship\'s forward hull glints when it passes overhead at dusk. People point it out to the sleepers they wake.',
     touch: (s, ids) => { const id = LF.pick(s, ids); s.machines[id].cap = Math.max(60, s.machines[id].cap - 8); s.machines[id].hp = Math.min(s.machines[id].hp, s.machines[id].cap); LF.log(s, `The ${LF.MACHINES[id].name} still has meteor fragments in its housing, and it has run rough ever since.`, 'bad'); } },
   engine:  { name: 'A failing engine', intro: 'The main engine has one burn left in it.',
-    text: s => `The ${s}'s main engine is failing. Bashir gives it one more long burn before the bearings seize, and the target is two burns away. Whatever world the ship burns for next is where it will stay.`,
+    text: s => `The ${s}'s main engine is failing. Jeremy gives it one more long burn before the bearings seize, and the target is two burns away. Whatever world the ship burns for next is where it will stay.`,
     chron: 'The main engine had one burn left in it, and the target was two burns away.', report: 'The engineers have taken the old main engine\'s bearing out of the ship\'s memory and drawn it full size on the workshop wall, with the worn faces shaded in.' },
   cryo:    { name: 'Failing cryo', intro: 'The cryo banks are failing faster than anyone promised.',
     text: s => `The ${s}'s cryo banks are failing faster than the mission promised. At this rate the sleepers will not last the thirty years still to go. There has to be somewhere closer.`,

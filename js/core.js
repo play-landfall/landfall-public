@@ -123,14 +123,14 @@ LF.chron = (s, t) => { s.chron.push({ d: s.day, t }); };
 LF.storyPoint = s => { if (s.recap) s.recap.major = true; };   // something the next recap should not wait for
 
 /* ---------- people ---------- */
-const GIVEN = ['Imani','Tavi','Oksana','Rafael','Mei','Jonah','Amara','Soren','Leila','Kofi','Yuki','Mateo','Ingrid','Dev','Noor','Callum','Zofia','Hemi','Anneke','Tomas','Sefa','Priya','Elias','Ruth','Bashir','Wren','Ilse','Marcus',
+const GIVEN = ['Imani','Ottilie','Oksana','Rafael','Mei','Jonah','Wiremu','Soren','Leila','Kofi','Yuki','Mateo','Ingrid','Dev','Noor','Callum','Zofia','Hemi','Anneke','Tomas','Sefa','Priya','Elias','Ruth','Teodor','Wren','Ilse','Marcus',
   'Ayesha','Bao','Chidi','Dalia','Emeka','Farah','Goran','Hana','Ifeoma','Jae','Kalani','Lucia','Malik','Nadia','Oren','Paloma','Quinn','Rania','Sami','Tariq','Uma','Viktor','Wanjiru','Xochitl','Yara','Zeynep',
   'Aiko','Bram','Carmen','Diego','Esi','Fintan','Gaia','Hamid','Ines','Jun','Kaveh','Lerato','Mirela','Niamh','Obi','Pita','Rosa','Saoirse','Thandi','Ulla','Vasco','Wei','Yusuf','Zainab',
   'Anaru','Birgit','Cyrus','Dagny','Eitan','Femi','Greta','Hiro','Isadora','Jalen','Kenji','Lowanna','Mosi','Nilufar','Odette','Pavel','Rangi','Sunita','Tobias','Veda'];
-const FAMILY = ['Okafor','Lindqvist','Reyes','Tanaka','Mbeki','Haldane','Castellanos','Petrov','Nakamura','Aguilar','Brandt','Sato','Iyer','Kovacs','Ferreira','Whitlock','Adeyemi','Varga','Moana','Osei','Rahimi','Doyle','Zheng','Halloran','Eze','Marchetti','Thorsen','Bell',
+const FAMILY = ['Okafor','Lindqvist','Reyes','Tanaka','Mbeki','Haldane','Castellanos','Petrov','Kerrigan','Aguilar','Brandt','Sato','Iyer','Szabo','Ferreira','Whitlock','Adeyemi','Varga','Moana','Osei','Rahimi','Doyle','Zheng','Halloran','Eze','Marchetti','Thorsen','Bell',
   'Abebe','Bergstrom','Chaudhry','Dlamini','Esposito','Farouk','Gallagher','Hakimi','Ivanova','Jovanovic','Kamau','Laurent','Mendoza','Ngata','Oyelaran','Park','Quispe','Rosen','Sandoval','Tran','Uchenna','Vasquez','Wojcik',
   'Yilmaz','Zuniga','Achterberg','Banerjee','Cohen','Duarte','Ekwueme','Fujita','Grenier','Hosseini','Ishikawa','Jaramillo','Kahananui','Lindgren','Mwangi','Nordin','Obuya','Pereira','Rautenbach','Sorensen','Tuilagi',
-  'Ulloa','Valdivia','Waititi','Xiong','Yamada','Zielinski','Arslan','Boateng','Chen','Dahl','Estrada','Fonoti','Gunawardena','Haddad','Ito','Kowalczyk','Mahlangu','Novak','Oduya','Rasmussen'];
+  'Ulloa','Valdivia','Waititi','Xiong','Yamada','Zielinski','Arslan','Boateng','Chen','Brekke','Quiroga','Fonoti','Gunawardena','Haddad','Ito','Kowalczyk','Mahlangu','Novak','Oduya','Rasmussen'];
 const TRAITS = ['cautious','reckless','devout','bitter','beloved','brilliant','stubborn','gentle'];
 function makePerson(s, role, green) {
   let first, last, tries = 0;

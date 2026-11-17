@@ -39,18 +39,18 @@ Object.assign(LF.ROLES, { command: { title: 'Commander', crew: 'the command staf
    of society.js WANTS. key: the portrait (art/scenes/cast_<key>.webp). */
 const C = (key, first, last, title, role, trait, vals, want, nature, perks) => ({ key, first, last, title, role, trait, vals, want, nature, perks: perks || [] });
 LF.CAST = {
-  command: [C('solheim', 'Marit', 'Solheim', 'Flight Commander', 'pilot', 'stubborn', { free: -1, mercy: -1 }, 'build',
-    'Marit is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder'])],
-  security: [C('dahl', 'Kasimir', 'Dahl', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
-    'Kasimir is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Kasimir would rather it was someone who doesn\'t enjoy it.')],
-  engineer: [C('kovacs', 'Bashir', 'Kovacs', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
-    'Bashir is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.')],
-  doctor: [C('nakamura', 'Amara', 'Nakamura', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
-    'Amara is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor'])],
-  scientist: [C('yurbin', 'Gerad', 'Yurbin', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
-    'Gerad is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.')],
-  crew: [C('estrada', 'Tavi', 'Estrada', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
-    'Tavi is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Tavi turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.')],
+  command: [C('solheim', 'Jane', 'Haddy', 'Flight Commander', 'pilot', 'stubborn', { free: -1, mercy: -1 }, 'build',
+    'Jane is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder'])],
+  security: [C('dahl', 'Nolan', 'Edney', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
+    'Nolan is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Nolan would rather it was someone who doesn\'t enjoy it.')],
+  engineer: [C('kovacs', 'Jeremy', 'Donadini', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
+    'Jeremy is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.')],
+  doctor: [C('nakamura', 'Andrea', 'Tete', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
+    'Andrea is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor'])],
+  scientist: [C('yurbin', 'Mac', 'O\'Hagan', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
+    'Mac is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.')],
+  crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
+    'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.')],
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
 LF.BIO = {
@@ -62,7 +62,7 @@ LF.BIO = {
   estrada: 'Grew up on a farm the sea took, and has carried its seed with him since. Quiet and devout, keeps the old fasts, and talks to the plants in the hydroponics bay. He will do any work without complaint, and will not stand by while the weak go short.',
 };
 /* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
-   changed hands shows at a glance. "Scientist (Gerad)". */
+   changed hands shows at a glance. "Scientist (Mac)". */
 LF.SEAT_SHORT = { command: 'Commander', security: 'Security', engineer: 'Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
 LF.seatTag = p => p && p.seat && p.role ? `${LF.SEAT_SHORT[p.seat]} (${p.first})` : p ? p.name : '';
 function seatPerson(s, seat, n) { const c = LF.CAST[seat][n];
@@ -205,3 +205,11 @@ LF.officerAfter = function (s, o, chips) {
   }
 };
 })();
+/* The officers were renamed (Lachlan, 2026-11-17). A saved game keeps the names it was started with; this puts the new
+   ones on the six in a save from before, so no LF.VERSION bump is needed. Old log lines keep the old names. */
+LF.renameCast = function (s) {
+  const old = { solheim: 'Marit', dahl: 'Kasimir', kovacs: 'Bashir', nakamura: 'Amara', yurbin: 'Gerad', estrada: 'Tavi' }, by = {};
+  for (const seat in LF.CAST) for (const c of LF.CAST[seat]) by[c.key] = c;
+  for (const p of (s && s.people) || []) { const c = by[p.key];
+    if (c && p.first === old[p.key]) Object.assign(p, { first: c.first, last: c.last, name: c.first + ' ' + c.last }); }
+};
