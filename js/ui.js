@@ -381,8 +381,8 @@ function ordRowHTML(o) {
 const ordP = () => ordHold ? Math.min(1, (performance.now() - ordHold.t0) / ordHold.ms) : 0;
 function fillOrd() { if (!ordHold) return; const i = document.querySelector('.orders .pbar i'); if (i) i.style.transform = `scaleX(${ordP()})`; requestAnimationFrame(fillOrd); }
 /* While an order panel is open the review timer stops, so the card never slides in over a half-given order. */
-function pauseReview() { if (!review || review.left !== undefined) return; clearTimeout(reviewTimer); review.left = Math.max(800, review.ms - (performance.now() - review.t0)); }
-function resumeReview() { if (!review || review.left === undefined) return; const left = review.left; delete review.left; review.t0 = performance.now() - (review.ms - left); reviewTimer = setTimeout(bringCard, left); requestAnimationFrame(fillReview); }
+function pauseReview() { if (!review || review.ready || review.left !== undefined) return; clearTimeout(reviewTimer); review.left = Math.max(800, review.ms - (performance.now() - review.t0)); }
+function resumeReview() { if (!review || review.ready || review.left === undefined) return; const left = review.left; delete review.left; review.t0 = performance.now() - (review.ms - left); reviewTimer = setTimeout(due, left); requestAnimationFrame(fillReview); }
 const ordRow = key => { for (const v of LF.VIEWS) { const o = LF.orders(s, v).find(x => x.key === key); if (o) return Object.assign({ v }, o); } return null; };
 function giveOrder(key) {
   const o = ordRow(key); if (!o || o.lock || ordHold) return;
@@ -589,15 +589,18 @@ function playHTML() {
   const body = { colony: colonyView, world: worldView, people: peopleView, ship: shipView }[v]();
   // The card sits on top and the view below it: while the view is looked over, a slim bar holds the card's place.
   let h = over ? endHTML()
-    : review ? `<div class="next"><button class="arrive" data-act="early"><span class="lbl">${since ? esc(daysWord(since)) : 'Now'} · ${esc(s.cur.tone === 'council' || s.cur.plan ? 'the council wants an answer' : 'something needs an answer')}</span><span class="pbar"><i style="transform:scaleX(${reviewP()})"></i></span></button></div>`
+    : review ? `<div class="next"><button class="arrive${review.ready ? ' ready' : ''}" data-act="early"><span class="lbl">${review.ready ? 'Decision needed' : since ? esc(daysWord(since)) : 'Now'} · ${esc(s.cur.tone === 'council' || s.cur.plan ? 'the council wants an answer' : 'something needs an answer')}</span><span class="pbar"><i style="transform:scaleX(${reviewP()})"></i></span></button></div>`
     : s.cur ? cardHTML() : '';
-  return h + (over ? '' : tabsHTML(v)) + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME[v]}</div>${body}${over ? '' : meanwhile()}</section>`;
+  return h + (over ? '' : tabsHTML(v)) + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME[v]}</div>${body}${over ? '' : meanwhile()}</section>` + (review && review.ready && !over ? '<div class="decide-gap"></div><button class="decide go" data-act="early">Decision needed</button>' : '');
 }
 
 /* ---------- the turn: run the days, go to the view, look it over, then the card ---------- */
-const reviewP = () => !review ? 1 : review.left !== undefined ? 1 - review.left / review.ms : Math.min(1, (performance.now() - review.t0) / review.ms);
+const reviewP = () => !review || review.ready ? 1 : review.left !== undefined ? 1 - review.left / review.ms : Math.min(1, (performance.now() - review.t0) / review.ms);
 function fillReview() { if (!review) return; const i = document.querySelector('.arrive .pbar i'); if (i) i.style.transform = `scaleX(${reviewP()})`; requestAnimationFrame(fillReview); }
 function toCard() { const c = $('card'); if (c) c.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); }
+/* The bar is full (Lachlan, 2026-11-17): the card does not come by itself. The strip turns into "Decision needed" and a
+   button waits at the foot of the screen; until it is tapped the player can still give orders, launch, send a party or look round. */
+function due() { if (!review || review.ready) return; clearTimeout(reviewTimer); review.ready = true; delete review.left; render(); }
 function bringCard() { if (!review) return; if (ordHold) return; ordOpen = ''; poiOpen = ''; ordSaid = null; clearTimeout(reviewTimer); review = null; reveal = true; render(); toCard(); }
 /* A decision has arrived: show its view first. quick: it follows straight on from an outcome, so the card comes at once. */
 function arrive(quick) {
@@ -605,7 +608,7 @@ function arrive(quick) {
   if (quick || LF.aloft(s)) { review = null; reveal = true; render(); if (!surveying()) toCard(); else window.scrollTo(0, 0); return; }
   review = { t0: performance.now(), ms: REVIEW_MS }; window.scrollTo(0, 0); render(); requestAnimationFrame(fillReview);
   if (window.LFBoot) LFBoot.prefetch(LFBoot.scene(sceneOf(s.cur)));   // the card's picture, while the view is looked over
-  reviewTimer = setTimeout(bringCard, REVIEW_MS);
+  reviewTimer = setTimeout(due, REVIEW_MS);
 }
 /* The days run in the rules, instantly, until something needs the player. There is no button for it. */
 function proceed() {
@@ -703,5 +706,5 @@ const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.p
 const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? (LF.proOn && LF.proOn(s) ? LFIntro.departure(s) : LFIntro.opening(s)).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
 const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
 if (window.LFBoot) LFBoot.first(firstPics.filter(Boolean), start); else start();
-window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, REVIEW_MS };
+window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, due, REVIEW_MS };
 })();

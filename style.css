@@ -186,6 +186,11 @@ main { flex:1; padding:6px 12px 40px; }
 .map { aspect-ratio:6/5; }
 /* the card is on its way: tap to bring it now */
 .arrive { display:block; width:100%; padding:12px 14px; border-radius:18px; background:var(--card); box-shadow:var(--lift); transition:scale 150ms ease-out; }
+.arrive.ready { background:var(--rust); color:var(--on); } .arrive.ready .lbl { color:var(--on); } .arrive.ready .pbar { display:none; }
+.decide { display:flex; align-items:center; justify-content:center; text-align:center; position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom)); z-index:20; translate:-50% 0; width:min(420px, calc(100% - 32px)); min-height:52px; border-radius:18px; font-size:17px; box-shadow:var(--lift); animation:decideIn 260ms ease-out both, decidePulse 1.8s ease-in-out 260ms infinite; transition:scale 150ms ease-out; }
+.decide:active { scale:.97; } .decide-gap { height:84px; }
+@keyframes decideIn { from { opacity:0; translate:-50% 16px; } } @keyframes decidePulse { 50% { box-shadow:var(--lift), 0 0 0 6px color-mix(in srgb, var(--rust) 30%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .decide { animation:none; } }
 .arrive:active { scale:.97; } .arrive .lbl { display:block; color:var(--rust); text-align:center; margin-bottom:8px; } .arrive .pbar { display:block; height:6px; }
 /* plain tables: the ship's machines, the journal */
 .tbl { width:100%; border-collapse:collapse; background:var(--card); border-radius:20px; box-shadow:var(--lift); overflow:hidden; margin-bottom:14px; }
