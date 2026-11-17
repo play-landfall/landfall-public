@@ -104,7 +104,7 @@ LF.beat('builders', ['contact', 'after'], { id: 'bld.dream', view: 'people', ton
   ] });
 LF.beat('builders', 'contact', { id: 'bld.hum', tone: 'pressure', title: 'The Hum Goes On', gap: 40,
   when: (s, t) => !s.flags.bld_awake && !s.flags.builders_power && !t.hum && s.day - Math.max(s.used['bld.offer'] || 0, s.used['bld.wake'] || 0) > 100 && (s.used['bld.offer'] !== undefined || s.used['bld.wake'] !== undefined),
-  text: s => `The Builders' machine has gone on humming at the pitch of the colony's grid since the day it was found. Nothing has come of it, and nobody has done anything about it.\n\n${Nc(s, 'engineer')} would like it settled one way or another: "It's a hole in every plan I make. Every one of them."`,
+  text: s => `The Builders' machine has gone on humming at the pitch of the colony's grid since the day it was found. Nothing has come of it, and nobody has done anything about it.\n\n${Nc(s, 'engineer')} would like it settled one way or another: "It's a hole in every plan I make, and I'm sick of planning round it."`,
   choices: [
     { label: 'Seal it, properly, and post a watch', cost: { mat: 30 }, out: { text: 'Concrete over the opening, a hut beside it, and a watch on a rota. The hum goes on, a little fainter.', fx: { flags: { bld_sealed: true }, chron: 'The colony sealed the Builders\' machine and posted a watch on it.' } } },
     { label: 'Leave it to sleep', out: { text: 'The fence is mended and the site left alone. In the spring the hum drops below hearing, and nobody can say for certain it is still there. The crews who work that side of the colony ask to be moved.', fx: { morale: -2, flags: { bld_dormant: true }, chron: 'The Builders\' machine was left to sleep.' } } },

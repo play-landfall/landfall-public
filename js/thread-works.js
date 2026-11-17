@@ -113,7 +113,7 @@ B(['stir', 'working', 'near'], { id: 'wk.job', chain: true, tone: 'crisis', titl
 B(['working', 'near'], { id: 'wk.switch', x: true, tone: 'pressure', title: 'It Answers',
   when: (s, t) => !!t.known.sw && !t.off && t.truth.sw !== 'numbers' && SW[t.truth.sw].when(s) && !t.asked,
   setup: s => ({ why: `${nm(s)} runs faster ${SW[T(s).truth.sw].is}` }),
-  text: (s, c) => `The traces leave no room for doubt. ${Nm(s)} runs faster ${SW[T(s).truth.sw].is}. The colony has been helping it along since the first month without knowing.\n\n${Nc(s, 'engineer')}: "We can stop feeding it. Then we lose whatever the thing was for. Your call."`,
+  text: (s, c) => `The traces leave no room for doubt. ${Nm(s)} runs faster ${SW[T(s).truth.sw].is}. The colony has been helping it along since the first month without knowing.\n\n${Nc(s, 'engineer')}: "We can stop feeding it. Then we lose whatever it was for, and I couldn't tell you which is worse."`,
   choices: [
     { label: s => SW[T(s).truth.sw].stop, out: { text: s => `It is done the same day. Within the month the pulse slackens, and so does the colony\'s own work. The crews who lose by it are told why, and three of them pack and walk out.`, fx: s => ({ morale: -3, leave: 3, do: s2 => { const t = T(s2), k = t.truth.sw; t.asked = s2.day; t.off = true;
       if (k === 'power') LF.emit(s2, 'blackout', 'wk.switch', 25, 300, SW[k].price); if (k === 'digging') s2.yieldBonus -= 0.03; if (k === 'noise') { s2.flags.radio_silent = true; LF.ease(s2, 'heard', 'wk.switch', 20, 400); } } }) } },

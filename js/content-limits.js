@@ -677,7 +677,7 @@ add({ id: 'lim.compound', chain: true, arc: 'lim.yoke', view: 'people', tone: 'p
 
 add({ id: 'lim.harness', arc: 'lim.yoke', view: 'colony', tone: 'pressure', title: 'The Harness', w: 3, gap: 14,
   when: s => s.day >= 170 && ok(s, 'medbay') && !s.flags.lim_servitor && !s.flags.lim_harness_no && s.pop > 20,
-  text: s => `A rigger on the night shift went off the gantry and landed on the back of the skull. The body breathes and the heart is strong. ${Nc(s, 'physician')} says there is nobody in it and there will not be again.\n\n${Nc(s, 'engineer')} has a drawing. A control loom, run in through the autodoc, down into what still works. "It'd walk. Lift, hold a torch. It could work the coolant loop, and I can send a live body in there nine minutes a year. It wouldn't know it was in there. So go on. Tell me that makes it all right."`,
+  text: s => `A rigger on the night shift went off the gantry and landed on the back of the skull. The body breathes and the heart is strong. ${Nc(s, 'physician')} says there is nobody in it and there will not be again.\n\n${Nc(s, 'engineer')} has a drawing. A control loom, run in through the autodoc, down into what still works. "It'd walk. Lift, hold a torch, work the coolant loop, and I could stop sending live bodies in there for their nine minutes a year. It wouldn't know it was in there. Go on, tell me that makes it all right. I can't."`,
   choices: [
     { label: 'Build it', dark: true, info: [['yield', 'Work nobody survives']],
       out: { text: 'It takes the autodoc two nights. On the third morning the rigger walks into the coolant loop in a harness of cable and does six hours of work in a place that kills people in one. The night shift will not use that corridor.',
@@ -692,7 +692,7 @@ add({ id: 'lim.harness', arc: 'lim.yoke', view: 'colony', tone: 'pressure', titl
 
 add({ id: 'lim.harness2', chain: true, arc: 'lim.yoke', view: 'colony', tone: 'opportunity', title: 'A Dozen More',
   when: s => sv(s) >= 1 && ok(s, 'medbay') && s.pop > 24,
-  text: s => `The coolant loop has not run this clean since orbit. ${Nc(s, 'engineer')} wants a dozen harnesses: for the loop, the smelter face, the wells, every job that uses people up.\n\n"I'm out of riggers who fell off things. They'd have to come from somewhere. Hardly eats, doesn't sleep, doesn't strike — Christ, listen to me. I'm selling it."`,
+  text: s => `The coolant loop has not run this clean since orbit. ${Nc(s, 'engineer')} wants a dozen harnesses: for the loop, the smelter face, the wells, every job that uses people up.\n\n"I'm out of riggers who fell off things, so they'd have to come from somewhere. Hardly eats, doesn't sleep, doesn't strike. Christ, listen to me. I'm selling it."`,
   choices: [
     { label: 'The lock-up, and the ones who will not turn out for shift', dark: true, info: [['yield', 'Hands that never stop'], ['danger', 'Morale']],
       out: { text: s => `Eight go into the autodoc over the month: thieves, two who struck the watch, three who had stopped turning out for shift. ${Nc(s, 'security')} draws up the list, and it is longer than eight. Everybody turns out for shift now.`,
@@ -766,7 +766,7 @@ const ductPick = s => ['reactor', 'reclaimer', 'hydroponics'].find(id => ok(s, i
 add({ id: 'lim.small', arc: 'lim.yoke', view: 'colony', tone: 'crisis', title: 'Forty Centimetres', w: 3, gap: 14,
   when: s => s.day >= 200 && (s.flags.children || s.flags.births || s.day > 600) && !!ductPick(s) && s.pop > 20,
   setup: s => { const id = ductPick(s); return { id, name: LF.MACHINES[id].name }; },
-  text: (s, c) => `The fault in the ${c.name} is down a service duct forty centimetres across. ${Nc(s, 'engineer')} has tried the drone, a mirror on a pole and a thin apprentice who was stuck for two hours.\n\n"Kids would fit. Five or six of them, seven, eight years old. It's hot in there and they'd take a dose. I'd rope them. Time them. Don't look at me like that."`,
+  text: (s, c) => `The fault in the ${c.name} is down a service duct forty centimetres across. ${Nc(s, 'engineer')} has tried the drone, a mirror on a pole and a thin apprentice who was stuck for two hours.\n\n"Kids would fit. Five or six of them, seven or eight years old. It's hot in there and they'd take a dose, so I'd rope them and time them. Don't look at me like that, I've tried everything else."`,
   choices: [
     { label: 'Send them in, roped and timed', dark: true, test: { base: 68, mods: [R('engineer', 12)] }, info: [['yield', 'Repairs'], ['danger', 'A child']],
       ok: { text: (s, c) => `Four children take it in turns, ten minutes each, with a torch and a spanner and a voice talking to them down the duct the whole time. The ${c.name} comes back up. They are given a whole ration bar each, and they are very proud.`,

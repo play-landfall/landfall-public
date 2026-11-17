@@ -284,7 +284,7 @@ B(['among', 'open', 'reckoning'], { id: 'psg.close', x: true, tone: 'pressure', 
   ] });
 B(['among', 'open', 'reckoning'], { id: 'psg.warm', x: true, tone: 'pressure', title: 'The Warm Rooms',
   when: (s, t) => LF.cv(s, 'cold') >= 40 && !t.warm,
-  text: s => { const t = T(s), weak = t.truth.weak === 'cold'; return weak ? `The carried have stopped going home at end of shift. They are in the reactor hall, forty of them, sitting against the coolant housing, ${TH.bec(s, 'cold')}. They are not in anyone's way. They have started doing the maintenance.\n\n${Nc(s, 'engineer')}: "She's never run this well. Ever. And I don't know half the people keeping her going."`
+  text: s => { const t = T(s), weak = t.truth.weak === 'cold'; return weak ? `The carried have stopped going home at end of shift. They are in the reactor hall, forty of them, sitting against the coolant housing, ${TH.bec(s, 'cold')}. They are not in anyone's way. They have started doing the maintenance.\n\n${Nc(s, 'engineer')}: "She's never run this well, not once since the lander, and I don't know half the people keeping her going."`
       : `The cold has everyone else moving slowly, ${TH.bec(s, 'cold')}. It does not seem to reach the carried. They are out on the wire in shirtsleeves, doing the work nobody else can stand to.\n\n${Nc(s, 'engineer')}: "Three crews can't feel their hands. One hasn't even noticed the cold. Guess which one's ahead of schedule."`; },
   choices: [
     { label: s => T(s).truth.weak === 'cold' ? 'Let them stay, and let them work' : 'Put the carried on every outside job', note: 'The machines will be better looked after.',

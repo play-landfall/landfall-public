@@ -125,7 +125,7 @@ add({ id: 'crops.blight', arc: 'crops', tone: 'crisis', title: 'Rust',
 /* ================= MACHINERY ================= */
 add({ id: 'mach.biofilm', arc: 'machines', tone: 'pressure', title: 'Copper in the Water',
   when: s => s.day >= 35 && ok(s, 'reclaimer'),
-  text: s => `The water tastes of pennies. ${Nc(s, 'engineer')} holds a reclaimer membrane to the light: a violet film, eating the polymer.\n\n"Native. And it's moved in. These were rated for twenty years, and I'd give them two months. Tops." Four children were sick in the night, and the clinic is saying copper.`,
+  text: s => `The water tastes of pennies. ${Nc(s, 'engineer')} holds a reclaimer membrane to the light: a violet film, eating the polymer.\n\n"That's native, and it's moved in. They were rated for twenty years and I'd give them two months, and I'd be generous." Four children were sick in the night, and the clinic is saying copper.`,
   choices: [
     { label: 'Swap in fresh membranes', cost: { parts: 6 }, out: { text: 'Clean water by evening. The old membranes are bagged and burned. The spares shelf has a gap in it.', fx: { machine: { reclaimer: 8 } } } },
     { label: 'Sterilise the loop with reactor heat', note: 'It costs no parts, as long as nothing cracks.',
@@ -141,7 +141,7 @@ add({ id: 'mach.biofilm', arc: 'machines', tone: 'pressure', title: 'Copper in t
   ] });
 add({ id: 'mach.printhead', arc: 'machines', tone: 'opportunity', title: 'Three Good Prints',
   when: s => s.day >= 80 && ok(s, 'fabricator') && LF.down(s, 'medbay'),
-  text: s => `${Nc(s, 'engineer')} has the fabricator's service log open. "Fine head's at ninety-one percent of rated life. Coarse work, spares, she'll do those for years. Precision? One job. Maybe. So you'd better pick it."\n\n${Nc(s, 'physician')} has a list of the surgery that stops when the autodoc's consumables do. The workshop has a list too. Each list has names on it.`,
+  text: s => `${Nc(s, 'engineer')} has the fabricator's service log open. "Fine head's at ninety-one percent of rated life. She'll do coarse work and spares for years yet, but precision, she's got one job in her. Maybe. So pick it carefully."\n\n${Nc(s, 'physician')} has a list of the surgery that stops when the autodoc's consumables do. The workshop has a list too. Each list has names on it.`,
   choices: [
     { label: 'A second print head', note: 'A new head would keep the fabricator doing precision work, if the print finishes.',
       test: { base: 50, mods: [R('engineer', 18), M('reactor', 6)] },
@@ -155,7 +155,7 @@ add({ id: 'mach.printhead', arc: 'machines', tone: 'opportunity', title: 'Three 
   ] });
 add({ id: 'mach.reactor', arc: 'machines', tone: 'crisis', title: 'Hairline',
   when: s => s.day >= 170 && ok(s, 'reactor'),
-  text: s => `A coolant alarm at 0300: a hairline fracture in the reactor's primary loop, weeping.\n\n${Nc(s, 'engineer')}: "Right. Shut her down and weld it properly, that's ten days dark. Or somebody goes in hot with a patch. Or we turn her down and live with less. For good."`,
+  text: s => `A coolant alarm at 0300: a hairline fracture in the reactor's primary loop, weeping.\n\n${Nc(s, 'engineer')}: "Shut her down and weld it proper, that's ten days dark. Or somebody goes in hot with a patch. Or we turn her down and live with less for good. I don't like any of them, so pick one."`,
   choices: [
     { label: 'Cold shutdown. Ten days dark, and the battery heat goes to the crews\' pod', dark: true, note: 'The weld is done properly and nobody is sent into the loop, and the people who are not needed on the eleventh day are the ones who sleep cold.', info: [['yield', 'A proper weld'], ['danger', 'The pods without heat']],
       out: { text: 'Every lamp in the camp goes out. The one heated pod holds the welders, the watch and the field crews. Everyone else sleeps in their coats, and two of the oldest are found in them. On the eleventh day the hum comes back.', fx: { food: -200, pop: -2, morale: -5, machine: { reactor: 14 }, stain: ['cold', 1] } } },
@@ -176,7 +176,7 @@ add({ id: 'mach.reactor', arc: 'machines', tone: 'crisis', title: 'Hairline',
 add({ id: 'mach.cannibal', arc: 'state', tone: 'crisis', title: 'Robbing Peter', repeat: 80,
   setup: s => { const id = Object.keys(s.machines).filter(k => ok(s, k) && k !== 'lander').sort((a, b) => s.machines[a].hp - s.machines[b].hp)[0]; return { id, name: LF.MACHINES[id].name }; },
   when: s => s.res.parts < 6 && Object.keys(s.machines).some(k => k !== 'lander' && ok(s, k) && s.machines[k].hp < 28),
-  text: (s, c) => `The ${c.name} is failing, and the spares shelf is bare. ${Nc(s, 'engineer')} lays it out without drama.\n\n"I can keep it going. But the parts come out of something else, and that something's still working."`,
+  text: (s, c) => `The ${c.name} is failing, and the spares shelf is bare. ${Nc(s, 'engineer')} lays it out without drama.\n\n"I can keep her going, but the parts come out of something else, and that something's still working. I'll hear about it either way."`,
   choices: [
     { label: 'Strip the lander', dark: true, req: s => ok(s, 'lander'), reqText: 'The lander is already gone',
       note: s => s.sleepers > 0 ? `${s.sleepers} sleepers are still in orbit, and this is the only way up to them.` : 'Nobody is left in orbit to fetch.', info: [['yield', 'The machine, and spares'], ['danger', 'Everyone still in orbit']],

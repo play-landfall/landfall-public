@@ -311,7 +311,7 @@ B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post'
 const WANTS = {
   security: f => `"I've stood on that wall every night watching it not be there," ${f} says. "I'm done with that. It sleeps somewhere. I'm going to go and be bloody rude to it."`,
   command: f => `"One rifle. Two nights. Back on the third," ${f} says. "It lies up by day. I find where. Lift the bar."`,
-  engineer: f => `"Forty hatches I've welded, and it's had more of us since," ${f} says. "I'm tired. I'd sooner be tired out there, where there's something to hit."`,
+  engineer: f => `"Forty hatches I've welded, and it's had more of us since," ${f} says. "I'm tired. Tell me what to weld next, because I'm not stopping."`,
   doctor: f => `"You keep sending me what's left of them," ${f} says. "I'm going to look at it once, before it sends me another. Open the gate."`,
   scientist: f => `"It has to lie up somewhere, doesn't it? Everything does. Half a day out, less, and nobody's looked," ${f} says. "I won't go near it. I only want to see where it... lift the bar, will you?"`,
   crew: f => `"A thing that hunts has a bed," ${f} says. "You find the bed. We did it with foxes at home. I'll be back for the sowing."`,

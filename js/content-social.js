@@ -153,7 +153,7 @@ S('meal', 'kovacs', 'nakamura', { id: 'soc.coffee', title: 'The Last Tin',
   ] });
 
 S('meal', 'kovacs', 'solheim', { id: 'soc.door', title: 'Half a Door',
-  text: () => `${SUPPER}\n\nMarit and Bashir flew together before the ship, and Bashir has decided the table should know it.\n\n"Kiruna, the old test field. Marit brings a lander in sideways and takes the hangar door clean off. Whole door."\n\n"Half a door. Forty-knot crosswind." Marit doesn't stop eating. "You rebuilt the other half crooked. It was still crooked when we left. I checked."`,
+  text: () => `${SUPPER}\n\nMarit and Bashir flew together before the ship, and Bashir has decided the table should know it.\n\n"Kiruna, the old test field. Marit brings a lander in sideways and takes the hangar door clean off. The whole door, and guess who hung the new one."\n\n"Half a door. Forty-knot crosswind." Marit doesn't stop eating. "You rebuilt the other half crooked. It was still crooked when we left. I checked."`,
   choices: [
     { label: 'Laugh at Bashir\'s story', info: [['people', 'Bashir'], ['danger', 'Marit, who doesn\'t like being the joke']],
       out: { text: 'Bashir is delighted, and tells it twice more, with the door bigger each time. Marit lets it go, but you see it noted.',
@@ -292,7 +292,7 @@ S('watch', 'dahl', 'kovacs', { id: 'soc.lights', title: 'Two on the Watch',
       bad: { text: 'Kasimir says nobody back home will remember they ever existed, and that it\'s better that way. Bashir gets up and goes to check a panel that doesn\'t need checking, and doesn\'t come back until the relief.',
         fx: F({ nerve: { dahl: -4, kovacs: -4 } }) } },
     { label: 'Ask Bashir straight how long the reactor has', info: [['people', 'Bashir'], ['danger', 'Kasimir\'s sleep']],
-      out: { text: '"Forty-five years. Long enough. Just." Bashir says it flat, like a weather report. Kasimir laughs a little too long and asks for the flask back.',
+      out: { text: '"Forty-five years. Long enough, just, if I keep my hands on her." Bashir says it flat, like a weather report. Kasimir laughs a little too long and asks for the flask back.',
         fx: F({ reg: { kovacs: 5 }, nerve: { dahl: -2 } }) } },
     { label: 'Leave them the flask and take the far console', info: [['people', 'The two of them'], ['danger', 'Nothing in it for you']],
       out: { text: 'You take the far console. When you look over they\'re arguing about something with real heat and enjoying it, and neither of them looks up.',
