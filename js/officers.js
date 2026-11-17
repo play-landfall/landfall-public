@@ -63,12 +63,12 @@ LF.BIO = {
 };
 /* The crew file's facts (Lachlan, 2026-11-17): age at departure, where from, and a short record. */
 LF.FILE = {
-  solheim: { age: 52, from: 'United States', record: ['Master\'s in orbital mechanics, Purdue', 'Eleven years in command of the bulk hauler Tern', 'Flew the relief run to Callisto Station after the blowout'] },
-  dahl: { age: 37, from: 'England', record: ['Eight years in the Royal Marines', 'Head of security, Kourou launch docks', 'Found the charge in the fuel hold of the Meridian, two hours before launch'] },
-  kovacs: { age: 46, from: 'United States', record: ['Apprenticed at the Huntsville yards at seventeen', 'Chief of the Ariadne\'s drive refit', 'Rebuilt the cryo banks\' coolant loop in orbit, by hand'] },
-  nakamura: { age: 42, from: 'Mozambique', record: ['Medicine, Eduardo Mondlane University, Maputo', 'Trauma surgery, Chris Hani Baragwanath, Johannesburg', 'Ran the field hospital at Beira through the floods'] },
-  yurbin: { age: 33, from: 'Ireland', record: ['PhD in astrobiology, Trinity College Dublin, at twenty-six', 'Two winters on the Antarctic lake drills', 'Wrote the contamination protocol the Ariadne flies under'] },
-  estrada: { age: 34, from: 'Australia', record: ['PhD in plant science, University of Adelaide', 'Bred the salt-tolerant wheat grown on the Murray flats', 'Kept the Ceres outpost\'s hydroponics alive through a year on battery'] },
+  solheim: { age: 52, from: 'North American Union', record: ['Master\'s in orbital mechanics, Purdue', 'Eleven years in command of the bulk hauler Tern', 'Flew the relief run to Callisto Station after the blowout'] },
+  dahl: { age: 37, from: 'Britannic Commonwealth', record: ['Eight years in the Royal Marines', 'Head of security, Kourou launch docks', 'Found the charge in the fuel hold of the Meridian, two hours before launch'] },
+  kovacs: { age: 46, from: 'North American Union', record: ['Apprenticed at the Huntsville yards at seventeen', 'Chief of the Ariadne\'s drive refit', 'Rebuilt the cryo banks\' coolant loop in orbit, by hand'] },
+  nakamura: { age: 42, from: 'Southern African Union', record: ['Medicine, Eduardo Mondlane University, Maputo', 'Trauma surgery, Chris Hani Baragwanath, Johannesburg', 'Ran the field hospital at Beira through the floods'] },
+  yurbin: { age: 33, from: 'European Federation', record: ['PhD in astrobiology, Trinity College Dublin, at twenty-six', 'Two winters on the Antarctic lake drills', 'Wrote the contamination protocol the Ariadne flies under'] },
+  estrada: { age: 34, from: 'Pacific Compact', record: ['PhD in plant science, University of Adelaide', 'Bred the salt-tolerant wheat grown on the Murray flats', 'Kept the Ceres outpost\'s hydroponics alive through a year on battery'] },
 };
 /* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
    changed hands shows at a glance. "Scientist (Mac)". */
