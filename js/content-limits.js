@@ -1112,7 +1112,7 @@ add({ id: 'lim.refuse', arc: 'lim.soul', view: 'people', tone: 'pressure', title
 add({ id: 'lim.page', arc: 'lim.soul', view: 'people', tone: 'quiet', title: 'The Only Book', w: 4, gap: 20,
   when: s => (s.flags.stain || 0) >= 4 && s.day >= 520 && !!P(s, 'teacher'),
   setup: s => ({ worst: LF.worst(s) }),
-  text: (s, c) => `${Nc(s, 'teacher')} is writing the colony's history for the school, and has reached the hard years.\n\n"The kids learn it from this. Only book there is, so they'll believe it. I'm asking before I write the page. Do they learn about ${c.worst}?"`,
+  text: (s, c) => `${Nc(s, 'teacher')} is writing the colony's history for the school, and has reached the hard years.\n\n"It's the only book the kids get, so they'll believe every page. Before I write this one: do they learn about ${c.worst}, yes or no?"`,
   choices: [
     { label: 'All of it, and who gave the order', info: [['danger', 'What the children think of the people who raised them']],
       out: { text: 'It is written plainly, in the same hand as the harvest tallies. The first class to read it goes home and asks its parents which of them was there.', fx: { morale: -3, flags: { lim_page: 'true' }, do: s => allRegard(s, 4) } } },

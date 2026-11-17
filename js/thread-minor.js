@@ -154,7 +154,7 @@ OB('read', { id: 'ob.heir', view: 'people', x: true, tone: 'pressure', title: 'S
         fx: s => ({ survey: 8, yield: 0.03, morale: -3, stain: ['torture', 2], do: s2 => { O(s2).heir = 1; saw(s2); clue(s2).learn(s2); clue(s2).learn(s2); } }) } },
   ] });
 OB('read', { id: 'ob.end', chain: true, tone: 'opportunity', title: 'What They Got Wrong',
-  text: s => `The colony has lived beside the old settlement long enough to stop being afraid of it and start learning from it. There are a hundred small lessons. ${Nc(s, 'teacher')} thinks there is room in people's heads for one large one.`,
+  text: s => `The colony has lived beside the old settlement long enough to stop being afraid of it and start learning from it. There are a hundred small lessons. ${Nc(s, 'teacher')} wants one large lesson, and the whole school put on it.`,
   choices: [
     { label: 'Their fields failed first. Change how ours are laid', out: { text: 'They planted in the bottom land, as the colony did. The bottom land is given back to the scrub, with a season of work still in it, and the terraces go up the slope, as theirs should have.', fx: s => ({ yield: 0.07, food: -90, do: s2 => LF.endThread(s2, OID, 'learned') }) } },
     { label: 'They stopped pulling together. Break up our own hoarders', dark: true, note: 'Three households here have a woodpile of their own. They can be made the lesson.', info: [['yield', 'Their stores, and no more hoarding'], ['danger', 'Three households']],

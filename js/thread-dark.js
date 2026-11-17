@@ -49,7 +49,7 @@ const B = (ph, st) => LF.beat(ID, ph, st);
 
 /* ======================= OMEN ======================= */
 B('omen', { id: 'drk.minutes', chain: true, tone: 'pressure', title: 'Two Percent',
-  text: s => `${Nc(s, 'pilot')} has been keeping the old habit of a noon sight, for something to do. The panels agree with the sextant: the sun is giving two percent less than it did at landfall. Last month it was one.\n\n"Could be dust. Could be the glass. I've checked the glass three times."`,
+  text: s => `${Nc(s, 'pilot')} has been keeping the old habit of a noon sight, for something to do. The panels agree with the sextant: the sun is giving two percent less than it did at landfall. Last month it was one.\n\n"Two percent. I've checked the glass three times, and it isn't the glass. Dust is all I've got left."`,
   choices: [
     { label: 'Put every instrument we have on it', test: { base: 55, mods: [R('pilot', 12), R('geologist', 8), If(s => !!(s.cargo && s.cargo.drones), 10, 'The survey drones')] },
       ok: { text: 'A month of readings, taken by people who should have been in the fields, gives a smooth curve. It bends the wrong way.', fx: s => ({ food: -50, do: s2 => learn(s2, T(s2), 40) }) },
