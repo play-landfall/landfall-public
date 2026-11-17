@@ -129,9 +129,9 @@ rep('m.deed', { repeat: 170, k: 'good', when: s => !!deedOne(s), make: s => { co
 const PAST_TAIL = [p => `It came out at supper this month, from someone woken since landing who did not know better. ${p.first} took it well.`,
   p => `Someone woken since landing asked ${p.first} about it this month, across the whole table, and got an answer.`,
   p => `The newly woken have only just heard, and it has been round the mess hall again. ${p.first} has stopped correcting the details.`];
-const pastOne = s => s.people.find(p => p.alive && !p.away && p.role && p.known && p.past && !used(s, 'past:' + p.id));
+const pastOne = s => s.people.find(p => p.alive && !p.away && p.role && p.known && LF.pastOf(p) && !used(s, 'past:' + p.id));
 rep('m.past', { repeat: 200, when: s => s.day > 90 && !!pastOne(s), make: s => { const p = pastOne(s), n = Object.keys(s.mw || {}).filter(k => k.startsWith('past:')).length; mark(s, 'past:' + p.id);
-  return { t: `${p.name} ${lc(p.past)} ${PAST_TAIL[n % 3](p)}`, fx: { do: s2 => { if (p.loyal !== undefined) p.loyal = Math.min(100, p.loyal + 2); } } }; } });
+  return { t: `${p.name} ${lc(LF.pastOf(p))} ${PAST_TAIL[n % 3](p)}`, fx: { do: s2 => { if (p.loyal !== undefined) p.loyal = Math.min(100, p.loyal + 2); } } }; } });
 
 /* A decision that was put to the test, a season on. The ledger has the title and how it went. */
 const WON = [t => `Somebody has painted "${t}" and the date on an offcut of plate and screwed it up in the mess hall.`, t => `People date things from "${t}" now, the way they used to date them from landing.`];

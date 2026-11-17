@@ -15,24 +15,47 @@ LF.makeSlate = function (s) {
   pasts(s); drawHolds(s);
   return true;
 };
-/* A line of past for each officer, drawn per run, so the same office is a different person every game. */
+/* A line of past. The six have their own (LF.OWN_PAST, by p.key), written against LF.BIO, their nature, the portraits and the
+   watch scheme: two or three each, one drawn per run. LF.PAST is for a colonist raised to an empty seat (LF.pastOf): a sleeper's
+   past, so nothing in it happens awake on the voyage and nobody in it is an officer or a captain. */
+LF.OWN_PAST = {
+  solheim: ['Once brought a freighter in to the outer stations by hand, nine days after her main engine died.', 'Was offered a desk after twenty years of freight, and signed on to the Ariadne the same week.',
+    'Has kept a notebook since her first command, and has never let anyone read a page of it.'],
+  dahl: ['Got the scar through his eyebrow on the launch docks, from a man with a forged boarding pass.', 'Ran security on the launch docks through the last year of boarding, when half of Earth wanted a berth.',
+    'Caught eleven stowaways on the launch docks, and remembers what each of them said.'],
+  kovacs: ['Worked six years in the yard that built the Ariadne, and can still find his own welds in her.', 'Left a daughter on Earth, and carries a wrench she painted yellow that nobody else may use.',
+    'Turned down a berth on an earlier ship because he didn\'t trust the yard that built her.'],
+  nakamura: ['Was written up on Earth for operating through an evacuation order, with the patient alive at the end of it.', 'Lost most of a ward in one flood summer on Earth, and was back at work the next morning.',
+    'Signed on the day the manifest opened, before anyone had told her what a surgeon would be paid.'],
+  yurbin: ['Spent fifteen years on the life around deep-sea vents, because it was the strangest he could get to.', 'Applied to the mission four times, and was taken on the fourth.',
+    'Brought forty specimen jars aboard in his own mass allowance, and left most of his clothes behind.'],
+  estrada: ['Was the last of his family to leave the farm, and walked out with the sea at his knees.', 'Kept every fast through the two waking years out from Earth, and worked the hydroponics bay on the days he didn\'t eat.',
+    'Has carried a tin of seed from his family\'s farm since the sea took it, and has not yet planted any.'],
+};
 LF.PAST = ['Grew up on an orbital farm and has never stood under an open sky.', 'Was second choice for the mission, and knows it.', 'Lost a partner to a cryo fault on the voyage.',
-  'Ran a field hospital in a war nobody back home remembers.', 'Spent the whole voyage on the watch rota, awake for eleven of the forty years.', 'Signed on to get away from a family that did not want them back.',
+  'Ran a field hospital in a war nobody back home remembers.', 'Signed on to get away from a family that did not want them back.',
   'Taught children for twenty years before the mission.', 'Built dams on Earth, one of which failed.', 'Was a deep-sea diver before there was a ship to dive from.', 'Came from a desert town that ran out of water.',
-  'Was a stowaway\'s child, made legal by the captain\'s signature.', 'Trained for a different world, and has not forgiven this one.', 'Is the oldest person awake, by a decade.', 'Is the youngest officer the mission ever passed.',
+  'Trained for a different world, and has not forgiven this one.',
   'Has a brother still asleep in orbit.', 'Left a twin on Earth, and talks to them out loud.', 'Wrote half the mission plan, and is not proud of it.', 'Was a priest once, and is not sure what now.',
   'Mined asteroids for a company that no longer exists.', 'Was decorated for something they never talk about.', 'Grew up in a refugee camp on the Ganges delta.', 'Played the cello for a city orchestra, badly, and loved it.',
   'Spent four years in prison for something they did.', 'Was a ranger in the last national park on Earth.', 'Raised three children who stayed behind.', 'Kept bees on a rooftop for thirty years.',
-  'Volunteered the day the mission was announced, and every day after until they were taken.', 'Lost a hand in training, and works better with the one that is printed.', 'Was born on a ship like this one, between two stars.', 'Cooked for a research station in Antarctica for nine winters.',
-  'Sold insurance for fifteen years and still reads the small print on everything.', 'Was the mission\'s last-minute replacement, three days before launch.', 'Fought a fire on the ship in year nineteen that nobody else woke for.',
+  'Volunteered the day the mission was announced, and every day after until they were taken.', 'Lost a hand in training, and works better with the one that is printed.', 'Cooked for a research station in Antarctica for nine winters.',
+  'Sold insurance for fifteen years and still reads the small print on everything.', 'Was the mission\'s last-minute replacement, three days before launch.',
   'Grew up on a fishing boat in the North Sea and gets seasick on land.', 'Ran for mayor of a flooded city, and lost to someone who promised to pump it dry.', 'Was a union organiser on the orbital docks.',
-  'Studied to be a vet, and still talks to machines as if they were animals.', 'Has never told anyone their real age.', 'Was the captain\'s second, until the captain died in the cold.',
-  'Was thrown out of the academy once, and let back in when they ran short.', 'Spent two years alone in a Martian relay station and liked it.', 'Kept a garden on the ship in a locker nobody was meant to know about.',
-  'Was the best chess player on the ship, and the worst loser.', 'Built racing drones as a teenager, and crashed most of them.', 'Testified against a company back home, and left before the verdict.',
-  'Was a translator at three peace talks that all failed.', 'Lost a whole village to a heat wave, and still sleeps with the window open.', 'Was married on the ship, in the one year both were awake.',
+  'Studied to be a vet, and still talks to machines as if they were animals.', 'Has never told anyone their real age.',
+  'Was thrown out of the academy once, and let back in when they ran short.', 'Spent two years alone in a Martian relay station and liked it.',
+  'Built racing drones as a teenager, and crashed most of them.', 'Testified against a company back home, and left before the verdict.',
+  'Was a translator at three peace talks that all failed.', 'Lost a whole village to a heat wave, and still sleeps with the window open.',
   'Climbed every mountain in the Andes over five thousand metres, alone.', 'Was a prison guard before this, and does not talk about it.', 'Reads the same three novels over and over, in rotation.',
   'Swapped places on the manifest with a friend who wanted to stay, and has not decided whether that was kind.', 'Was the mission\'s public face for a year of interviews, and hated every one.', 'Delivered eleven babies in a flooded hospital with the power out.'];
-const pasts = s => { const pool = LF.PAST.slice(); for (const p of s.people) if (p.role && !p.past) p.past = pool.splice(Math.floor(LF.srand(s) * pool.length), 1)[0]; };
+/* One draw each from the people stream, as before, so nothing else in a game moves. */
+const pasts = s => { for (const p of s.people) if (p.role && !p.past) { const r = LF.srand(s), own = LF.OWN_PAST[p.key]; if (own) p.past = own[Math.floor(r * own.length)]; } };
+/* The past to show. One of the six in an old save still carries a line from the old shared pool: it reads as one of their own.
+   A promoted colonist gets a line from LF.PAST by a hash of the name: no dice, no state. */
+const nameHash = p => { let h = 0; for (const ch of p.name || '') h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+LF.pastOf = p => { if (!p) return '';
+  const own = LF.OWN_PAST[p.key]; if (own) return own.includes(p.past) ? p.past : own[nameHash(p) % own.length];
+  return p.past || (p.promoted ? LF.PAST[nameHash(p) % LF.PAST.length] : ''); };
 
 const and3 = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1] : a[0] || '';
 /* Who goes down first: three of the six, marked on one card and confirmed (st.pick, LF.pickConfirm). */
