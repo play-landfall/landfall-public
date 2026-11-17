@@ -40,17 +40,17 @@ Object.assign(LF.ROLES, { command: { title: 'Commander', crew: 'the command staf
 const C = (key, first, last, title, role, trait, vals, want, nature, perks) => ({ key, first, last, title, role, trait, vals, want, nature, perks: perks || [] });
 LF.CAST = {
   command: [C('solheim', 'Marit', 'Solheim', 'Flight Commander', 'pilot', 'stubborn', { free: -1, mercy: -1 }, 'build',
-    'Marit is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see.', ['pathfinder'])],
+    'Marit is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder'])],
   security: [C('dahl', 'Kasimir', 'Dahl', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
-    'Kasimir is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket.')],
+    'Kasimir is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Kasimir would rather it was someone who doesn\'t enjoy it.')],
   engineer: [C('kovacs', 'Bashir', 'Kovacs', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
-    'Bashir is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs.')],
+    'Bashir is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.')],
   doctor: [C('nakamura', 'Amara', 'Nakamura', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
-    'Amara is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it.', ['survivor'])],
+    'Amara is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor'])],
   scientist: [C('yurbin', 'Gerad', 'Yurbin', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
-    'Gerad is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no.')],
+    'Gerad is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.')],
   crew: [C('estrada', 'Tavi', 'Estrada', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
-    'Tavi is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Tavi turns on you.')],
+    'Tavi is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Tavi turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.')],
 };
 function seatPerson(s, seat, n) { const c = LF.CAST[seat][n];
   const p = { id: 'p' + s.people.length, key: c.key, first: c.first, last: c.last, name: c.first + ' ' + c.last, role: c.role, seat, title: c.title, trait: c.trait,
