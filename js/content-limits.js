@@ -612,7 +612,7 @@ add({ id: 'lim.taste', arc: 'lim.hunger', view: 'people', tone: 'quiet', title: 
 add({ id: 'lim.edible', arc: 'lim.hunger', view: 'world', tone: 'pressure', title: 'Edible', w: 3, gap: 14,
   when: s => s.day >= 120 && foodDays(s) < 95 && !!nat(s) && !!P(s, 'xenobio'),
   setup: s => { const f = nat(s); return { fid: f.id, n: f.name, N: f.Name }; },
-  text: (s, c) => `${Nc(s, 'xenobio')} asked to see you alone, and then took a long time to start. The tissue work on ${c.n} is finished. No toxins, the right amino acids, nothing the gut cannot handle.\n\n"The chemistry's perfect, it's almost insulting how perfect, and they're the only big animal on this world we could actually live on, and yes, I know what else they are, I ran it twice hoping I'd botched it. Here. You decide it, because I can't, and I keep catching myself wanting to say yes."`,
+  text: (s, c) => `${Nc(s, 'xenobio')} asked to see you alone, and then took a long time to start. The tissue work on ${c.n} is finished. No toxins, the right amino acids, nothing the gut cannot handle.\n\n"The chemistry's perfect. They're the only big animal on this world we could actually live on. And yes, I know what else they are. I ran it twice hoping I'd botched it. Here. You decide it. Not me."`,
   choices: [
     { label: 'Hunt them', dark: true, test: { base: 55, mods: [R('security', 12)] }, info: [['yield', 'Food'], ['danger', 'Lives']],
       ok: { text: (s, c) => `The watch goes out before light and is back by evening with the carts full and covered. In the kitchen it is cut small and listed as game. By now ${c.n} will have counted their dead.`,
@@ -799,7 +799,7 @@ add({ id: 'lim.roster', arc: 'lim.yoke', view: 'people', tone: 'pressure', title
 
 add({ id: 'lim.splice', arc: 'lim.yoke', view: 'colony', tone: 'opportunity', title: 'People to Find Out On', w: 3, gap: 14,
   when: s => s.day >= 180 && ok(s, 'medbay') && !!P(s, 'xenobio') && foodDays(s) < 120 && !s.flags.lim_splice && s.pop > 26,
-  text: s => `Everything that grows on this world is food for something, and none of it is food for you. ${Nc(s, 'xenobio')} has cultured the gut organisms that break it down and spliced them to live in a human. In a dish it works.\n\n"In a person? No idea, that's the whole point, the first few die of it, I think, and then I learn why, and then it works, and if it works, hold on, think about it, we can eat the ground we're standing on. I need people to find out on, and I know how that sounds."`,
+  text: s => `Everything that grows on this world is food for something, and none of it is food for you. ${Nc(s, 'xenobio')} has cultured the gut organisms that break it down and spliced them to live in a human. In a dish it works.\n\n"In a person? No idea. The first few die of it, I think, then I learn why, then it works. And if it works — we can eat the ground we're standing on. Think about that. I need people to find out on."`,
   choices: [
     { label: 'People who cannot refuse', dark: true, test: { base: 62, mods: [R('physician', 12), M('medbay', 6)] }, info: [['yield', 'Food from the ground, for good'], ['danger', 'Lives']],
       ok: { text: s => `Seven are taken from the lock-up and dosed in a locked ward. Four die in the first week, badly. ${Nc(s, 'xenobio')} changes two things and doses the other three again. They live, and each eats a bowl of boiled groundcover and keeps it down.`,
@@ -1159,7 +1159,7 @@ for (const [id, t] of [['state.unrest', 'severe order'], ['pol.theft', 'severe o
 const W = s => N(s, 'security'), Wc = s => Nc(s, 'security'), Dr = s => Nc(s, 'physician'), Xb = s => Nc(s, 'xenobio');
 const LIMIT = {
   natives: [
-    { k: 'vivisect', ap: 'study', v: 'severe closed', l: x => `A live one, on the table`, n: s => `${Xb(s)} says two days with a live one on the table would teach more than two years of watching, and says it far too happily.`, b: 70, m: ['xenobio', 'physician'],
+    { k: 'vivisect', ap: 'study', v: 'severe closed', l: x => `A live one, on the table`, n: s => `${Xb(s)} would learn more in two days than in two years of watching.`, b: 70, m: ['xenobio', 'physician'],
       ok: [x => `It takes two days to die, and all of it is narrated into a recorder. Everything about ${x.n} is easier after that: what hurts them, what they fear, what they will not leave behind.`, { morale: -2, stain: ['vivisect', 2], f: { insight: 45, accord: -40, harm: 15, kills: 1 } }],
       bad: [x => `It dies in the first hour and tells you nothing. The others saw it carried in.`, { stain: ['vivisect', 1], f: { accord: -50, threat: 15, kills: 1 } }] },
     { k: 'terror', ap: 'exploit', v: 'severe closed', l: x => `Heads on the wire`, n: s => `${Wc(s)} wants them to know what crossing it costs.`, b: 60, m: ['security'],

@@ -58,7 +58,7 @@ const PITCH = {
     go: 'The ground is broken in long strips, by hand, with the whole colony out for the first day.',
     done: s => 'Open fields to the edge of the cleared ground, and a wheat that belongs here growing in them.' },
   smelter: { by: 'geologist', yields: 'Local metal', base: 70,
-    say: s => 'The ore is mapped and it\'s sitting right there, and nearly everything we build after this needs metal, and a rock that turns into a lathe, I mean, come on, you want to see that.',
+    say: s => 'The ore is mapped, and nearly everything we build after this needs metal.',
     go: 'Firebrick is cut from the hillside and the kiln floor is laid.',
     done: s => 'The first pour is a bar the length of a forearm, grey and pitted. It is passed from hand to hand until it is cold.' },
   machineshop: { by: 'engineer', yields: 'Parts, and repairs that hold', base: 55, need: s => s.machines.fabricator.lost ? 40 : (100 - hp(s, 'fabricator')) * 0.4,
@@ -79,7 +79,7 @@ const PITCH = {
     done: s => ({ flare: 'Vaults cut into the rock, lead-lined with ship plate. There is room for everyone, if they stand.', winter: 'Cellars deep enough that the frost does not reach them, shelved to the roof.', storm: 'A wall of fitted stone on the weather side, taller than a person, with the camp in its lee.' })[s.world.climate] },
   // Buildings that matter (WO-3, DESIGN.md "Buildings"). Each need rises when the thing it helps is pressing now.
   lab: { by: 'xenobio', yields: 'Answers, and assays', base: 22, need: s => (s.machines.medbay.up || s.machines.medbay.lost ? 22 : 0) + (unknown(s) ? 20 : 0) + (s.flags.lab_wanted ? 25 : 0),
-    say: s => { const f = unknown(s); return s.machines.medbay.up ? 'The autodoc\'s still in orbit, so nobody down here can culture so much as a, no, look, I don\'t need it, I need benches and a hood and an incubator, give me those and I\'ll hand you a world.' : s.machines.medbay.lost ? 'No autodoc, no assay, every sample we take is sitting in a jar going off while I watch, and I can\'t stand it, give me a room with a cold box and I\'ll get you answers.' : f ? `${f.Name}. What is it? What does it eat? We don't know! Benches, a hood, a month, and I'll tell you.` : 'The soil lab\'s full of wheat, and I love the wheat, but there\'s a whole world out there that isn\'t wheat, and I want a room for every bit of it, there\'s so much of it.'; },
+    say: s => { const f = unknown(s); return s.machines.medbay.up ? 'Autodoc\'s still in orbit. So nobody down here can culture so much as a— look. Benches. A hood. An incubator. That\'s all I want.' : s.machines.medbay.lost ? 'No autodoc. No assay. Every sample we take sits in a jar going off. Give me a room with a cold box and I\'ll get you answers.' : f ? `${f.Name}. What is it? What does it eat? We don't know! Benches, a hood, a month, and I'll tell you.` : 'The soil lab\'s full of wheat. I want a room for everything else on this world. There\'s so much of it.'; },
     go: 'A pod beside the soil laboratory is gutted to the frame, and the benches go in before the walls are lined.',
     done: s => 'Benches down both walls, a fume hood vented through the roof, an incubator humming in the corner and a cold room behind a quilted door. Somebody has already slept in it.' },
   comms: { by: 'pilot', yields: 'Orbit, and the parties, in reach', base: 18, need: s => Math.min(24, LF.inOrbit(s).length * 8) + (s.away.length ? 8 : 0) + (s.flags.qs_dark ? 25 : 0) + (s.flags.comms_wanted ? 20 : 0),

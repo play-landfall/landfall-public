@@ -42,7 +42,7 @@ add({ id: 'crops.first', arc: 'crops', tone: 'pressure', title: 'The Yellow Whea
 
 add({ id: 'crops.native', arc: 'crops', tone: 'opportunity', title: 'Knucklewort',
   when: s => !s.flags.no_native && s.day >= 90 && (s.built.soillab || s.day >= 170),
-  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it, every day for a month, and I'd do it myself, honestly I'd start tonight, if you'd only let me, which you won't, I can see your face."\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
+  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it. Every day, for a month. I'd do it myself if you'd let me—"\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
   choices: [
     { label: s => `Let ${F(s, 'quartermaster')} eat it`, note: 'It is the quickest way to find out, and only one person is at risk.',
       test: { base: 55, mods: [R('physician', 12), M('medbay', 12)] },

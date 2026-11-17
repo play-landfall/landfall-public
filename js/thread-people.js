@@ -46,7 +46,7 @@ LF.thread({ id: NID, name: 'The Neighbours', view: 'world', needs: 'natives',
 const kn = s => { for (const k of ['unexplained', 'changed', 'heard', 'dark', 'sickness', 'fear']) { const src = LF.source(s, k) || ''; if (LF.cv(s, k) >= 35 && src !== 'th.' + NID && LF.clueFor(s, src)) return { k, src, why: LF.because(s, k) }; } return {}; };
 const BN = (ph, st) => LF.beat(NID, ph, Object.assign({ gap: 30 }, st));
 BN('contact', { id: 'nb.belief', chain: true, tone: 'pressure', title: 'What They Take Us For',
-  text: s => `${Nc(s, 'xenobio')} has finally understood something about ${nn(s)}, and wishes it had been sooner. ${BELIEF[NB(s).truth.belief]}.\n\n"Everything they've done since we landed makes sense once you start from there, every single thing, and I could kick myself for not seeing it sooner, because how we must've looked to them, oh, I hate to think."`,
+  text: s => `${Nc(s, 'xenobio')} has finally understood something about ${nn(s)}, and wishes it had been sooner. ${BELIEF[NB(s).truth.belief]}.\n\n"Everything they've done since we landed makes sense once you start from there. Everything! And how we must've looked to them, I hate to think."`,
   choices: [
     { label: 'Tell them plainly what we are', test: { base: 50, mods: [R('xenobio', 12), R('teacher', 8)] },
       ok: { text: 'It takes a model of the ship, a map of the sky and four days. At the end of it they seem to find the colony smaller and a good deal less frightening.', fx: s => ({ do: s2 => { const t = NB(s2); t.told = true; t.lean += 15; fop(s2, t, { accord: 15, insight: 15 }); } }) },

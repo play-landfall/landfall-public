@@ -50,7 +50,7 @@ LF.thread({ id: WID, name: 'The Web', view: 'world', minor: true,
 const wctx = s => { const t = W(s), [a, b] = pair(s, t); return { aid: a.id, bid: b.id, an: a.name, aN: a.Name, bn: b.name, bN: b.Name, bkind: b.kind }; };
 LF.beat(WID, 'hints', { id: 'web.hint', x: true, tone: 'quiet', title: 'A Coincidence',
   setup: s => Object.assign(wctx(s), { why: 'two things the colony treats as separate keep turning up together' }),
-  text: (s, c) => { const t = W(s), [a, b] = pair(s, t); return `${Nc(s, 'xenobio')} has pinned two maps to the same board and keeps looking from one to the other. ${BOND[t.truth.bond].hint(a, b)}\n\n"Could be nothing, two things on one planet, they're bound to overlap somewhere, bound to, but look at it, no, look, just look at where the lines cross, and then tell me it's nothing."`; },
+  text: (s, c) => { const t = W(s), [a, b] = pair(s, t); return `${Nc(s, 'xenobio')} has pinned two maps to the same board and keeps looking from one to the other. ${BOND[t.truth.bond].hint(a, b)}\n\n"Could be nothing. Two things on one planet, they're bound to overlap somewhere. Bound to. But look at it."`; },
   choices: [
     { label: 'Find out whether it is nothing', test: { base: 55, mods: [R('xenobio', 15), R('botanist', 6), If(s => !!(s.cargo && s.cargo.drones), 8, 'The survey drones')] },
       ok: { text: 'A season of tagging, sampling and sitting very still, by people the fields were short of. At the end of it the two maps are one map.', fx: s => ({ food: -50, do: s2 => { W(s2).insight = 100; } }) },
@@ -75,7 +75,7 @@ LF.beat(WID, 'known', { id: 'web.known', chain: true, tone: 'opportunity', title
   ] });
 LF.beat(WID, 'sprung', { id: 'web.sprung', chain: true, x: true, tone: 'crisis', title: 'What It Was Holding Back',
   setup: s => Object.assign(wctx(s), { why: `the colony went hard at ${wctx(s).an}` }),
-  text: (s, c) => { const t = W(s), [a, b] = pair(s, t); return `The colony went hard at ${c.an}, and counted it work well done. ${BOND[t.truth.bond].sprung(a, b)}.\n\n${Nc(s, 'xenobio')} has two maps pinned to one board. "${BOND[t.truth.bond].is(a, b)}. I should've seen it, it was right there on the board, I stood in front of it every day, I was so busy being delighted by it I forgot to be afraid of it."`; },
+  text: (s, c) => { const t = W(s), [a, b] = pair(s, t); return `The colony went hard at ${c.an}, and counted it work well done. ${BOND[t.truth.bond].sprung(a, b)}.\n\n${Nc(s, 'xenobio')} has two maps pinned to one board. "${BOND[t.truth.bond].is(a, b)}. I should've seen it. It was right there on the board."`; },
   choices: [
     { label: (s, c) => `Meet ${c.bn} head on`, test: { base: 45, mods: [R('security', 10), R('physician', 8), R('xenobio', 6)] },
       ok: { text: 'It is met and held, at a price in sleep and stores.', fx: (s, c) => ({ fops: [{ id: c.bid, threat: -22 }], do: s2 => LF.endThread(s2, WID, 'sprung') }) },

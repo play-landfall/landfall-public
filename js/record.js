@@ -51,9 +51,9 @@ const PT = (s, id) => LF.T(s, id);
 const other = (s, ks, not, min) => ks.filter(k => LF.cv(s, k) >= (min || 40) && LF.because(s, k) && !String(LF.source(s, k)).startsWith(not)).sort((a, b) => LF.cv(s, b) - LF.cv(s, a))[0] || null;
 
 /* The Understory: what it keeps. Young (it is learning from the colony), the graves (it keeps the dead, and remembers them), starving (the soil is failing, and the colony's waste is what keeps it alive). */
-const UK = { young: 'It\'s young, a few decades by the rings, no more, and every pattern since we landed it learned off us, off us, which means it\'s learning from us right now, and I don\'t know what we\'re teaching it',
-  graves: 'It keeps what dies in it, ten thousand years of everything buried in that ground, still in the threads somehow, and it\'s been showing us our dead, which is either a courtesy or a threat and I honestly can\'t tell, and I want to know',
-  starving: 'It\'s starving, the old soil\'s worn out, the threads have been shrinking for centuries, and our waste is the first real food it\'s had in, no wait, God knows how long, I can\'t even date it' };
+const UK = { young: 'It\'s young. A few decades, the rings, no more. And every pattern since we landed, it learned off us. Off us',
+  graves: 'It keeps what dies in it. Ten thousand years of everything buried in that ground, still in the threads somehow. It\'s been showing us our dead',
+  starving: 'It\'s starving. The old soil\'s worn out, the threads have been shrinking for centuries. Our waste is the first real food it\'s had in— God knows how long' };
 LF.beat('understory', ['contact', 'after'], { id: 'und.keeps', tone: 'pressure', title: 'What It Keeps', gap: 30,
   when: (s, t) => !t.kept && (s.flags.und_contact || s.flags.und_pact) && !s.flags.und_war && s.day - (s.used['und.pipes'] || s.day) > 60,
   text: s => `${Nc(s, 'xenobio')} has been reading the pulses for a season, with the lamp and a notebook. "${UK[PT(s, 'understory').truth.keeps]}."\n\n${PT(s, 'understory').truth.keeps === 'graves' ? 'Last month the pattern in the south meadow was a face. Three people recognised it.' : PT(s, 'understory').truth.keeps === 'young' ? 'Last month the pattern in the south meadow was the colony\'s own duty rota, copied out in rings.' : 'Last month a whole ring went pale and did not come back.'}`,
@@ -169,9 +169,9 @@ LF.beat('others', 'contact', { id: 'oth.terms', tone: 'pressure', title: 'What t
   ] });
 
 /* The Drummers: why they drew their line. A queen (one warren, one mother, and everything they do is for her), a nation (warrens from coast to coast, and the line is a national border), a drought (their own ground is failing, and they are moving). */
-const HW = { queen: 'There\'s one mother in the warren, one, and every knot in the record is about her, her health, her hunger, her moods, it\'s a whole people taking one pulse, and the line\'s there to keep our noise away from her',
-  nation: 'It\'s one warren of hundreds, coast to coast, and the knots are their law, and the line across the valley is a border, so that\'s two nations, and we\'re the second one, and I\'m not sure they\'ve decided to like us',
-  drought: 'Their own ground\'s failing, the record\'s a count of dry years, each one worse than the last, and they came to this valley for the same reason we did, which I find, I don\'t know, I find that very hard to be angry about' };
+const HW = { queen: 'There\'s one mother in the warren. One! Every knot in the record is about her— her health, her hunger, her moods. The line\'s there to keep our noise away from her',
+  nation: 'It\'s one warren of hundreds, coast to coast, and the knots are their law. The line across the valley is a border. Two nations. We\'re the second one',
+  drought: 'Their own ground\'s failing. The record\'s a count of dry years, each one worse. They came to this valley for the same reason we did' };
 LF.beat('hive', ['contact', 'after'], { id: 'hive.knots', tone: 'pressure', title: 'Reading the Knots', gap: 40,
   when: (s, t) => !t.read && !!s.flags.hive_talk && !s.flags.hive_destroyed && s.day - (s.used['hive.drums'] || s.day) > 60,
   text: s => `${Nc(s, 'xenobio')} has worked out enough of the knots to read a cord end to end, slowly, with a lot of guessing.\n\n"${HW[PT(s, 'hive').truth.why]}."`,
@@ -187,7 +187,7 @@ LF.beat('hive', ['contact', 'after'], { id: 'hive.knots', tone: 'pressure', titl
 LF.beat('hive', ['signs', 'contact', 'after'], { id: 'hive.lean', x: true, tone: 'pressure', title: 'A Lean Season at the Line', gap: 40,
   when: (s, t) => !t.lean && !s.flags.hive_destroyed && !!other(s, ['hunger', 'cold', 'dark', 'storm'], 'hive', 40),
   setup: s => { const k = other(s, ['hunger', 'cold', 'dark', 'storm'], 'hive', 40); return { k, why: LF.because(s, k) }; },
-  text: (s, c) => `${cap(c.why)}. It is a lean season on the other side of the line too. The drummers are at the fence at dusk, more of them every night, thin and quiet. One of them has tied a knot to the gate that ${N(s, 'xenobio')} reads aloud as "hungry", no, "owed", no, both, probably both.`,
+  text: (s, c) => `${cap(c.why)}. It is a lean season on the other side of the line too. The drummers are at the fence at dusk, more of them every night, thin and quiet. One of them has tied a knot to the gate that ${N(s, 'xenobio')} thinks means "hungry", or possibly "owed".`,
   choices: [
     { label: 'Share what can be spared, at the line', cost: { food: 80 }, out: { text: 'Baskets go out at dusk and come back empty. The drumming that night is soft and goes on until dawn.', fx: s => ({ morale: 1, do: s2 => { PT(s2, 'hive').lean = s2.day; if (!s2.flags.hive_enemy && !s2.flags.hive_fenced) s2.flags.hive_treaty = true; } }) } },
     { label: 'Close the gate, and shoot anything that comes over the fence', dark: true, note: 'They are starving, and they will try the fields. The watch can make the first night the only one.', info: [['yield', 'The fields kept'], ['danger', 'Whoever climbs']],
