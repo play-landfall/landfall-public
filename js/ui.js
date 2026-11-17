@@ -53,9 +53,10 @@ function proGo() {
   save(); window.scrollTo(0, 0); render(); cutscene(LFIntro.opening(s, true)); }
 /* The crew file (Lachlan, 2026-11-17): before the first card, the six officers two at a time, like leafing through a dossier. */
 let dossier = -1;
+const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
 function dossierHTML() { const seats = LF.SEAT_ORDER.slice(dossier * 2, dossier * 2 + 2);
   return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of 3</div><h2>Your officers</h2>${dossier === 0 ? '<p>Six officers keep the ship with you. They are awake together for the first two years, and after that two at a time. Every one of them is a department the colony will need, and there is nobody to replace them.</p>' : ''}
-    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)} · ${esc(LF.SEATS[seat].name)}</span><p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
+    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)} · ${esc(LF.SEATS[seat].name)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
     <button class="opt go" data-act="dossier">${dossier < 2 ? 'Next' : 'Begin the voyage'}</button></div>`; }
 function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier > 2) { dossier = -1; return proGo(); } render(); }
 function proHTML() { const y = LF.proYear(s);
