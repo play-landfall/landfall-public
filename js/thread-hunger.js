@@ -264,13 +264,20 @@ const CHAIR = {
   nakamura: c => '"Don\'t you dare take me off the ward," Andrea says. "There\'s eleven in there worse than me. Go and weigh them."',
   yurbin: c => '"It\'s interesting, though, isn\'t it? I eat more than anyone, I\'ve been writing it down," Mac says. "Use me. I\'m the best-kept record you\'ve got."',
   estrada: c => '"I\'ve fasted before. This isn\'t that," Samuel says. "Don\'t feed me ahead of the crews. That\'s all I\'m asking."',
+  // the seats' second officers (2026-11-18), each in their own voice (VOICES.md)
+  achebe: c => `"Listen, I'm not coming off the roster," Lucas says. "Give me something that works, because if you can't, I'll get my coat, and I'd rather we didn't come to that."`,
+  zulu: c => `"I'd rather you heard it from me. I'm starving at a full table, and I'm sorry I hid it," Toby says, "and I'd ask you not to put me on that ward, because I've seen who comes out of it, and they aren't the people who went in."`,
+  halloran: c => `"I've got a season in me, boss, and less if you stick me in a bloody bed," Roberta says. "So tell me what you want fixed first, because I'm not fucking stopping!"`,
+  brandt: c => `"I'm staying on the ward, and a bed won't improve my prognosis," Lou says. "There are people in there worse off than I am. Go and weigh them, since you'd rather read it off a scale than take it from me."`,
+  iyer: c => `"It's of some interest, I think. I eat more than anyone here, and I've been recording it," Michelle says. "Use me, Administrator. I'm the most complete record you have."`,
+  waititi: c => `"I've been hungry before, my friend, and this isn't that," Hamond says. "Feed the crews and the children before me. I eat last, and I won't have it any other way."`,
 };
 const DOSE = { water: 5, gut: -2, seed: -5, fear: 3 };
 B(['apart', 'night', 'choice'], { id: 'wst.chair', tone: 'pressure', title: 'Two Holes in the Belt',
   when: s => LF.SEAT_ORDER.some(r => P(s, r)),
   setup: s => { const t = T(s), pool = LF.SEAT_ORDER.map(r => P(s, r)).filter(Boolean), p = LF.spick(s, pool), c = who(p, 'the night shift lead', 'the shift lead');
     t.chair = { pid: c.pid, name: c.name };
-    return Object.assign(c, base(s, t, c.pid), { kg2: kilos(t) + 6, line: (p.key && LF.CAST[p.seat] && LF.CAST[p.seat][0].key === p.key && CHAIR[p.key] ? CHAIR[p.key]() : `${c.Name} asks for one thing, which is not to be fed ahead of anyone else.`), pot: !!t.pot && !t.banned, ev: pickK(s, t, 0.1) }); },
+    return Object.assign(c, base(s, t, c.pid), { kg2: kilos(t) + 6, line: (p.key && CHAIR[p.key] ? CHAIR[p.key]() : `${c.Name} asks for one thing, which is not to be fed ahead of anyone else.`), pot: !!t.pot && !t.banned, ev: pickK(s, t, 0.1) }); },
   text: (s, c) => `${c.Name} has lost ${num(c.kg2)} kilos, more than anyone on the work crews, and has been hiding it under a coat. It came out when ${c.first} sat down on the yard floor in the middle of giving an order and could not get up.\n\n${c.line}`,
   choices: [
     { label: (s, c) => `Stand ${c.first} down to a bed on the ward`, note: (s, c) => `The department runs on a deputy, and rest has not put weight back on anybody yet.`,
