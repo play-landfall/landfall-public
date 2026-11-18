@@ -1,0 +1,15 @@
+{
+  "id": "soc_line@brandt+achebe",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "The wardroom of the colony ship ariadne at supper, one table and one pot. The waking crew eat in the mess two decks down. The officers eat up here, behind a hatch, and Lou has a reason for wanting that stopped. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.line, version brandt+achebe (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "brandt",
+    "achebe"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: The Wardroom). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

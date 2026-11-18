@@ -38,19 +38,61 @@ function seenThreads() { let past = []; try { past = JSON.parse(localStorage.get
   if (s && s.threads) { const now = Object.keys(s.threads).filter(id => s.threads[id].woke); if (now.length) past = [now].concat(past).slice(0, 2); }
   try { localStorage.setItem('landfall.seen', JSON.stringify(past)); } catch (e) {}
   return [].concat(...past).filter((id, i, a) => a.indexOf(id) === i); }
-function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; if (LF.proDeal) LF.proDeal(s, proSeen()); save(); log('new', { detail: s.premise }); if (quiet) return; render(); window.scrollTo(0, 0); intro(); }
+function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; if (LF.proDeal) LF.proDeal(s, proSeen()); save(); log('new', { detail: s.premise }); pre = null; if (quiet) return; render(); window.scrollTo(0, 0); if (!needCrew()) intro(); }
 function cutscene(shots, title) { if (!window.LFIntro) return; if (window.LFBoot) LFBoot.prefetch(shots.map(x => LFBoot.scene(x.pic))); LFIntro.play(shots, null, title); }
 function intro() { if (!window.LFIntro) return;
   if (!(LF.proOn && LF.proOn(s))) return cutscene(LFIntro.opening(s), true);
   const sh = LFIntro.departure(s); if (window.LFBoot) LFBoot.prefetch(sh.map(x => LFBoot.scene(x.pic)).concat(s.pro.deck.map(id => LFBoot.scene(id.replace(/\./g, '_')))));
-  if (window.LFBoot) LFBoot.prefetch(LF.SEAT_ORDER.map(k => `art/scenes/cast_${LF.CAST[k][0].key}.webp`));
-  LFIntro.play(sh, () => { dossier = 0; window.scrollTo(0, 0); render(); }, true); }
+  LFIntro.play(sh, () => { window.scrollTo(0, 0); proGo(); }, true); }
 /* The voyage out (content-social.js): three cards aboard in the first five years from Earth, then the long sleep and
    the cutscene of what went wrong, then the adrift screen. The cards the player saw lately are dealt last. */
 function proSeen() { try { return JSON.parse(localStorage.getItem('landfall.proSeen')) || []; } catch (e) { return []; } }
 function proGo() {
   if (LF.proNext(s)) { try { localStorage.setItem('landfall.proSeen', JSON.stringify(proSeen().concat(s.cur.id).slice(-9))); } catch (e) {} save(); return arrive(true); }
   save(); window.scrollTo(0, 0); render(); cutscene(LFIntro.opening(s, true)); }
+/* ---------- before the voyage: the ship, then the crew (Lachlan, 2026-11-18; DESIGN.md "Before the voyage") ----------
+   A new game opens on "Select your ship" (only the Ariadne is fitted out) and then "Select your crew": randomise, or go
+   through the six seats and take one of the two officers for each. The picks become s.cast (LF.castPick reads it), the
+   voyage out is dealt again for that crew, and the departure plays. pre is UI state only: until s.cast is set a reload
+   comes back to the ship. */
+let pre = null;
+const needCrew = () => !!(s && s.adrift && !s.cast && s.pro && !s.pro.done && !s.pro.i && !s.cur);
+const SHIP_FACTS = a => [['Length', '182 metres'], ['Crew', `${a.kit.pop} awake at landfall, ${a.kit.sleepers} in cold sleep`], ['Key crew', 'Six officers, two on watch at a time'],
+  ['Drive', 'Antimatter, one long burn out and one in'], ['Power', 'Fusion plant'], ['Range', 'Ten light years'], ['Lander', 'One, with fuel for two flights down'], ['Built', '2140, Huntsville orbital yards']];
+const SEAT_ASKS = { command: 'One of them thinks first of the mission, the other of the people.', security: 'One of them watches the people inside the wire, the other what is outside it.',
+  engineer: 'One of them makes a machine last with what there is, the other wants it done properly.', doctor: 'One of them minds how the patient feels, the other whether they get better and whether it spreads.',
+  scientist: 'One of them wants to know what a thing is, the other what use it is.', crew: 'One of them promises only what the ground will give, the other feeds people first and worries after.' };
+const castImg = (c, cls) => (LF.UNPAINTED || []).includes(c.key) || !SCENES.has('cast_' + c.key) ? `<span class="face none">${ic('people')}</span>`
+  : `<img class="${cls || 'face'}" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async">`;
+const fileCard = (c, i, btn) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${btn || ''}</div></div>`;
+function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrift, st = pre.step;
+  if (st === 'ship') return `<div class="banner"><img class="scene" src="art/scenes/intro_cruise.webp" alt=""></div><div class="card enter dossier"><div class="lbl tone">Outbound from Earth</div><h2>Select your ship</h2>
+    <div class="shipcard on"><b>${esc(a.ship)}</b><span class="lbl">Colony ship · the only one fitted out</span>
+      <dl class="facts">${SHIP_FACTS(a).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>
+    <button class="opt go" data-act="pre" data-v="crew">Take the ${esc(a.ship)}</button></div>`;
+  if (st === 'crew') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)}</div><h2>Select your crew</h2>
+    <p>Six officers keep the ship with you and run the colony's six departments when you land. Two were trained for each post, and they are not alike. Take one of each. The other comes too, as that department's deputy, and takes the chair if the first is lost. After those two there is nobody.</p>
+    <button class="opt go" data-act="pre" data-v="seat0">Choose the command crew</button>
+    <button class="opt go" data-act="pre" data-v="random">Randomise</button>
+    <button class="pbtn back" data-act="pre" data-v="ship">Back to the ship</button></div>`;
+  if (st === 'review') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)} · crew file</div><h2>Your command crew</h2>
+    ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].name)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(c.title)}</span></div></div>`; }).join('')}
+    <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
+    <button class="opt go" data-act="pre" data-v="${pre.rolled ? 'random' : 'seat0'}">${pre.rolled ? 'Roll again' : 'Change them'}</button>
+    ${pre.rolled ? '<button class="pbtn back" data-act="pre" data-v="seat0">Choose them yourself</button>' : ''}</div>`;
+  const n = +st.slice(4), k = LF.SEAT_ORDER[n], S = LF.SEATS[k];
+  return `<div class="card enter dossier"><div class="lbl tone">Command crew · ${n + 1} of ${LF.SEAT_ORDER.length}</div><h2 class="sp sp-${k}">${esc(S.name)}</h2>
+    <p>${esc(S.does)} ${esc(SEAT_ASKS[k])}</p>
+    ${LF.CAST[k].map((c, i) => fileCard(c, i, `<button class="opt go${pre.picks[k] === i ? ' on' : ''}" data-act="pre" data-v="pick${i}">Take ${esc(c.first)}</button>`)).join('')}
+    <button class="pbtn back" data-act="pre" data-v="${n ? 'seat' + (n - 1) : 'crew'}">Back</button></div>`; }
+function preGo(v) { pre = pre || { step: 'ship', picks: {} }; window.scrollTo(0, 0);
+  if (v === 'random') { pre.picks = {}; for (const k of LF.SEAT_ORDER) pre.picks[k] = Math.random() < 0.5 ? 0 : 1; pre.rolled = true; pre.step = 'review'; }
+  else if (v.startsWith('pick')) { const n = +pre.step.slice(4); pre.picks[LF.SEAT_ORDER[n]] = +v.slice(4); pre.rolled = false; pre.step = n + 1 < LF.SEAT_ORDER.length ? 'seat' + (n + 1) : 'review'; }
+  else if (v === 'go') { s.cast = {}; for (const k of LF.SEAT_ORDER) s.cast[k] = pre.picks[k] || 0; pre = null; if (LF.proDeal) LF.proDeal(s, proSeen()); save();
+    log('crew', { detail: LF.SEAT_ORDER.map(k => LF.CAST[k][s.cast[k]].first).join(' ') }); render(); return intro(); }
+  else pre.step = v;
+  render(); }
+
 /* The crew file (Lachlan, 2026-11-17): before the first card, the six officers two at a time, like leafing through a dossier. */
 let dossier = -1;
 const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
@@ -79,7 +121,7 @@ function soundBtn() { const b = $('soundBtn'); if (!b) return; const on = !!(win
 function renderChrome() {
   soundBtn();
   $('app').classList.toggle('pre', LF.aloft(s));
-  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = dossier >= 0 ? 'Outbound from Earth' : s.cur && LF.proYear && LF.proYear(s) ? `Year ${LF.proYear(s)} out from Earth` : 'Adrift · no destination'; return; }
+  if (s.adrift) { $('planet').textContent = s.adrift.ship; $('date').textContent = dossier >= 0 || needCrew() ? 'Outbound from Earth' : s.cur && LF.proYear && LF.proYear(s) ? `Year ${LF.proYear(s)} out from Earth` : 'Adrift · no destination'; return; }
   const d = LF.date(s.day), under = underWay();
   $('planet').textContent = under ? s.world.ship : s.world.planet;
   $('date').textContent = under ? `Under way · ${s.world.star}` : LF.aloft(s) ? 'In orbit' : `Year ${d.year} · month ${d.month} · ${LF.SEASONS[d.season]}`;
@@ -131,6 +173,9 @@ function sceneOf0(c) {
   if (PREFLIGHT[c.id] && SCENES.has(PREFLIGHT[c.id])) return PREFLIGHT[c.id];
   if (c.id === 'plan.sleepers') return c.phase === 'result' ? 'plan_sleepers' : 'sleep_manifest';   // the wake card: the banks while choosing, the landing after
   const k = String(c.id).replace(/\./g, '_');
+  // A voyage card's crew photo is painted for each pair of leads: soc_<id>@<keyA>+<keyB>, the plain one for the first two officers.
+  if (k.startsWith('soc_') && c.ctx && c.ctx.a && LF.castPick) { const ky = x => { const seat = Object.keys(LF.CAST).find(z => LF.CAST[z][0].key === x); return seat ? LF.CAST[seat][LF.castPick(s, seat)].key : x; };
+    const v = `${k}@${ky(c.ctx.a)}+${ky(c.ctx.b)}`; if (SCENES.has(v)) return v; }
   if (SCENES.has(k)) return castScene(k, c);
   if (c.build && SCENES.has('built_' + c.build)) return castScene('built_' + c.build, c);   // a finished build has its own picture
   const pool = BORROW[c.id] ? BORROW[c.id]() : [];
@@ -670,7 +715,7 @@ function render() {
   { const over = s.over && !s.over.cont, v = peek || (s.cur && s.cur.view) || 'colony', on = !s.adrift && !surveying() && !LF.aloft(s) && !over;
     $('hud').innerHTML = on ? stockHTML() : ''; document.documentElement.style.setProperty('--head', ($('app').querySelector('header').offsetHeight || 64) + 'px'); }
   const y = window.scrollY, was = document.querySelector('#view > .vw'), top0 = was && was.getBoundingClientRect().top;
-  $('view').innerHTML = s.adrift ? (dossier >= 0 ? dossierHTML() : s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
+  $('view').innerHTML = s.adrift ? (needCrew() ? preHTML() : dossier >= 0 ? dossierHTML() : s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
   window.scrollTo(0, y);
   // A card that arrives (or changes size as it resolves) pushes the view down: the view glides from where it was.
   const vw = document.querySelector('#view > .vw');
@@ -699,6 +744,7 @@ function act(a, v, el) {
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
+  else if (a === 'pre') return preGo(v);
   else if (s.adrift && !s.cur && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
   else if (a === 'early') { if (review && review.ready) bringCard(); return; }   // never before the bar is full (Lachlan, 2026-11-17)
   else if (a === 'spot') { spot = v; if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } }
@@ -747,7 +793,7 @@ const isNew = !s; if (isNew) fresh(true);
 const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.pro.i;   // closed before the first card of the voyage out: play it from the title
 // The first screen's pictures arrive behind a loading bar on the first visit; everything else loads as it is needed.
 const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? (LF.proOn && LF.proOn(s) ? LFIntro.departure(s) : LFIntro.opening(s)).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
-const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
+const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (needCrew()) { /* the ship and the crew are chosen first; the departure plays after (preGo) */ } else if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
 if (window.LFBoot) LFBoot.first(firstPics.filter(Boolean), start); else start();
 window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, due, REVIEW_MS };
 })();

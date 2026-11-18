@@ -1,0 +1,15 @@
+{
+  "id": "soc_sky@iyer+waititi",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "The flight deck of the colony ship ariadne at night, two officers on watch, stars in the big window. Michelle hasn't looked at the board once. She stands at the big window with the plate reader and a stylus, taking a reading off one patch of sky and writing it down, then taking another. Hamond has come up behind her with a covered pot and a ladle, and is telling the stars it's well past supper. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.sky, version iyer+waititi (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "iyer",
+    "waititi"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: The Big Window). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

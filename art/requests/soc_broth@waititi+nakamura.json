@@ -1,0 +1,15 @@
+{
+  "id": "soc_broth@waititi+nakamura",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "Aboard the colony ship ariadne, in the bay where the work is being done. Andrea has five in the sick bay who aren't getting better and aren't getting worse: a crushed hand, a bad back, a fever that comes and goes. Hamond has been turning up at the end of every shift with a pot, and the five have started to wait for him. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.broth, version waititi+nakamura (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "waititi",
+    "nakamura"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: Lamps and Broth). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

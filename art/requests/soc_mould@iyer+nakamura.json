@@ -1,0 +1,15 @@
+{
+  "id": "soc_mould@iyer+nakamura",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "Aboard the colony ship ariadne, in the bay where the work is being done. A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Andrea has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.mould, version iyer+nakamura (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "iyer",
+    "nakamura"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: Under the Dressing). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

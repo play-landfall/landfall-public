@@ -15,7 +15,16 @@
 (function () {
 'use strict';
 const { add, h } = LF; const { If } = h;
-const FIRST = {}; for (const seat in LF.CAST) for (const c of LF.CAST[seat]) FIRST[c.key] = c.first;
+const FIRST = {}, SEAT_KEY = {}; for (const seat in LF.CAST) for (const c of LF.CAST[seat]) { FIRST[c.key] = c.first; SEAT_KEY[c.key] = seat; }
+/* The cards name their two leads by the first officer of each seat ('dahl', 'yurbin'). Which officer the player took for that
+   seat (s.cast, LF.castPick) decides who is really at the table: pickOf, and nm for the name. Effects stay keyed by the
+   card's own keys and are paid to whoever holds that seat (LF.proApply). */
+const pickOf = (s, k) => { const seat = SEAT_KEY[k]; return LF.CAST[seat][LF.castPick(s, seat)] || LF.CAST[seat][0]; };
+const nm = (s, k) => pickOf(s, k).first;
+const MAIN = {}; for (const seat in LF.CAST) MAIN[LF.CAST[seat][0].first] = LF.CAST[seat][0].key;
+const names = (s, t) => typeof t === 'string' ? t.replace(/\b(Jane|Nolan|Jeremy|Andrea|Mac|Samuel)\b/g, m => nm(s, MAIN[m])) : t;
+const variant = (s, c, id) => { const v = (LF.SOC_ALT || {})[id]; return (v && c && c.a && v[pickOf(s, c.a).key + '+' + pickOf(s, c.b).key]) || null; };
+LF.socVariant = variant;
 // a stable draw from the seed (never s.rng)
 const hash = (seed, k) => { let x = ((seed | 0) ^ 0x9e3779b9) >>> 0; for (const ch of k) x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; x ^= x >>> 13; x = Math.imul(x, 0x5bd1e995) >>> 0; return ((x ^ (x >>> 15)) >>> 0) / 4294967296; };
 
@@ -55,7 +64,7 @@ LF.newGame = function (seed) { const s = newGame0(seed); LF.proDeal(s); return s
 /* At landfall the six exist: pay what the voyage out did to them. */
 LF.proApply = function (s) {
   const P = s.pro; if (!P || P.paid) return; P.paid = true; P.done = true; const X = P.fx || blank();
-  const who = k => s.people.find(p => p.key === k && p.seat);
+  const who = k => LF.officer(s, SEAT_KEY[k]) || s.people.find(p => p.seat === SEAT_KEY[k] && p.key === pickOf(s, k).key) || null;   // whoever the player took for that seat
   for (const k in X.reg) { const p = who(k); if (p) p.loyal = LF.clamp(p.loyal + X.reg[k], 0, 100); }
   for (const stat of ['mind', 'body', 'native']) for (const k in X[stat]) { const p = who(k); if (p && p[stat] !== undefined) p[stat] = LF.clamp(p[stat] + X[stat][k], 1, 100); }
   for (const [a, b, kind, why] of X.bonds) { const pa = who(a), pb = who(b); if (pa && pb) LF.bond(s, pa, pb, kind, why); }
@@ -69,12 +78,12 @@ const regOf = (s, k) => (s.pro && s.pro.fx.reg[k]) || 0;
 const KIT = { food: 'food', parts: 'spare parts' };
 const F = o => s => {
   const chips = [];
-  for (const k in o.reg || {}) { const d = o.reg[k]; if (d >= 4) chips.push([`${FIRST[k]} warms to you`, true]); else if (d <= -3) chips.push([`${FIRST[k]} is put out`, false]); }
-  for (const k in o.nerve || {}) if (o.nerve[k] <= -4) chips.push([`${FIRST[k]} is shaken`, false]);
-  for (const k in o.body || {}) if (o.body[k] < 0) chips.push([`${FIRST[k]} is hurt`, false]);
-  for (const k in o.native || {}) if (o.native[k] >= 4) chips.push([`${FIRST[k]} learns something`, true]);
+  for (const k in o.reg || {}) { const d = o.reg[k]; if (d >= 4) chips.push([`${nm(s, k)} warms to you`, true]); else if (d <= -3) chips.push([`${nm(s, k)} is put out`, false]); }
+  for (const k in o.nerve || {}) if (o.nerve[k] <= -4) chips.push([`${nm(s, k)} is shaken`, false]);
+  for (const k in o.body || {}) if (o.body[k] < 0) chips.push([`${nm(s, k)} is hurt`, false]);
+  for (const k in o.native || {}) if (o.native[k] >= 4) chips.push([`${nm(s, k)} learns something`, true]);
   if (o.bond) { const [a, b, kind] = o.bond, had = s.pro && s.pro.fx.bonds.some(x => x[2] === kind && [x[0], x[1]].sort().join() === [a, b].sort().join());
-    if (!had) chips.push([kind === 'friend' ? `${FIRST[a]} and ${FIRST[b]} are friends now` : `${FIRST[a]} and ${FIRST[b]} are at odds`, kind === 'friend']); }
+    if (!had) chips.push([kind === 'friend' ? `${nm(s, a)} and ${nm(s, b)} are friends now` : `${nm(s, a)} and ${nm(s, b)} are at odds`, kind === 'friend']); }
   for (const k in o.kit || {}) chips.push([`${o.kit[k] > 0 ? '+' : '−'}${Math.abs(o.kit[k])} ${KIT[k]} in the ship's stores`, o.kit[k] > 0]);
   if (o.extra) chips.push(o.extra);
   return { chips, flags: o.flags, do: s2 => { const X = s2.pro && s2.pro.fx; if (!X) return;
@@ -88,12 +97,22 @@ const side = (w, x) => ({ soc_with: w, soc_against: x });
 
 const S = (slot, a, b, st) => {
   CARDS[slot].push({ id: st.id, a, b });
-  const setup0 = st.setup;
+  const setup0 = st.setup, id = st.id, text0 = st.text, fn = v => (typeof v === 'function' ? v : () => v);
+  // Every piece of text comes from the version written for the two officers at the table (LF.SOC_ALT), else from the card as
+  // first written with the names put right.
+  const pre = (s, c, x) => String(x).replace('{SUPPER}', SUPPER).replace('{WATCH}', WATCH(s, c));
+  const piece = (base, i, k) => base === undefined && k !== 'info' ? undefined : (s, c) => { const v = variant(s, c, id), x = v && v.choices[i] && v.choices[i][k];
+    if (x !== undefined && x !== null && x !== '') return x;
+    const b = base === undefined ? undefined : fn(base)(s, c); return Array.isArray(b) ? b.map(p => [p[0], names(s, p[1])]) : names(s, b); };
+  st.choices.forEach((ch, i) => { ch.label = piece(ch.label, i, 'label'); if (ch.note !== undefined) ch.note = piece(ch.note, i, 'note'); if (ch.info !== undefined) ch.info = piece(ch.info, i, 'info');
+    for (const k of ['out', 'ok', 'bad']) if (ch[k]) ch[k].text = piece(ch[k].text, i, k); });
   return add(Object.assign({ view: 'colony', arc: 'voyage', tone: 'quiet', chain: true, alone: true, slot, kicker: `Year ${YEAR_OF[slot]} out from Earth` }, st,
-    { setup: s => Object.assign({ a, b }, setup0 ? setup0(s) : {}) }));
+    { setup: s => Object.assign({ a, b }, setup0 ? setup0(s) : {}),
+      text: (s, c) => { const v = variant(s, c, id); return v ? pre(s, c, v.text) : names(s, text0(s, c)); },
+      titleOf: (s, c) => { const v = variant(s, c, id); return (v && v.title) || st.title; } }));
 };
 const SUPPER = 'The Sun is a bright star behind the ship now. For the first two years all six of your officers stay awake to run the Ariadne in, and every evening they eat together in the wardroom with you: one table, one pot.';
-const WATCH = (s, c) => `The six keep the ship two at a time now: two years awake each, a year with the one before and a year with the one after. This year the watch is ${FIRST[c.a]} and ${FIRST[c.b]}, and the other four are in the cold. Tonight you've come up to the flight deck with three mugs.`;
+const WATCH = (s, c) => `The six keep the ship two at a time now: two years awake each, a year with the one before and a year with the one after. This year the watch is ${nm(s, c.a)} and ${nm(s, c.b)}, and the other four are in the cold. Tonight you've come up to the flight deck with three mugs.`;
 
 /* ================= year 1: the wardroom supper ================= */
 S('meal', 'dahl', 'yurbin', { id: 'soc.jar', title: 'Something in a Jar',
@@ -181,8 +200,8 @@ S('meal', 'nakamura', 'solheim', { id: 'soc.line', title: 'The Wardroom',
   ] });
 
 /* ================= year 2: a second pair of hands (all six still awake, and the crews running the ship in) ================= */
-const trusts = (k, v, label) => If(s => regOf(s, k) >= 4, v, label);
-const sore = (k, v, label) => If(s => regOf(s, k) <= -3, v, label);
+const trusts = (k, v, label) => If(s => regOf(s, k) >= 4, v, s => names(s, label));
+const sore = (k, v, label) => If(s => regOf(s, k) <= -3, v, s => names(s, label));
 
 S('help', 'yurbin', 'nakamura', { id: 'soc.mould', title: 'Under the Dressing',
   text: (s, c) => `A fitter from the hull crew has a gash in the shin that won't close. Nothing heals well in the ship's dry air, and Andrea has cleaned it, cut it back, packed it and cleaned it again. The edges are going grey.\n\nGerad has a fungus out of the soil cores that grows on dead things. "It eats dead tissue, only dead, I've had it on a dish with live cells for a month and it'd rather starve than touch them, and it knows the difference better than we do, isn't that beautiful?"\n\n"You want to put something out of a soil core into an open leg," Andrea says. "In my sick bay. On somebody who'd like to keep both of them."`,

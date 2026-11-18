@@ -1,0 +1,15 @@
+{
+  "id": "soc_count@brandt+solheim",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "The flight deck of the colony ship ariadne at night, two officers on watch, stars in the big window. Jane's notebook has slid out of her jacket where it hangs over the back of a chair, and Lou has picked it up and read it before anyone could say a word. It has nine lines in it, one for every death since the burn: the pods that failed in the first year, the rigger crushed in the spine, each with a name. Jane is standing with a hand out for it. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.count, version brandt+solheim (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "brandt",
+    "solheim"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: Jane's Book). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

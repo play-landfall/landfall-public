@@ -1,0 +1,15 @@
+{
+  "id": "soc_dressing@brandt+zulu",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "this file",
+  "subject": "Aboard the colony ship ariadne, in the bay where the work is being done. Lou wants Toby's watch taught to pack a wound and tie off a bleed: two shifts a month, off their posts. \"Your people are the ones who'll find the injured first, so they may as well be the ones who don't make it worse. That's a clinical argument, whatever your face is telling me about it.\" Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "card": "soc.dressing, version brandt+zulu (js/content-social-alt.js; tests and effects in js/content-social.js)",
+  "setting": "ship",
+  "officers": [
+    "brandt",
+    "zulu"
+  ],
+  "notes": "A crew photo for one pairing of this card's two leads. The incident is NOT the plain soc scene with faces swapped: this version of the card was rewritten for these two people (title: Field Dressing). Read the version's text for what must be visible. Quiet, small stakes, nothing has gone wrong yet.",
+  "requested": "2026-11-18, cloud game session (branch ccr-18cb0294-98v3kn)"
+}

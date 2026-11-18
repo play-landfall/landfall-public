@@ -689,7 +689,7 @@ LF.fire = function (s, id) {
   s.used[id] = s.day; s.nfired = s.nfired || {}; s.nfired[id] = (s.nfired[id] || 0) + 1; s.arcLast[st.arc] = s.day; s.lastTone = st.tone; s.dilemmas++;
   s.tension = clamp(s.tension + ({ crisis: 18, pressure: 8, quiet: -12, opportunity: -4 }[st.tone] || 0), 0, 100);
 };
-LF.view = s => s.cur.gen ? s.cur : { title: LF.byId[s.cur.id].title, tone: LF.byId[s.cur.id].tone, text: LF.byId[s.cur.id].text(s, s.cur.ctx) };
+LF.view = s => s.cur.gen ? s.cur : { title: LF.byId[s.cur.id].titleOf ? LF.byId[s.cur.id].titleOf(s, s.cur.ctx) : LF.byId[s.cur.id].title, tone: LF.byId[s.cur.id].tone, text: LF.byId[s.cur.id].text(s, s.cur.ctx) };
 /* The line over a thread card's title: "The sickness in the well water · after “Not Themselves”, three months ago: Test everyone". */
 LF.storyLine = function (s) { const y = s.cur && s.cur.story; if (!y || (!y.name && !y.prev)) return '';
   const cap = x => x.charAt(0).toUpperCase() + x.slice(1), ago = y.prev ? Math.round((s.day - y.prev.d) / MONTH) : 0;
@@ -756,7 +756,7 @@ function autoInfo(s, ch, c) {
 LF.odds = function (s, test, c) {
   const parts = []; let p = test.base;
   for (const m of test.mods || []) {
-    let v = 0, label = m.label;
+    let v = 0, label = typeof m.label === 'function' ? m.label(s, c) : m.label;   // a label may name whoever holds a seat
     if (m.k === 'role') { const seat = LF.SEAT_OF[m.role] || m.role, x = LF.officer(s, seat), st = LF.seatState(s, seat), S = LF.SEATS[seat];
       // The officer at their post is worth the whole of it, bent by the state they are in (LF.offMods); one who is not here is missed.
       let gone = false;
