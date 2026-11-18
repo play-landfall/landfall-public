@@ -171,7 +171,7 @@ function sceneOf(c) { const k = sceneOf0(c); return k ? hollow(k) : k; }
 const LANDED = d => d.key && SCENES.has('seat_down@' + d.key) ? aged('seat_down@' + d.key) : d.pid ? 'seat_down' : d.sys ? 'ship_cargo' : d.people ? 'plan_sleepers' : 'built_shuttle';
 const PREFLIGHT = { 'seat.down': 'ship_orbit', 'ship.cargo': 'ship_cargo' };
 function sceneOf0(c) {
-  { const k = [].concat(c.scene || []).find(x => SCENES.has(x)); if (k) return castScene(k, c); }   // a party's return with a picture of its own (gen.js card, T2-5): the first of its list that is painted
+  { const k = [].concat(c.scene || (LF.byId[c.id] || {}).scene || []).find(x => SCENES.has(x)); if (k) return castScene(k, c); }   // a party's return with a picture of its own (gen.js card, T2-5): the first of its list that is painted
   if (c.landed && c.down) return LANDED(c.down);
   if (PREFLIGHT[c.id] && SCENES.has(PREFLIGHT[c.id])) return PREFLIGHT[c.id];
   if (c.id === 'plan.sleepers') return c.phase === 'result' ? 'plan_sleepers' : 'sleep_manifest';   // the wake card: the banks while choosing, the landing after

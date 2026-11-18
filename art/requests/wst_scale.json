@@ -1,0 +1,11 @@
+{
+  "id": "wst_scale",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "wst.scale (js/thread-hunger.js)",
+  "setting": "planet",
+  "officers": [],
+  "notes": "The Wasting is over and the colony decides whether to keep weighing itself every month. Quiet, empty room; the scale is the subject. Shows wst_scales until this lands.",
+  "requested": "2026-11-18, ccr-de300821-kpzkip"
+}

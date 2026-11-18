@@ -404,7 +404,7 @@ CI({ id: 'gen.mouths', tone: 'crisis', title: 'Small Bowls', w: 3, repeat: 3 * Y
     { label: 'The crews eat first. The children\'s bowls go to a third', dark: true, info: [['yield', 'Food, and crews who can work'], ['danger', 'The smallest']],
       out: { text: (s, c) => `The field crews get the full ladle and bring the harvest in on it. The children's tables get what is left. The clinic buries ${num(c.kd)} of the smallest before the bins turn, and the ones who lived through it will always be short for their age.`,
         fx: (s, c) => ({ food: 100, morale: -6, stain: ['gn_small_bowls', 2], chips: kidChip(c.kd), do: s2 => young(s2, c.kd) }) } },
-    { label: 'The children eat whole bowls. The oldest go without', dark: true, info: [['yield', 'The children'], ['danger', 'The people past field work']],
+    { label: 'The children eat whole bowls. The people too old for field work go without', dark: true, info: [['yield', 'The children'], ['danger', 'The people past field work']],
       out: { text: 'The children\'s tables are filled first, from the top of the pot. What it costs comes off the plates of the people past field work, who are told why, and mostly agree. Three of them are dead before the bins turn.',
         fx: () => ({ food: 40, pop: -3, morale: -4, stain: ['gn_old_bowls', 2] }) } },
     { label: 'Send the older children out to feed themselves. They know what can be eaten', dark: true, show: (s, c) => c.old, info: [['yield', 'Food'], ['danger', 'The ones who do not come back']],

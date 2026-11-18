@@ -319,7 +319,7 @@ S({ id: 'seed.held', arc: 'seed', view: 'world', tone: 'pressure', title: 'Held,
     return Object.assign(fx0(f), { ok: true, k: k[0], why: LF.because(s, k[0]) }); },
   text: (s, c) => `${c.N} ${c.g.are} back at the line you drew. The line was only ever people on a rota doing a dull job well, and that has given way: ${c.why}.\n\n${Nc(s, 'security')}: "We held ${c.g.them}. Never finished ${c.g.them}. I did bloody say so at the time."`,
   choices: [
-    { label: 'Man the line with the fourteen-year-olds', dark: true, note: 'They are no use in the fields yet, and a horn needs no strength.', info: [['yield', 'A full line, and no hands lost'], ['danger', 'The children on it']],
+    { label: 'Man the line with the children not yet big enough for the fields', dark: true, note: 'They are no use in the fields yet, and a horn needs no strength.', info: [['yield', 'A full line, and no hands lost'], ['danger', 'The children on it']],
       out: { text: (s, c) => `Every child of fourteen and over is given a horn, a blanket and a post, in pairs, two nights in three. The adults stay in the fields. The line is a line again by the end of the month, and school is held in the mornings for children who have been awake all night.`, fx: (s, c) => ({ morale: -3, stain: ['child_watch', 1], do: s2 => held(s2, c) }) } },
     { label: (s, c) => `Go out and push ${c.g.them} back`, test: { base: 52, mods: [R('security', 12)] },
       ok: { text: (s, c) => `It is done in two days, in the open, and the line is moved out a hundred metres to mark it.`, fx: (s, c) => ({ morale: 2, do: s2 => held(s2, c) }) },

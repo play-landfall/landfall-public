@@ -356,15 +356,20 @@ BB('found', { id: 'body.truth', chain: true, tone: 'pressure', title: 'What Happ
     if (t.truth.who === 'close') return `${r ? r.name : 'Someone close to ' + c.vfirst}, who was closest to ${c.vfirst} of anyone, killed ${c.vfirst} and let the colony go on blaming ${c.sname}, because everyone already had that name ready.\n\n${r && r.alive ? `${r.first} does not deny it.` : 'The one who did it is beyond the colony\'s reach now.'}`;
     return `It was ${c.sname}. There was an argument, the same one as always, and it ended at the foot of the ladder. ${r && r.alive ? `${r.first} does not deny it, and does not explain it either.` : 'The one who did it is beyond the colony\'s reach now.'}`; },
   choices: [
-    { label: 'Exile', note: 'Out past the markers, for good.', req: s => ok(real(s)), reqText: 'Nobody to exile',
+    { label: 'Exile', note: 'Out past the markers, for good.', show: s => BD(s).truth.who !== 'accident', req: s => ok(real(s)), reqText: 'Nobody to exile',
       out: { text: (s, c) => `${c.rname} walks out past the markers with a pack and a knife. The colony goes quiet for a month.`, fx: (s, c) => ({ morale: -2, do: s2 => { const p = byPid(s2, c.rpid); if (p && p.alive) { p.alive = false; p.left = s2.day; p.cause = 'exiled'; s2.pop--; if (p.role) s2.vacancies.push({ role: p.role, day: s2.day + 40 }); } const t = BD(s2); t.solved = s2.day; LF.endThread(s2, BID, 'judged', `${c.rname} was exiled for the death of ${c.vname}.`); } }) } },
-    { label: 'Hard labour, and the colony watches it done', req: s => ok(real(s)), reqText: 'Nobody to sentence',
+    { label: 'Hard labour, and the colony watches it done', show: s => BD(s).truth.who !== 'accident', req: s => ok(real(s)), reqText: 'Nobody to sentence',
       out: { text: (s, c) => `${c.rname} works the drainage cuts alone for a season, in plain sight, and eats alone after.`, fx: (s, c) => ({ do: s2 => { const p = byPid(s2, c.rpid); if (p && p.alive) { p.marks.convict = { d: s2.day, txt: `served a sentence for the death of ${c.vname}` }; p.loyal = clamp(p.loyal - 15, 0, 100); } BD(s2).solved = s2.day; LF.endThread(s2, BID, 'judged', `${c.rname} was sentenced for the death of ${c.vname}.`); } }) } },
     { label: (s, c) => BD(s).truth.who === 'accident' ? `Clear ${c.sfirst}'s name, in front of everyone` : 'Say what happened, and leave it there', out: { text: (s, c) => BD(s).truth.who === 'accident' ? `You say it in the mess hall: it was a fall, and ${c.sfirst} had nothing to do with it. A few people go over and shake ${c.sfirst}'s hand. Most do not know where to look.` : 'It is told once, plainly. There is no sentence. Some people think that is mercy, and some think it is weakness.',
       fx: (s, c) => ({ do: s2 => { const t = BD(s2), q = byPid(s2, c.spid); t.solved = s2.day; if (t.truth.who === 'accident') { if (q && q.alive) q.loyal = clamp(q.loyal + 15, 0, 100); LF.ease(s2, 'suspicion', 'body.truth', 25, 150); LF.endThread(s2, BID, 'fall', `${c.vname}'s death was proved a fall.`); } else { LF.emit(s2, 'resentment', 'body.truth', 25, 200, `nobody was punished for ${c.vname}'s death`); LF.endThread(s2, BID, 'judged', `It came out who killed ${c.vname}, and nothing more was done.`); } } }) } },
-    { label: 'A rope, at the foot of the same ladder', dark: true, req: s => ok(real(s)), reqText: 'Nobody to hang', note: 'The colony has never killed one of its own by decision. After this it will have.', info: [['yield', 'It is finished, and seen to be'], ['danger', 'What the colony can now do']],
+    { label: 'A rope, at the foot of the same ladder', dark: true, show: s => BD(s).truth.who !== 'accident', req: s => ok(real(s)), reqText: 'Nobody to hang', note: 'The colony has never killed one of its own by decision. After this it will have.', info: [['yield', 'It is finished, and seen to be'], ['danger', 'What the colony can now do']],
       out: { text: (s, c) => `It is done at dusk, where ${c.vname} was found, with everyone there who chose to be, and that was nearly everyone. ${c.rname} says nothing. Afterwards people stand about as if waiting to be told it was right. For a long time nobody raises a hand to anyone.`,
         fx: (s, c) => ({ kill: [{ who: c.rpid, cause: `hanged for the death of ${c.vname}` }], morale: 4, stain: ['rope', 1], do: s2 => { BD(s2).solved = s2.day; LF.ease(s2, 'suspicion', 'body.truth', 25, 150); LF.emit(s2, 'fear', 'body.truth', 30, 250, 'the colony has hanged one of its own'); LF.endThread(s2, BID, 'judged', `${c.rname} was hanged for the death of ${c.vname}.`); } }) } },
+    // a fall (2026-11-18): the other answer, so the card asks something when there is nobody to sentence
+    { label: 'Say nothing in the hall. Let the talk die down on its own', show: s => BD(s).truth.who === 'accident', note: (s, c) => `${c.sfirst} goes on carrying it for a while, and the colony never has to say it was wrong.`,
+      info: (s, c) => [['yield', 'No scene in the mess hall'], ['danger', c.sfirst || 'The one suspected']],
+      out: { text: (s, c) => `The finding goes in the record and nowhere else. The talk about ${c.sfirst} thins out over a season without ever quite stopping, and ${c.sfirst} eats at the end of the table now, by choice.`,
+        fx: (s, c) => ({ do: s2 => { const t = BD(s2), q = byPid(s2, c.spid); t.solved = s2.day; if (q && q.alive) q.loyal = clamp(q.loyal - 10, 0, 100); LF.ease(s2, 'suspicion', 'body.truth', 12, 150); LF.endThread(s2, BID, 'fall', `${c.vname}'s death was found to be a fall, and nobody was told.`); } }) } },
   ] });
 BB('found', { id: 'body.blame', view: 'people', tone: 'pressure', title: 'Enough Is Known',
   when: (s, t) => !t.truthCued && !t.blamed && s.day - t.since > 50 && t.called !== 'fall' && ok(sus(s)),
@@ -383,7 +388,7 @@ BB('found', { id: 'body.blame', view: 'people', tone: 'pressure', title: 'Enough
   ] });
 LF.TAGS['body.found'] = ['order cautious', 'free open', 'order closed', 'severe order'];
 LF.TAGS['body.locked'] = ['severe order', 'cautious mercy', 'severe order'];
-LF.TAGS['body.truth'] = ['severe', 'order severe', 'mercy', 'severe order'];
+LF.TAGS['body.truth'] = ['severe', 'order severe', 'mercy', 'severe order', 'order'];
 LF.TAGS['body.blame'] = ['severe bold', 'mercy cautious', 'severe order'];
 
 /* ======================= WHAT WE CARRIED ======================= */

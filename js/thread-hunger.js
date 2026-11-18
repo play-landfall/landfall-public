@@ -440,10 +440,21 @@ B('after', { id: 'wst.truth', tone: 'quiet', title: 'What the Wasting Was',
     return `${WAS[c.k](c)} ${TAIL[c.end](c)}\n\n${reckon(s, t, c, false)}${c.toll ? ` In all, the wasting cost ${num(c.toll)} colonists${c.feud ? `, ${num(Math.min(c.feud, c.toll))} of them killed by their neighbours` : ''}.` : ''}`; },
   choices: [
     { label: 'Enter what was done in the record, with the names', note: 'Everyone who held an arm, a cup or a tube has to live beside the page.',
-      out: { text: 'It goes into the colony record in full, in your hand, with who gave each order and who carried it out. People read it. Some of them stop greeting you, and one or two start.', fx: s => ({ morale: -2, chron: 'The colony wrote down what it had done about the wasting, with the names.' }) } },
+      out: { then: 'wst.scale', text: 'It goes into the colony record in full, in your hand, with who gave each order and who carried it out. People read it. Some of them stop greeting you, and one or two start.', fx: s => ({ morale: -2, chron: 'The colony wrote down what it had done about the wasting, with the names.' }) } },
     { label: 'Enter the dead as lost to a fever in the first seasons', dark: true, note: 'The colony gets a record it can live beside, and the people it starved, scoured or put out are written down as an act of the place.', info: [['yield', 'Morale']],
-      out: { text: 'The record says that a fever went through the colony in its first seasons and took a number of the weakest. The weigh sheets are not kept with it. It is the version the children will be taught.',
+      out: { then: 'wst.scale', text: 'The record says that a fever went through the colony in its first seasons and took a number of the weakest. The weigh sheets are not kept with it. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['wst_record', 1], chron: 'The record says that a fever went through the colony in its first seasons.' }) } },
+    // the scale is its own card since 2026-11-18 (wst.scale): two questions on one card read as one. Kept hidden here, so option ids hold.
+    { label: 'Keep the monthly weighing, for good', show: () => false, note: 'The colony will see the next thing coming, and will stand in a queue every month to be reminded of this one.',
+      out: { text: 'The scale stays in the mess, bolted to the floor. On the first evening of every month the colony goes over it with its boots off, and the sheet goes up on the door. People read their own line first, and then their children\'s.',
+        fx: s => ({ morale: -1, do: s2 => { LF.emit(s2, 'fear', 'wst.weighing', 20, 200, 'the colony is weighed every month and reads the sheet'); } }) } },
+    { label: 'Break up the scale', show: () => false, note: 'Nobody is weighed again, and the next time something of the kind begins, the belts will be the first to know.',
+      out: { text: 'The scale is taken out to the yard and broken up for its metal, with most of the hall there to see it. The last sheet is left on the mess door until the weather takes it.',
+        fx: s => ({ morale: 2 }) } },
+  ] });
+B('after', { id: 'wst.scale', tone: 'quiet', title: 'The Scale in the Mess', scene: ['wst_scale', 'wst_scales'],
+  text: () => `The record is written. The scale is still bolted to the mess floor where the clinic put it, and the last weigh sheet is still on the door. Nobody has stood on it since, and nobody walks round it without looking.`,
+  choices: [
     { label: 'Keep the monthly weighing, for good', note: 'The colony will see the next thing coming, and will stand in a queue every month to be reminded of this one.',
       out: { text: 'The scale stays in the mess, bolted to the floor. On the first evening of every month the colony goes over it with its boots off, and the sheet goes up on the door. People read their own line first, and then their children\'s.',
         fx: s => ({ morale: -1, do: s2 => { LF.emit(s2, 'fear', 'wst.weighing', 20, 200, 'the colony is weighed every month and reads the sheet'); } }) } },
@@ -462,6 +473,7 @@ LF.TAGS['wst.choice'] = ['bold open', 'severe bold', 'cautious order', 'severe o
 LF.TAGS['wst.refuse'] = ['severe order', 'free mercy', 'severe closed', 'cautious free'];
 LF.TAGS['wst.weigh'] = ['cautious order', 'bold', 'severe order', 'closed order'];
 LF.TAGS['wst.truth'] = ['open', 'closed order', 'cautious order', 'free'];
+LF.TAGS['wst.scale'] = ['cautious order', 'free'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

@@ -360,6 +360,9 @@ add({ id: 'winter.strike', arc: 'winter', tone: 'crisis', title: 'The Dim', repe
     { label: 'Heat one pod. The diggers and the children go in it', dark: true, show: s => !s.built.shelter, note: 'One pod can be kept warm on almost nothing, and everyone else gets blankets and each other.', info: [['yield', 'The reactor and the timber spared'], ['danger', 'Everyone not in the pod']],
       out: { text: s => `${Nc(s, 'quartermaster')} reads the list at the pod door. The ones on it go in without looking back. The others double up in the cold pods under every blanket there is. Six of them are carried out stiff before the month is over, and the people who carry them are from the warm pod.`,
         fx: { pop: -6, morale: -5, flags: { ration_by_work: true }, stain: ['cold', 2], chron: 'In the Dim the colony heated one pod, for those it could least spare. Six of the others froze.' } } },
+    // with the cellars dug (2026-11-18): the other answer, so the card asks something
+    { label: 'Keep the yard working up top, in two-hour shifts', show: s => !!s.built.shelter, note: 'The build does not stop for the dark. Forty below takes fingers in two hours.', info: [['yield', 'Materials'], ['danger', 'The shift crews']],
+      out: { text: 'The crews go up in pairs, two hours at a time, and come down grey and shaking to the cellar stoves. The yard keeps moving all through the Dim. Two of them lose fingers. An old man who went up for a third shift nobody asked of him does not come down.', fx: { mat: 30, pop: -1, morale: -2 } } },
   ] });
 add({ id: 'winter.long', arc: 'winter', tone: 'crisis', title: 'The Thaw That Did Not Come',
   when: s => LF.date(s.day).year >= 3 && season(s) === 0 && LF.date(s.day).dos <= 12,

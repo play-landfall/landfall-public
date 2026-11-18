@@ -93,7 +93,7 @@
     'dw.first': 'trap_line', 'dw.fields': 'spines', 'dw.bench': 'jars', 'dw.hater': 'bag', 'dw.wall': 'wire_night', 'dw.walker': 'seed_walk', 'dw.place': 'bearings',
     'dw.choice': 'three_ways', 'dw.ash': 'black_ground', 'dw.open': 'open_gate', 'dw.siege': 'far_beds', 'dw.truth': 'tally_board',
     'wst.scales': 'scale', 'wst.well': 'thin_mess', 'wst.pot': 'pot', 'wst.open': 'ward_door', 'wst.chair': 'slump', 'wst.night': 'mess_floor',
-    'wst.choice': 'four_things', 'wst.refuse': 'refusal', 'wst.weigh': 'scale', 'wst.truth': 'scale_yard',
+    'wst.choice': 'four_things', 'wst.refuse': 'refusal', 'wst.weigh': 'scale', 'wst.scale': 'scale', 'wst.truth': 'scale_yard',
     'fer.midden': 'bone_pit', 'fer.gone': 'drag_marks', 'fer.warren': 'warren', 'fer.caught': 'prisoner', 'fer.woke': 'gate_plea', 'fer.ask': 'questioning', 'fer.raid': 'wire_raid',
     'fer.ours': 'gate_bars', 'fer.choice': 'hill_plan', 'fer.young': 'feral_young', 'fer.lean': 'silent_crowd', 'fer.truth': 'dead_hill',
     'hu.first': 'footsteps', 'hu.wire': 'wire_night', 'hu.seen': 'whisper', 'hu.roof': 'bunk_move', 'hu.trap': 'trap_line', 'hu.out': 'gate_bars', 'hu.two': 'night_council',
