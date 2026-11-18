@@ -72,10 +72,17 @@ function opening(s, rest) {
     .concat([Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead)]));
 }
 /* A new game with a voyage out: the burn that leaves Earth, and the ship under way, before the first card. */
+const DEPART_FILM = false, DEPART_CUTS = [0, 4.6, 9.2, 13.8], DEPART_MS = 18800;   // from `python3 tools/video.py film`
 function departure(s) {
   const ship = s.adrift ? s.adrift.ship : s.world.ship;
-  return [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `The ${ship} lights its drive and leaves Earth.` },
+  const stills = [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `The ${ship} lights its drive and leaves Earth.` },
     layered('cruise', `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`)];
+  // The film (tools/video.py film): the Ariadne new, as she left. Four shots; DEPART_CUTS is where each starts, in seconds.
+  // Off until there is a film whose ship is the Ariadne: the first cut (2026-11-18, Wan reference-to-video) drew a different ship.
+  if (!DEPART_FILM) return stills;
+  return [{ video: 'departure', ms: DEPART_MS, alt: stills, sfxAt: [[DEPART_CUTS[1] + 2.4, 'burn']], caps: [
+    [0.3, `The ${ship}, new from the yards, in orbit over Earth.`], [DEPART_CUTS[1], 'She lights her drive.'],
+    [DEPART_CUTS[2], 'Earth falls behind.'], [DEPART_CUTS[3], `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`]] }];
 }
 /* After the burn is committed: the engines, the years, the new world, and orbit. Nobody goes down yet: the survey
    from orbit and the choice of who goes first come before the descent. */
@@ -108,7 +115,7 @@ const WARN = `<div class="warn"><p>Landfall is a game about keeping a colony ali
 function play(shots, cb, title) {
   finish(); document.querySelectorAll('#intro').forEach(e => { unsky(e); e.remove(); }); done = cb;
   const have = new Set(LF.SCENES || []), pieces = new Set(LF.PIECES || []);
-  const ok = x => x.layers ? x.layers.every(l => !l.src || pieces.has(l.src.replace(/^art\/pieces\//, '').replace(/\.\w+$/, ''))) : have.has(x.pic);
+  const ok = x => x.video ? true : x.layers ? x.layers.every(l => !l.src || pieces.has(l.src.replace(/^art\/pieces\//, '').replace(/\.\w+$/, ''))) : have.has(x.pic);
   // a layered shot whose sprites are missing falls back to its picture, if it has one
   shots = shots.map(x => ok(x) || !x.alt ? x : Object.assign({ line: x.line }, x.alt)).filter(ok);
   if (!shots.length && !title) return finish();   // the title card can be shown alone (the ship and crew are chosen before the departure)
@@ -134,6 +141,7 @@ function play(shots, cb, title) {
   const next = () => {
     if (i >= shots.length) return finish();
     const x = shots[i++], sh = document.createElement('div');
+    if (x.video) return film(x, sh);
     sh.className = `shot ${x.move || ''} ${x.fx || ''}`;
     sh.style.setProperty('--ms', (x.ms || SHOT_MS) + 'ms');
     sh.innerHTML = `<div class="frame${x.layers ? ' layered' : ''}">${x.layers ? x.layers.map(layer).join('') : `<img src="art/scenes/${x.pic}.webp" alt="">`}<i class="fx"></i></div><p>${x.line.replace(/\S+-\S+/g, w => `<span style="white-space:nowrap">${w}</span>`)}</p>`;
@@ -143,6 +151,24 @@ function play(shots, cb, title) {
     const old = stage.querySelectorAll('.shot'); if (old.length > 2) { unsky(old[0]); old[0].remove(); }
     if (x.sfx && window.LFMusic) LFMusic.sfx(x.sfx);
     timer = setTimeout(next, x.ms || SHOT_MS);
+  };
+  /* A film (2026-11-18): one MP4 of several shots, muted (the game plays its own sound), with captions timed to the cut
+     (caps: [[seconds, line]]) and sounds (sfxAt: [[seconds, name]]). If it cannot play, the stills in x.alt stand in. */
+  const film = (x, sh) => {
+    sh.className = 'shot film';
+    sh.innerHTML = `<div class="frame"><video muted playsinline preload="auto" poster="art/video/${x.video}.webp" src="art/video/${x.video}.mp4"></video><i class="fx"></i></div><p></p>`;
+    const v = sh.querySelector('video'), p = sh.querySelector('p'); let cap = -1, fired = 0, dead = false;
+    const stills = () => { if (dead) return; dead = true; clearTimeout(timer); sh.remove(); shots = shots.slice(0, i).concat((x.alt || []).filter(ok), shots.slice(i)); next(); };
+    const words = t => t.replace(/\S+-\S+/g, w => `<span style="white-space:nowrap">${w}</span>`);
+    v.addEventListener('timeupdate', () => { const at = v.currentTime; let k = -1; (x.caps || []).forEach((c, n) => { if (at >= c[0]) k = n; });
+      if (k !== cap) { cap = k; p.style.animation = 'none'; p.innerHTML = k < 0 ? '' : words(x.caps[k][1]); void p.offsetWidth; p.style.animation = 'i-caption 1200ms cubic-bezier(.2,.6,.2,1) forwards'; }
+      while (fired < (x.sfxAt || []).length && at >= x.sfxAt[fired][0]) { if (window.LFMusic) LFMusic.sfx(x.sfxAt[fired][1]); fired++; } });
+    v.addEventListener('ended', () => { if (!dead) { dead = true; clearTimeout(timer); next(); } });
+    v.addEventListener('error', stills);
+    for (const o of stage.querySelectorAll('.shot.on')) o.classList.add('off');
+    stage.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on'));
+    const pl = v.play(); if (pl && pl.catch) pl.catch(stills);
+    timer = setTimeout(() => { if (!dead) { dead = true; next(); } }, (x.ms || 30000) + 4000);   // never hang on a stalled download
   };
   if (!waiting) next();
 }

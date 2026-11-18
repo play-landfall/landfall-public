@@ -214,6 +214,7 @@ main { flex:1; padding:6px 12px 40px; }
 #intro .shot.on { opacity:1; }
 #intro .frame { position:absolute; inset:0; overflow:hidden; background:#05080d; }
 #intro .frame:not(.layered) > img { width:100%; height:100%; object-fit:cover; will-change:transform; }
+#intro .frame > video { width:100%; height:100%; object-fit:cover; display:block; background:#05080d; }
 /* caption over a dark fade at the foot of the picture */
 #intro .shot::after { content:''; position:absolute; left:0; right:0; bottom:0; height:46%; background:linear-gradient(rgba(5,8,13,0), rgba(5,8,13,.88) 60%); pointer-events:none; }
 #intro .shot p { position:absolute; z-index:1; left:0; right:0; bottom:calc(64px + env(safe-area-inset-bottom)); margin:0 auto; max-width:520px; padding:0 28px;
