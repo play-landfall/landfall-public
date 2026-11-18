@@ -64,7 +64,8 @@ const SHIP_FACTS = a => [['Length', '182 metres'], ['Crew', `${a.kit.pop} awake 
 const SEAT_ASKS = { command: 'One of them thinks first of the mission, the other of the people.', security: 'One of them watches the people inside the wire, the other what is outside it.',
   engineer: 'One of them makes a machine last with what there is, the other wants it done properly.', doctor: 'One of them minds how the patient feels, the other whether they get better and whether it spreads.',
   scientist: 'One of them wants to know what a thing is, the other what use it is.', crew: 'One of them promises only what the ground will give, the other feeds people first and worries after.' };
-const castImg = (c, cls) => (LF.UNPAINTED || []).includes(c.key) || !SCENES.has('cast_' + c.key) ? `<span class="face none">${ic('people')}</span>`
+const facePainted = key => !!key && !(LF.UNPAINTED_FACES || LF.UNPAINTED || []).includes(key);
+const castImg = (c, cls) => !facePainted(c.key) || !SCENES.has('cast_' + c.key) ? `<span class="face none">${ic('people')}</span>`
   : `<img class="${cls || 'face'}" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async">`;
 const fileCard = (c, i, btn) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${btn || ''}</div></div>`;
 function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrift, st = pre.step;
@@ -404,8 +405,8 @@ function workLine() { const w = s.cur.aboard ? null : LF.cardWork(s); if (!w) re
 // Aboard (still in orbit) the picture is cast_<key>_ship, the ship jumpsuit, where it has been painted.
 const castFace = p => p.orbit && SCENES.has('cast_' + p.key + '_ship') ? 'cast_' + p.key + '_ship' : hollow(aged('cast_' + p.key));
 function faceOf(p) {
-  if (p && p.key && !painted(p.key)) return null;   // one of the twelve whose portrait is not painted yet: the icon, never a stranger's face
-  if (p && painted(p.key) && SCENES.has('cast_' + p.key)) return `<img class="face" src="art/scenes/${castFace(p)}.webp" alt="" loading="lazy" decoding="async">`;   // the officers have a face of their own
+  if (p && p.key && !facePainted(p.key)) return null;   // one of the twelve whose portrait is not painted yet: the icon, never a stranger's face
+  if (p && facePainted(p.key) && SCENES.has('cast_' + p.key)) return `<img class="face" src="art/scenes/${castFace(p)}.webp" alt="" loading="lazy" decoding="async">`;   // the officers have a face of their own
   const deck = FACES.slice(); let h = s.seed | 0;
   for (let i = deck.length - 1; i > 0; i--) { h = (Math.imul(h, 1103515245) + 12345) | 0; const q = (h >>> 8) % (i + 1); [deck[i], deck[q]] = [deck[q], deck[i]]; }
   const k = `lib_portrait_${String(deck[(+p.id.slice(1)) % deck.length]).padStart(2, '0')}`;

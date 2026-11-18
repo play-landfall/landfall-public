@@ -111,6 +111,9 @@ LF.says = function (s, k, lines, plain) { const p = LF.officer(s, k), l = p && p
    2026-11-15). The local art session repaints them; take a key out of this list when its files have landed. Until then
    the UI gives that officer a stand-in face and the plain scene. */
 LF.UNPAINTED = ['achebe', 'zulu', 'halloran', 'brandt', 'iyer', 'waititi'];
+/* The same for the portraits alone (cast_<key>, _hollow, _old, _old_hollow, _ship): they land hours before the scenes, and
+   the player picks the crew from them (Lachlan, 2026-11-18). The local art session takes a key out when all five are in. */
+LF.UNPAINTED_FACES = ['zulu', 'halloran', 'iyer', 'waititi'];
 /* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
    changed hands shows at a glance. "Scientist (Mac)". */
 LF.SEAT_SHORT = { command: 'Commander', security: 'Security', engineer: 'Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
