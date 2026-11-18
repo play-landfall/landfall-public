@@ -259,21 +259,21 @@ add({ id: 'pol.mutiny', urgent: true, arc: 'politics', tone: 'crisis', title: 'T
   ] });
 LF.TAGS['pol.mutiny'] = ['order severe', 'free', 'severe', 'severe order'];
 /* ================= GENERATIONS =================
-   The founders do not last for ever. Years in, an officer who came down on the first lander wants to hand the
-   office to someone younger: planet-born, if the colony has started having children. */
-const founder = s => s.people.find(p => p.alive && p.role && p.seat && !p.alt && !p.green && !p.promoted && !p.orbit && !p.away && p.known && !p.marks.stayed_on && p.trait !== 'stubborn');
+   The founders do not last for ever. Years in, an officer who has held the chair since landfall wants to hand the
+   office to the deputy, the seat's other officer (2026-11-18: never to a colonist). Only while there is a deputy left. */
+const founder = s => s.people.find(p => p.alive && p.role && p.seat && !p.alt && !p.green && !p.promoted && !p.orbit && !p.away && p.known && !p.marks.stayed_on && p.trait !== 'stubborn' && LF.altOf(s, p.seat));
 add({ id: 'q.handover', view: 'people', arc: 'quiet', tone: 'quiet', title: 'The Old Hands', repeat: 200, max: 3, w: 1.4,
   when: s => s.day >= 600 && !!founder(s),
-  setup: s => { const p = founder(s); return { pid: p.id, name: p.name, first: p.first, role: p.role, title: LF.title(p) }; },
-  text: (s, c) => `${c.name} has been ${c.title} since before the ${s.world.ship} made orbit, and has decided that is long enough. "I've got someone in mind. ${s.flags.births ? 'Born here. Never seen any other sky.' : 'Younger than me, which is most people now.'} Knows the job better than I did when I started."`,
+  setup: s => { const p = founder(s); return { pid: p.id, name: p.name, first: p.first, role: p.role, title: LF.title(p), alt: LF.altOf(s, p.seat).first }; },
+  text: (s, c) => `${c.name} has been ${c.title} since before the ${s.world.ship} made orbit, and has decided that is long enough. ${c.first} wants the chair to go to ${c.alt}, who has been deputy all that time and has done more of the work each year.`,
   choices: [
-    { label: 'Let them hand it on', hint: 'unknown', info: [['people', 'Their second takes the office'], ['yield', 'A younger colony']],
-      out: { text: (s, c) => `There is no ceremony. ${c.first} hands over a set of keys and a notebook, and is seen the next morning in the fields, looking ten years younger.`,
+    { label: 'Let them hand it on', hint: 'unknown', info: (s, c) => [['people', `${c.alt} can have the chair next month`], ['danger', `Nobody after ${c.alt}`]],
+      out: { text: (s, c) => `There is no ceremony. ${c.first} hands ${c.alt} a set of keys and a notebook, and is seen the next morning in the fields, looking ten years younger.`,
         fx: (s, c) => ({ morale: 2, flags: { handovers: (s.flags.handovers || 0) + 1 }, do: s2 => { const p = byPid(s2, c.pid); if (!p || !p.alive || p.role !== c.role) return; const role = p.role;
           LF.vacate(s2, p, 'elder', `was ${c.title} for the colony's first years, and handed the office on`, true); } }) } },
-    { label: 'Ask them to stay one more year', hint: 'unknown', out: { text: (s, c) => `${c.first} agrees, the way people agree when they have been asked nicely by someone they cannot refuse. The notebook goes back in the drawer. The one who was promised the office hears about it from somebody else.`, fx: (s, c) => ({ morale: -2, mark: [c.pid, 'stayed_on', 'was asked to stay on past their time, and did'], do: s2 => { const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = Math.max(0, p.loyal - 10); } }) } },
+    { label: 'Ask them to stay one more year', hint: 'unknown', out: { text: (s, c) => `${c.first} agrees, the way people agree when they have been asked nicely by someone they cannot refuse. The notebook goes back in the drawer. ${c.alt} hears about it from somebody else.`, fx: (s, c) => ({ morale: -2, mark: [c.pid, 'stayed_on', 'was asked to stay on past their time, and did'], do: s2 => { const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = Math.max(0, p.loyal - 10); } }) } },
     { label: 'Make them an elder, with a seat at every council', hint: 'good', info: [['yield', 'Morale']],
-      out: { text: (s, c) => `${c.first} keeps the title and gives up the work. The deputy does the job without the office or the ration that goes with it, and has started saying so. ${c.first} sits at the end of the council table and is listened to more than before.`,
+      out: { text: (s, c) => `${c.first} keeps the title and gives up the work. ${c.alt} does the job without the office or the ration that goes with it, and has started saying so. ${c.first} sits at the end of the council table and is listened to more than before.`,
         fx: (s, c) => ({ morale: 2, flags: { elders: true }, mark: [c.pid, 'stayed_on', 'became an elder of the colony'] }) } },
   ] });
 LF.TAGS['q.handover'] = ['free open', 'order cautious', 'order mercy'];

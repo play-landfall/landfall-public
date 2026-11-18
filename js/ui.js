@@ -56,7 +56,7 @@ let dossier = -1;
 const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
 function dossierHTML() { const pg = LF.FILE_PAGES[dossier], seats = pg.seats;
   return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of ${LF.FILE_PAGES.length}</div><h2>${esc(pg.name)}</h2>${dossier === 0 ? '<p>Six officers keep the ship with you, all awake for the first two years and then two at a time. Nobody can replace them.</p>' : ''}
-    ${seats.map((seat, i) => { const c = LF.CAST[seat][0]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
+    ${seats.map((seat, i) => { const c = LF.CAST[seat][LF.castPick(s, seat)]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
     <button class="opt go" data-act="dossier">${dossier < LF.FILE_PAGES.length - 1 ? 'Next' : 'Begin the voyage'}</button></div>`; }
 function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier >= LF.FILE_PAGES.length) { dossier = -1; return proGo(); } render(); }
 function proHTML() { const y = LF.proYear(s);
@@ -108,13 +108,14 @@ const BORROW = { plan: () => libPool('lib_group_00'), done: () => libPool('lib_b
 // card is about, else whoever holds the seat now. With nobody, or no variant painted, the plain scene.
 /* An officer's picture at the age the game year makes them (AGE_FROM; the portraits and the scene variants both have a
    _mid and an _old, tools/scenes.py AGED): the oldest one painted that the year has reached, else the picture itself. */
-const AGE_FROM = [[25, '_old'], [12, '_mid']];
+const AGE_FROM = [[10, '_old']];   // one change, at year ten, for all twelve (Lachlan, 2026-11-18, by way of the art session): the _mid pictures are retired
 function aged(k) { const y = s && s.day ? LF.date(s.day).year : 1, a = AGE_FROM.find(x => y >= x[0] && SCENES.has(k + x[1])); return a ? k + a[1] : k; }
+const painted = key => !!key && !(LF.UNPAINTED || []).includes(key);
 function castScene(k, c) {
   const seat = (LF.SCENE_SEAT || {})[k]; if (!seat || !s.people) return k;
   const x = c.ctx || {}, byPid = id => s.people.find(p => p.id === id), up = (x.ids || []).map(byPid).filter(Boolean), down = up.filter(p => !p.orbit);
   const p = seat !== 'any' ? LF.officer(s, seat) : x.pid ? byPid(x.pid) : down.length === 1 ? down[0] : up.length === 1 ? up[0] : null;
-  return p && p.key && SCENES.has(k + '@' + p.key) ? aged(k + '@' + p.key) : k;
+  return p && painted(p.key) && SCENES.has(k + '@' + p.key) ? aged(k + '@' + p.key) : k;
 }
 /* Below 10% humanity (LF.grim past half) a picture with a hollow version (<id>_hollow.webp: the same scene repainted
    gaunt, shadowed and wrong; Lachlan, 2026-11-16) shows that instead: the officers' portraits and the cards most seen. */
@@ -137,11 +138,13 @@ function sceneOf0(c) {
   let h = 0; for (const ch of String(c.title || '')) h = (h * 31 + ch.charCodeAt(0)) | 0;
   return pool[Math.abs(h) % pool.length];
 }
+/* Card text with each officer's quoted lines in their seat's colour (js/speak.js). */
+function said(text) { const st = s.cur && LF.byId[s.cur.id]; return LF.speech ? LF.speech(s, text, st && st.says).map(g => g.seat ? `<span class="sp sp-${g.seat}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);
   let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
-    h += `<p>${esc(def.text)}</p>`;
+    h += `<p>${said(def.text)}</p>`;
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
     if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer in person · one at a time</div>${av.map(p =>
       `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
@@ -171,7 +174,7 @@ function cardHTML() {
     const r = s.cur.result;
     if (r.p !== undefined) h += `<div class="verdict ${r.success ? 'good' : 'bad'}">${esc(r.label)}: ${r.success ? 'it works' : 'it goes wrong'}</div>`;
     else if (r.label) h += `<div class="verdict">${esc(r.label)}</div>`;
-    h += `<p>${esc(r.text)}</p><div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
+    h += `<p>${said(r.text)}</p><div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
     if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML();
     // Year 0 (Lachlan, 2026-11-16): at landfall, how other colonies answered the crossing and the descent.
     if (s.cur.id === 'landfall.site') h += yearHTML((s.ylog || []).filter(e => e.cid).map(e => ({ cid: e.cid, oid: e.oid, t: e.t, l: e.l, sent: e.sent, died: e.died })));
@@ -331,9 +334,11 @@ function workLine() { const w = s.cur.aboard ? null : LF.cardWork(s); if (!w) re
 /* The six officers grow older with the colony (Lachlan, 2026-11-16): from year 12 the portrait is cast_<key>_mid, from
    year 25 cast_<key>_old, each with its own hollow version (tools/scenes.py AGED; aged() above). By the game year only: no state.
    A promoted colonist has no key and keeps the stand-in face. */
-const castFace = p => hollow(aged('cast_' + p.key));
+// Aboard (still in orbit) the picture is cast_<key>_ship, the ship jumpsuit, where it has been painted.
+const castFace = p => p.orbit && SCENES.has('cast_' + p.key + '_ship') ? 'cast_' + p.key + '_ship' : hollow(aged('cast_' + p.key));
 function faceOf(p) {
-  if (p && p.key && SCENES.has('cast_' + p.key)) return `<img class="face" src="art/scenes/${castFace(p)}.webp" alt="" loading="lazy" decoding="async">`;   // the officers have a face of their own
+  if (p && p.key && !painted(p.key)) return null;   // one of the twelve whose portrait is not painted yet: the icon, never a stranger's face
+  if (p && painted(p.key) && SCENES.has('cast_' + p.key)) return `<img class="face" src="art/scenes/${castFace(p)}.webp" alt="" loading="lazy" decoding="async">`;   // the officers have a face of their own
   const deck = FACES.slice(); let h = s.seed | 0;
   for (let i = deck.length - 1; i > 0; i--) { h = (Math.imul(h, 1103515245) + 12345) | 0; const q = (h >>> 8) % (i + 1); [deck[i], deck[q]] = [deck[q], deck[i]]; }
   const k = `lib_portrait_${String(deck[(+p.id.slice(1)) % deck.length]).padStart(2, '0')}`;
@@ -543,10 +548,28 @@ function whoHTML(p) {
   const st = p.seat && p.role ? LF.dutyWord(s, p) : p.away ? 'away with a party' : LF.laidUp(s, p) ? `hurt, back in ${months(p.hurt - s.day)}` : LF.rank(p);
   return `<div class="who" data-act="who" data-v="${esc(p.id)}" role="button" tabindex="0" aria-expanded="false"><div class="row">${faceOf(p) || ic(LF.laidUp(s, p) ? 'hurt' : p.away ? 'away' : p.role ? 'people' : 'notable')}<div class="t"><b>${esc(p.name)}</b><small>${esc(LF.title(p))} · <span class="${st === 'on duty' ? '' : 'duty'}">${esc(st)}</span>${low.length ? ` · <span class="duty">${esc(low.join(', '))}</span>` : ''}</small></div></div></div>`;
 }
+/* An officer's own page (js/profile.js): who they are, how they are, and what they make of the colony, of you and of the
+   others. Opened by a tap on one of the twelve; the People view is this page until it is closed. */
+function profileHTML(p, f) {
+  const sec = (h, body) => body ? `<div class="psec"><span class="lbl">${esc(h)}</span>${body}</div>` : '';
+  const q = (t, seat) => `<p class="say sp sp-${seat || p.seat}">${esc(t)}</p>`;
+  const stats = p.role && p.body !== undefined && !p.orbit ? `<small class="stats">${Object.keys(LF.STATS).map(k => `<span class="${k !== 'native' && p[k] < 45 ? 'low' : ''}">${LF.STATS[k].name}: ${LF.statWord(p, k)}</span>`).join('')}</small>` : '';
+  const last = p.deeds.length ? p.deeds[p.deeds.length - 1].txt : (Object.values(p.marks).find(m => m.txt) || {}).txt;
+  return `<div class="box profile enter"><button class="pbtn back" data-act="who" data-v="${esc(p.id)}">Back to the crew</button>
+    <div class="phead">${faceOf(p) || ic('people')}<div class="t"><b>${esc(f.name)}</b><span class="lbl sp sp-${p.seat}">${esc(f.title)} · ${esc(f.seat)}</span><small>${f.age ? `Age ${f.age} · ` : ''}${esc(f.from)}</small><small>${esc(LF.dutyWord(s, p))}${(p.perks || []).length ? ' · ' + p.perks.map(k => LF.PERKS[k].name).join(', ') : ''}</small></div></div>
+    ${sec('Their normal', `<p>${esc(f.normal)}</p>${f.record.length ? `<ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}`)}
+    ${sec('Right now', (f.where ? `<p>${esc(f.where)}</p>` : '') + (f.now ? q(f.now) : '') + stats + (last ? `<small class="deed">${esc(last.charAt(0).toUpperCase() + last.slice(1))}.</small>` : '') + (p.arcs || []).map(a => `<small class="deed">${LF.dateStr(a.d)} · ${esc(a.txt)}.</small>`).join(''))}
+    ${sec('On the colony', q(f.colony))}
+    ${sec('On you', q(f.you) + `<small>${esc(f.standing)}${f.sore ? ` ${esc(p.first)} has not forgotten “${esc(f.sore)}”.` : ''}</small>`)}
+    ${sec('On the others', f.others.map(o => `<div class="pon"><b>${esc(o.name)}</b><span class="lbl sp sp-${o.seatKey}">${esc(o.seat)}</span>${o.gone ? `<p>${esc(o.line)}</p>` : q(o.line)}</div>`).join('') + (f.bonds ? `<small>${esc(f.bonds)}</small>` : ''))}
+    <button class="pbtn back" data-act="who" data-v="${esc(p.id)}">Back to the crew</button></div>`;
+}
 function peopleView() {
+  const op = whoOpen && s.people.find(p => p.id === whoOpen), pf = op && op.alive && op.role && LF.profile ? LF.profile(s, op) : null;
+  if (pf) return profileHTML(op, pf);
   const key = LF.keySettlers(s).sort((a, b) => (b.deeds.length - a.deeds.length) || (a.known || 0) - (b.known || 0)), gone0 = s.people.filter(p => !p.alive && (p.known || !p.role)), dead = gone0.filter(p => !p.left), left = gone0.filter(p => p.left);
   const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k);
-    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}"><span class="lbl">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');
+    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}"><span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');
   const others = key.filter(p => !p.seat || !p.role);
   return `${reputationHTML()}${ordersHTML('people')}${historyHTML()}
     <p class="mood">${esc(LF.rosterLine(s))} ${esc(LF.vibes(s)[1].t)}${LF.genLine ? ' ' + esc(LF.genLine(s)) : ''}</p>
@@ -665,7 +688,7 @@ function act(a, v, el) {
   else if (a === 'ord') { if (ordHold) return; ordOpen = ordOpen === v ? '' : v; ordSaid = null; if (ordOpen) pauseReview(); else resumeReview(); }
   else if (a === 'ordgo') return giveOrder(v);
   else if (a === 'stock') stockOpen = stockOpen === v ? '' : v;
-  else if (a === 'who') whoOpen = whoOpen === v ? '' : v;
+  else if (a === 'who') { whoOpen = whoOpen === v ? '' : v; const wp = whoOpen && s.people.find(p => p.id === whoOpen); if (wp && wp.key && wp.role) setTimeout(() => { const e = document.querySelector('.profile'); if (e) e.scrollIntoView({ block: 'start' }); }, 0); }
   else if (a === 'tab') { if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } if (ordOpen && !ordHold) { ordOpen = ''; resumeReview(); } ordSaid = null; peek = v === ((s.cur && s.cur.view) || 'colony') ? '' : v; spot = ''; }
   else if (a === 'menu') return menu($('sheet').hidden);
   else if (a === 'theme') { LFTheme.set(v); menu(true); }

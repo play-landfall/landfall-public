@@ -2,8 +2,9 @@
    Six seats: Command, Security, Engineer, Doctor, Scientist, Crew, one officer each (LF.CAST). Three come down with the first flight; each shuttle run after that brings one more. A seat's
    officer makes its department work (LF.dept): their weight is in every test that names the office, and in the
    colony's daily arithmetic. An officer away with a party, hurt or still in orbit is missed. One who dies is
-   not replaced at once: the seat is empty, and what needed it is closed (LF.seatGone), until six months on the player
-   may promote a named colonist into it (off.promote, LF.promote; Lachlan, 2026-11-16), at half weight for the first year.
+   not replaced at once: the seat is empty, and what needed it is closed (LF.seatGone), until the seat's other officer,
+   who has been deputy on the ground since landfall, may be given the chair (off.promote, LF.seatAlt; Lachlan, 2026-11-18:
+   twelve key crew, two a seat, and never a named colonist). Once both are gone the seat is empty for good.
    The old ten role keys still work everywhere (LF.SEAT_OF): 'geologist' and 'xenobio' both reach the Scientist.
    No DOM. Draws use LF.srand. */
 (function () {
@@ -32,25 +33,38 @@ LF.SEAT_OF = { pilot: 'command', teacher: 'command', security: 'security', engin
 Object.assign(LF.ROLES, { command: { title: 'Commander', crew: 'the command staff' }, doctor: { title: 'Doctor', crew: 'the medical team' },
   scientist: { title: 'Scientist', crew: 'the survey team' }, crew: { title: 'Crew Chief', crew: 'the work crews' } });
 
-/* The cast: six officers, the same people every game (Lachlan, 2026-11-15, second pass: no alternates; if they die,
-   they die, and the seat is empty). Each has a personality the player can read on the People view (nature) and a way
+/* The cast: twelve key crew, two a seat (Lachlan, 2026-11-18). One of the two holds the chair from the start
+   (s.cast[seat], LF.castPick); the other is assumed to be on the ground as the department's deputy, and is not a person in
+   s.people until the chair comes to them (LF.seatAlt). Each has a personality the player can read on the People view (nature) and a way
    of talking that every line they speak keeps to (DESIGN.md "The six officers", the voice table). role: the old office
    whose tables (expedition leads, leanings) this person uses. vals: two convictions on the colony's axes; want: a key
    of society.js WANTS. key: the portrait (art/scenes/cast_<key>.webp). */
 const C = (key, first, last, title, role, trait, vals, want, nature, perks) => ({ key, first, last, title, role, trait, vals, want, nature, perks: perks || [] });
 LF.CAST = {
   command: [C('solheim', 'Jane', 'Haddy', 'Flight Commander', 'pilot', 'stubborn', { free: -1, mercy: -1 }, 'build',
-    'Jane is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder'])],
+    'Jane is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder']),
+    C('achebe', 'Lucas', 'McMurray', 'First Officer', 'pilot', 'beloved', { open: 1, free: 1 }, 'justice',
+    'Lucas is fair and open, and expects people to do their jobs. Asks before he tells, uses your first name, and backs a decision he handed to you even when it goes wrong. Gives anyone a second chance and nobody a third, and is slow to believe the worst of someone he trusts.')],
   security: [C('dahl', 'Nolan', 'Edney', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
-    'Nolan is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Nolan would rather it was someone who doesn\'t enjoy it.')],
+    'Nolan is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Nolan would rather it was someone who doesn\'t enjoy it.'),
+    C('zulu', 'Toby', 'O\'Neal', 'Master-at-Arms', 'security', 'cautious', { mercy: 1, bold: -1 }, 'kin',
+    'Toby takes the job seriously and takes the people under him more seriously than that. Knows every one of the watch by name and who they go home to, tells you who is hurt before he tells you what happened, and would sooner go out past the wire himself than send one of them on a guess. Doesn\'t joke about it.')],
   engineer: [C('kovacs', 'Jeremy', 'Donadini', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
-    'Jeremy is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.')],
+    'Jeremy is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.'),
+    C('halloran', 'Roberta', 'Craigie', 'Flight Engineer', 'engineer', 'reckless', { bold: 1, open: 1 }, 'build',
+    'Roberta is cheeky, quick and foul-mouthed, and will have a go at fixing anything with whatever is in reach. Usually beats her own estimate and now and then misses it badly. Jokes hardest when she is frightened, and stops joking when it is serious.')],
   doctor: [C('nakamura', 'Andrea', 'Tete', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
-    'Andrea is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor'])],
+    'Andrea is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor']),
+    C('brandt', 'Lou', 'Chang', 'Physician', 'physician', 'stubborn', { open: 1, bold: -1 }, 'quiet',
+    'Lou is acerbic and usually right, about the patient and about whoever is asking after the patient. Tells you the prognosis you did not want in as few words as it takes, then sits up all night with the case. Is kinder in what he does than in anything he says.')],
   scientist: [C('yurbin', 'Mac', 'O\'Hagan', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
-    'Mac is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.')],
+    'Mac is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.'),
+    C('iyer', 'Michelle', 'Yin', 'Chief Scientist', 'xenobio', 'brilliant', { bold: 1, mercy: -1 }, 'know',
+    'Michelle is interested in results and not much in how they are come by. Composed, exact and never raises her voice; counts a death as a cost like any other and will tell you whether the answer was worth it. Does not always say what she has already started.')],
   crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
-    'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.')],
+    'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.'),
+    C('waititi', 'Hamond', 'Shepherd', 'Agronomist', 'botanist', 'gentle', { free: 1, mercy: 1 }, 'sleepers',
+    'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last. His wife is still asleep aboard.')],
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
 LF.BIO = {
@@ -60,6 +74,12 @@ LF.BIO = {
   nakamura: 'Signed on the day the manifest opened. Gentle with anyone in a bed, hard on everyone beside it, and has ignored orders before.',
   yurbin: 'Has waited his whole life to see something alive that is not from Earth. Talks too fast, forgets to eat. The jars in the wardroom are his.',
   estrada: 'Grew up on a farm the sea took, and carries its seed. Quiet, devout, talks to the plants, and will not stand by while the weak go short.',
+  achebe: 'Ran a relief fleet where nobody went unheard and nobody missed a deadline twice. Fair, open, and remembers what you said you would do.',
+  zulu: 'The youngest of the key crew. Brought every one of his people home from the Ceres lockdown, and still writes to the families of the ones he trained.',
+  halloran: 'Came up through the breakers\' yards, taking ships apart to see why they died. Swears at machines until they work. Most of them do.',
+  brandt: 'Thirty years of other people\'s bad news, delivered straight. Short with fools, shorter with himself, and has never once left a ward early.',
+  iyer: 'Lost her chair at Singapore over a trial that worked. Composed, exact, and of the view that an answer is worth what it cost.',
+  waititi: 'Fed a refugee camp of forty thousand off salt flats and talked the whole time. Knows everyone by the second day. His wife sleeps in row nine.',
 };
 /* The crew file's pages: who is shown together. */
 LF.FILE_PAGES = [{ name: 'Command staff', seats: ['command', 'security'] }, { name: 'Science', seats: ['doctor', 'scientist'] }, { name: 'Crew', seats: ['engineer', 'crew'] }];
@@ -71,7 +91,26 @@ LF.FILE = {
   nakamura: { age: 42, from: 'Southern African Union', record: ['Medicine, Eduardo Mondlane, Maputo', 'Trauma surgeon, Johannesburg', 'Ran the Beira flood hospital'] },
   yurbin: { age: 33, from: 'European Federation', record: ['PhD in astrobiology at twenty-six', 'Two winters on the Antarctic drills', 'Wrote the Ariadne\'s quarantine rules'] },
   estrada: { age: 34, from: 'Pacific Compact', record: ['PhD in plant science, Adelaide', 'Bred the Murray salt wheat', 'Kept Ceres fed a year on battery'] },
+  achebe: { age: 41, from: 'Pacific Compact', record: ['Merchant flight school, Auckland', 'First officer of the Kestrel', 'Ran the Tonga relief fleet'] },
+  zulu: { age: 29, from: 'North American Union', record: ['Five years, Orbital Guard', 'Watch officer, Ceres lockdown', 'Trained the Ariadne\'s watch'] },
+  halloran: { age: 38, from: 'Britannic Commonwealth', record: ['Clyde breakers\' yards at sixteen', 'Salvage engineer, the Belt tugs', 'Flew the Ariadne\'s shakedown'] },
+  brandt: { age: 55, from: 'Pearl River League', record: ['Medicine, Sun Yat-sen, Guangzhou', 'Twenty years of emergency wards', 'Ship\'s doctor on the Mars run'] },
+  iyer: { age: 47, from: 'Straits Federation', record: ['Chair of xenobiology, Singapore', 'Led the Europa brine trials', 'Resigned the chair; no reason filed'] },
+  waititi: { age: 49, from: 'Mediterranean League', record: ['Agronomy, Montpellier', 'Fed the Sfax camps off salt flats', 'Ran the Ariadne\'s seed vault'] },
 };
+/* He, she or they (2026-11-18): four seats can be held by a man or a woman, so a line that needs a pronoun for a seat's
+   officer asks who holds it. Anyone who is not one of the twelve is "they". */
+const SHE = ['solheim', 'nakamura', 'halloran', 'iyer'];
+const pro = (p, she, he, they) => !p || !p.key || !LF.BIO[p.key] ? they : SHE.includes(p.key) ? she : he;
+LF.he = p => pro(p, 'she', 'he', 'they'); LF.him = p => pro(p, 'her', 'him', 'them'); LF.his = p => pro(p, 'her', 'his', 'their');
+/* A line for whoever holds the seat and is at the post to say it: lines is { castkey: line } (a string, or a function of
+   the person); plain is what the card says when the one in the chair has no line of their own, or nobody is there. */
+LF.says = function (s, k, lines, plain) { const p = LF.officer(s, k), l = p && p.key && LF.seatState(s, k) === 'here' ? lines[p.key] : null, v = l !== null && l !== undefined ? l : plain;
+  return typeof v === 'function' ? v(p) : v || ''; };
+/* Alternates whose pictures in art/scenes/ still show the people those keys used to be (the old alternates, cut
+   2026-11-15). The local art session repaints them; take a key out of this list when its files have landed. Until then
+   the UI gives that officer a stand-in face and the plain scene. */
+LF.UNPAINTED = ['achebe', 'zulu', 'halloran', 'brandt', 'iyer', 'waititi'];
 /* How an officer is named where the player picks one to send (Lachlan, 2026-11-17): the office first, so a seat that has
    changed hands shows at a glance. "Scientist (Mac)". */
 LF.SEAT_SHORT = { command: 'Commander', security: 'Security', engineer: 'Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
@@ -81,8 +120,28 @@ function seatPerson(s, seat, n) { const c = LF.CAST[seat][n];
     alive: true, green: false, marks: {}, perks: [LF.SEATS[seat].perk].concat(c.perks.filter(k => k !== LF.SEATS[seat].perk)), deeds: [], known: s.day || 1,
     nature: c.nature, vals: Object.assign({}, c.vals), want: c.want, loyal: 55, arcs: [], seen: {}, body: 100, mind: 100, native: 5 };
   s.people.push(p); return p; }
+/* Which of a seat's two holds the chair at the start: a hash of the seed, never s.rng. LF.ALT_START is how often it is
+   the second (0 until every card has a line for both and the voyage out has cards for them; then 0.5). */
+LF.ALT_START = 0;
+const hash = (seed, k) => { let x = ((seed | 0) ^ 0x9e3779b9) >>> 0; for (const ch of k) x = Math.imul(x ^ ch.charCodeAt(0), 16777619) >>> 0; x ^= x >>> 13; x = Math.imul(x, 0x5bd1e995) >>> 0; return ((x ^ (x >>> 15)) >>> 0) / 4294967296; };
+LF.castPick = (s, seat) => (s.cast && s.cast[seat] !== undefined ? s.cast[seat] : hash(s.seed, 'cast.' + seat) < LF.ALT_START ? 1 : 0);
 /* Seat the six. Called once, at LF.land. */
-LF.makeOfficers = function (s) { for (const seat of LF.SEAT_ORDER) seatPerson(s, seat, 0); };
+LF.makeOfficers = function (s) { s.cast = s.cast || {}; for (const seat of LF.SEAT_ORDER) { s.cast[seat] = LF.castPick(s, seat); seatPerson(s, seat, s.cast[seat]); } };
+/* The seat's other officer, if the chair has not come to them yet: the deputy. null once both have held it. */
+LF.altOf = (s, k) => { const seat = seatOf(k), had = s.people.filter(p => p.seat === seat && p.key).map(p => p.key); return LF.CAST[seat].find(c => !had.includes(c.key)) || null; };
+/* Who had the chair last, how they left it and when. */
+const outDay = p => p.left || p.died || Math.max(0, ...Object.values(p.marks || {}).map(m => m.d || 0));
+LF.lastHeld = (s, k) => { const seat = seatOf(k); return s.people.filter(p => p.seat === seat && (!p.alive || !p.role)).sort((a, b) => outDay(b) - outDay(a))[0] || null; };
+LF.outDay = outDay;
+/* When the deputy may be given the chair (Lachlan, 2026-11-18). Lost on the crossing: at landfall. Given the door (relieved,
+   stood down, handed on, nerve gone, put out of the colony by your order): a month. Dead or missing: a year. */
+const DOOR = /exile|put out|sent out|cast out|walked to the markers/;
+LF.altWait = function (s, k) { const g = LF.lastHeld(s, k);
+  if (!g || g.fell) return 0;
+  return (g.alive && !g.left) || (g.left && DOOR.test(g.cause || '')) ? LF.MONTH : LF.YEAR; };
+LF.altDue = (s, k) => { const seat = seatOf(k); return s.flags['due_' + seat] !== undefined ? s.flags['due_' + seat] : s.flags['empty_' + seat] || 0; };
+/* Whether the chair can still be filled, now or later. */
+LF.altOpen = (s, k) => { const seat = seatOf(k); return !LF.officer(s, seat) && !!LF.altOf(s, seat) && !s.flags['nopromote_' + seat] && !s.flags.born_rule; };
 /* A seat whose officer is dead or finished. Nobody steps up (Lachlan, 2026-11-15): the seat is empty for good. */
 LF.seatGone = (s, k) => { const seat = LF.SEAT_OF[k] || k; return !LF.officer(s, seat) && s.people.some(p => p.seat === seat); };
 LF.seatFill = function (s) {
@@ -90,29 +149,31 @@ LF.seatFill = function (s) {
     // An officer aboard when the lander is lost is not coming down, and the department below goes without.
     if (h && h.orbit && s.machines.lander && s.machines.lander.lost && !h.stranded) { h.stranded = s.day; LF.log(s, `${h.name} is still aboard the ${s.world.ship}, and with the lander gone will stay there.`, 'bad'); LF.chron(s, `${h.name} was left aboard the ship for good.`); }
     if (LF.officer(s, seat) || s.flags['empty_' + seat]) continue;
-    s.flags['empty_' + seat] = s.day; LF.storyPoint(s);
-    LF.log(s, `Nobody is left who can run ${S.name}. What it did, the colony now does badly or does without.`, 'bad'); LF.chron(s, `${S.name} was left with nobody to run it.`); }
+    const g = LF.lastHeld(s, seat), a = LF.altOf(s, seat);
+    s.flags['empty_' + seat] = s.day; s.flags['due_' + seat] = (g ? Math.max(outDay(g), 1) : s.day) + LF.altWait(s, seat); LF.storyPoint(s);
+    if (a) LF.log(s, `${S.name} has nobody in the chair. ${a.first} ${a.last}, the deputy, is keeping it running.`, 'bad');
+    else { LF.log(s, `Nobody is left who can run ${S.name}. What it did, the colony now does badly or does without.`, 'bad'); LF.chron(s, `${S.name} was left with nobody to run it.`); } }
 };
 const seatOf = k => LF.SEAT_OF[k] || k;
-/* Promotion (Lachlan, 2026-11-16): six months after a seat empties, a named colonist can be put in it. For their first
-   year they are worth half what an officer is (LF.green): half the weight on a test, half the department's lift. */
-LF.PROMOTE_AFTER = 6 * LF.MONTH;
+/* The chair comes to the deputy (Lachlan, 2026-11-18). They came on the ship and have worked the department since
+   landfall, so they are not new to the post: they know this world about half as well as time on it would have taught the
+   one in the chair. LF.green is only true of a colonist promoted in a save from before. */
 LF.SEAT_TITLE = { command: 'Commander', security: 'Security Chief', engineer: 'Chief Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
 LF.green = (s, p) => !!(p && p.promoted && s.day - p.promoted < LF.YEAR);
-LF.promote = function (s, p, seat) {
-  if (!p || !p.alive || LF.officer(s, seat)) return null;
-  Object.assign(p, { role: LF.CAST[seat][0].role, seat, title: LF.SEAT_TITLE[seat], promoted: s.day, known: p.known || s.day || 1, away: false, orbit: false });
-  if (p.body === undefined) p.body = 100; if (p.mind === undefined) p.mind = 100; if (p.native === undefined) p.native = 5 + 3 * (p.deeds || []).length;
-  p.seen = p.seen || {}; p.marks = p.marks || {}; p.perks = p.perks || []; if (!p.perks.includes(LF.SEATS[seat].perk)) p.perks.push(LF.SEATS[seat].perk);
-  delete s.flags['empty_' + seat];
-  LF.log(s, `${p.name} is ${LF.SEAT_TITLE[seat]} now.`, 'good'); LF.chron(s, `${p.name} was raised to ${LF.SEAT_TITLE[seat]}, in the seat left empty.`);
+LF.seatAlt = function (s, k) { const seat = seatOf(k), c = LF.altOf(s, seat);
+  if (!c || LF.officer(s, seat)) return null;
+  const p = seatPerson(s, seat, LF.CAST[seat].indexOf(c));
+  Object.assign(p, { alt: true, seated: s.day, known: s.day || 1, native: clamp(5 + Math.round((s.day - (s.landed || 0)) / LF.MONTH * 0.6), 5, 45) });
+  for (const f of ['empty_', 'due_', 'nopromote_']) delete s.flags[f + seat];
+  if (LF.societyInit) LF.societyInit(s);
+  LF.log(s, `${p.name} is ${LF.SEAT_TITLE[seat]} now.`, 'good'); LF.chron(s, `${p.name}, who had been deputy, took the ${LF.SEAT_TITLE[seat]}'s chair.`);
   return p; };
 /* Put an officer out of the chair (2026-11-17): handed on, relieved, or left aboard for good. They stay in the colony
-   as someone with a name. now: the colony already has someone in mind, so The Empty Chair comes at once. */
+   as someone with a name. The deputy can have the chair a month on (The Empty Chair). */
 LF.vacate = function (s, p, mark, txt, now) {
   if (!p || !p.alive || !p.role) return; const seat = p.seat;
   p.role = null; p.marks = p.marks || {}; p.marks[mark] = { d: s.day, txt }; p.perks = p.perks || []; if (!p.perks.length) p.perks.push('steady');
-  s.flags['empty_' + seat] = now ? s.day - LF.PROMOTE_AFTER : s.day; delete s.flags['nopromote_' + seat];
+  s.flags['empty_' + seat] = s.day; s.flags['due_' + seat] = s.day + LF.MONTH; delete s.flags['nopromote_' + seat];
   LF.log(s, `${p.name} is no longer ${LF.SEAT_TITLE[seat]}.`, ''); LF.storyPoint(s); };
 /* The seat's officer, whatever has become of them (dead, in orbit, away); null once nobody holds the office. */
 LF.officer = (s, k) => { const seat = seatOf(k); return s.people.find(p => p.seat === seat && p.role && p.alive) || null; };
@@ -135,7 +196,9 @@ LF.bringDown = function (s, p) { if (!p || !p.orbit) return; p.orbit = false; p.
 LF.seatWord = function (s, k) { const seat = seatOf(k); return (LF.ROLES[k] || LF.SEATS[seat]).crew; };
 /* One line for the People view and the roster: where each officer is, and what it costs. */
 LF.seatLine = function (s, seat) { const p = LF.officer(s, seat), st = LF.seatState(s, seat), S = LF.SEATS[seat];
-  if (st === 'empty') return LF.seatGone(s, seat) ? `Nobody is left to run ${S.name}. Anything that needs it is closed to you.` : `${S.name} has nobody at its head.`;
+  if (st === 'empty') { const a = LF.altOpen(s, seat) && LF.altOf(s, seat), w = a ? LF.altDue(s, seat) - s.day : 0;
+    if (a) return `${a.first} ${a.last}, the deputy, is keeping ${S.name} running, and can be given the chair ${w <= 0 ? 'now' : 'in ' + LF.monthsWord(Math.ceil(w / LF.MONTH))}. Until then anything that needs its officer is closed to you.`;
+    return LF.seatGone(s, seat) ? `Nobody is left to run ${S.name}. Anything that needs it is closed to you.` : `${S.name} has nobody at its head.`; }
   if (st === 'orbit') return p.stranded ? `${p.name} is aboard the ${s.world.ship} for good. ${S.name} below is run by whoever is to hand.` : `${p.name} is aboard the ${s.world.ship}, keeping the ship. ${S.name} is short-handed below until a shuttle run brings ${p.first} down.`;
   if (st === 'away') return `${p.name} is away with a party, and ${S.name} is at half strength until ${p.first} is back.`;
   if (st === 'hurt') return `${p.name} is laid up for ${LF.monthsWord((p.hurt - s.day) / LF.MONTH)} more.`;

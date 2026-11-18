@@ -140,7 +140,7 @@ LF.genTick = function (s) {
       for (const fn of LF.GEN_ON.ofAge) fn(s, n); }
     // A chair left empty "for good" was the founders' promise. Once most of the grown were born here, nobody alive made it.
     if (!G.chairs && G.born > s.pop / 2) { G.chairs = s.day; let any = 0;
-      for (const k of LF.SEAT_ORDER) if (s.flags['nopromote_' + k] && !LF.officer(s, k)) { delete s.flags['nopromote_' + k]; s.flags['empty_' + k] = s.day - LF.PROMOTE_AFTER + any * 8 * MONTH; any++; }   // one chair at a time, eight months apart
+      for (const k of LF.SEAT_ORDER) if (s.flags['nopromote_' + k] && !LF.officer(s, k) && LF.altOf(s, k)) { delete s.flags['nopromote_' + k]; s.flags['due_' + k] = s.day + any * 8 * MONTH; any++; }   // one chair at a time, eight months apart; only where a deputy is left to take it
       if (any) LF.log(s, 'Most of the grown were born here now. They have started asking why there are chairs at the council table that nobody is allowed to sit in.'); } }
   // the implants come out when the fields can feed a child (pol.births, "not until the fields can feed them")
   if (s.flags.births_deferred && s.built.fields && LF.h.foodDays(s) > 60) { s.flags.births_deferred = false;

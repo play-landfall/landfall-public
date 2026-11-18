@@ -7,7 +7,7 @@
        (their own words), gen.adapt (what this place has done to their bodies), gen.wire and gen.outside (the ones who
        will not come back inside), gen.ofage (the first on a work crew), gen.lines (the clinic's book of who is whose)
      the born against the founders (gen.rule): gen.vote, gen.rules (eight founders' rules, one at a time), gen.count
-       (the born outnumber the founders), gen.chair (the first officer in each seat who never saw the ship), gen.inherit,
+       (the born outnumber the founders), gen.chair (what the born in each department ask for first), gen.inherit,
        gen.earth (they stop believing in it). x.grudge keeps the score; late.born (js/late.js) is the far end of it:
        that card is the ship's children taking the yard, and once it is signed (born_rule) these stop.
      a city of children (gen.city): gen.minders (nine in ten), gen.packs (the rows' own law), gen.mouths (who eats in
@@ -306,17 +306,20 @@ const CHAIR = {
     yes: s => `The wheat is ploughed in after the last cutting. The field gives half again as much under ${LF.lex(s, 'wild1')}. There is no more bread. The founders eat what the born eat, more slowly, and a jar of the seed is kept in the archive.`, yesFx: { food: 160, morale: -2 },
     half: 'One strip of wheat, for the founders\' table', halfText: 'One strip is kept, weeded by founders on their rest day. It makes enough flour for a loaf a month each. The born children try the bread once, politely.', halfFx: { food: 80 } },
 };
-const newChair = s => { const g = G(s); return g.chairs ? s.people.find(p => p.alive && p.role && p.seat && CHAIR[p.seat] && p.promoted && p.promoted > g.chairs - YEAR && !p.gnChair && !p.away && !p.orbit) : null; };
+/* 2026-11-18: no colonist is ever raised to a chair, so nobody born here holds one. The born who work in a department
+   ask its one thing of you instead, once for each seat, whether its chair is held by an old founder or by nobody. */
+const askSeat = s => { const g = G(s); return g.chairs ? LF.SEAT_ORDER.find(k => CHAIR[k] && !(g.asked || {})[k]) : null; };
 const txt = (v, s) => (typeof v === 'function' ? v(s) : v);
 RU({ id: 'gen.chair', far: true, tone: 'quiet', title: 'The First Thing Asked', repeat: 14 * MONTH, max: 6, w: 4,
-  when: s => !!newChair(s),
-  setup: s => { const p = newChair(s); p.gnChair = s.day; p.bornHere = p.bornHere || yr(s); return { pid: p.id, name: p.name, first: p.first, seat: p.seat, title: LF.title(p), want: CHAIR[p.seat].want(s) }; },
-  text: (s, c) => `${c.name} was born here, in the colony's early years, and is the first ${c.title} who never saw the ship. After a month in the chair ${c.first} has asked for one thing.\n\n${c.want}\n\nThe founders who are left have already heard about it.`,
+  when: s => !!askSeat(s),
+  setup: s => { const g = G(s), seat = askSeat(s), o = LF.officer(s, seat), p = h.anyNamed(s, LF.SEAT_ORDER); g.asked = g.asked || {}; g.asked[seat] = s.day; if (p) p.bornHere = p.bornHere || yr(s);
+    return { pid: p ? p.id : null, name: p ? p.name : 'A young woman from the far rows', first: p ? p.first : 'she', seat, dept: LF.SEATS[seat].name, title: LF.SEAT_TITLE[seat], holder: o ? o.name : null, want: CHAIR[seat].want(s) }; },
+  text: (s, c) => `${c.name} was born here, in the colony's early years, and speaks for the born who work in ${c.dept}. ${c.holder ? `${c.holder} has held the ${c.title}'s chair since before any of them could walk.` : `The ${c.title}'s chair is empty. The people who could have sat in it came on the ship, and they are gone.`} The born have asked for one thing.\n\n${c.want}\n\nThe founders who are left have already heard about it.`,
   choices: [
-    { label: (s, c) => `Let ${c.first} do it`, info: [['yield', 'The born, and what the change brings'], ['danger', 'The founders']],
+    { label: 'Let them do it', info: [['yield', 'The born, and what the change brings'], ['danger', 'The founders']],
       out: { text: (s, c) => txt(CHAIR[c.seat].yes, s), fx: (s, c) => Object.assign({ do: s2 => { grudge(s2, -2); const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal + 12, 0, 100); if (CHAIR[c.seat].yesDo) CHAIR[c.seat].yesDo(s2); } }, CHAIR[c.seat].yesFx) } },
-    { label: 'Not while there are founders alive to mind', info: (s, c) => [['danger', c.name], ['danger', 'The born who put the name forward']],
-      out: { text: (s, c) => `${c.name} hears the answer, nods, and does the job as it was done before. The request is not made again. The born who put ${c.first} forward for the chair know what was asked and what was said.`,
+    { label: 'Not while there are founders alive to mind', info: (s, c) => [['danger', c.name], ['danger', `The born in ${c.dept}`]],
+      out: { text: (s, c) => `${c.name} hears the answer, nods, and goes back to work. The request is not made again. The born in ${c.dept} know what was asked and what was said.`,
         fx: (s, c) => ({ morale: -2, do: s2 => { grudge(s2, 2); const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 15, 0, 100); } }) } },
     { label: (s, c) => CHAIR[c.seat].half, info: [['danger', 'Both sides, a little']],
       out: { text: (s, c) => CHAIR[c.seat].halfText, fx: (s, c) => Object.assign({ do: s2 => { if (CHAIR[c.seat].halfDo) CHAIR[c.seat].halfDo(s2); } }, CHAIR[c.seat].halfFx) } },
