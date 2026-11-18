@@ -14,31 +14,31 @@ const BREAK = { command: 'gave the same order three times at the morning muster 
   scientist: 'burned two months of field notes in the stove, and will not say what was in them', crew: 'walked off the plots at noon and was found sitting in the seed store with the door wedged shut' };
 
 /* What each of them says when you come to ask (DESIGN.md "How they talk"). */
-const BREAK_SAYS = { command: `"I'm fine. I've got the numbers. I've always got the numbers. Don't take the numbers off me."`,
-  security: `"It was out there, and you didn't hear it because you weren't listening, which is the whole reason there's a me, since somebody has to be."`,
-  engineer: `"One of them's going to go. I don't know which. So I check them all, every night. What else am I meant to do?"`,
-  doctor: `"Don't. Don't tell me to sleep. Every time I sleep, somebody on that list doesn't wake up."`,
-  scientist: `"It was in the notes, and I didn't want it in the notes, and I know how that sounds, no, can we not do the notes, can we do anything else, ask me about anything else."`,
-  crew: `"I'm praying, that's all. Leave the door. Please."` };
-const SICK_SAYS = { command: `"It's a cold. Get me the morning reports and get out."`, security: `"If I'm dying I'll let you know, and till then I'm on the rota, because I don't see anyone else lining up for it."`,
-  engineer: `"She runs rough for a bit and then she settles. So will I."`, doctor: `"I know exactly what it is. I've seen it in enough patients. I'm not telling you, because you'd take me off the ward."`,
-  scientist: `"It's fascinating, actually, it comes in waves, I've been keeping notes, on me, on the, hold on, where did I put the pencil."`, crew: `"My grandmother worked the harvest the week she died. It's no shame."` };
+const BREAK_SAYS = { command: `"I gave the muster its orders and I'm told I gave the same one three times over, and I don't remember the second or the third. Count it against me if you want, but I won't leave the yard until I know the work is on the right track."`,
+  security: `"I had the whole watch stood to at the wire because I heard something out there, and yes, I know nobody else did, and yes, I know how that sounds, but I'd take being the fool who woke everyone over being the one who didn't."`,
+  engineer: `"I had every panel off the reactor housing in the middle of the night because I couldn't stop checking the welds, and they were sound, every one, I knew they were sound, and I still couldn't put the covers back on."`,
+  doctor: `"I haven't gone home in so long that I don't know what my bed even looks like, and every time the shift changes I'm back at the dispensary shelf counting what's left, again and again, as if it'll come out different. I know how that sounds, and I can't stop, and if I stop I'll have to think about everyone I couldn't help."`,
+  scientist: `"I put them in the stove, all of it, and don't ask me what it said, because I read it all back one night and I couldn't, I just couldn't stand to have it in the room, and I'm fine now, I'm sure I'm fine, give me a minute and I'll find a pencil."`,
+  crew: `"I couldn't stay on the plots anymore, so I went and shut myself in the seed store and wedged the door, because it's quiet in there and I wanted to ask for something. I'm sorry for the worry, and I'll be out directly, only I'm not ready yet."` };
+const SICK_SAYS = { command: `"It's nothing, and I'm sitting here because the stove is warm and the orders carry just as well from a chair. Bring me the work lists and take your pity somewhere else."`, security: `"It's nothing, I'm sitting by the stove because the cold gets into the chair, that's all, and the watch rota's been done and checked and checked again, so you can stop looking at me like I'm about to fall off it."`,
+  engineer: `"It's nothing, I've just got a bit of a chill and the stove's warm, so sit down and tell me what's broken, and for pity's sake don't make that face, it's making the room smaller."`, doctor: `"It's nothing, and I'll thank you not to stand over me like I'm already in the ground. I'm sitting here by the stove because it's warm, not because I can't stand, and the ward's running perfectly well with me watching it from this chair."`,
+  scientist: `"It's nothing, it's honestly nothing, it's a bit of a cough and the chair is a better angle for the microscope anyway, so no, I'm not stopping, and please don't fetch anyone, I'm only warming my hands."`, crew: `"It's nothing, truly, I just like sitting by the stove while I go over the planting, and anyone who says different is fussing. The beds don't care how I'm feeling, and neither should you, so tell me what needs doing."` };
 
 /* The six alternates say their own (2026-11-18): by cast key, falling back to the seat's line above. */
 const BREAK_KEY = {
-  achebe: `"I gave that order three times, didn't I, and nobody liked to tell me. I'm sorry. I'd stand anyone else down in this state, and I know I would, and here I am asking you not to."`,
-  zulu: `"I heard something at the wire and I stood them all to, and there was nothing there, and I know there was nothing there. I'd do the same again tonight, because I can't be the reason one of them doesn't come home."`,
+  achebe: `"Did I? Folks were nodding, I thought they were just being polite, I didn't know. I stood up there and gave the same order, the same words, and I didn't know I'd done it, and nobody told me. Listen, that scares me more than anything out past the wire, and I need you to tell me straight, am I still fit to stand up in front of them?"`,
+  zulu: `"I stood the whole watch to at the wire because I heard something. Nobody else did, and I know how that sounds. I'm sorry, I kept them out in the cold all night, and I'd ask you to take the order from me before I give it again."`,
   halloran: `"I'm just checking them, boss! That's all! One of these bastards is going to let go, I can feel it, and if I stop looking it'll be that one. So I'm not stopping. Fuck off and let me look."`,
-  brandt: `"I'm aware of what this looks like, having diagnosed it in other people often enough. I've counted that shelf nine times tonight, and the figure hasn't changed, and I'm going to count it again."`,
-  iyer: `"The notes were wrong, Administrator, and I couldn't establish when they'd begun to be wrong, so I destroyed them. I recognise that isn't a rational thing to have done, and I'd prefer not to be asked what was in them."`,
-  waititi: `"I couldn't think of a single thing to say to anybody. Me! Can you imagine it? So I came and sat in here with the seed, where nobody'd expect a word out of me. Leave the door, would you, just for a bit."` };
+  brandt: `"I'm counting the shelf, yes, thank you for noticing. It's the one thing in this place that holds still while I look at it, and I'd like to know what's going to run out before it does. No, I haven't been home, because home is a bed in the dark with everything I'm avoiding, and I'd rather count."`,
+  iyer: `"You will have heard that I burned my field notes in the stove. Yes, I did it, and no, I will not tell you what was in them, and I'd ask you to accept that I weighed the matter more carefully than you are about to."`,
+  waititi: `"Come in, mind the door, I wedged it with a sack of beans, which tells you what sort of man I am. I came in here to find the right thing to say to them and I've been counting seed packets instead, and there's nothing, not a joke, not a story about my uncle, nothing at all. Dalia would know what to say, she always knows, and I keep turning round to ask her."` };
 const SICK_KEY = {
-  achebe: `"It's nothing you need to worry about, honestly. I can do everything from this chair that I did from the other one, and I'd tell you if I couldn't, you know I would."`,
-  zulu: `"I'm well enough to keep the rota, and I'd rather be doing that than lying down wondering who's on the wire. Please don't take it off me, because it's the one thing I can still do properly."`,
+  achebe: `"It's nothing, listen, I'm just sitting by the stove because the chair's warm. The work is getting done, I've made sure of that, and the folks know what to do. Don't you go worrying about me, all right? I'd tell you if it was anything, I would."`,
+  zulu: `"It's nothing, and I'd ask you not to put it in the book. I'm only sitting by the stove for the warmth, and the watch is running as it should, I've checked it myself. I'll stand up properly in a minute."`,
   halloran: `"It's a chest thing, it's nothing, I've coughed up worse in the breakers' yards! I can swear at a pump from a chair just as well as standing, boss, so piss off and let me work."`,
-  brandt: `"It's nothing, and I say that as the only person here qualified to know that it isn't. I'd be obliged if you'd let me have the lie, since I've so few patients left who'd believe it."`,
-  iyer: `"It's a minor illness with a predictable course, Administrator, and it doesn't touch my ability to think. I'd ask you not to take a decision about my post on the strength of how I look in a chair."`,
-  waititi: `"This? This is nothing, it's the chair that makes it look bad, I've always looked terrible sitting down. Ask Dalia. Well, you can't, but when you can, you ask her."` };
+  brandt: `"It's nothing, and you may stop looking at the stove, I'm cold, that's all. I've heard that exact sentence from a hundred patients, and I'd treat my reliability on the subject accordingly. Now, who's actually ill?"`,
+  iyer: `"It is nothing, Administrator, and I'd be grateful if you would stop looking at the chair, which is by the stove only because the stove is warm and the laboratory is not. The department is being run exactly as before, and I would suggest that anyone who finds otherwise has not been reading the reports."`,
+  waititi: `"Sick? Who said sick, my friend? I'm sitting by the stove because the stove is the best seat in the colony and I've earned it, ha! The beds are fine, the work's getting done, I'm running it from here with a spoon, and if I cough, it's the smoke. Go on, don't write that down, and don't tell Dalia when she wakes, I'll tell her myself."` };
 const sayOf = (s, c, KEY, SEAT) => { const p = byPid(s, c.pid); return (p && KEY[p.key]) || SEAT[c.seat]; };
 
 add({ id: 'off.break', view: 'people', arc: 'officers', tone: 'pressure', chain: true, repeat: 30, title: 'Not Sleeping',
@@ -86,18 +86,18 @@ const sinceLine = (s, c) => { const who = c.gone ? `${c.gone} ${HOW[c.how]}` : `
     : `${cap(c.mo >= 12 ? (c.mo < 18 ? 'a year' : c.mo < 30 ? 'two years' : 'years') : LF.monthsWord(c.mo))} since ${who}, and ${c.crew} have been taking their orders from ${c.first}, who has no title to give them. It shows.`; };
 /* What each of the twelve says when the chair is offered (VOICES.md). */
 const TAKES = {
-  solheim: `"I've been doing this job without the title since the chair went empty, and the departments already bring me their reports. Make it official and I can stop asking your leave to give orders I'm giving anyway."`,
-  dahl: `"So I get the chair, the keys and the blame, in that order, and I'm told it's a promotion. Fine. Somebody's got to, and I'd sooner it was somebody who checks the locks."`,
-  kovacs: `"I don't want a chair, I never did, I want two techs and the hours to use them properly. But if sitting in the chair is how I get them, then fine, I'll sit in it, and you won't hear me make a speech."`,
-  nakamura: `"I'll take it, and gladly. But you should know that the first time you ask me to sign somebody off as not worth the bed, you're going to wish you'd left that chair empty."`,
-  yurbin: `"Yes, obviously yes, I've had a list since, well, I've had a list, there's a whole stretch out there nobody's let me look at, do I get the keys today or is there a form?"`,
-  estrada: `"I'll do it, since it needs doing and I know the beds. I'd ask just the one thing of you, which is that nobody goes short so the count looks better, not while it's me holding the book."`,
-  achebe: `"I'll take it, and thank you. I'm going to tell the department the same thing I'm telling you now, which is that I'll ask what they need, I'll get it for them if I can, and then I'll expect them to do what they said."`,
-  zulu: `"Yes, I'll take it. I'd like to be the one to tell the watch, though, face to face, and not have them read it off a notice on the board. They've earned hearing it from a person."`,
+  solheim: `"Then it's mine, and I'll have the department running to my orders before the hour's out. Nobody is going to hold the chair empty while the work waits."`,
+  dahl: `"Oh, so now it's mine, is it, now that the last man's gone and there's nobody else daft enough to want it, well, fine, I'll take it, because I'd sooner it was me than somebody who thinks the job is about being liked."`,
+  kovacs: `"Oh, bloody hell, so it's me now, is it? Fine, I'll take it, but I want it understood I never asked for the chair, and I'm not making a speech, I'm going to go and look at what they left me."`,
+  nakamura: `"Don't you dare say this is a reward, because I didn't want it this way, and the person who should be sitting here isn't. But if somebody has to keep the ward, it's going to be me, and I'll run it my way, so I hope you're ready for me to shout."`,
+  yurbin: `"Oh, you're serious? The chair? Right, yes, of course, I'll take it, and I'll do it properly, I'll do the forms and the rota and all of it, I just need a day to move my cultures out of the way, and, hold on, you did mean me?"`,
+  estrada: `"I'd never have asked for the chair, but I won't leave the work sitting there with nobody to do it. I'll keep it the way it was kept, and I'll keep it fair, and I'll ask for a little help from above when I'm out of my depth."`,
+  achebe: `"All right. I wasn't looking for it, and I'm not going to pretend I was, and I'm sorry for how it came about. But somebody's got to do it, and I'd sooner it was somebody who'll tell you the truth. Here's the deal, I'll do right by the folks in that department, and when I get it wrong, that one's on me."`,
+  zulu: `"I'm honoured, and I'm not sure I'm ready, and I'd rather you heard both. If you want me in the chair I'll do it as it should be done, and I'll ask for help the minute I need it."`,
   halloran: `"About fucking time, boss! Shit, sorry. No, I mean thank you. Thank you! And also about fucking time, I'm not taking that back."`,
-  brandt: `"You're giving it to me because there's nobody else left to give it to, and we both know that perfectly well. I don't mind in the least. In my experience it's the only honest reason anyone has ever been given a job."`,
-  iyer: `"I accept, Administrator. I'll want the full stores list for the laboratory by tonight, and the clinic's as well, and I'd be obliged if nobody asked me why I want the second one."`,
-  waititi: `"Me, in a chair, with a title. My mother'd laugh herself sick. Yes. Yes! Tell the kitchens we're celebrating, and then tell them with what, because I've seen the stores."`,
+  brandt: `"Marvellous, I'm to have the chair, and I notice the colony wants it filled by morning. You're not asking whether I'm able. You're asking whether I'll stop saying it ought to be done differently, and I won't. Yes, I'll take it."`,
+  iyer: `"I'll accept the chair, provided that it carries what it ought to carry, which is the authority to decide what the laboratory studies and on whom. I would add that I had been performing the duties for some time before the appointment, so it is merely being corrected on paper."`,
+  waititi: `"Me? In the chair? Ha! They'll have to move the chair, I'll never fit, and I'll talk the whole room to sleep. All right, all right, I'll do it, and I promise you everything will be better by harvest, I know, I know, I said it again. Give me a little while to do it badly and I'll turn out all right."`,
 };
 LF.TAKES = TAKES;
 add({ id: 'off.promote', view: 'people', arc: 'officers', tone: 'council', urgent: true, repeat: 20, title: 'The Empty Chair',
