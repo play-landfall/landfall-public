@@ -171,7 +171,7 @@ S('meal', 'kovacs', 'nakamura', { id: 'soc.coffee', title: 'The Last Tin',
         fx: F({ reg: { kovacs: 1, nakamura: 1 }, bond: ['kovacs', 'nakamura', 'friend', 'shared the last tin'] }) } },
   ] });
 
-S('meal', 'kovacs', 'solheim', { id: 'soc.door', title: 'Half a Door',
+S('meal', 'kovacs', 'solheim', { id: 'soc.door', title: 'Half a Door', says: 'engineer',
   text: () => `${SUPPER}\n\nMarit and Jeremy flew together before the ship, and Jeremy has decided the table should know it.\n\n"Kiruna, the old test field. Jane brings a lander in sideways and takes the hangar door clean off. The whole door, and guess who hung the new one."\n\n"Half a door. Forty-knot crosswind." Jane doesn't stop eating. "You rebuilt the other half crooked. It was still crooked when we left. I checked."`,
   choices: [
     { label: 'Laugh at Jeremy\'s story', info: [['people', 'Jeremy'], ['danger', 'Jane, who doesn\'t like being the joke']],
@@ -267,7 +267,7 @@ S('help', 'nakamura', 'dahl', { id: 'soc.dressing', title: 'Field Dressing',
         fx: F({ reg: { dahl: 2, nakamura: 2 }, bond: ['dahl', 'nakamura', 'friend', 'taught the detail to stitch'] }) } },
   ] });
 
-S('help', 'yurbin', 'kovacs', { id: 'soc.sap', title: 'Resin in the Seals',
+S('help', 'yurbin', 'kovacs', { id: 'soc.sap', title: 'Resin in the Seals', says: 'scientist',
   text: (s, c) => `The reactor's coolant seals are perishing faster than the manual says they should, and every new one Jeremy fits comes out of the spares that have to last forty years. Mac has been growing a resin off a fungus culture that sets like rubber in an hour.\n\n"It holds heat, it holds pressure, I've had it boiling for a week, Jeremy, a week, and it doesn't care, it just sits there being rubber, do you know how rare that is in something that grew itself?"\n\nBashir turns a lump of it over in one big greasy hand. "You want to put mushroom glue in my reactor. In her. In the old girl."`,
   choices: [
     { label: 'Mac\'s resin', test: { base: 52, mods: [trusts('kovacs', 8, 'Jeremy trusts you')] },

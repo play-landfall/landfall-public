@@ -187,12 +187,13 @@ function sceneOf0(c) {
   return pool[Math.abs(h) % pool.length];
 }
 /* Card text with each officer's quoted lines in their seat's colour (js/speak.js). */
-function said(text) { const st = s.cur && LF.byId[s.cur.id]; if (LF.revoice) text = LF.revoice(s, text); return LF.speech ? LF.speech(s, text, st && st.says).map(g => g.seat ? `<span class="sp sp-${g.seat}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
+function said(text) { if (LF.revoice) text = LF.revoice(s, text); return LF.speech ? LF.speech(s, text, LF.saysOf(s)).map(g => g.seat || g.other ? `<span class="sp sp-${g.seat || 'other'}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);
   let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
     h += `<p>${said(def.text)}</p>`;
+    { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
     if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer in person · one at a time</div>${av.map(p =>
       `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
@@ -211,7 +212,7 @@ function cardHTML() {
       const mods = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : ''}${m.v} ${esc(m.label)}</span>`).join('')}</div>` : '';
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
       const face = pk && o.ch.pid ? faceOf(LF.h.byPid(s, o.ch.pid(s))) : null;
-      h += `<button class="opt${st}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em>${esc(o.note)}</em>` : ''}`
+      h += `<button class="opt${st}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em>${said(o.note)}</em>` : ''}`
         + (tips.length ? `<span class="tips">${tips.join('')}</span>` : '') + mods
         + (o.against && !o.lock ? `<span class="why">Against the colony's ${esc(o.against.toLowerCase())} character</span>` : '')
         + (o.lock ? `<span class="why">${esc(o.lock)}</span>` : '') + `</span></button>`;

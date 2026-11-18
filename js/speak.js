@@ -12,7 +12,8 @@
 (function () {
 'use strict';
 const SAY = '(?:says|said|asks|asked|tells you|told you|calls|called|shouts|shouted|mutters|answers|answered|adds)';
-const ANON_AFTER = new RegExp('^[,.]?\\s*(?:' + SAY + '\\s+)?(?:the|a|an|one of|someone|somebody|another|her|his|their)\\b', 'i');
+const ANON = '(?:the|a|an|one of|someone|somebody|another|her|his|their)\\b[a-z\' -]{0,30}';
+const ANON_AFTER = new RegExp('^[,.!?]?\\s*(?:' + SAY + '\\s+' + ANON + '|' + ANON + '\\s+' + SAY + '\\b)', 'i');
 const ANON_BEFORE = new RegExp('\\b(?:the|a|an|one of the|someone|somebody|another)\\s+[a-z\' -]{2,30}\\s+' + SAY + '[,:]?\\s*$', 'i');
 const esc = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 LF.speech = function (s, text, dflt) {
@@ -23,20 +24,28 @@ LF.speech = function (s, text, dflt) {
   for (const p of s.people) if (p.seat && p.key && p.role) who[p.first] = p.seat;   // the one in the chair wins a shared first name
   const names = Object.keys(who); if (!names.length) return out;
   const re = new RegExp('\\b(' + names.map(esc).join('|') + ')\\b', 'g');
-  const last = t => { let m, r = null; re.lastIndex = 0; while ((m = re.exec(t))) r = m[1]; return r; };
-  const first = t => { re.lastIndex = 0; const m = re.exec(t); return m ? m[1] : null; };
+  // the last (first) person named in t who is not named in the line itself: nobody names themselves, so the one named in it is spoken about
+  const named = (n, inner) => new RegExp('\\b' + esc(n) + '\\b').test(inner);
+  const last = (t, inner) => { let m, r = null; re.lastIndex = 0; while ((m = re.exec(t))) if (!named(m[1], inner)) r = m[1]; return r; };
+  const first = (t, inner) => { let m; re.lastIndex = 0; while ((m = re.exec(t))) if (!named(m[1], inner)) return m[1]; return null; };
+  // a short line ("Pick one," Nolan says) is only anyone's with the name right beside it
+  const tag = new RegExp('^[,.!?]?\\s*(?:(' + names.map(esc).join('|') + ')\\s+' + SAY + '|' + SAY + '\\s+(' + names.map(esc).join('|') + '))\\b');
+  const tagB = new RegExp('\\b(' + names.map(esc).join('|') + ')\\b[^."]{0,50}\\s' + SAY + '[,:]?\\s*$');   // Nolan stands in the bay, says ...
+  const beside = (pre, post) => { const a = tag.exec(post); if (a) return a[1] || a[2]; const b = tagB.exec(pre); return b ? b[1] : null; };
   const segs = []; let carry = null;
   for (const para of text.split(/(\n+)/)) {
     if (!para || /^\n+$/.test(para)) { if (para) segs.push({ t: para }); continue; }
     const q = /"[^"]+"/g; let m, at = 0, prev = null;
     while ((m = q.exec(para))) {
       const inner = m[0].slice(1, -1), pre = para.slice(at, m.index), post = para.slice(m.index + m[0].length, m.index + m[0].length + 60).split('"')[0];
-      let name = null, mine = false;
-      if (inner.length >= 12 && /[.!?,]$/.test(inner) && !ANON_AFTER.test(post) && !ANON_BEFORE.test(pre)) {
-        name = last(pre) || first(post.slice(0, 40)) || (prev && pre.trim().length < 4 ? prev : null) || (at === 0 && !pre.trim() ? carry : null); mine = !name; }
+      let name = null, mine = false; const talk = /[.!?,\u2026-]$/.test(inner.trim()), known = talk ? LF.lineSeat(inner) : null;
+      if (talk && inner.length < 12 && !known) { name = beside(pre, post); if (name && named(name, inner)) name = null; }
+      else if (talk && !ANON_AFTER.test(post) && !ANON_BEFORE.test(pre)) {
+        name = beside(pre, post) || last(pre, inner) || first(post.slice(0, 40), inner) || (prev && pre.trim().length < 4 && !named(prev, inner) ? prev : null) || (at === 0 && !pre.trim() && carry && !named(carry, inner) ? carry : null); mine = !name; }
       if (pre) segs.push({ t: pre });
-      if (name && new RegExp('\\b' + esc(name) + '\\b').test(inner)) name = null;   // nobody names themselves: the one named in the line is being spoken about
-      segs.push(name && who[name] ? { t: m[0], seat: who[name], who: name } : mine && dflt && LF.SEATS[dflt] ? { t: m[0], seat: dflt, who: '' } : { t: m[0] });
+      // a line in LF.ALT_VOICE is an officer's whoever the prose seems to name; any other spoken line nobody of the twelve owns is grey (sp-other)
+      segs.push(known ? { t: m[0], seat: known, who: name && who[name] === known ? name : '' } : name && who[name] ? { t: m[0], seat: who[name], who: name }
+        : mine && dflt && LF.SEATS[dflt] ? { t: m[0], seat: dflt, who: '' } : talk ? { t: m[0], other: true } : { t: m[0] });
       prev = name; at = m.index + m[0].length;
     }
     if (at < para.length) segs.push({ t: para.slice(at) });
@@ -46,6 +55,9 @@ LF.speech = function (s, text, dflt) {
   }
   return segs.length ? segs : out;
 };
+
+/* The seat that speaks a card's unattributed lines: the storylet's says, a seat or a function (s, ctx) of the card. */
+LF.saysOf = function (s) { const st = s && s.cur && LF.byId[s.cur.id], v = st && st.says; return typeof v === 'function' ? v(s, s.cur.ctx || {}) : v; };
 
 /* ---------- the seat's other officer says it their own way (2026-11-18; DESIGN.md "Whose line it is") ----------
    The cards were written when each seat had one officer, so a quoted line there is in that officer's voice. When the
@@ -69,6 +81,17 @@ function table() { if (TABLE) return TABLE; TABLE = {};
     const map = b.exprs.map(x => { let k = -1; do k = a.exprs.indexOf(x, k + 1); while (k >= 0 && used[k]); if (k < 0) k = a.exprs.indexOf(x); if (k >= 0) used[k] = 1; return k; });
     (TABLE[e.seat] = TABLE[e.seat] || []).push({ re, parts: b.parts.map(plain), map, head: plain(a.parts[0]).slice(0, 6) }); }
   return TABLE; }
+/* Whose line a quote is, by the table alone: the seat whose src or alt it matches, or null (and null if two seats claim it). */
+let OWN = null;
+LF.lineSeat = function (inner) {
+  if (!LF.ALT_VOICE) return null;
+  if (!OWN) { OWN = []; for (const e of LF.ALT_VOICE) for (const src of [e.src.slice(1, -1), e.alt]) { const a = cut(src), head = plain(a.parts[0]).slice(0, 6);
+      if (a.parts.join('').replace(/\W/g, '').length < 10) continue;   // too little fixed text to know it by ("${...}.")
+      OWN.push({ seat: e.seat, head, re: new RegExp('^' + a.parts.map(x => esc2(plain(x))).join('[\\s\\S]*?') + '$') }); } }
+  let hit = null; for (const e of OWN) { if (e.head && inner.slice(0, e.head.length) !== e.head) continue;
+    if (e.re.test(inner)) { if (hit && hit !== e.seat) return null; hit = e.seat; } }
+  return hit;
+};
 LF.revoice = function (s, text) {
   if (!s || !s.people || !LF.ALT_VOICE || !text || text.indexOf('"') < 0) return text;
   const seats = LF.SEAT_ORDER.filter(k => { const p = LF.officer(s, k); return p && p.key && LF.CAST[k][0].key !== p.key; });

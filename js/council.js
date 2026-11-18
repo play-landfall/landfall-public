@@ -181,6 +181,7 @@ LF.firePlan = function (s) {
   sideCard(s, { id: 'plan', plan: true, title: first ? 'First Things' : 'What Gets Built', tone: 'council',
     text: (first ? `The pods are down and the reactor is running. The build crews are standing in the mud with their tools, waiting to be told where to start.`
       : s.lastBuilt && s.day - s.lastBuilt.d < 3 ? `The build crews are free again, and the officers have been waiting for it.` : waited ? `The salvage sledges have filled the yard far enough to build again.` : `The build crews have nothing in hand, and every officer has an opinion about that.`),
+    ask: first ? 'What do the build crews put up first, or do they spend the time on salvage?' : 'What goes up next, or do the crews go out on salvage instead?',
     choices });
   s.memo._plan = { d: s.day };
   return true;

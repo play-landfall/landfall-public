@@ -324,7 +324,7 @@ LF.fireGen = function (s, f, frames) {
       ch.odds = LF.odds(s, { base: c.b || 50, mods, ap: c.ap }, x); }
     choices.push(ch);
   }
-  s.cur = { gen: true, phase: 'choose', attach: [], id: fr.id, fid: f.id, title: val(fr.title, x), tone: fr.tone, text, choices, view: LF.frameView(fr, f), lead: leadP ? leadP.id : null, stake: stake.phrase,
+  s.cur = { gen: true, phase: 'choose', attach: [], id: fr.id, fid: f.id, title: val(fr.title, x), tone: fr.tone, text, ask: fr.ask ? val(fr.ask, x) : '', choices, view: LF.frameView(fr, f), lead: leadP ? leadP.id : null, stake: stake.phrase,
     sig: [fr.id, f.sub, x.o ? x.o.sub : '', stake.t, x.cb ? 'cb' : '', choices.length].join('|') };
   LF.notice(s, text); if (leadP) leadP.known = leadP.known || s.day;
   f.last = s.day; f.lastFrame = fr.id; s.dilemmas++; s.lastTone = fr.tone;
@@ -484,10 +484,11 @@ LF.awayOp = function (s, o, chip) {
   else if (o.op === 'wait') { a.silent = true; a.due = s.day + ri(s, 50, 120); a.fate = rand(s) < 0.45 ? 'late' : 'never'; }
   else if (o.op === 'search') { a.silent = true; a.due = s.day + 400; a.fate = 'searching'; }
 };
-function card(s, title, tone, text, chips, choices, scene) {
+function card(s, title, tone, text, chips, choices, scene, ask) {
   LF.notice(s, text);
   s.cur = { gen: true, away: true, side: true, attach: [], id: 'away', fid: null, view: 'world', title, tone, text: choices ? text : '', choices: choices || [], phase: choices ? 'choose' : 'result',
     result: choices ? null : { label: '', text, chips, remember: false } };
+  if (ask && choices) s.cur.ask = ask;
   if (scene) s.cur.scene = scene;   // a return card with a picture of its own (T2-5: a wreck opened, a lost pod, a ridge, an empty camp, a thread's place)
   s.dilemmas++; s.lastTone = tone; LF.log(s, title + '.', 'event');
 }
@@ -559,7 +560,7 @@ LF.awayReturn = function (s, a, forced) {
         send: { n: need, months: 1, danger: Math.min(5, d + 1) }, cost: { food: need * 15 }, out: { text: `${cap1(num(need))} volunteers leave at first light, following the same trail.`, fx: { awayOp: { id: a.id, op: 'search' }, away: { n: need, days: ri(s, 25, 45), danger: Math.min(5, d + 1), to: a.to, ret: 'search', fid: a.fid, seek: a.id } } } },
       { ap: null, v: ['cautious'], label: 'Keep the lamp lit and wait', note: 'They may only be late, but the waiting wears on people.', hint: 'unknown', lock: '', out: { text: 'The lamp stays on the ridge. People glance up at it on their way to shift, fewer of them each month.', fx: { awayOp: { id: a.id, op: 'wait' }, morale: -2 } } },
       { ap: null, v: ['severe'], label: 'Declare them lost', note: 'Their names go on the wall, and the colony can start to grieve.', hint: 'bad', lock: '', out: { text: `${cap1(num(a.n))} names are cut into the wall. Their bunks are reassigned by the end of the month.`, fx: { awayOp: { id: a.id, op: 'lost' }, morale: -4 } } },
-    ]);
+    ], null, 'Do you send more out after the lost party, keep waiting for them, or declare them lost?');
   }
   let text, title = 'The Party Returns', tone = 'quiet';
   const led = (alive, dead) => L ? ' ' + (L.alive ? alive : dead).replace('{L}', L.name).replace(/\{L\}/g, L.first || L.name) : '';   // the full name once, then the first name

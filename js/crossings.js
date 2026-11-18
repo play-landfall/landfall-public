@@ -246,7 +246,7 @@ LF.TAGS['x.wrong'] = ['open free', 'open mercy', 'closed order', 'severe order']
 /* ======================= SOMEONE OF THEIRS ======================= */
 const DUTY = { sickness: 'the clinic rota', siege: 'the outer watch', dark: 'the outside crews', cold: 'the outside crews', fear: 'the night watch' };
 const REL = { partner: 'partner', kin: 'family', friend: 'oldest friend', mentor: 'teacher' };
-X({ id: 'x.favour', arc: 'cross', view: 'people', tone: 'pressure', title: 'One of Theirs', w: 1.5,
+X({ id: 'x.favour', arc: 'cross', view: 'people', tone: 'pressure', title: 'One of Theirs', w: 1.5, says: (s, c) => { const p = c.pid && LF.h.byPid(s, c.pid); return p && p.seat; },
   setup: s => { if (LF.act(s) < 2) return {};
     const k = ['sickness', 'siege', 'dark', 'cold', 'fear'].map(k => [k, LF.cv(s, k)]).sort((a, b) => b[1] - a[1])[0]; if (k[1] < 50 || s.storySeen.favDay > s.day - 300) return {};
     const p = s.people.filter(p => p.alive && !p.away && p.role && once(s, 'fav:' + p.id) && LF.close(s, p).some(o => !o.away)).sort((a, b) => a.loyal - b.loyal)[0]; if (!p) return {};

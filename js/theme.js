@@ -45,6 +45,8 @@ function set(key, keep) {
   for (const k of ['bg', 'paper', 'card', 'raise', 'ink', 'rust', 'dim', 'line', 'good', 'bad']) root.style.setProperty('--' + k, t[k]);
   // Whose line it is (js/speak.js): one colour a seat, fixed whoever holds it, mixed toward the theme's ink so it reads on every palette.
   for (const k in SPEAK) root.style.setProperty('--sp-' + k, `color-mix(in oklab, ${SPEAK[k]} ${t.light ? 62 : 58}%, ${t.ink})`);
+  // Anyone who is not one of the twelve (a colonist, a child, a stranger): a light grey, set apart from the narration (Lachlan, 2026-11-18).
+  root.style.setProperty('--sp-other', `color-mix(in oklab, ${t.light ? '#6c7078' : '#b4b9c2'} 80%, ${t.ink})`);
   root.style.setProperty('--on', t.on || t.bg);
   root.style.setProperty('--shade', t.shade || 'rgba(0,0,0,.42)'); root.style.setProperty('--glint', t.glint || 'rgba(255,255,255,.055)');
   root.style.colorScheme = t.light ? 'light' : 'dark';
