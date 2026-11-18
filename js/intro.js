@@ -3,7 +3,7 @@
    the sleepers, the watch and the failing machinery, then the reason this ship is adrift (s.premise). Shots are drawn
    from a pool and ordered by the seed, so it is not the same twice. On a new game a title card waits for a tap first,
    so the opening score (js/music.js) can start with the pictures. After the burn: the engines, the new world, orbit.
-   After the landing site is chosen: the descent. Tap anywhere to skip. Reduced motion: crossfades only.
+   After the landing site is chosen: the descent. Tap anywhere to skip, except during the departure film, which plays through. Reduced motion: crossfades only.
    Every shot fills the screen, caption over a dark fade at the foot. Space shots are layered: a starfield plate with
    transparent sprites (art/pieces/) moved over it; the stars are drawn live in a canvas (js/stars.js) and the ship's
    engine fire in CSS, not sprites.
@@ -131,8 +131,9 @@ function play(shots, cb, title) {
   // How many have gone before: ships launched and colonies established, from the play log's counts (js/log.js).
   if (title && window.LFLog && LFLog.tally) LFLog.tally(line => { const tl = el.querySelector('.title .tally'); if (tl && line) { tl.textContent = line; tl.classList.add('on'); } });
   // The landing page: the first tap starts the score and brings up what the game is and what is in it; the second begins.
-  let waiting = title ? 2 : 0;
+  let waiting = title ? 2 : 0, locked = false;
   el.addEventListener('click', e => { e.stopPropagation();
+    if (locked) return;   // the departure film plays through (Lachlan, 2026-11-18)
     if (!waiting) return finish();
     if (waiting === 2) { waiting = 1; el.querySelector('.title').classList.add('read'); return; }
     waiting = 0; const tt = el.querySelector('.title'); tt.classList.add('off'); setTimeout(() => { unsky(tt); tt.remove(); }, 1300); el.querySelector('.skip').textContent = 'Tap to skip'; next(); });
@@ -157,18 +158,20 @@ function play(shots, cb, title) {
   const film = (x, sh) => {
     sh.className = 'shot film';
     sh.innerHTML = `<div class="frame"><video muted playsinline preload="auto" poster="art/video/${x.video}.webp" src="art/video/${x.video}.mp4"></video><i class="fx"></i></div><p></p>`;
-    const v = sh.querySelector('video'), p = sh.querySelector('p'); let cap = -1, fired = 0, dead = false;
-    const stills = () => { if (dead) return; dead = true; clearTimeout(timer); sh.remove(); shots = shots.slice(0, i).concat((x.alt || []).filter(ok), shots.slice(i)); next(); };
+    const v = sh.querySelector('video'), p = sh.querySelector('p'), tag = el.querySelector('.skip'); let cap = -1, fired = 0, dead = false;
+    locked = true; tag.style.visibility = 'hidden';
+    const free = () => { locked = false; tag.style.visibility = ''; };
+    const stills = () => { if (dead) return; dead = true; free(); clearTimeout(timer); sh.remove(); shots = shots.slice(0, i).concat((x.alt || []).filter(ok), shots.slice(i)); next(); };
     const words = t => t.replace(/\S+-\S+/g, w => `<span style="white-space:nowrap">${w}</span>`);
     v.addEventListener('timeupdate', () => { const at = v.currentTime; let k = -1; (x.caps || []).forEach((c, n) => { if (at >= c[0]) k = n; });
       if (k !== cap) { cap = k; p.style.animation = 'none'; p.innerHTML = k < 0 ? '' : words(x.caps[k][1]); void p.offsetWidth; p.style.animation = 'i-caption 1200ms cubic-bezier(.2,.6,.2,1) forwards'; }
       while (fired < (x.sfxAt || []).length && at >= x.sfxAt[fired][0]) { if (window.LFMusic) LFMusic.sfx(x.sfxAt[fired][1]); fired++; } });
-    v.addEventListener('ended', () => { if (!dead) { dead = true; clearTimeout(timer); next(); } });
+    v.addEventListener('ended', () => { if (!dead) { dead = true; free(); clearTimeout(timer); next(); } });
     v.addEventListener('error', stills);
     for (const o of stage.querySelectorAll('.shot.on')) o.classList.add('off');
     stage.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on'));
     const pl = v.play(); if (pl && pl.catch) pl.catch(stills);
-    timer = setTimeout(() => { if (!dead) { dead = true; next(); } }, (x.ms || 30000) + 4000);   // never hang on a stalled download
+    timer = setTimeout(() => { if (!dead) { dead = true; free(); next(); } }, (x.ms || 30000) + 4000);   // never hang on a stalled download
   };
   if (!waiting) next();
 }
