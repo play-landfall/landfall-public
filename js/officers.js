@@ -64,7 +64,7 @@ LF.CAST = {
   crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
     'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.'),
     C('waititi', 'Hamond', 'Shepherd', 'Agronomist', 'botanist', 'gentle', { free: 1, mercy: 1 }, 'sleepers',
-    'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last.')],
+    'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last. His wife is still asleep aboard.')],
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
 LF.BIO = {
