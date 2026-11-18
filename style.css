@@ -425,6 +425,23 @@ html.grim2 h2 { letter-spacing:.01em; }
 .place .phow { display:block; font-size:13px; color:var(--dim); margin-top:6px; line-height:1.35; text-wrap:pretty; }
 .place .psend { margin:12px 0 0; } .place .psend > .lbl { margin:0 2px 2px; } .place .psend .opt.ord { margin-top:8px; }
 .prow { cursor:pointer; } .prow.on .t b { color:var(--rust); }
+/* places as tiles under the map (2026-11-18) */
+.h3n { float:right; letter-spacing:.06em; text-transform:none; font-weight:700; font-size:12px; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); grid-auto-flow:dense; gap:10px; margin-bottom:14px; }
+.tile { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:1px; min-width:0; min-height:118px; padding:10px 12px 11px; border-radius:18px; background:var(--card); box-shadow:var(--lift); text-align:left; color:var(--ink); transition:scale 150ms ease-out, box-shadow 150ms ease-out; }
+.tile:active { scale:.97; } .tile:focus-visible { outline:2px solid var(--rust); outline-offset:2px; }
+.tile.on { box-shadow:var(--lift), inset 0 0 0 2px var(--rust); }
+.tile .th { display:flex; align-items:center; gap:6px; width:100%; margin-bottom:6px; } .tile .th > img { width:30px; height:30px; flex:none; }
+.tile .pnum { width:22px; height:22px; border-radius:50%; background:var(--rust); color:var(--paper); font:800 12px var(--label); display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+.tile b { font-size:15px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-wrap:balance; overflow-wrap:anywhere; }
+.tile small { font-size:12.5px; line-height:1.3; } .tile small.far { font:700 11px var(--label); letter-spacing:.05em; text-transform:uppercase; font-variant-numeric:tabular-nums; margin-top:auto; padding-top:4px; }
+.tile .need { margin-top:6px; padding:3px 9px; border-radius:999px; background:var(--rust); color:var(--on); font:800 10.5px var(--label); letter-spacing:.05em; text-transform:uppercase; }
+.tile .need.ev { background:var(--raise); color:var(--rust); box-shadow:inset 0 0 0 1.5px var(--rust); }
+.tile.done { background:var(--paper); box-shadow:var(--rest); } .tile.done b { color:var(--dim); } .tile.gone { opacity:.5; box-shadow:none; background:var(--paper); }
+.dots { margin-left:auto; display:flex; gap:3px; } .dots i { width:6px; height:6px; border-radius:50%; background:var(--line); } .dots i.on { background:var(--dim); } .dots i.hot { background:var(--bad); }
+.tiles > .place { grid-column:1 / -1; margin:0; }
+.place .pneed { margin:0 0 8px; font-size:14px; line-height:1.4; color:var(--rust); text-wrap:pretty; }
+.tmore { margin:-4px auto 14px; display:block; }
 .box .pbtn.more { margin:8px auto 2px; display:block; }
 /* the crew file before the voyage out (js/ui.js dossierHTML): two officers a page, by LF.FILE_PAGES */
 .dossier .file { display:flex; gap:12px; align-items:flex-start; padding:10px; margin:10px 0; border-radius:14px; background:var(--raise); box-shadow:var(--rest); animation-delay:calc(120ms + var(--i, 0) * 110ms) !important; }

@@ -95,7 +95,7 @@ add({ id: 'plan.sleepers', arc: 'plan', tone: 'council', title: 'The Next Shuttl
 const ORE_WHERE = { hills: 'the high ground', far: 'the interior' };
 const oreTo = s => (s.world.report && s.world.report.features[0] && s.world.oreBody === 'far' ? s.world.report.features[0].name : ORE_WHERE[s.world.oreBody] || 'the high ground');
 add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: 'Where the Metal Is', w: s => s.day > 90 ? 9 : 4, repeat: 60, gap: 0,
-  when: s => !s.flags.ore_found && s.day >= 40 && !s.away.some(a => a.ret === 'ore'),
+  when: s => !s.flags.ore_found && s.day >= 200 && !s.away.some(a => a.ret === 'ore' || a.ret === 'seam'),   // since 2026-11-18 the ore is a place to send a party to (js/places.js LF.FINDS): this is the council's word if nobody has
   text: s => { const r = s.world.report && s.world.report.ore, d = did(s, 'plan.prospect');
     return `${Nc(s, 'geologist')} has the orbital report pinned to the mess hall wall, one line circled: "${r ? r.text : 'Metal, somewhere.'}" Under it, in pencil: ${r ? r.conf : 50}%.\n\n`
       + (d && d.k === 'fly' && d.ok === false ? 'The last flight saw nothing worth landing for.' : d && d.k === 'wait' ? 'The smelter drawings have been waiting since the last time this was asked.' : 'Without ore there is no smelter, and without a smelter nothing after it gets built.'); },

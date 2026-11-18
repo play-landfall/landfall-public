@@ -305,10 +305,14 @@ const POI_STATE = { rumoured: 'word of it only', located: 'found, nobody has bee
 const placeIc = p => ic(p.owner === 'natives' ? 'natives' : POI_IC[p.kind] || 'compass');
 const placeFar = p => `${LF.monthsWord(p.months).replace(/^a /, 'A ').replace(/^\w/, c => c.toUpperCase())} away${p.bearing ? `, ${p.bearing}` : ''}`;
 let poiOpen = '', poiAll = false;
+const FIND_SAY = k => LF.FINDS[k].say;
+const threadSay = p => { const T = !p.been.length && LF.placeThread && LF.placeThread(s, p); return T ? `${T.name ? T.name.charAt(0).toUpperCase() + T.name.slice(1) : 'What the colony is living through'} may show itself here. A party that gets there and back brings home what it saw, and what it is gets plainer.` : ''; };
 function placeHTML(p) {
   const been = p.been.length ? p.been.map(b => `${b.t}, ${LF.dateStr(b.d).replace(/^Year/, 'year')}`).join('. ') + '.' : 'Nobody from the colony has been there.';
   return `<div class="box place" id="place"><div class="row">${placeIc(p)}<div class="t"><b>${esc(p.name)}</b><small>${esc(p.kindWord.replace(/^\w/, c => c.toUpperCase()))} · ${esc(POI_STATE[p.state] || p.state)}</small></div><button class="pbtn" data-act="poi" data-v="">Close</button></div>`
     + (p.known ? `<p class="pknown">${esc(p.known)}</p>` : '')
+    + (LF.findOf && LF.findOf(s, p) ? `<p class="pneed">${esc(FIND_SAY(LF.findOf(s, p)))}</p>` : '')
+    + (threadSay(p) ? `<p class="pneed">${esc(threadSay(p))}</p>` : '')
     + `<div class="tips"><span>${ic('time')}${esc(placeFar(p))}</span><span class="${p.danger >= 4 ? 'hot' : ''}">${ic('danger')}${esc(p.dangerWord)}</span></div>`
     + `<small class="phow">${esc(LF.poiHow(s, p))}</small><small class="phow">${esc(been)}</small>`
     + sendHTML(p) + `</div>`;
@@ -321,12 +325,28 @@ function sendHTML(p) {
   if (!rows.length) return '';
   return `<div class="psend orders" data-poi="${esc(p.id)}"><div class="lbl">Send a party</div>${saidHTML('place')}${rows.map(ordRowHTML).join('')}</div>`;
 }
-/* Every place the colony knows of: the ones nobody has been to first, nearest first; a long list folds after eight. */
+/* Every place the colony knows of, as tiles under the map (2026-11-18, Lachlan: the map is small on a phone): what the yard
+   is waiting on first (js/places.js LF.FINDS), then the ones nobody has been to, nearest first; folded after six. A tap
+   opens the place across the grid under its own tile (grid-auto-flow: dense lets the next tile fill the gap beside it). */
+const TILE_STATE = { rumoured: 'Word of it only', located: 'Nobody has been', visited: 'Visited', 'worked out': 'Worked out', gone: 'Gone' };
+const DOTS = n => `<span class="dots" aria-label="${esc(LF.poiDanger(n))}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? (n >= 4 ? 'on hot' : 'on') : ''}"></i>`).join('')}</span>`;
+function tileHTML(p) {
+  const k = LF.findOf ? LF.findOf(s, p) : null, a = s.away.find(x => x.poi === p.id), P = a && LF.party(s, a), T = !k && !p.been.length && LF.placeThread ? LF.placeThread(s, p) : null;
+  const far = `${p.months} month${p.months === 1 ? '' : 's'}`;
+  return `<button class="tile${p.id === poiOpen ? ' on' : ''}${p.state === 'gone' ? ' gone' : ''}${['visited', 'worked out'].includes(p.state) ? ' done' : ''}${k ? ' want' : ''}" data-act="poi" data-v="${esc(p.id)}">`
+    + `<span class="th">${placeIc(p)}${P ? `<span class="pnum">${P.n}</span>` : ''}${p.state !== 'gone' ? DOTS(p.danger) : ''}</span>`
+    + `<b>${esc(p.name)}</b><small>${esc(TILE_STATE[p.state] || p.state)}</small><small class="far">${esc(far)}${p.bearing ? ' · ' + esc(p.bearing.replace(/(north|south|east|west)/g, m => m[0].toUpperCase()).replace(/-/g, '')) : ''}</small>`
+    + (k ? `<span class="need">${esc(LF.FINDS[k].tag)}</span>` : T ? `<span class="need ev">${esc(T.dread ? 'Evidence' : 'A lead')}</span>` : '') + `</button>`;
+}
 function placesHTML(list) { if (!list.length) return '';
-  const ord = { rumoured: 1, located: 0, visited: 2, 'worked out': 3, gone: 4 }, L = list.slice().sort((a, b) => (ord[a.state] - ord[b.state]) || (a.months - b.months) || (b.d || 0) - (a.d || 0));
-  const shown = poiAll ? L : L.slice(0, 8);
-  return `<h3>${ic('map', 'h3i')}Places</h3><div class="box">${shown.map(p => `<div class="row prow${p.id === poiOpen ? ' on' : ''}${p.state === 'gone' ? ' gone' : ''}" data-act="poi" data-v="${esc(p.id)}">${placeIc(p)}<div class="t"><b>${esc(p.name)}</b><small>${esc(POI_STATE[p.state] || p.state)} · ${esc(placeFar(p).toLowerCase())}${p.danger >= 3 && p.state !== 'gone' ? ` · ${esc(p.dangerWord.toLowerCase())}` : ''}</small></div></div>`).join('')}`
-    + (L.length > 8 ? `<button class="pbtn more" data-act="poimore">${poiAll ? 'Fewer' : `${L.length - 8} more`}</button>` : '') + `</div>`; }
+  const ord = { rumoured: 1, located: 0, visited: 2, 'worked out': 3, gone: 4 }, want = p => LF.findOf && LF.findOf(s, p) ? 0 : !p.been.length && LF.placeThread && LF.placeThread(s, p) ? 1 : 2;
+  const L = list.filter(p => p.owner !== 'colony').sort((a, b) => (want(a) - want(b)) || (ord[a.state] - ord[b.state]) || (a.months - b.months) || (b.d || 0) - (a.d || 0));
+  if (!L.length) return '';
+  let shown = poiAll ? L : L.slice(0, 6); const open = poiOpen && L.find(p => p.id === poiOpen);
+  if (open && !shown.includes(open)) shown = shown.concat(open);
+  const fresh = L.filter(p => !['visited', 'worked out', 'gone'].includes(p.state)).length;
+  return `<h3>${ic('map', 'h3i')}Places<span class="h3n">${fresh ? `${fresh} nobody has been to` : 'all visited'}</span></h3><div class="tiles">${shown.map(p => tileHTML(p) + (open === p ? placeHTML(p) : '')).join('')}</div>`
+    + (L.length > 6 ? `<button class="pbtn more tmore" data-act="poimore">${poiAll ? 'Fewer' : `${L.length - shown.length} more`}</button>` : ''); }
 /* What work the card's options are, and so who could be offered: "Needs exploring or fighting". */
 function workLine() { const w = s.cur.aboard ? null : LF.cardWork(s); if (!w) return '';
   const words = w.map(k => LF.SKILL_WORD[k]), list = words.length > 1 ? words.slice(0, -1).join(', ') + ' or ' + words[words.length - 1] : words[0];
@@ -511,7 +531,7 @@ function recordHTML() {
 function worldView() {
   const A = LF.ARCHETYPES[s.world.type], places = LF.pois ? LF.pois(s) : [], open = poiOpen && places.find(p => p.id === poiOpen);
   return `<div class="view">${LF.worldView ? LF.worldView(s) : LF.worldMap(s)}<div class="cap"><b>${esc(spot || s.world.planet)}</b><div class="lbl">${spot ? 'Tap anything on the map' : `${A.name} · the country round the landing site`}</div></div></div>
-    ${open ? placeHTML(open) : ''}${ordersHTML('world')}<p class="mood">${esc(LF.vibes(s)[4].t)}${s.away.length ? ' ' + esc(LF.mood(s).split('. ').filter(t => / away |overdue/.test(t)).join('. ')) : ''}</p>${partyRows()}${placesHTML(places)}${threatRows()}${recordHTML()}`;
+    ${placesHTML(places)}${open && open.owner === 'colony' ? placeHTML(open) : ''}${ordersHTML('world')}<p class="mood">${esc(LF.vibes(s)[4].t)}${s.away.length ? ' ' + esc(LF.mood(s).split('. ').filter(t => / away |overdue/.test(t)).join('. ')) : ''}</p>${partyRows()}${threatRows()}${recordHTML()}`;
 }
 /* The colony's humanity (js/humanity.js): a bar, a word and a line. Shown on the People view and the recap. */
 function humHTML() {

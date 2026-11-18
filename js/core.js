@@ -69,15 +69,16 @@ LF.PROJECTS = {
   greenhouse: { name: 'Greenhouse Domes', mat: 40, labor: 70, desc: 'Shelters Earth crops from the local soil, so they yield more.' },
   soillab:    { name: 'Soil Laboratory', mat: 30, labor: 60, desc: 'Lets the agronomists work out why Earth crops sicken here.' },
   housing:    { name: 'Permanent Housing', mat: 70, labor: 110, desc: s => LF.harsh(s) ? 'Out of the cargo pods, which were never built for this climate. People will be much steadier for it.' : 'Out of the cargo pods, and people are steadier for it.' },
-  wells:      { name: 'Wells & Sand Filters', mat: 60, labor: 120, pillar: 'water', desc: s => 'Water that does not depend on the reclaimer.' + (s.world.truth.water < 20 ? ' On a world this dry, it will be a long dig.' : s.world.truth.water > 60 ? ' Easy digging here.' : '') },
+  wells:      { name: 'Wells & Sand Filters', mat: 60, labor: 120, pillar: 'water', desc: s => 'Water that does not depend on the reclaimer.' + (s.world.truth.water < 20 ? ' On a world this dry, it will be a long dig.' : s.world.truth.water > 60 ? ' Easy digging here.' : ''),
+                req: s => !!s.flags.water_found, reqText: s => LF.findWhy ? LF.findWhy(s, 'water') : 'Needs water found' },
   fields:     { name: 'Open Fields', mat: 50, labor: 160, pillar: 'food', desc: 'Adapted crops under the open sky.',
                 req: s => !!s.flags.crops_adapted, reqText: 'Needs crops adapted to local soil' },
   smelter:    { name: 'Kiln & Smelter', mat: 60, labor: 140, desc: 'Local metal, more than doubling material output.',
-                req: s => !!s.flags.ore_found, reqText: 'Needs a surveyed ore body' },
+                req: s => !!s.flags.ore_found, reqText: s => LF.findWhy ? LF.findWhy(s, 'ore') : 'Needs a surveyed ore body' },
   machineshop:{ name: 'Machine Shop', mat: 120, labor: 220, pillar: 'industry', desc: 'Lathes, mills, forges. Parts without the fabricator, better odds on repairs, and fewer spares spent on each.',
                 req: s => !!s.built.smelter, reqText: 'Needs the smelter' },
   turbines:   { name: 'Turbine Field', mat: 110, labor: 200, pillar: 'energy', desc: 'Power that can be repaired with a hammer.',
-                req: s => !!s.built.smelter, reqText: 'Needs the smelter' },
+                req: s => !!s.built.smelter && !!s.flags.wind_found, reqText: s => !s.built.smelter ? 'Needs the smelter' : LF.findWhy ? LF.findWhy(s, 'wind') : 'Needs a windy site' },
   school:     { name: 'School & Clinic', mat: 50, labor: 130, pillar: 'people', desc: 'Teaching and a clinic, so children learn what the founders know.' },
   shelter:    { name: s => SHELTER[s.world.climate], mat: 80, labor: 150, desc: 'Protection from what this world does every year.',
                 req: s => !!s.flags.climate_known, reqText: 'You do not yet know what to build against' },
@@ -468,11 +469,7 @@ LF.tick = function (s) {
   // materials. There is no survey crew: what is known of the country comes from the orbital report on arrival and
   // from the parties the colony decides to send (s.survey only moves through decisions).
   s.res.mat += LF.matIn(s, lab, true);
-  if (!s.flags.ore_found && s.day >= 12 && (s.world.oreBody === 'near' || (s.world.oreBody === 'hills' && s.flags.site_highland))) {
-    s.flags.ore_found = true;
-    LF.log(s, `${LF.h.Nc(s, 'geologist')} has walked out to what the orbital report flagged and come back with a sample bag. A workable iron-nickel body, within haul distance. A smelter is possible.`, 'good');
-    LF.chron(s, 'Ore was found, and with it the chance of making the colony\'s own metal.');
-  }
+  // ore is no longer found by itself (2026-11-18): the orbital report's lead is a place on the World map, and a party has to reach it (js/places.js LF.FINDS)
   if (!s.flags.climate_known && s.day >= 200) {
     s.flags.climate_known = true;
     LF.log(s, 'After most of two years here, the pattern of this world\'s violence is plain enough to build against.');

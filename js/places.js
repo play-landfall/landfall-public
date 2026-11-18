@@ -103,6 +103,8 @@ function threadPlaces(s) {
 /* Called every tick (wrapped round LF.threadTick below): a thread's new place gets its slot and its day. */
 LF.placesTick = function (s) {
   if (!s.world || s.adrift || (LF.aloft && LF.aloft(s))) return;
+  if (!s.flags.finds_seeded && LF.seedFinds) LF.seedFinds(s);
+  if (LF.huntTick) LF.huntTick(s);
   for (const p of threadPlaces(s)) if (!p.seen) { s.poiAt = s.poiAt || {}; s.poiAt[p.key] = { slot: assign(s, p.key, p.dist, p.off), d: s.day, nl: leadsSeen(s) }; }
 };
 const tick0 = LF.threadTick;
@@ -156,7 +158,81 @@ LF.awayReturn = function (s, a, forced) {
   const goal = LF.partyGoal ? LF.partyGoal(s, a) : null, P0 = LF.party ? LF.party(s, a) : null;
   const r = ret0(s, a, forced);
   if (goal && !s.away.includes(a)) LF.poiVisit(s, goal.key, P0 ? cap1(P0.who.replace(/^(\d+) led by/, (m, n) => `a party of ${NUMW[n] || n} under`).replace(/^(\d+) people$/, (m, n) => `a party of ${NUMW[n] || n}`)) : 'A party', goal);
+  if (goal && !s.away.includes(a) && a.n > 0 && a.ret !== 'astray' && a.ret !== 'recalled') LF.findAt(s, goal.key, s.cur && s.cur.away && s.cur.result ? s.cur.result.chips : null);
   return r;
+};
+
+/* ---------- finds (2026-11-18, Lachlan: "a reason to explore proactively") ----------
+   Some things the colony needs are out in the country, and orbit only says where to look. A party has to reach the
+   place and come home (any return but astray or recalled, with someone left to tell it): then s.flags[flag] is set.
+   Three open a build in the yard: an ore body the smelter, high ground with a steady wind the turbine field, a spring
+   or seep the wells. Two pay for the finding: wild stock from thick growth (+10 on the wheat card, crops.adapt, while
+   it is still to come) and a hunting ground (food every month, and every month a kill on whatever animal the colony
+   knows of, which the Grudge counts: js/thread-deathworld.js reads f.kills). The orbital report's three leads for the
+   builds are marked at landfall (LF.seedFinds, from placesTick, so an old save gets them too); a survey party or a
+   card can turn up others of the same kind, and any of them will do. A factor's own place (an animal's ground, a camp)
+   is that factor's, not a find. Cards that set a flag outright (the flyover on plan.prospect, the drummers' treaty,
+   the highland turbines, the deep site's spring) still count. */
+LF.FINDS = {
+  ore:   { kinds: ['ore'], flag: 'ore_found', build: 'smelter', tag: 'For the smelter', got: 'Ore found: the smelter can be built',
+    log: 'Ore, on the ground and in the sample bags. The smelter can go on the yard\'s list.', chron: 'Ore was found at {p}.',
+    say: 'The smelter waits on this. Any party that gets there and comes home opens it in the yard, and the machine shop and turbines after it.' },
+  wind:  { kinds: ['ridge'], flag: 'wind_found', build: 'turbines', tag: 'For the turbines', got: 'A site for the turbine field',
+    log: 'High ground with a steady wind on it, walked and measured. The turbine field has somewhere to stand.', chron: 'A site for the turbines was walked at {p}.',
+    say: 'The turbine field waits on this. Any party that gets there and comes home with the wind measured opens it in the yard, once the smelter stands.' },
+  water: { kinds: ['spring'], flag: 'water_found', build: 'wells', tag: 'For the wells', got: 'Water found: the wells can be dug',
+    log: 'Water under the ground, found and tasted, and a line drawn from it to the camp. The wells can go on the yard\'s list.', chron: 'Water was found at {p}, and the wells could be dug.',
+    say: 'The wells wait on this. Any party that gets there and comes home with the water traced opens them in the yard.' },
+  stock: { kinds: ['growth'], flag: 'wild_stock', tag: 'Seed stock', got: 'Wild stock for the seed bench', need: s => !s.flags.crops_adapted,
+    log: 'Seed and cuttings of what grows wild out there, on the bench beside the Earth wheat. The botanists have something to cross it with.', chron: 'Wild stock was brought in from {p} for the wheat.',
+    say: 'What grows here might give the wheat what it lacks. A party that brings seed home from it makes the wheat card likelier to come right.' },
+  hunt:  { kinds: ['herd'], flag: 'hunt_ground', tag: 'Hunting ground', got: 'A hunting ground: food every month',
+    log: 'The party knows where the herds water and when. A crew can hunt it every month from now on.', chron: 'The colony began to hunt {p}.',
+    say: 'Once a party has learned it, a crew can hunt it every month for meat. Hunting is killing, and what lives here may keep count.' },
+};
+const FACTOR_OWN = { fauna: 1, flora: 1, ruin: 1, natives: 1, humans: 1, plague: 1 };
+LF.found = (s, k) => !!(LF.FINDS[k] && s.flags[LF.FINDS[k].flag]);
+/* The find a place could give that the colony still needs, or null. */
+LF.findOf = (s, p) => { if (!p || p.state === 'gone' || p.owner === 'colony' || FACTOR_OWN[p.owner]) return null;
+  for (const k in LF.FINDS) { const F = LF.FINDS[k]; if (F.kinds.includes(p.kind) && !LF.found(s, k) && (!F.need || F.need(s))) return k; } return null; };
+/* What the yard says while a build waits on a find. */
+const WHY = { ore: ['ore found on the ground', 'the ore'], wind: ['a windy site walked first', 'the high ground'], water: ['water found and traced first', 'the spring'] };
+LF.findWhy = (s, k) => { const F = LF.FINDS[k], n = LF.pois(s).some(p => F.kinds.includes(p.kind) && LF.findOf(s, p) === k);
+  return `Needs ${WHY[k][0]}: send a party to ${n ? WHY[k][1] + ' on the World map' : 'look for some'}`; };
+LF.findAt = function (s, key, chips) {
+  const p = LF.poi(s, key), k = LF.findOf(s, p); if (!k) return null; const F = LF.FINDS[k];
+  s.flags[F.flag] = s.day || 1; if (chips) chips.push({ t: F.got, good: true });
+  LF.log(s, F.log, 'good'); if (LF.chron) LF.chron(s, F.chron.replace('{p}', p.name.replace(/^The /, 'the ')));
+  return k;
+};
+/* A dread's or a thread's place, while the thread is open and nobody has been: a party there brings back evidence
+   (each thread's visit hook, js/orders.js LF.threadVisit). The tile says so, under the colony's name for it. */
+LF.placeThread = (s, p) => { if (!p || !p.owner || !s.threads || !s.threads[p.owner] || !LF.THREADS[p.owner] || !p.id.startsWith(p.owner + '.')) return null;
+  const d = LF.THREADS[p.owner], t = s.threads[p.owner]; if (t.end || t.res || ['visited', 'worked out', 'gone'].includes(p.state) || (p.been && p.been.length)) return null;
+  let n = ''; try { n = d.called ? d.called(s, t) || '' : ''; } catch (e) { n = ''; }
+  return { id: p.owner, dread: !!d.dread, name: n }; };
+/* The hunting ground, once a month: meat (less in the Dim), and a kill on the animal the colony knows best. */
+LF.huntTick = function (s) {
+  if (!s.flags.hunt_ground || s.day % MONTH) return;
+  s.res.food += Math.round(LF.mouths(s) * MONTH * 0.06 * (LF.date(s.day).season === 3 ? 0.5 : 1));
+  const f = s.factors.find(x => x.kind === 'fauna' && x.stage > 0 && !x.res); if (f) f.kills = (f.kills || 0) + 1;
+};
+const ORE_LEAD = { near: ['near', 'located', 1], hills: ['far', 'located', 2], far: ['long', 'rumoured', 3] };
+const orbit = { k: 'orbit', t: 'the orbital report', d: 0 };
+LF.seedFinds = function (s) {
+  if (s.flags.finds_seeded || !s.world || !s.world.report) return; s.flags.finds_seeded = true;
+  if (s.built.turbines) s.flags.wind_found = s.flags.wind_found || s.day;   // a save from before: what stands was sited
+  if (s.built.smelter) s.flags.ore_found = s.flags.ore_found || s.day;
+  if (s.built.wells) s.flags.water_found = s.flags.water_found || s.day;
+  const R = s.world.report, [od, ost, odg] = ORE_LEAD[s.world.oreBody] || ORE_LEAD.hills, near = s.flags.site_highland && od === 'far';
+  if (!LF.found(s, 'ore')) LF.addPoi(s, { key: 'find.ore', kind: 'ore', name: 'The ore signature', dist: near ? 'near' : od, state: ost, danger: near ? 1 : odg,
+    known: `The orbital report: "${R.ore ? R.ore.text : 'Metal, somewhere.'}" Somebody has to stand on it with a hammer before the smelter can be built.` }, orbit);
+  const h = hash('wind:' + s.seed), wd = s.flags.site_highland || h % 3 === 0 ? 'near' : 'far', word = cap1(LF.poiWord(s, 'ridge').replace(/^(a|an) /, ''));
+  if (!LF.found(s, 'wind')) LF.addPoi(s, { key: 'find.wind', kind: 'ridge', name: `${word} to windward`, dist: wd, state: 'located', danger: 1 + (h >>> 3) % 2,
+    known: 'The orbital wind maps put the steadiest wind in the country here. The turbine field needs ground like it, and a party to walk it and measure first.' }, orbit);
+  const dry = s.world.truth.water < 20, sw = cap1(LF.poiWord(s, 'spring').replace(/^(a|an) /, ''));
+  if (!LF.found(s, 'water')) LF.addPoi(s, { key: 'find.water', kind: 'spring', name: dry ? `The deep ${sw.toLowerCase()}` : `${sw} upstream`, dist: dry ? 'far' : 'near', state: dry ? 'rumoured' : 'located', danger: dry ? 2 : 1,
+    known: `The orbital report: "${R.water || 'Water, somewhere.'}" The infrared shows a cold line in the ground here. Somebody has to find where it comes up and trace it home before a well is sunk.` }, orbit);
 };
 
 /* ---------- a survey party (orders.js order.survey, T2-5) ----------
@@ -242,4 +318,6 @@ LF.poiHow = function (s, p) {
   return ({ card: f.t ? `From “${f.t}”, ${when}` : `Marked ${when}`, party: `Found by ${f.t ? `“${f.t}”` : 'a party'}, ${when}`, thread: `${f.t}, ${when}`, survey: `From the survey crews, ${when}`,
     orbit: 'Named from orbit by the survey before landfall', site: 'Offered as a landing site by the orbital survey', colony: `Founded ${when}`, map: `First seen ${when}` }[f.k] || `Marked ${when}`) + '.';
 };
+/* Wild stock on the wheat card (LF.FINDS.stock): +10 on every test it has. */
+{ const st = LF.byId && LF.byId['crops.adapt']; if (st) for (const ch of st.choices) if (ch.test && ch.test.mods) ch.test.mods.push(LF.h.Fl('wild_stock', 10, 'Wild stock from out past the wire')); }
 })();
