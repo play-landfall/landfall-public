@@ -64,7 +64,7 @@ LF.CAST = {
   crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
     'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.'),
     C('waititi', 'Hamond', 'Shepherd', 'Agronomist', 'botanist', 'gentle', { free: 1, mercy: 1 }, 'sleepers',
-    'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last. His wife is still asleep aboard.')],
+    'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last.')],
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
 LF.BIO = {
@@ -79,7 +79,7 @@ LF.BIO = {
   halloran: 'A hull inspector who failed more ships than she passed, and was right about every one of them. Loud, foul-mouthed, and will not put her name to a bodge. The Ariadne got her signature at the third attempt.',
   brandt: 'Thirty years of other people\'s bad news, delivered straight. Short with fools, shorter with himself, and has never once left a ward early.',
   iyer: 'Lost her chair at Singapore over a trial that worked. Composed, exact, and of the view that an answer is worth what it cost.',
-  waititi: 'Fed a refugee camp of forty thousand off salt flats and talked the whole time. Knows everyone by the second day. His wife sleeps in row nine.',
+  waititi: 'Fed a refugee camp of forty thousand off salt flats and talked the whole time. Knows everyone by the second day.',
 };
 /* The crew file's pages: who is shown together. */
 LF.FILE_PAGES = [{ name: 'Command staff', seats: ['command', 'security'] }, { name: 'Science', seats: ['doctor', 'scientist'] }, { name: 'Crew', seats: ['engineer', 'crew'] }];

@@ -3,7 +3,7 @@
   "kind": "scene",
   "size": "wide",
   "subject_in": "this file",
-  "subject": "The wardroom of the colony ship ariadne at supper, one table and one pot. Hamond waits until everyone has a bowl, then stands, which nobody asked him to, and says a grace. It starts with the beans in the stew, wanders by way of his mother's kitchen and his uncle Tarek's goat, and arrives at Dalia asleep in the cryo banks, who would be telling him to sit down. The stew has stopped steaming. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
+  "subject": "The wardroom of the colony ship ariadne at supper, one table and one pot. Hamond waits until everyone has a bowl, then stands, which nobody asked him to, and says a grace. It starts with the beans in the stew, wanders by way of his mother's kitchen and his uncle Tarek's goat, and arrives at the sleepers in the cryo banks, who'd be telling him to sit down if they could. The stew has stopped steaming. Only these two officers are seen clearly; the other four at the table or on the ship are faceless: backs turned, in shadow or cut off by the frame.",
   "card": "soc.grace, version dahl+waititi (js/content-social-alt.js; tests and effects in js/content-social.js)",
   "setting": "ship",
   "officers": [
