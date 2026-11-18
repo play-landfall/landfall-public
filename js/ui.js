@@ -68,7 +68,7 @@ const castImg = (c, cls) => (LF.UNPAINTED || []).includes(c.key) || !SCENES.has(
   : `<img class="${cls || 'face'}" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async">`;
 const fileCard = (c, i, btn) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${btn || ''}</div></div>`;
 function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrift, st = pre.step;
-  if (st === 'ship') return `<div class="banner"><img class="scene" src="art/scenes/intro_cruise.webp" alt=""></div><div class="card enter dossier"><div class="lbl tone">Outbound from Earth</div><h2>Select your ship</h2>
+  if (st === 'ship') return `<div class="banner"><img class="scene" src="art/ship_new.webp" alt=""></div><div class="card enter dossier"><div class="lbl tone">Outbound from Earth</div><h2>Select your ship</h2>
     <div class="shipcard on"><b>${esc(a.ship)}</b><span class="lbl">Colony ship · the only one fitted out</span>
       <dl class="facts">${SHIP_FACTS(a).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>
     <button class="opt go" data-act="pre" data-v="crew">Take the ${esc(a.ship)}</button></div>`;

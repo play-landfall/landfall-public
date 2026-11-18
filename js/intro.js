@@ -72,15 +72,15 @@ function opening(s, rest) {
     .concat([Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead)]));
 }
 /* A new game with a voyage out: the burn that leaves Earth, and the ship under way, before the first card. */
-const DEPART_FILM = false, DEPART_CUTS = [0, 4.6, 9.2, 13.8], DEPART_MS = 18800;   // from `python3 tools/video.py film`
+const DEPART_FILM = true, DEPART_CUTS = [0, 4.6, 9.2, 13.8], DEPART_MS = 18800;   // from `python3 tools/departure.py film`
 function departure(s) {
   const ship = s.adrift ? s.adrift.ship : s.world.ship;
   const stills = [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `The ${ship} lights its drive and leaves Earth.` },
     layered('cruise', `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`)];
   // The film (tools/video.py film): the Ariadne new, as she left. Four shots; DEPART_CUTS is where each starts, in seconds.
-  // Off until there is a film whose ship is the Ariadne: the first cut (2026-11-18, Wan reference-to-video) drew a different ship.
+  // tools/departure.py: the real ship's own pixels, repainted clean, moved by Wan image-to-video. DEPART_FILM off plays the stills.
   if (!DEPART_FILM) return stills;
-  return [{ video: 'departure', ms: DEPART_MS, alt: stills, sfxAt: [[DEPART_CUTS[1] + 2.4, 'burn']], caps: [
+  return [{ video: 'departure', ms: DEPART_MS, alt: stills, sfxAt: [[DEPART_CUTS[1] + 1.0, 'burn']], caps: [
     [0.3, `The ${ship}, new from the yards, in orbit over Earth.`], [DEPART_CUTS[1], 'She lights her drive.'],
     [DEPART_CUTS[2], 'Earth falls behind.'], [DEPART_CUTS[3], `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`]] }];
 }
