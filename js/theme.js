@@ -6,16 +6,12 @@
 'use strict';
 const KEY = 'landfall.theme', DEFAULT = 'frontier';
 // on: text on the accent. plate: the dark of a recoloured picture. shade: drop shadows. glint: the top edge of a raised surface.
+// Three since 2026-11-18 (Lachlan): Ariadne (the default), Dark and Light. Keys kept so saved choices survive; any other saved key falls back to Ariadne.
 const THEMES = {
   // Taken from the scene art's own colours (its dominant navy, rust, cream, ochre and teal), so pictures and page match.
-  frontier: { name: 'Frontier', bg: '#09182d', paper: '#0e1f37', card: '#12233c', raise: '#1c304e', ink: '#e1d6b4', rust: '#d26a36', dim: '#8f8a76', line: '#2a3b55', good: '#7fb3a3', bad: '#e0704e', plate: '#1c304e' },
-  watch: { name: 'Night Watch', bg: '#0c1218', paper: '#131b22', card: '#1b2630', raise: '#243340', ink: '#ece3d0', rust: '#e2703f', dim: '#9a9a8c', line: '#33424e', good: '#74c2a4', bad: '#f0795c', plate: '#243440' },
-  fire: { name: 'Banked Fire', bg: '#100c0a', paper: '#191411', card: '#231c17', raise: '#30261e', ink: '#f1e4cc', rust: '#f08a3c', dim: '#a3927c', line: '#43362b', good: '#9ec27a', bad: '#f0694f', plate: '#33281f' },
-  sleep: { name: 'Cold Sleep', bg: '#080d11', paper: '#0e161c', card: '#152129', raise: '#1e2f3a', ink: '#d8e6ea', rust: '#58c8d8', dim: '#8198a3', line: '#2a3d49', good: '#7fd3a0', bad: '#f27a6a', plate: '#1d303b' },
-  phosphor: { name: 'Phosphor', bg: '#0a0e0a', paper: '#111611', card: '#19201a', raise: '#232d24', ink: '#dfe5cc', rust: '#e8b04a', dim: '#8f9a80', line: '#334034', good: '#8fd08a', bad: '#ef7558', plate: '#243026' },
-  lamp: { name: 'Lamp Black', bg: '#000000', paper: '#0a0a0a', card: '#141414', raise: '#202020', ink: '#f2ede2', rust: '#ef4f2f', dim: '#99948a', line: '#333333', good: '#7cc7a0', bad: '#ff8f7a', plate: '#202020' },
-  dusk: { name: 'Long Dusk', bg: '#0f0b14', paper: '#17121d', card: '#211a2a', raise: '#2d2439', ink: '#e9e0ee', rust: '#f2b25c', dim: '#9c90a8', line: '#3b3048', good: '#7fcfb0', bad: '#f47b82', plate: '#2e2439' },
-  light: { name: 'Paper', light: true, bg: '#d9cfb8', paper: '#ece3d0', card: '#f7f0e1', raise: '#fffaf0', ink: '#1c2730', rust: '#c2552d', dim: '#6f6859', line: '#cfc3a8', good: '#2f6f5e', bad: '#a5371f', on: '#fff8ec',
+  frontier: { name: 'Ariadne', bg: '#09182d', paper: '#0e1f37', card: '#12233c', raise: '#1c304e', ink: '#e1d6b4', rust: '#d26a36', dim: '#8f8a76', line: '#2a3b55', good: '#7fb3a3', bad: '#e0704e', plate: '#1c304e' },
+  lamp: { name: 'Dark', bg: '#000000', paper: '#0a0a0a', card: '#141414', raise: '#202020', ink: '#f2ede2', rust: '#ef4f2f', dim: '#99948a', line: '#333333', good: '#7cc7a0', bad: '#ff8f7a', plate: '#202020' },
+  light: { name: 'Light', light: true, bg: '#d9cfb8', paper: '#ece3d0', card: '#f7f0e1', raise: '#fffaf0', ink: '#1c2730', rust: '#c2552d', dim: '#6f6859', line: '#cfc3a8', good: '#2f6f5e', bad: '#a5371f', on: '#fff8ec',
     shade: 'rgba(70,52,20,.16)', glint: 'rgba(255,255,255,.7)' },
 };
 const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);

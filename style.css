@@ -1,5 +1,5 @@
 /* Landfall — soft, rounded and dark. Mobile first; desktop gets the same column, centred.
-   Colours are variables set by js/theme.js (the values here are its default, Night Watch). Surfaces are lifted by
+   Colours are variables set by js/theme.js (the values here are its default, Ariadne). Surfaces are lifted by
    shadow, not outlined: --lift for cards, --rest for things that sit on a card. Radii nest: card 26, option 14. */
 @font-face { font-family:"Nunito"; src:url(fonts/nunito-latin-wght-normal.woff2) format("woff2"); font-weight:200 1000; font-style:normal; font-display:swap; }
 @font-face { font-family:"Nunito"; src:url(fonts/nunito-latin-wght-italic.woff2) format("woff2"); font-weight:200 1000; font-style:italic; font-display:swap; }
