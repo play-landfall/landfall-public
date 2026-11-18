@@ -648,7 +648,7 @@ LF.ASK = {
 'gen.vote': 'Do the grown who were born here get a vote at working age, only if they pass the founders\' examination on the charter, or no vote at all?',
 'gen.rules': 'Do you have the watch enforce the founders\' rule the born have stopped keeping, strike the rule, or settle on something in between?',
 'gen.count': 'Do you sign the old rows\' paper counting founders\' votes double, keep one hand one vote, or hand the born the stores keys and keep the armoury?',
-'gen.chair': 'Do you grant the born of this department the one thing they ask, refuse it while the founders live, or meet them halfway?',
+'gen.chair': (s, c) => `The colonists born here who work in ${c.dept || 'one department'} have asked for one change: do you grant it, refuse it for as long as any of the founders are alive, or meet them halfway?`,
 'gen.inherit': 'Who inherits the dead founder\'s house and plot: the founder\'s blood, whoever worked it, or the colony, to assign by the chair?',
 'gen.earth': 'What do you do about the teaching that there was no Earth: show them the archive, let them believe it, make it the lock-up, or declare it true from the chair?',
 'gen.minders': 'Who minds the children in the rows: the older children, grown hands taken off the fields, or dormitories by year with a warden for each?',
