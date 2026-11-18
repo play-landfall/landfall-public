@@ -46,4 +46,37 @@ LF.speech = function (s, text, dflt) {
   }
   return segs.length ? segs : out;
 };
+
+/* ---------- the seat's other officer says it their own way (2026-11-18; DESIGN.md "Whose line it is") ----------
+   The cards were written when each seat had one officer, so a quoted line there is in that officer's voice. When the
+   seat's other officer holds the chair the same card should carry their line. LF.ALT_VOICE (js/voices-alt.js) is a table
+   of those lines: { seat, src, alt }, where src is the quote exactly as it stands in the card's source, ${...} and all,
+   and alt is the other officer's version with the same ${...} pieces. Nothing in the cards changes: LF.revoice(s, text)
+   reads the finished text, and where a quote matches a src whose seat is held by the alternate, puts their line in its
+   place with the same values filled in. A line with no entry is left as it was written. No state, no dice. */
+const esc2 = x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// cut a source string into its static pieces and its ${...} expressions (braces balanced)
+function cut(src) { const parts = [], exprs = []; let i = 0, last = 0;
+  while (i < src.length) { if (src[i] === '$' && src[i + 1] === '{') { let d = 1, j = i + 2; while (j < src.length && d) { if (src[j] === '{') d++; else if (src[j] === '}') d--; j++; }
+      parts.push(src.slice(last, i)); exprs.push(src.slice(i, j)); i = last = j; } else i++; }
+  parts.push(src.slice(last)); return { parts, exprs }; }
+const plain = x => x.replace(/\\(['"`\\])/g, '$1');
+let TABLE = null;
+function table() { if (TABLE) return TABLE; TABLE = {};
+  for (const e of LF.ALT_VOICE || []) { const a = cut(e.src.slice(1, -1)), b = cut(e.alt);
+    const re = new RegExp('^' + a.parts.map(x => esc2(plain(x))).join('([\\s\\S]*?)') + '$'), used = {};
+    // each ${...} of the alt line takes the value its twin had in the original, by its text and then by order
+    const map = b.exprs.map(x => { let k = -1; do k = a.exprs.indexOf(x, k + 1); while (k >= 0 && used[k]); if (k < 0) k = a.exprs.indexOf(x); if (k >= 0) used[k] = 1; return k; });
+    (TABLE[e.seat] = TABLE[e.seat] || []).push({ re, parts: b.parts.map(plain), map, head: plain(a.parts[0]).slice(0, 6) }); }
+  return TABLE; }
+LF.revoice = function (s, text) {
+  if (!s || !s.people || !LF.ALT_VOICE || !text || text.indexOf('"') < 0) return text;
+  const seats = LF.SEAT_ORDER.filter(k => { const p = LF.officer(s, k); return p && p.key && LF.CAST[k][0].key !== p.key; });
+  if (!seats.length) return text; const T = table();
+  return String(text).replace(/"([^"]+)"/g, (whole, inner) => {
+    for (const k of seats) for (const e of T[k] || []) { if (e.head && inner.slice(0, e.head.length) !== e.head) continue;
+      const m = e.re.exec(inner); if (!m) continue;
+      return '"' + e.parts.map((x, i) => x + (i < e.map.length ? (e.map[i] >= 0 ? m[e.map[i] + 1] : '') : '')).join('') + '"'; }
+    return whole; });
+};
 })();

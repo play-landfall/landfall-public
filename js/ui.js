@@ -139,7 +139,7 @@ function sceneOf0(c) {
   return pool[Math.abs(h) % pool.length];
 }
 /* Card text with each officer's quoted lines in their seat's colour (js/speak.js). */
-function said(text) { const st = s.cur && LF.byId[s.cur.id]; return LF.speech ? LF.speech(s, text, st && st.says).map(g => g.seat ? `<span class="sp sp-${g.seat}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
+function said(text) { const st = s.cur && LF.byId[s.cur.id]; if (LF.revoice) text = LF.revoice(s, text); return LF.speech ? LF.speech(s, text, st && st.says).map(g => g.seat ? `<span class="sp sp-${g.seat}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);
   let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;

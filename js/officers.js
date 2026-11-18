@@ -96,7 +96,7 @@ LF.FILE = {
   halloran: { age: 38, from: 'Britannic Commonwealth', record: ['Clyde breakers\' yards at sixteen', 'Salvage engineer, the Belt tugs', 'Flew the Ariadne\'s shakedown'] },
   brandt: { age: 55, from: 'Pearl River League', record: ['Medicine, Sun Yat-sen, Guangzhou', 'Twenty years of emergency wards', 'Ship\'s doctor on the Mars run'] },
   iyer: { age: 47, from: 'Straits Federation', record: ['Chair of xenobiology, Singapore', 'Led the Europa brine trials', 'Resigned the chair; no reason filed'] },
-  waititi: { age: 49, from: 'Mediterranean League', record: ['Agronomy, Montpellier', 'Fed the Sfax camps off salt flats', 'Ran the Ariadne\'s seed vault'] },
+  waititi: { age: 40, from: 'Mediterranean League', record: ['Agronomy, Montpellier', 'Fed the Sfax camps off salt flats', 'Ran the Ariadne\'s seed vault'] },
 };
 /* He, she or they (2026-11-18): four seats can be held by a man or a woman, so a line that needs a pronoun for a seat's
    officer asks who holds it. Anyone who is not one of the twelve is "they". */
