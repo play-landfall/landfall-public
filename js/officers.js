@@ -33,7 +33,7 @@ LF.SEAT_OF = { pilot: 'command', teacher: 'command', security: 'security', engin
 Object.assign(LF.ROLES, { command: { title: 'Commander', crew: 'the command staff' }, doctor: { title: 'Doctor', crew: 'the medical team' },
   scientist: { title: 'Scientist', crew: 'the survey team' }, crew: { title: 'Crew Chief', crew: 'the work crews' } });
 
-/* The cast: twelve key crew, two a seat (Lachlan, 2026-11-18). One of the two holds the chair from the start
+/* The cast: twelve key crew, two a seat (Lachlan, 2026-11-18). The two of a seat carry the same title (Lachlan, same day): it is the post's. One of the two holds the chair from the start
    (s.cast[seat], LF.castPick); the other is assumed to be on the ground as the department's deputy, and is not a person in
    s.people until the chair comes to them (LF.seatAlt). Each has a personality the player can read on the People view (nature) and a way
    of talking that every line they speak keeps to (DESIGN.md "The six officers", the voice table). role: the old office
@@ -43,23 +43,23 @@ const C = (key, first, last, title, role, trait, vals, want, nature, perks) => (
 LF.CAST = {
   command: [C('solheim', 'Jane', 'Haddy', 'Flight Commander', 'pilot', 'stubborn', { free: -1, mercy: -1 }, 'build',
     'Jane is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder']),
-    C('achebe', 'Lucas', 'McMurray', 'First Officer', 'pilot', 'beloved', { open: 1, free: 1 }, 'justice',
+    C('achebe', 'Lucas', 'McMurray', 'Flight Commander', 'pilot', 'beloved', { open: 1, free: 1 }, 'justice',
     'Lucas is fair and open, and expects people to do their jobs. Asks before he tells, uses your first name, and backs a decision he handed to you even when it goes wrong. Gives anyone a second chance and nobody a third, and is slow to believe the worst of someone he trusts.')],
   security: [C('dahl', 'Nolan', 'Edney', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
     'Nolan is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Nolan would rather it was someone who doesn\'t enjoy it.'),
-    C('zulu', 'Toby', 'O\'Neal', 'Master-at-Arms', 'security', 'cautious', { mercy: 1, bold: -1 }, 'kin',
+    C('zulu', 'Toby', 'O\'Neal', 'Security Chief', 'security', 'cautious', { mercy: 1, bold: -1 }, 'kin',
     'Toby takes the job seriously and takes the people under him more seriously than that. Watches the wire and what is out past it, and thinks the best of the people inside. Knows every one of the watch by name and who they go home to, tells you who is hurt before he tells you what happened, and would sooner go out past the wire himself than send one of them on a guess. Doesn\'t joke about it.')],
   engineer: [C('kovacs', 'Jeremy', 'Donadini', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
     'Jeremy is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.'),
-    C('halloran', 'Roberta', 'Craigie', 'Flight Engineer', 'engineer', 'reckless', { bold: 1, open: 1 }, 'build',
+    C('halloran', 'Roberta', 'Craigie', 'Chief Mechanic', 'engineer', 'reckless', { bold: 1, open: 1 }, 'build',
     'Roberta is loud, cheeky and foul-mouthed, and cannot stand a job half done. Wants every repair made properly, to gauge and with the right part, and swears at anything held together with wire, including whoever wired it. Jokes hardest when she is frightened, and stops joking when it is serious.')],
   doctor: [C('nakamura', 'Andrea', 'Tete', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
     'Andrea is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor']),
-    C('brandt', 'Lou', 'Chang', 'Physician', 'physician', 'stubborn', { open: 1, bold: -1 }, 'quiet',
+    C('brandt', 'Lou', 'Chang', 'Surgeon', 'physician', 'stubborn', { open: 1, bold: -1 }, 'quiet',
     'Lou is acerbic and usually right, about the patient and about whoever is asking after the patient. Cares whether they get better and whether it spreads, and leaves how they feel about it to others. Tells you the prognosis you did not want in as few words as it takes, then sits up all night with the case. Is kinder in what he does than in anything he says.')],
   scientist: [C('yurbin', 'Mac', 'O\'Hagan', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
     'Mac is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.'),
-    C('iyer', 'Michelle', 'Yin', 'Chief Scientist', 'xenobio', 'brilliant', { bold: 1, mercy: -1 }, 'know',
+    C('iyer', 'Michelle', 'Yin', 'Xenobiologist', 'xenobio', 'brilliant', { bold: 1, mercy: -1 }, 'know',
     'Michelle wants results the colony can use, and is not much interested in how they are come by. Composed, exact and never raises her voice; counts a death as a cost like any other and will tell you whether the answer was worth it. Does not always say what she has already started.')],
   crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
     'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.'),
@@ -74,9 +74,9 @@ LF.BIO = {
   nakamura: 'Signed on the day the manifest opened. Gentle with anyone in a bed, hard on everyone beside it, and has ignored orders before.',
   yurbin: 'Has waited his whole life to see something alive that is not from Earth. Talks too fast, forgets to eat. The jars in the wardroom are his.',
   estrada: 'Grew up on a farm the sea took, and carries its seed. Quiet, devout, talks to the plants, and will not stand by while the weak go short.',
-  achebe: 'Ran a relief fleet where nobody went unheard and nobody missed a deadline twice. Fair, open, and remembers what you said you would do.',
+  achebe: 'Fifteen years second in command on the long liners, where nobody went unheard and nobody missed a deadline twice. Fair, open, and remembers what you said you would do.',
   zulu: 'The youngest of the key crew. Brought every one of his people home from the Ceres lockdown, and still writes to the families of the ones he trained.',
-  halloran: 'Came up through the breakers\' yards, taking ships apart to see what a bad repair does in the end. Will not sign a bodge. Swears at one until it is done right.',
+  halloran: 'A hull inspector who failed more ships than she passed, and was right about every one of them. Loud, foul-mouthed, and will not put her name to a bodge. The Ariadne got her signature at the third attempt.',
   brandt: 'Thirty years of other people\'s bad news, delivered straight. Short with fools, shorter with himself, and has never once left a ward early.',
   iyer: 'Lost her chair at Singapore over a trial that worked. Composed, exact, and of the view that an answer is worth what it cost.',
   waititi: 'Fed a refugee camp of forty thousand off salt flats and talked the whole time. Knows everyone by the second day. His wife sleeps in row nine.',
@@ -91,9 +91,9 @@ LF.FILE = {
   nakamura: { age: 42, from: 'Southern African Union', record: ['Medicine, Eduardo Mondlane, Maputo', 'Trauma surgeon, Johannesburg', 'Ran the Beira flood hospital'] },
   yurbin: { age: 33, from: 'European Federation', record: ['PhD in astrobiology at twenty-six', 'Two winters on the Antarctic drills', 'Wrote the Ariadne\'s quarantine rules'] },
   estrada: { age: 34, from: 'Pacific Compact', record: ['PhD in plant science, Adelaide', 'Bred the Murray salt wheat', 'Kept Ceres fed a year on battery'] },
-  achebe: { age: 41, from: 'Pacific Compact', record: ['Merchant flight school, Auckland', 'First officer of the Kestrel', 'Ran the Tonga relief fleet'] },
+  achebe: { age: 41, from: 'Pacific Compact', record: ['Merchant flight school, Auckland', 'First officer of the Kestrel', 'Crew chief, the Luna to Mars liners'] },
   zulu: { age: 29, from: 'North American Union', record: ['Five years, Orbital Guard', 'Watch officer, Ceres lockdown', 'Trained the Ariadne\'s watch'] },
-  halloran: { age: 38, from: 'Britannic Commonwealth', record: ['Clyde breakers\' yards at sixteen', 'Salvage engineer, the Belt tugs', 'Flew the Ariadne\'s shakedown'] },
+  halloran: { age: 38, from: 'Britannic Commonwealth', record: ['Toolmaker\'s apprentice, Glasgow', 'Chief inspector, Ceres dry dock', 'Signed off the Ariadne\'s drive'] },
   brandt: { age: 55, from: 'Pearl River League', record: ['Medicine, Sun Yat-sen, Guangzhou', 'Twenty years of emergency wards', 'Ship\'s doctor on the Mars run'] },
   iyer: { age: 47, from: 'Straits Federation', record: ['Chair of xenobiology, Singapore', 'Led the Europa brine trials', 'Resigned the chair; no reason filed'] },
   waititi: { age: 40, from: 'Mediterranean League', record: ['Agronomy, Montpellier', 'Fed the Sfax camps off salt flats', 'Ran the Ariadne\'s seed vault'] },

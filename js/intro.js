@@ -111,7 +111,7 @@ function play(shots, cb, title) {
   const ok = x => x.layers ? x.layers.every(l => !l.src || pieces.has(l.src.replace(/^art\/pieces\//, '').replace(/\.\w+$/, ''))) : have.has(x.pic);
   // a layered shot whose sprites are missing falls back to its picture, if it has one
   shots = shots.map(x => ok(x) || !x.alt ? x : Object.assign({ line: x.line }, x.alt)).filter(ok);
-  if (!shots.length) return finish();
+  if (!shots.length && !title) return finish();   // the title card can be shown alone (the ship and crew are chosen before the departure)
   const el = document.createElement('div'); el.id = 'intro'; el.setAttribute('role', 'presentation');
   el.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lf-fire" x="-20%" y="-40%" width="140%" height="180%">
     <feTurbulence type="fractalNoise" baseFrequency="0.035 0.16" numOctaves="2" seed="1" result="n"><animate attributeName="seed" values="1;2;3;4;5;6;7" dur="0.5s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>

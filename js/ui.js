@@ -38,12 +38,14 @@ function seenThreads() { let past = []; try { past = JSON.parse(localStorage.get
   if (s && s.threads) { const now = Object.keys(s.threads).filter(id => s.threads[id].woke); if (now.length) past = [now].concat(past).slice(0, 2); }
   try { localStorage.setItem('landfall.seen', JSON.stringify(past)); } catch (e) {}
   return [].concat(...past).filter((id, i, a) => a.indexOf(id) === i); }
-function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; if (LF.proDeal) LF.proDeal(s, proSeen()); save(); log('new', { detail: s.premise }); pre = null; if (quiet) return; render(); window.scrollTo(0, 0); if (!needCrew()) intro(); }
+function fresh(quiet) { clearTimeout(holdTimer); clearTimeout(reviewTimer); hold = null; review = null; spot = ''; shown = ''; const met = seenThreads(); s = LF.newGame((Date.now() % 2147483647) | 0); s.avoid = met; if (LF.proDeal) LF.proDeal(s, proSeen()); save(); log('new', { detail: s.premise }); pre = null; if (quiet) return; render(); window.scrollTo(0, 0); if (needCrew()) splash(); else intro(); }
 function cutscene(shots, title) { if (!window.LFIntro) return; if (window.LFBoot) LFBoot.prefetch(shots.map(x => LFBoot.scene(x.pic))); LFIntro.play(shots, null, title); }
 function intro() { if (!window.LFIntro) return;
   if (!(LF.proOn && LF.proOn(s))) return cutscene(LFIntro.opening(s), true);
   const sh = LFIntro.departure(s); if (window.LFBoot) LFBoot.prefetch(sh.map(x => LFBoot.scene(x.pic)).concat(s.pro.deck.map(id => LFBoot.scene(id.replace(/\./g, '_')))));
-  LFIntro.play(sh, () => { window.scrollTo(0, 0); proGo(); }, true); }
+  LFIntro.play(sh, () => { window.scrollTo(0, 0); proGo(); }, !s.cast); }   // the title card was shown before the ship and crew were chosen (splash)
+/* The title card alone: a new game shows it first, then the ship and the crew; the departure plays once they are chosen. */
+function splash() { if (window.LFIntro) LFIntro.play([], null, true); }
 /* The voyage out (content-social.js): three cards aboard in the first five years from Earth, then the long sleep and
    the cutscene of what went wrong, then the adrift screen. The cards the player saw lately are dealt last. */
 function proSeen() { try { return JSON.parse(localStorage.getItem('landfall.proSeen')) || []; } catch (e) { return []; } }
@@ -793,7 +795,7 @@ const isNew = !s; if (isNew) fresh(true);
 const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.pro.i;   // closed before the first card of the voyage out: play it from the title
 // The first screen's pictures arrive behind a loading bar on the first visit; everything else loads as it is needed.
 const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? (LF.proOn && LF.proOn(s) ? LFIntro.departure(s) : LFIntro.opening(s)).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
-const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (needCrew()) { /* the ship and the crew are chosen first; the departure plays after (preGo) */ } else if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
+const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (needCrew()) { if (isNew || proFresh) splash(); /* then the ship and the crew; the departure plays after (preGo) */ } else if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
 if (window.LFBoot) LFBoot.first(firstPics.filter(Boolean), start); else start();
 window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, due, REVIEW_MS };
 })();
