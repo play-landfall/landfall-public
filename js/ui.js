@@ -228,8 +228,8 @@ function talkHTML(text) {
     return `<div class="talk${cls}">${talkFace(w)}<div><div class="who">${esc(w.name)}${w.post ? `<span>${esc(w.post)}</span>` : ''}</div><div class="bub">${esc(b.lines.join('\n'))}</div></div></div>`; }).join('');
 }
 function cardHTML() {
-  const def = LF.view(s), pic = sceneOf(s.cur);
-  let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
+  const def = LF.view(s), limb = limbCard(), pic = limb ? null : sceneOf(s.cur);
+  let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${limb ? `<img class="scene" src="art/pieces/limb_${s.world.type}.webp" alt="" decoding="async">` : pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
     h += talkHTML(def.text);
     { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
@@ -713,12 +713,15 @@ function peopleView() {
     ${dead.length ? `<h3>On the wall</h3><div class="box">${dead.slice(-6).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.died || 0)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : ''}
     ${left.length ? `<h3>Gone from the colony</h3><div class="box">${left.slice(-4).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.left)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : ''}`;
 }
+// Choosing the site (Lachlan, 2026-11-19): the lander has not gone down, so the card shows the world from orbit, not the
+// landing, and the orbit view below drops its own copy of that picture.
+const limbCard = () => !!(s.cur && s.cur.id === 'landfall.site' && s.cur.phase === 'choose' && s.world && LF.aloft(s));
 /* Before landfall: under way, or in orbit with the lander still aboard. */
 function aloftHTML() {
   const w = s.world, t = w.transit, V = s.voyage || {};
   if (underWay()) return `<div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('array')}<div class="t"><b>${esc(w.star)}</b><small>${t.ly.toFixed(1)} light-years · ${t.years} years${V.mode && LF.CROSSING && LF.CROSSING[V.mode] ? ' · ' + LF.CROSSING[V.mode].short : ''}</small></div></div>
     <div class="row">${ic('people')}<div class="t"><b>The ${esc(w.ship)}</b><small>${s.sleepers} asleep in the cryo banks</small></div></div></div>`;
-  return `<div class="lbl vname">In orbit</div><div class="banner"><img class="scene" src="art/pieces/limb_${w.type}.webp" alt=""></div>
+  return `<div class="lbl vname">In orbit</div>${limbCard() ? '' : `<div class="banner"><img class="scene" src="art/pieces/limb_${w.type}.webp" alt=""></div>`}
     <div class="box"><div class="row">${ic('world')}<div class="t"><b>${esc(w.planet)}</b><small>${w.catalogue && w.catalogue !== w.planet ? esc(w.catalogue) + ' · ' : ''}${t.years} years from the last star</small></div></div>
     <div class="row">${ic('lander')}<div class="t"><b>The ${esc(w.ship)}</b><small>The lander has not gone down. ${s.sleepers} asleep in the cryo banks.</small></div></div></div>`;
 }
