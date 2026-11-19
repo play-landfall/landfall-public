@@ -165,6 +165,8 @@ LF.unmark = function (s, text) {
     const sp = LF.speaker(s, m[1]); return sp.name + ': ' + para.slice(m[0].length); }).join('');
 };
 LF.SAY_TAG = TAG;
+/* The colonist who stands in for a department whose seat is empty or whose officer is away (the roster's `stands`). */
+LF.standIn = (s, role) => crewOf(role);
 /* The name of a roster person for the narration (${LF.rn(s, 'x05')}): the same one the tag [[x05]] would show, so prose and bubble agree. */
 LF.rn = (s, key) => { const r = LF.ROSTER && LF.ROSTER[key]; return r ? stillHere(s, r).name : 'Someone'; };
 LF.rf = (s, key) => { const r = LF.ROSTER && LF.ROSTER[key]; return r ? stillHere(s, r).first : 'someone'; };

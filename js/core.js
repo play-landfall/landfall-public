@@ -158,12 +158,14 @@ LF.keySettlers = s => s.people.filter(p => p.alive && (p.known || !p.role)); // 
 // keys reach the six seats through LF.SEAT_OF (officers.js).
 const P = (s, role) => { const seat = LF.SEAT_OF[role] || role; return s.people.find(p => p.seat === seat && p.role && p.alive && !p.away) || null; };
 const byPid = (s, id) => s.people.find(p => p.id === id);
-const N = (s, role) => { const p = P(s, role); return p ? p.name : LF.seatWord(s, role); };
+// With nobody at the post, the narration names the colonist who stands in for the department, the same one the speech
+// bubble shows (Lachlan, 2026-11-19; LF.standIn in js/speak.js, DESIGN.md "Who is speaking"); the department's word only without one.
+const N = (s, role) => { const p = P(s, role); if (p) return p.name; const r = LF.standIn && LF.standIn(s, role); return r ? r.name : LF.seatWord(s, role); };
 const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
 LF.h = {
   P, N, byPid,
   Nc: (s, role) => cap1(N(s, role)),
-  F: (s, role) => { const p = P(s, role); return p ? p.first : LF.seatWord(s, role); },
+  F: (s, role) => { const p = P(s, role); if (p) return p.first; const r = LF.standIn && LF.standIn(s, role); return r ? r.first : LF.seatWord(s, role); },
   title: role => LF.ROLES[role].title,
   anyNamed: (s, exclude) => { const ex = (exclude || []).map(k => LF.SEAT_OF[k] || k), a = s.people.filter(p => p.alive && !p.away && !(p.seat && p.role && ex.includes(p.seat)) && !ex.includes(p.id));
     if (a.length) return LF.pick(s, a);
