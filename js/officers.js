@@ -124,7 +124,8 @@ LF.seatTag = p => p && p.seat && p.role ? `${LF.SEAT_SHORT[p.seat]} (${p.first})
    pick is a pick of how to play. No weaknesses. Each holds while that officer has the chair and is at work on the ground
    (seatState 'here'): nothing aboard the ship, laid up or away.
    15% each (Lachlan, 2026-11-19: one size, said as a percentage), but for the three that are worth far more in play (2026-11-19,
-   measured one by one with EDGE= in the sim): builds 8%, trouble inside the wire and harvests 10%. fx, each a multiplier: build (founding build labour),
+   measured one by one with EDGE= in the sim): builds, trouble inside the wire and harvests 5%. Each pair is balanced
+   on its own (ALTSEAT=<seat> EDGE=<key> in the sim). fx, each a multiplier: build (founding build labour),
    morale (the morale target), wear (machine wear on the ground), insight (what study learns), grow (field harvests), births
    (LF.BIRTH_MODS), hum (humanity lost, LF.humMove), extract (materials dug). odds: rel, a share of the chance already worked
    out, added as a line in LF.odds, on a test that names that seat (seat), and for Security on which side of the wire the trouble is
@@ -132,15 +133,15 @@ LF.seatTag = p => p && p.seat && p.role ? `${LF.SEAT_SHORT[p.seat]} (${p.first})
 LF.EDGE = {
   solheim:  { up: 'Crews dig 15% more materials', fx: { extract: 1.15 } },
   achebe:   { up: 'Hard choices cost the colony 15% less humanity', fx: { hum: 0.85 } },
-  dahl:     { up: '10% better odds putting down trouble inside the wire', odds: [{ seat: 'security', where: 'in', rel: 0.1, l: 'knows who to lean on' }] },
+  dahl:     { up: '5% better odds putting down trouble inside the wire', odds: [{ seat: 'security', where: 'in', rel: 0.05, l: 'knows who to lean on' }] },
   zulu:     { up: '15% better odds against threats from outside the wire', odds: [{ seat: 'security', where: 'out', rel: 0.15, l: 'keeps the watch together' }] },
-  kovacs:   { up: 'Buildings go up 8% quicker', fx: { build: 0.92 } },
+  kovacs:   { up: 'Buildings go up 5% quicker', fx: { build: 0.95 } },
   halloran: { up: 'Machines degrade 15% slower', fx: { wear: 0.85 } },
   nakamura: { up: '15% more children born', fx: { births: 1.15 } },
   brandt:   { up: '15% better odds on medical work', odds: [{ seat: 'doctor', rel: 0.15, l: 'reads the case right' }] },
   yurbin:   { up: 'Understands mysteries 15% faster', fx: { insight: 1.15 } },
   iyer:     { up: '15% better odds on science work', odds: [{ seat: 'scientist', rel: 0.15, l: 'wants a result' }] },
-  estrada:  { up: 'Harvests 10% bigger', fx: { grow: 1.1 } },
+  estrada:  { up: 'Harvests 5% bigger', fx: { grow: 1.05 } },
   waititi:  { up: 'Morale 15% higher', fx: { morale: 1.15 } },
 };
 const EDGE_X = { build: 1, wear: 1, insight: 1, grow: 1, births: 1, hum: 1, extract: 1, morale: 1 };
