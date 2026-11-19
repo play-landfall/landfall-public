@@ -45,25 +45,25 @@ LF.CAST = {
     'Jane is decisive and driven, and will protect the colony\'s survival at any cost, including the cost of the people in it. Decides fast, never apologises, and keeps a count of the dead that nobody else is allowed to see. Wants the colony built up so far that it never has to ask anyone\'s permission to survive.', ['pathfinder']),
     C('achebe', 'Lucas', 'McMurray', 'Flight Commander', 'pilot', 'beloved', { open: 1, free: 1 }, 'justice',
     'Lucas is fair and open, and expects people to do their jobs. Asks before he tells, uses your first name, and backs a decision he handed to you even when it goes wrong. Gives anyone a second chance and nobody a third, and is slow to believe the worst of someone he trusts.')],
-  security: [C('dahl', 'Nolan', 'Edney', 'Security Chief', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
+  security: [C('dahl', 'Nolan', 'Edney', 'Chief of Security', 'security', 'bitter', { open: -1, mercy: -1 }, 'justice',
     'Nolan is suspicious of everything that moves and most things that do not, and hides it behind a gallows joke. Believes the planet is trying to kill them and that most people would sell out their neighbour for a blanket. Somebody has to be the bastard, and Nolan would rather it was someone who doesn\'t enjoy it.'),
-    C('zulu', 'Toby', 'O\'Neal', 'Security Chief', 'security', 'cautious', { mercy: 1, bold: -1 }, 'kin',
+    C('zulu', 'Toby', 'O\'Neal', 'Chief of Security', 'security', 'cautious', { mercy: 1, bold: -1 }, 'kin',
     'Toby takes the job seriously and takes the people under him more seriously than that. Watches the wire and what is out past it, and thinks the best of the people inside. Knows every one of the watch by name and who they go home to, tells you who is hurt before he tells you what happened, and would sooner go out past the wire himself than send one of them on a guess. Doesn\'t joke about it.')],
-  engineer: [C('kovacs', 'Jeremy', 'Donadini', 'Chief Mechanic', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
+  engineer: [C('kovacs', 'Jeremy', 'Donadini', 'Chief Engineer', 'engineer', 'stubborn', { bold: -1, open: -1 }, 'quiet',
     'Jeremy is gruff, tired and almost always right about how long a machine has left. Hates speeches, waste and being rushed, and talks about the ship\'s machines as if they were old dogs. Gruff with everyone, and the first to take your night shift so you can sleep.'),
-    C('halloran', 'Roberta', 'Craigie', 'Chief Mechanic', 'engineer', 'reckless', { bold: 1, open: 1 }, 'build',
+    C('halloran', 'Roberta', 'Craigie', 'Chief Engineer', 'engineer', 'reckless', { bold: 1, open: 1 }, 'build',
     'Roberta is loud, cheeky and foul-mouthed, and cannot stand a job half done. Wants every repair made properly, to gauge and with the right part, and swears at anything held together with wire, including whoever wired it. Jokes hardest when she is frightened, and stops joking when it is serious.')],
-  doctor: [C('nakamura', 'Andrea', 'Tete', 'Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
+  doctor: [C('nakamura', 'Andrea', 'Tete', 'Head Surgeon', 'physician', 'beloved', { mercy: 1, free: 1 }, 'kin',
     'Andrea is warm with patients and furious with everyone else. Will not let a life be traded away without a fight, says so to your face, and has been known to ignore an order and dare you to do something about it. Wants a house with too many chairs at the table, and people in all of them.', ['survivor']),
-    C('brandt', 'Lou', 'Chang', 'Surgeon', 'physician', 'stubborn', { open: 1, bold: -1 }, 'quiet',
+    C('brandt', 'Lou', 'Chang', 'Head Surgeon', 'physician', 'stubborn', { open: 1, bold: -1 }, 'quiet',
     'Lou is acerbic and usually right, about the patient and about whoever is asking after the patient. Cares whether they get better and whether it spreads, and leaves how they feel about it to others. Tells you the prognosis you did not want in as few words as it takes, then sits up all night with the case. Is kinder in what he does than in anything he says.')],
-  scientist: [C('yurbin', 'Mac', 'O\'Hagan', 'Xenobiologist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
+  scientist: [C('yurbin', 'Mac', 'O\'Hagan', 'Lead Scientist', 'xenobio', 'brilliant', { open: 1, bold: 1 }, 'know',
     'Mac is obsessive, delighted and slightly dangerous. Would trade a season of safety for one real answer about this world, talks too fast, and has stopped hearing the word no. Knows the danger better than anyone, and has worked out that never finding out costs more.'),
-    C('iyer', 'Michelle', 'Yin', 'Xenobiologist', 'xenobio', 'brilliant', { bold: 1, mercy: -1 }, 'know',
+    C('iyer', 'Michelle', 'Yin', 'Lead Scientist', 'xenobio', 'brilliant', { bold: 1, mercy: -1 }, 'know',
     'Michelle wants results the colony can use, and is not much interested in how they are come by. Composed, exact and never raises her voice; counts a death as a cost like any other and will tell you whether the answer was worth it. Does not always say what she has already started.')],
-  crew: [C('estrada', 'Samuel', 'Barlow', 'Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
+  crew: [C('estrada', 'Samuel', 'Barlow', 'Chief Agronomist', 'botanist', 'devout', { mercy: 1, bold: -1 }, 'build',
     'Samuel is quiet, devout and stubborn about fairness. Talks to the crops, keeps the old fasts, and will do any amount of work without complaint, but turn on the weakest and Samuel turns on you. Builds slow so it only gets built once, and would rather everyone ate thinner than the old went short.'),
-    C('waititi', 'Hamond', 'Shepherd', 'Agronomist', 'botanist', 'gentle', { free: 1, mercy: 1 }, 'sleepers',
+    C('waititi', 'Hamond', 'Shepherd', 'Chief Agronomist', 'botanist', 'gentle', { free: 1, mercy: 1 }, 'sleepers',
     'Hamond is loud, generous and funny, and knows everybody\'s business because everybody tells him. Promises more than the fields can deliver, wraps bad news in a joke, and cannot keep a secret. Will joke about anything except who eats last. His wife is still asleep aboard.')],
 };
 /* The crew file: a few lines on each, shown two at a time before the voyage out (the dossier, js/ui.js; Lachlan, 2026-11-17). */
@@ -161,7 +161,7 @@ const seatOf = k => LF.SEAT_OF[k] || k;
 /* The chair comes to the deputy (Lachlan, 2026-11-18). They came on the ship and have worked the department since
    landfall, so they are not new to the post: they know this world about half as well as time on it would have taught the
    one in the chair. LF.green is only true of a colonist promoted in a save from before. */
-LF.SEAT_TITLE = { command: 'Commander', security: 'Security Chief', engineer: 'Chief Engineer', doctor: 'Doctor', scientist: 'Scientist', crew: 'Crew Chief' };
+LF.SEAT_TITLE = { command: 'Flight Commander', security: 'Chief of Security', engineer: 'Chief Engineer', doctor: 'Head Surgeon', scientist: 'Lead Scientist', crew: 'Chief Agronomist' };   /* the posts (Lachlan, 2026-11-19), as on LF.CAST */
 LF.green = (s, p) => !!(p && p.promoted && s.day - p.promoted < LF.YEAR);
 LF.seatAlt = function (s, k) { const seat = seatOf(k), c = LF.altOf(s, seat);
   if (!c || LF.officer(s, seat)) return null;
@@ -288,5 +288,6 @@ LF.renameCast = function (s) {
   const old = { solheim: 'Marit', dahl: 'Kasimir', kovacs: 'Bashir', nakamura: 'Amara', yurbin: 'Gerad', estrada: 'Tavi' }, by = {};
   for (const seat in LF.CAST) for (const c of LF.CAST[seat]) by[c.key] = c;
   for (const p of (s && s.people) || []) { const c = by[p.key];
-    if (c && p.first === old[p.key]) Object.assign(p, { first: c.first, last: c.last, name: c.first + ' ' + c.last }); }
+    if (c && p.first === old[p.key]) Object.assign(p, { first: c.first, last: c.last, name: c.first + ' ' + c.last });
+    if (c && p.title && p.role !== null) p.title = c.title; }   // the posts were retitled (Lachlan, 2026-11-19): a save keeps up
 };
