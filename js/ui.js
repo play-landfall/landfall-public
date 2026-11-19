@@ -69,6 +69,9 @@ const castImg = (c, cls) => !facePainted(c.key) || !SCENES.has('cast_' + c.key) 
   : `<img class="${cls || 'face'}" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async">`;
 /* What an officer brings and what it costs, while in the chair (LF.EDGE, 2026-11-19). */
 const edgeHTML = k => { const e = LF.EDGE && LF.EDGE[k]; return e ? `<div class="edge"><span class="up">${esc(e.up)}</span></div>` : ''; };
+/* A seat's two on the crew pick (Lachlan, 2026-11-19): tap one to put them in the chair; that tile reads the seat's lead
+   title and the other its second, and one button under both confirms. */
+const seatCard = (c, i, k, on) => `<div class="file pick${on ? ' on' : ''}" style="--i:${i}" data-act="pre" data-v="sel${i}" role="button" tabindex="0" aria-pressed="${on}">${castImg(c)}<div class="t"><span class="lbl">${esc(on ? LF.SEATS[k].lead : LF.SEATS[k].second)}</span><b>${esc(c.first)} ${esc(c.last)}</b>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${edgeHTML(c.key)}</div></div>`;
 const fileCard = (c, i, btn, seat) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b>${seat ? '' : `<span class="lbl">${esc(c.title || '')}</span>`}${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${seat ? edgeHTML(c.key) : ''}${btn || ''}</div></div>`;
 function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrift, st = pre.step;
   if (st === 'ship') return `<div class="banner"><img class="scene" src="art/ship_new.webp" alt=""></div><div class="card enter dossier"><div class="lbl tone">Outbound from Earth</div><h2>Select your ship</h2>
@@ -85,12 +88,19 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
     <button class="opt go" data-act="pre" data-v="${pre.rolled ? 'random' : 'seat0'}">${pre.rolled ? 'Roll again' : 'Change them'}</button>
     ${pre.rolled ? '<button class="pbtn back" data-act="pre" data-v="seat0">Choose them yourself</button>' : ''}</div>`;
-  const n = +st.slice(4), k = LF.SEAT_ORDER[n], S = LF.SEATS[k];
+  const n = +st.slice(4), k = LF.SEAT_ORDER[n], S = LF.SEATS[k], sel = pre.sel && pre.sel[k] !== undefined ? pre.sel[k] : pre.picks[k] || 0;
   return `<div class="card enter dossier"><div class="lbl tone">Command crew · ${n + 1} of ${LF.SEAT_ORDER.length}</div><h2 class="sp sp-${k}">${esc(S.name)}</h2>
-    <p>${esc(S.does)} ${esc(SEAT_ASKS[k])}</p><p>The one you take is ${esc(S.lead)}. The other is ${esc(S.second)}.</p>
-    ${LF.CAST[k].map((c, i) => fileCard(c, i, `<button class="opt go${pre.picks[k] === i ? ' on' : ''}" data-act="pre" data-v="pick${i}">Take ${esc(c.first)}</button>`, k)).join('')}
+    <p>${esc(S.does)} ${esc(SEAT_ASKS[k])}</p>
+    ${LF.CAST[k].map((c, i) => seatCard(c, i, k, i === sel)).join('')}
+    <button class="opt go" data-act="pre" data-v="pick${sel}">${esc(LF.CAST[k][sel].first)} as ${esc(S.lead)}</button>
     <button class="pbtn back" data-act="pre" data-v="${n ? 'seat' + (n - 1) : 'crew'}">Back</button></div>`; }
-function preGo(v) { pre = pre || { step: 'ship', picks: {} }; window.scrollTo(0, 0);
+function preGo(v) { pre = pre || { step: 'ship', picks: {} };
+  if (v.startsWith('sel')) { const k = LF.SEAT_ORDER[+pre.step.slice(4)], i = +v.slice(3), S = LF.SEATS[k]; pre.sel = pre.sel || {}; pre.sel[k] = i;
+    // a tile tapped: swap the titles and the button in place, so nothing replays its entrance or scrolls
+    document.querySelectorAll('#view .file.pick').forEach(el => { const on = el.dataset.v === v; el.classList.toggle('on', on); el.setAttribute('aria-pressed', on); el.querySelector('.lbl').textContent = on ? S.lead : S.second; });
+    const go = document.querySelector('#view [data-act="pre"][data-v^="pick"]'); if (go) { go.dataset.v = 'pick' + i; go.textContent = `${LF.CAST[k][i].first} as ${S.lead}`; }
+    return; }
+  window.scrollTo(0, 0);
   if (v === 'random') { pre.picks = {}; for (const k of LF.SEAT_ORDER) pre.picks[k] = Math.random() < 0.5 ? 0 : 1; pre.rolled = true; pre.step = 'review'; }
   else if (v.startsWith('pick')) { const n = +pre.step.slice(4); pre.picks[LF.SEAT_ORDER[n]] = +v.slice(4); pre.rolled = false; pre.step = n + 1 < LF.SEAT_ORDER.length ? 'seat' + (n + 1) : 'review'; }
   else if (v === 'go') { s.cast = {}; for (const k of LF.SEAT_ORDER) s.cast[k] = pre.picks[k] || 0; pre = null; if (LF.proDeal) LF.proDeal(s, proSeen()); save();
