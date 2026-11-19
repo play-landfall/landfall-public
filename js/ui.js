@@ -518,6 +518,18 @@ function yConfirm(list) {
   return '';
 }
 const yBar = f => `<div class="bar rust"><i style="width:${Math.round(100 * f)}%"></i></div>`;
+/* One build in the list, opened or not: its head, and when open its voice and the orders that fit. */
+function yPick(id, go, qu, head, open, parkedNow, lock, lower) {
+  if (!open) return head;
+  if (ordHold && [go, qu].some(o => o && ordHold.key === o.key)) return head + yBusy();
+  const btns = [go && !go.lock ? `<button class="opt go" data-act="ordgo" data-v="${esc(go.key)}">${esc(s.project ? `Pause the ${lower(s.project)}, ${parkedNow ? 'resume' : 'start'} this` : parkedNow ? 'Resume it' : 'Start it')}</button>` : '',
+    qu && !qu.lock ? `<button class="opt${go && !go.lock ? '' : ' go'}" data-act="ordgo" data-v="${esc(qu.key)}">${esc((s.bq || []).length ? 'Queue it after that' : `Queue it after the ${lower(s.project)}`)}</button>` : ''].filter(Boolean);
+  const qlock = qu && qu.lock && qu.lock !== lock ? `<span class="why">Queue: ${esc(qu.lock)}</span>` : '';
+  return head + `<div class="yopen"><p class="onote">${esc(LF.yardVoice(s, id))}</p><p class="onote">${esc(LF.yardDesc(s, id))}</p>${qlock}</div>`
+    + (btns.length ? `<div class="ordgo ycol">${btns.join('')}<button class="opt" data-act="ord" data-v="">Not now</button></div>` : '');
+}
+let yWait = false;   // the folded "Not yet" list stays as the player left it across redraws
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ywait')) yWait = e.target.open; }, true);
 function yardHTML() {
   if (!LF.yardList || !s.world || LF.aloft(s) || (s.over && !s.over.cont)) return '';
   const rows = yardRows(), get = (id, arg) => rows.find(o => o.id === id && (arg === undefined || o.arg === arg));
@@ -538,25 +550,23 @@ function yardHTML() {
   const q = (s.bq || []).map((id, n) => { const up = get('bqup', id), dr = get('unqueue', id);
     return `<div class="row yq"><span class="qn">${n + 1}</span><div class="t"><b>${esc(LF.projName(s, id))}</b><small>${n ? 'After that' : 'Next, when the crews are free'}${s.parked && s.parked[id] ? ' · paused, its materials in it' : ` · ${LF.cost(s, id).mat} materials when it starts`}</small></div>${yBtn(up, 'First')}${yBtn(dr, 'Drop')}</div>${yConfirm([up, dr])}`; }).join('');
   // the list: each build once, its voice and the orders that fit
-  const list = LF.yardList(s).map(id => {
+  const ready = [], waiting = [];   // builds that cannot start yet fold away under their own heading (Lachlan, 2026-11-19)
+  LF.yardList(s).forEach(id => {
     const go = get(s.project ? 'switch' : 'build', id), qu = s.project ? get('queue', id) : null, key = 'pick:' + id, open = ordOpen === key || [go, qu].some(o => o && (ordOpen === o.key || ordHold && ordHold.key === o.key));
     const T = LF.PITCH[id], who = T && LF.h.P(s, T.by), parkedNow = s.parked && s.parked[id], lock = go ? go.lock : 'Not now';
+    const blocked = lock && !(qu && !qu.lock), into = blocked ? waiting : ready;
+    if (blocked && open) yWait = true;
     const lab = `${LF.projName(s, id)}${parkedNow ? ' (paused)' : ''}`, wants = who ? `${who.name} wants it` : T ? `${LF.seatWord(s, T.by).replace(/^./, c => c.toUpperCase())} wants it` : '';
-    const head = `<button class="opt ord yb${open ? ' open' : ''}${lock && !(qu && !qu.lock) ? ' locked' : ''}" data-act="ord" data-v="${esc(key)}" ${ordHold ? 'disabled' : ''}>${ic(lock ? 'unknown' : 'build')}<span class="b"><span class="l">${esc(lab)}</span>`
+    const head = `<button class="opt ord yb${open ? ' open' : ''}${blocked ? ' locked' : ''}" data-act="ord" data-v="${esc(key)}" ${ordHold ? 'disabled' : ''}>${ic(lock ? 'unknown' : 'build')}<span class="b"><span class="l">${esc(lab)}</span>`
       + `${wants ? `<small class="who">${esc(wants)}</small>` : ''}${lock && !open ? '' : yardTips(go, id)}${lock ? `<span class="why">${esc(lock)}</span>` : ''}</span></button>`;   // a locked build shows only what it waits on until it is opened
-    if (!open) return head;
-    if (ordHold && [go, qu].some(o => o && ordHold.key === o.key)) return head + yBusy();
-    const btns = [go && !go.lock ? `<button class="opt go" data-act="ordgo" data-v="${esc(go.key)}">${esc(s.project ? `Pause the ${lower(s.project)}, ${parkedNow ? 'resume' : 'start'} this` : parkedNow ? 'Resume it' : 'Start it')}</button>` : '',
-      qu && !qu.lock ? `<button class="opt${go && !go.lock ? '' : ' go'}" data-act="ordgo" data-v="${esc(qu.key)}">${esc((s.bq || []).length ? 'Queue it after that' : `Queue it after the ${lower(s.project)}`)}</button>` : ''].filter(Boolean);
-    const qlock = qu && qu.lock && qu.lock !== lock ? `<span class="why">Queue: ${esc(qu.lock)}</span>` : '';
-    return head + `<div class="yopen"><p class="onote">${esc(LF.yardVoice(s, id))}</p><p class="onote">${esc(LF.yardDesc(s, id))}</p>${qlock}</div>`
-      + (btns.length ? `<div class="ordgo ycol">${btns.join('')}<button class="opt" data-act="ord" data-v="">Not now</button></div>` : '');
-  }).join('');
+    into.push(yPick(id, go, qu, head, open, parkedNow, lock, lower));
+  });
+  const list = ready.join(''), wait = waiting.length ? `<details class="standing ywait"${yWait ? ' open' : ''}><summary>${ic('unknown', 'h3i')}Not yet · ${waiting.length}</summary><div class="orders ylist">${waiting.join('')}</div></details>` : '';
   // standing, folded, with the day each was finished
   const built = Object.keys(s.built).filter(id => LF.PROJECTS[id]).sort((a, b) => s.built[a] - s.built[b]);
   const stand = built.length ? `<details class="standing"><summary>${ic('colony', 'h3i')}Standing · ${built.length}</summary><div class="box">${built.map(id => `<div class="row"><div class="t"><b>${esc(LF.projName(s, id))}</b><small>Finished ${esc(LF.dateStr(s.built[id]).toLowerCase())}. ${esc(LF.yardDesc(s, id))}</small></div></div>`).join('')}</div></details>` : '';
   return `<h3>${ic('build', 'h3i')}The yard</h3><div class="yardp">${said}${hand}${pk}${q ? `<div class="box yqueue"><div class="lbl">Queued</div>${q}</div>` : ''}</div>
-    ${list ? `<h3>${ic('mat', 'h3i')}What could be built</h3><div class="orders ylist">${list}</div>` : ''}${stand}`;
+    ${list || wait ? `<h3>${ic('mat', 'h3i')}What could be built</h3>${list ? `<div class="orders ylist">${list}</div>` : ''}${wait}` : ''}${stand}`;
 }
 function colonyView() {
   const A = LF.ARCHETYPES[s.world.type], pil = LF.pillars(s), d = LF.date(s.day), cut = Object.values(pil).filter(Boolean).length;
