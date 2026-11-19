@@ -177,8 +177,8 @@ function castScene(k, c) {
 /* Below 10% humanity (LF.grim past half) a picture with a hollow version (<id>_hollow.webp: the same scene repainted
    gaunt, shadowed and wrong; Lachlan, 2026-11-16) shows that instead: the officers' portraits and the cards most seen. */
 const hollow = k => LF.grim && s && s.world && LF.grim(s) >= 0.5 && SCENES.has(k + '_hollow') ? k + '_hollow' : k;
-// A finished build is painted for each kind of world (art session, 2026-11-18): built_<x>~<world.type>, the plain one as the fallback.
-const worldly = k => k && k.startsWith('built_') && !k.includes('@') && s && s.world && SCENES.has(k + '~' + s.world.type) ? k + '~' + s.world.type : k;
+// A finished build, and the landing (Lachlan, 2026-11-20), are painted for each kind of world: <id>~<world.type>, the plain one as the fallback.
+const worldly = k => k && (k.startsWith('built_') || k === 'landfall_site') && !k.includes('@') && s && s.world && SCENES.has(k + '~' + s.world.type) ? k + '~' + s.world.type : k;
 function sceneOf(c) { const k = worldly(sceneOf0(c)); return k ? hollow(k) : k; }
 // A lander run (Lachlan, 2026-11-16): nothing shows the landing before it happens; the landing shows the officer who
 // came down, else the system, else the colonists, else the lander coming in.
