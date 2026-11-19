@@ -213,7 +213,7 @@ const SKIN = {
   air: 'The patch takes under the dressing and dies within a day of the dressing coming off.' };
 B('sign', { id: 'smp.dish', tone: 'pressure', title: 'Something in the Dish',
   setup: s => Object.assign(crew(s), { ev: pickK(s, T(s)), under: LF.lex(s, 'under') }),
-  text: (s, c) => `The lab pod has had a core from forty metres under ${c.under} thawing in a cold box since landfall. This morning one of its culture dishes was at the far end of the bench, and the grey film in it had crossed to the side nearest the lamp. The night log says nobody touched it.\n\n${c.sv ? `"It went to the lamp," ${c.sv} says. "By itself, overnight. That ice is older than anything we've got a name for. Do you know what that means? Come and look. Just come and look at it."` : `${c.Sc} has asked for a month with it.`}`,
+  text: (s, c) => `The lab pod has had a core from forty metres under ${c.under} thawing in a cold box since landfall. This morning one of its culture dishes was at the far end of the bench, and the grey film in it had crossed to the side nearest the lamp. The night log says nobody touched it.\n\n${c.sv ? `[[scientist]] "It went to the lamp." "By itself, overnight. That ice is older than anything we've got a name for. Do you know what that means? Come and look. Just come and look at it."` : `${c.Sc} has asked for a month with it.`}`,
   choices: [
     { label: 'Put it under the glass for the month', note: 'The lab works on nothing else, and whatever it is gets a month to grow while it is watched.', test: { base: 54, mods: [R('xenobio', 14), R('physician', 6)] },
       ok: { text: (s, c) => `${c.Sc} spends the month at the glass. ${ev('glass', c.ev, c)}`, fx: (s, c) => ({ do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev); wait(s2, t); } }) },
@@ -232,7 +232,7 @@ B('sign', { id: 'smp.dish', tone: 'pressure', title: 'Something in the Dish',
 /* ======================= LAB: the sleeve, and the pod ======================= */
 B('lab', { id: 'smp.sleeve', view: 'people', tone: 'pressure', title: 'On a Sleeve',
   setup: s => { const t = T(s), x = t.tech; return Object.assign(crew(s), { ev: pickK(s, t, 0.05), tpid: x.pid, tech: x.name, Tech: cap(x.name), tf: x.first, Tf: cap(x.first) }); },
-  text: (s, c) => `It is out of the dish. ${c.Tech}, who washes the lab's glass, came to the clinic this morning with a grey patch on the cuff of a coverall sleeve the size of a palm, and the wrist under the cuff is red. The dish it came out of was found empty with the lid on.\n\n${c.dv ? `"${c.Tf} was washing glass, that's all," ${c.dv} says. "Before anyone decides anything about ${c.tf}, you come down to the clinic and you look at the arm."` : `${c.D} has ${c.tf} in the clinic's end room with the door shut.`}`,
+  text: (s, c) => `It is out of the dish. ${c.Tech}, who washes the lab's glass, came to the clinic this morning with a grey patch on the cuff of a coverall sleeve the size of a palm, and the wrist under the cuff is red. The dish it came out of was found empty with the lid on.\n\n${c.dv ? `[[physician]] "${c.Tf} was washing glass, that's all." "Before anyone decides anything about ${c.tf}, you come down to the clinic and you look at the arm."` : `${c.D} has ${c.tf} in the clinic's end room with the door shut.`}`,
   choices: [
     { label: (s, c) => `Have the clinic go over the arm, scrub it and keep the sleeve`, note: (s, c) => `${c.Tf} spends the month in the end room being scraped and swabbed, and the clinic works a room short.`, test: { base: 54, mods: [R('physician', 12), R('xenobio', 8)] },
       ok: { text: (s, c) => `${c.D} keeps ${c.tf} in the end room and scrubs the wrist twice a day. ${ev('sleeve', c.ev, c)}`, fx: (s, c) => ({ do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev); contain(s2, t, 'wash', 0.5); } }) },
@@ -250,7 +250,7 @@ B('lab', { id: 'smp.sleeve', view: 'people', tone: 'pressure', title: 'On a Slee
 
 B('lab', { id: 'smp.pod', tone: 'crisis', title: 'The Lab Pod',
   setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05) }); },
-  text: (s, c) => `${c.E} lifted the lab pod's ceiling panels to get at a fan that had stopped, and the backs of the panels are grey. It is in the cable runs, along the door seal and in the cabinet where the cores are kept, and the fan is clogged with it. The lab pod shares a wall with the clinic.\n\n${c.bv ? `"The pod'll stand a month like that," ${c.bv} says. "The fan won't. And when the fan goes, whatever's in there goes wherever the air goes."` : `${c.E} says the fan will not last the month.`} ${c.lean}`,
+  text: (s, c) => `${c.E} lifted the lab pod's ceiling panels to get at a fan that had stopped, and the backs of the panels are grey. It is in the cable runs, along the door seal and in the cabinet where the cores are kept, and the fan is clogged with it. The lab pod shares a wall with the clinic.\n\n${c.bv ? `[[engineer]] "The pod'll stand a month like that." "The fan won't. And when the fan goes, whatever's in there goes wherever the air goes."\n\n` : `${c.E} says the fan will not last the month. `}${c.lean}`,
   choices: [
     { label: 'Tape every seam, pack the vents with filter cloth, and keep the door shut', cost: { mat: 8 }, note: 'The lab works on inside a sealed box, and the people in it breathe what the filters leave them.',
       out: { text: 'Every seam is taped twice and the vents are packed. The pod is quieter with the fan off, and warmer, and the lab crew work in masks.', fx: s => ({ do: s2 => { const t = T(s2); contain(s2, t, 'seal'); t.did.taped = true; } }) } },
@@ -270,7 +270,7 @@ B('lab', { id: 'smp.pod', tone: 'crisis', title: 'The Lab Pod',
 /* ======================= DUCTS: two pods away, and the Scientist's jar ======================= */
 B('ducts', { id: 'smp.ducts', tone: 'crisis', title: 'Two Pods Away',
   setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.08) }); },
-  text: (s, c) => `The night watch smelt it before anyone saw it: a sweetish rot in the second bunk row, two pods along from the lab. ${c.W} had a grille off at first light. The duct behind it is furred grey as far as a lamp reaches, and the row has slept under it for most of a month.\n\n${c.wv ? `"Two pods down a pipe in a month and nobody noticed," ${c.wv} says. "That tells me nobody was looking, so would someone like to tell me which way it's going next, because I'd like to be standing there when it arrives."` : `${c.W} has the grille wired back on and a guard on the row door.`} ${c.lean}`,
+  text: (s, c) => `The night watch smelt it before anyone saw it: a sweetish rot in the second bunk row, two pods along from the lab. ${c.W} had a grille off at first light. The duct behind it is furred grey as far as a lamp reaches, and the row has slept under it for most of a month.\n\n${c.wv ? `[[security]] "Two pods down a pipe in a month and nobody noticed." "That tells me nobody was looking, so would someone like to tell me which way it's going next, because I'd like to be standing there when it arrives."\n\n` : `${c.W} has the grille wired back on and a guard on the row door. `}${c.lean}`,
   choices: [
     { label: 'Clear the row, and sleep everyone from it on the mess hall floor', note: 'The row sleeps on boards in a crowd for as long as it takes, and the ducts stay as they are.',
       out: { text: 'The row carries its bedding to the mess after supper. The benches go against the walls and the floor is laid with blankets edge to edge. The grille is taped over in the empty row.',
@@ -296,7 +296,7 @@ const WARD = {
 B(['ducts', 'water'], { id: 'smp.culture', view: 'people', tone: 'pressure', title: 'Kept Back',
   when: s => voice(s, 'scientist'),
   setup: s => { const t = T(s), c = crew(s), p = LF.officer(s, 'scientist'); return Object.assign(c, { ev: pickK(s, t, 0.12), pid: p.id, sf: p.first, Sf: cap(p.first), sci: p.name }); },
-  text: (s, c) => `A storehand turning out the officers' row found a sealed jar of the grey in ${c.sci}'s locker, labelled in ${c.sf}'s own hand and kept warm on a heat pad. ${c.Sf} has been feeding it since the dish.\n\n"Of course I kept some," ${c.sf} says. "You were going to burn the lot. Somebody has to know what it is, and it won't tell anyone who's set it on fire. Look, it's sealed. It's fine, it's... give me a month with it."`,
+  text: (s, c) => `A storehand turning out the officers' row found a sealed jar of the grey in ${c.sci}'s locker, labelled in ${c.sf}'s own hand and kept warm on a heat pad. ${c.Sf} has been feeding it since the dish.\n\n[[${c.pid}]] "Of course I kept some." "You were going to burn the lot. Somebody has to know what it is, and it won't tell anyone who's set it on fire. Look, it's sealed. It's fine, it's... give me a month with it."`,
   choices: [
     { label: (s, c) => `Let ${c.sf} keep it, under lock, in the lab`, note: (s, c) => `If it gets out of the jar, it gets out in the lab, and ${c.sf} works an arm's length from it every day.`,
       out: { text: (s, c) => `The jar goes into a locked cabinet with a key on ${c.sf}'s neck. ${ev('jar', c.ev, c)}`, fx: (s, c) => ({ off: [['ctx', 'native', 4]], do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev); wait(s2, t); t.culture = s2.day; t.did.culture = true; } }) } },
@@ -315,7 +315,7 @@ B(['ducts', 'water'], { id: 'smp.culture', view: 'people', tone: 'pressure', tit
 /* ======================= WATER: the plant, and the rows it reached ======================= */
 B('water', { id: 'smp.water', tone: 'crisis', title: 'The Water Plant',
   setup: s => { const t = T(s), c = crew(s), wells = !!s.built.wells; return Object.assign(c, { ev: pickK(s, t, 0.1), wells, alt: wells ? 'The wells could carry the colony without it, short.' : LF.down(s, 'reclaimer') ? 'There is nothing else to drink but what the tanks hold.' : 'The plant is what fills the boiling pots and the lander\'s tanks, and there is nothing behind it.' }); },
-  text: (s, c) => `It is in the water plant. ${c.E} pulled the filter beds for their monthly wash and found them matted grey right through, and the grey runs down into the outlet. Everybody in the colony has drunk from that outlet since the last wash. ${c.alt}\n\n${c.bv ? `"I can shut her down tonight," ${c.bv} says. "Then you tell me what everybody drinks."` : `${c.E} can shut the plant down tonight, and has asked what the colony is to drink.`} ${c.lean}`,
+  text: (s, c) => `It is in the water plant. ${c.E} pulled the filter beds for their monthly wash and found them matted grey right through, and the grey runs down into the outlet. Everybody in the colony has drunk from that outlet since the last wash. ${c.alt}\n\n${c.bv ? `[[engineer]] "I can shut her down tonight." "Then you tell me what everybody drinks."\n\n` : `${c.E} can shut the plant down tonight, and has asked what the colony is to drink. `}${c.lean}`,
   choices: [
     { label: 'Shut the plant, and drink what is stored until it is clean', note: (s, c) => c.wells ? 'The colony goes on well water and short cups, and the weakest go short first.' : 'The colony goes on short cups, and the weakest go short first.',
       out: { text: (s, c) => `The plant is drained and shut. ${c.wells ? 'The well queues start before light.' : 'The cups are measured out at the pot by the watch.'} The filter beds are left lying in the yard.`, fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.shut = s2.day; t.did.shut = true; } }) } },
@@ -335,7 +335,7 @@ B('water', { id: 'smp.water', tone: 'crisis', title: 'The Water Plant',
 B(['water', 'choice'], { id: 'smp.reached', view: 'people', tone: 'pressure', title: 'The Rows It Reached',
   when: (s, t) => t.toll >= 1,
   setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.12), n: t.toll }); },
-  text: (s, c) => `${c.n === 1 ? 'One person has' : `${Num(c.n)} people have`} died in the rows the grey has reached. ${c.D} has the latest two in the cold room and wants to open them. The families want them buried tonight, and the rows want the bedding of every one of the dead burned in the yard.${c.dv ? `\n\n"I need to know what they died of," ${c.dv} says. "So do you. So does whoever's next in that row. Tell the families that."` : ''}`,
+  text: (s, c) => `${c.n === 1 ? 'One person has' : `${Num(c.n)} people have`} died in the rows the grey has reached. ${c.D} has the latest two in the cold room and wants to open them. The families want them buried tonight, and the rows want the bedding of every one of the dead burned in the yard.${c.dv ? `\n\n[[physician]] "I need to know what they died of." "So do you. So does whoever's next in that row. Tell the families that."` : ''}`,
   choices: [
     { label: (s, c) => `Let ${c.d} open the two in the cold room`, note: 'The families are told afterwards, and the clinic learns what the rows died of.', test: { base: 56, mods: [R('physician', 14), R('xenobio', 6)] },
       ok: { text: (s, c) => `${c.D} works through the night with the door locked. ${ev('body', c.ev, c)}`, fx: (s, c) => ({ morale: -1, do: s2 => learn(s2, T(s2), 24, c.ev) }) },
@@ -395,7 +395,7 @@ const OUTD = {
 B('bill', { id: 'smp.door', view: 'people', tone: 'crisis', title: 'The Welded Door',
   when: (s, t) => !!t.inside && !t.inside.out,
   setup: s => { const t = T(s), x = t.inside; return Object.assign(crew(s), { ev: pickK(s, t, 0.15), ipid: x.pid, who: x.name }); },
-  text: (s, c) => `It is a month since the door was welded on ${c.who}. ${DOOR[c.ev]}\n\n${c.dv ? `"That's a person in there," ${c.dv} says. "You remember that. Cut the door, or tell me to my face why not."` : `${c.D} has asked twice for the door to be cut.`}`,
+  text: (s, c) => `It is a month since the door was welded on ${c.who}. ${DOOR[c.ev]}\n\n${c.dv ? `[[physician]] "That's a person in there." "You remember that. Cut the door, or tell me to my face why not."` : `${c.D} has asked twice for the door to be cut.`}`,
   choices: [
     { label: (s, c) => `Cut the door and bring ${c.who} out`, note: 'Whatever is in there comes out with them, if it was ever going to.',
       out: { text: (s, c) => OUTD[T(s).truth.is](c),
