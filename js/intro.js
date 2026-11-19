@@ -68,8 +68,10 @@ const layered = (k, line) => Object.assign({ line }, LAYERED[k]);
 /* The films (Lachlan, 2026-11-19; tools/films.py): Wan clips of the Ariadne from Blender layouts of her 3D model, each with its
    own sound. FILM_MS and FILM_CUTS are what `python tools/films.py` prints. FILMS off plays the stills instead. */
 const FILMS = true;
-const FILM_MS = { departure: 14200, crossing: 18800, meteor: 5000, lights: 4000, arrival: 9600, detach: 5000 };
-const FILM_CUTS = { departure: [0, 4.6, 9.2], crossing: [0, 4.6, 9.2, 13.8], arrival: [0, 4.6] };
+const FILM_MS = { departure: 14240, crossing: 18800, meteor: 5000, lights: 4000, arrival: 9600, detach: 5000,
+  descent_barren: 9680, descent_ruin: 9680, descent_ice: 9680, descent_drowned: 9660, descent_jungle: 9680, descent_garden: 9680 };
+const FILM_CUTS = { departure: [0, 4.6, 9.24], crossing: [0, 4.6, 9.2, 13.8], arrival: [0, 4.6],
+  ...Object.fromEntries(['barren', 'ruin', 'ice', 'drowned', 'jungle', 'garden'].map(w => [`descent_${w}`, [0, w === 'drowned' ? 4.62 : 4.64]])) };
 const FILM_VOL = 0.8;
 const reel = (id, lines, alt) => ({ video: id, ms: FILM_MS[id], alt, caps: lines.map((t, n) => [(FILM_CUTS[id] || [0])[n] + 0.3, t]) });
 function opening(s, rest) {
@@ -118,13 +120,15 @@ const world = (x, alt) => Object.assign(x, { alt });
 function descent(s, zone) {
   const w = s.world, Z = zone ? zone.charAt(0).toUpperCase() + zone.slice(1) : w.planet;
   const sep = { pic: 'intro_separate', move: 'drift', line: `The lander drops away from the ${w.ship}.` };
-  return [FILMS ? reel('detach', [sep.line], [sep]) : sep,
-    // 2026-11-20: each world's own entry and touchdown (painted locally, approved by Lachlan; still pictures until the
-    // films are made), on a slow tilt with a sound; the old shared pictures stand in if a world's are missing
-    world({ pic: `descent_${w.type}`, move: 'sink', sfx: 'burn', ms: DESCENT_MS, line: 'Down through the cloud, with the reactor in the hold.' },
+  // each world's own entry and touchdown stills (painted locally, approved 2026-11-20); the shared pictures stand in
+  const down = [world({ pic: `descent_${w.type}`, move: 'sink', sfx: 'burn', ms: DESCENT_MS, line: 'Down through the cloud, with the reactor in the hold.' },
       { pic: 'intro_descent', move: 'push', fx: 'flare' }),
     world({ pic: `touchdown_${w.type}`, move: 'settle', sfx: 'lander_down_1', sfxGain: 0.5, ms: DESCENT_MS, line: `${Z}. Landfall.` },
       { pic: 'intro_touchdown', move: 'pan', fx: 'shake' })];
+  // 2026-11-20: each world's own descent film (entry, then touchdown; Wan's sound), its stills standing in if it will not play
+  const film = `descent_${w.type}`;
+  if (FILMS && FILM_MS[film]) return [reel('detach', [sep.line], [sep]), reel(film, down.map(x => x.line), down)];
+  return [FILMS ? reel('detach', [sep.line], [sep]) : sep, ...down];   // stills: a slow tilt and a sound each
 }
 let timer = 0, done = null;
 /* Hold to skip: the label with a ring that fills while a pointer or key is held on the intro. */
