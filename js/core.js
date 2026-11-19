@@ -725,7 +725,7 @@ LF.tenor = function (s, o) {
 };
 LF.choices = function (s) {
   if (s.cur.gen) { const kf = s.factors.find(x => x.id === s.cur.fid);
-    return seatLocks(s, s.cur.choices.map((ch, i) => ({ i, ch, lock: ch.lock, label: ch.label, note: ch.note, odds: LF.withAttach(s, ch.odds, ch.ap, kf && kf.kind), against: ch.against, send: ch.send, info: ch.info, cost: ch.cost, rank: ch.rank }))); }
+    return seatLocks(s, s.cur.choices.map((ch, i) => ({ i, ch, lock: ch.lock, label: ch.label, note: ch.note, odds: LF.withAttach(s, ch.odds, ch.ap, kf && kf.kind, { mods: ch.roles || [], ap: ch.ap }), against: ch.against, send: ch.send, info: ch.info, cost: ch.cost, rank: ch.rank }))); }
   const st = LF.byId[s.cur.id], c = s.cur.ctx;
   const list = st.choices.map((ch, i) => {
     if (ch.show && !ch.show(s, c)) return null;
@@ -738,7 +738,7 @@ LF.choices = function (s) {
       send = { n: ch.send.n, months: Math.max(1, Math.round(d / LF.MONTH)), danger: ch.send.danger }; cost = Object.assign({ food }, cc);
       if (!lock && LF.hands(s) - ch.send.n < 18) lock = `Needs ${ch.send.n} people to spare`; else if (!lock && s.res.food < food) lock = `Needs ${food} food`; }
     return { i, ch, lock, send, cost, info: (typeof ch.info === 'function' ? ch.info(s, c) : ch.info) || autoInfo(s, ch, c), label: typeof ch.label === 'function' ? ch.label(s, c) : ch.label,
-      note: typeof ch.note === 'function' ? ch.note(s, c) : ch.note, odds: ch.test ? LF.withAttach(s, LF.odds(s, ch.test, c), null, null, ch.test) : null, auto: !ch.info };
+      note: typeof ch.note === 'function' ? ch.note(s, c) : ch.note, odds: ch.test ? LF.withAttach(s, LF.odds(s, ch.test, c), null, null, ch.test, c) : null, auto: !ch.info };
   }).filter(Boolean);
   // A loss every option carries (a death already told in the card) is not part of the choice: drop that read-off chip.
   const autos = list.filter(o => o.auto);
@@ -771,33 +771,18 @@ LF.odds = function (s, test, c) {
   const parts = []; let p = test.base;
   for (const m of test.mods || []) {
     let v = 0, label = typeof m.label === 'function' ? m.label(s, c) : m.label;   // a label may name whoever holds a seat
-    if (m.k === 'role') { const seat = LF.SEAT_OF[m.role] || m.role, x = LF.officer(s, seat), st = LF.seatState(s, seat), S = LF.SEATS[seat];
-      // The officer at their post is worth the whole of it, bent by the state they are in (LF.offMods); one who is not here is missed.
-      let gone = false;
-      // A test aboard the ship (test.aboard) is the other way round: the officer up there does it, the one below can only talk it through.
-      if (test.aboard && st === 'orbit') { v = m.v + (x.trait === 'brilliant' ? 3 : 0); label = `${x.name}, aboard`; }
-      else if (test.aboard && st === 'here') { const c = LF.has(s, 'comms'); v = Math.round(m.v / (c ? 2 : 3)); label = c ? `${x.name}, from the signals room` : `${x.name}, by radio from the ground`; }
-      else if (st === 'here' && LF.green && LF.green(s, x)) { v = Math.round(m.v / 2); label = `${x.name}, new to the post`; }   // promoted this year: half the weight
-      else if (st === 'here') { v = m.v + (x.trait === 'brilliant' ? 3 : 0); label = `${x.name}, ${LF.title(x)}`;
-        for (const q of LF.offMods(s, x)) { parts.push({ label: q.label, v: q.v, seat: seat + ':' + q.k }); p += q.v; } }
-      else if (st === 'hurt') { v = Math.round(m.v / 2); label = `${x.name} is laid up`; }
-      else if (st === 'empty') { v = -Math.round(m.v / 4); gone = LF.seatGone(s, seat); label = gone ? `Nobody left in ${S.name}` : `${S.name} has nobody at its head`; }
-      else if (st === 'orbit' && LF.has(s, 'comms')) { v = -Math.round(m.v / 4); label = `${x.name}, by radio from orbit`; }   // the signals room: a quarter missed, not half
-      else { v = -Math.round(m.v / 2); label = st === 'orbit' ? `${x.name} is still in orbit` : `${x.name} is away`; }
-      const had = parts.find(q => q.seat === seat); if (had) { had.v += Math.round(v / 2); p += Math.round(v / 2); continue; }   // two old offices, one seat: counted once and a half
-      if (v) { parts.push(gone ? { label, v, seat, gone: 1 } : { label, v, seat }); p += v; } continue; }
-    else if (m.k === 'machine') { const mm = s.machines[m.id], n = LF.MACHINES[m.id].name;
+    // An office named on the card counts only through the officer sent in person (Lachlan, 2026-11-19): LF.attachMods, js/people.js.
+    if (m.k === 'role') continue;
+    if (m.k === 'machine') { const mm = s.machines[m.id], n = LF.MACHINES[m.id].name;
       // The laboratory stands in for the autodoc wherever a card needs an assay: half its weight, never a penalty.
       if (m.id === 'medbay' && (mm.lost || (mm.up && !test.aboard)) && LF.has(s, 'lab')) { v = Math.round(m.v / 2); label = 'The laboratory, in the autodoc\'s place'; }
       else if (mm.lost) { v = -m.v; label = `${n} lost`; } else if (mm.up && !test.aboard) { v = -Math.round(m.v / 2); label = `${n} still aboard the ship`; } else if (mm.hp < 50) { v = Math.round(m.v / 2); label = `${n} degraded`; } else { v = m.v; label = `${n} online`; } }
     else if (m.k === 'flag') { if (s.flags[m.flag]) v = m.v; }
     else if (m.k === 'if') { if (m.fn(s, c)) v = m.v; }
-    else if (m.k === 'trait') { const x = P(s, m.role); if (x && x.trait === m.trait) { v = m.v; label = `${x.first} is ${m.trait}`; } }
+    else if (m.k === 'trait') { const x = P(s, m.role); if (x && x.trait === m.trait && LF.attached && LF.attached(s).includes(x)) { v = m.v; label = `${x.first} is ${m.trait}`; } }   // only the officer sent
     if (v) { parts.push({ label, v }); p += v; }
   }
   for (const q of LF.buildMods(s, test)) { parts.push(q); p += q.v; }
-  // What the officer in the chair is good at (LF.EDGE): flat points like every other modifier ("15% better odds" is +15).
-  if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c)) { const v = Math.round(q.rel * 100); if (v) { parts.push({ label: q.label, v }); p += v; } }
   return { p: clamp(Math.round(p), 5, 95), raw: Math.round(p), base: test.base, parts };
 };
 /* Buildings that help a kind of work (WO-3, DESIGN.md "Buildings"). One place in the odds for every card, hand-written or
@@ -842,7 +827,7 @@ LF.choose = function (s, i) {
   if (cost) for (const k in cost) { const b = s.res[k]; s.res[k] = Math.max(0, s.res[k] - cost[k]); chips.push({ t: LF.amount(s, k, -cost[k], b), good: false }); }
   let o, res = { label: lbl };
   if (ch.test) {
-    const od = LF.withAttach(s, LF.odds(s, ch.test, c), null, null, ch.test), roll = Math.floor(LF.rand(s) * 100);
+    const od = LF.withAttach(s, LF.odds(s, ch.test, c), null, null, ch.test, c), roll = Math.floor(LF.rand(s) * 100);
     res.p = od.p; res.success = roll < od.p; o = res.success ? ch.ok : ch.bad;
   } else o = ch.out;
   // Text is rendered before effects, so "X goes in" still names X when the effect kills them.

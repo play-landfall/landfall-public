@@ -321,7 +321,7 @@ LF.fireGen = function (s, f, frames) {
       if (al.fit) mods.push(H.If(() => true, 6, `A ${al.fit.toLowerCase()} colony, practised at this`));
       if (leadP && leadP.marks.grudge) mods.push(H.If(() => true, -8, `${leadP.first} bears you a grudge`));
       if (s.morale < 30) mods.push(H.If(() => true, -6, 'A colony near the end of its patience'));
-      ch.odds = LF.odds(s, { base: c.b || 50, mods, ap: c.ap }, x); }
+      ch.odds = LF.odds(s, { base: c.b || 50, mods, ap: c.ap }, x); ch.roles = mods.filter(m => m.k === 'role').map(m => ({ k: 'role', role: m.role, v: m.v })); }   // plain data: what an officer sent would add
     choices.push(ch);
   }
   s.cur = { gen: true, phase: 'choose', attach: [], id: fr.id, fid: f.id, title: val(fr.title, x), tone: fr.tone, text, ask: fr.ask ? val(fr.ask, x) : '', choices, view: LF.frameView(fr, f), lead: leadP ? leadP.id : null, stake: stake.phrase,
@@ -344,7 +344,7 @@ LF.chooseGen = function (s, i) {
   if (LF.fitAttach) LF.fitAttach(s, ch);   // whoever was marked but can't do this option's work stays behind (people.js)
   if (ch.cost) for (const k in ch.cost) { const b = s.res[k]; s.res[k] -= ch.cost[k]; chips.push({ t: LF.amount(s, k, -ch.cost[k], b), good: false }); }
   const res = { label: ch.label }; let o;
-  const od = LF.withAttach(s, ch.odds, ch.ap, f && f.kind);
+  const od = LF.withAttach(s, ch.odds, ch.ap, f && f.kind, { mods: ch.roles || [], ap: ch.ap });
   if (od) { res.p = od.p; res.success = Math.floor(rand(s) * 100) < od.p; o = res.success ? ch.ok : ch.bad; } else o = ch.out;
   if (ch.send && o.fx.away) o.fx.away.with = LF.attached(s).map(p => p.id);
   res.text = LF.tollText(s, o.text, o.fx);   // past LF.SCALE the dead are more than the words say (core.js)

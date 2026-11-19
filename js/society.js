@@ -96,13 +96,7 @@ const shift0 = LF.shiftValues;
 LF.shiftValues = function (s, tags) { shift0(s, tags); const c = s.cur; LF.regard(s, tags, c ? (c.gen ? c.title : (LF.byId[c.id] || {}).title) : ''); };
 /* An officer who has turned away does the job and no more; one who stands with you does a little extra. */
 const odds0 = LF.odds;
-LF.odds = function (s, test, c) {
-  const o = odds0(s, test, c); let p = o.raw !== undefined ? o.raw : o.p;   // add to the uncapped sum: the cap is applied once, at the end
-  for (const m of test.mods || []) { if (m.k !== 'role') continue; const x = H.P(s, m.role); if (!x || x.loyal === undefined) continue;
-    if (x.loyal < 25) { o.parts.push({ label: `${x.first} has turned away from you`, v: -6 }); p -= 6; }
-    else if (x.loyal >= 75) { o.parts.push({ label: `${x.first} stands with you`, v: 3 }); p += 3; } }
-  o.raw = p; o.p = clamp(p, 5, 95); return o;
-};
+LF.odds = odds0;   // how an officer stands with you now counts only when they are sent (LF.attachMods, js/people.js)
 
 /* ---------- arcs: a mark lived with for a year changes what someone believes ---------- */
 const ARC = {

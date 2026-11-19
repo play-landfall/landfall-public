@@ -33,7 +33,7 @@ LF.laidUp = (s, p) => !!p.hurt && p.hurt > s.day;
    offers only the people who can do some of its work, and shows their occupation, not their quirks; on each option an
    attached person only counts, and only goes, if that option is work they can do. */
 LF.SKILL_WORD = { explore: 'exploring', research: 'research', fix: 'repairs', build: 'building', fight: 'fighting', talk: 'talks', heal: 'medicine', grow: 'the fields' };
-LF.SEAT_SKILL = { command: null, security: ['explore', 'fight'], engineer: ['fix', 'build'], doctor: ['research', 'heal'], scientist: ['explore', 'research', 'build'], crew: ['fix', 'grow'] };
+LF.SEAT_SKILL = { command: ['talk'], security: ['explore', 'fight'], engineer: ['fix', 'build'], doctor: ['research', 'heal'], scientist: ['explore', 'research', 'build'], crew: ['fix', 'grow'] };
 LF.TRADE = { marksman: ['Rifleman', ['fight', 'explore']], medic: ['Medic', ['heal', 'research']], fixer: ['Mechanic', ['fix', 'build']], observer: ['Surveyor', ['explore', 'research']],
   speaker: ['Envoy', ['talk']], pathfinder: ['Scout', ['explore']], guide: ['Guide', ['explore']], steady: ['Builder', ['build', 'fix']], survivor: ['Field hand', ['grow', 'explore']],
   scavenger: ['Salvager', ['fix', 'explore']], touched: ['Diviner', ['research', 'talk']] };
@@ -97,20 +97,36 @@ LF.attach = function (s, pid) {
   if (i >= 0) c.attach.splice(i, 1); else if (LF.available(s).some(p => p.id === pid)) c.attach = [pid];   // one at a time: a second name takes the first one's place
 };
 LF.attached = s => ((s.cur && s.cur.attach) || []).map(id => H.byPid(s, id)).filter(p => p && p.alive && (s.cur.aboard ? p.orbit : !p.away));
-LF.attachMods = function (s, ap, kind, test) {
-  const parts = [], work = LF.workOf(ap, test, null, null);
+/* What the officer sent in person adds (Lachlan, 2026-11-19; DESIGN.md "The odds"). Offices named on a card count only through the
+   officer who goes: the card's own figure for that department (two old offices of one seat: the first whole, the rest half), bent
+   by how they are (LF.offMods), their strength (LF.EDGE) and how they stand with you. Sent on work the card does not name their
+   department for, an officer adds +5 (or a perk's figure). An officer not sent adds nothing, and costs nothing. */
+LF.attachMods = function (s, ap, kind, test, c) {
+  const parts = [], work = LF.workOf(ap, test, null, null), roles = ((test && test.mods) || []).filter(m => m.k === 'role');
   for (const p of LF.attached(s)) { if (!LF.canDo(p, work)) continue;   // not their kind of work: they stay behind on this option
-    let best = 5, nm = p.seat ? 'there in person' : 'an experienced hand';   // 2 until 2026-11-16: one officer at a time, at real risk, has to be worth sending
-    // An officer who goes in person on work their own office is named in is worth more than their word from the camp.
-    if (p.seat && test && (test.mods || []).some(m => m.k === 'role' && (LF.SEAT_OF[m.role] || m.role) === p.seat)) { best = 10; nm = 'leading it in person'; }
-    for (const k of p.perks) { const K = LF.PERKS[k]; const v = Math.max(K.ap && K.ap === ap ? K.v : 0, K.kind && K.kind === kind ? K.v : 0, K.any || 0); if (v > best) { best = v; nm = K.name.toLowerCase(); } }
-    parts.push({ label: `${p.name}, ${nm}`, v: best + (p.deeds.length >= 3 ? 2 : 0) }); }
+    const mine = p.seat ? roles.filter(m => (LF.SEAT_OF[m.role] || m.role) === p.seat) : [];
+    if (mine.length) {
+      let v = mine.reduce((a, m, i) => a + (i ? Math.round(m.v / 2) : m.v), 0) + (p.trait === 'brilliant' ? 3 : 0);
+      let label = `${p.name}, ${LF.title(p)}`;
+      if (test && test.aboard && !p.orbit) { v = Math.round(v / 3); label = `${p.name}, by radio from the ground`; }
+      else if (LF.green && LF.green(s, p)) { v = Math.round(v / 2); label = `${p.name}, new to the post`; }
+      parts.push({ label, v });
+      if (LF.offMods) for (const q of LF.offMods(s, p)) parts.push({ label: q.label, v: q.v });
+      if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c, p)) { const e = Math.round(q.rel * 100); if (e) parts.push({ label: q.label, v: e }); }
+      if (p.loyal !== undefined && p.loyal < 25) parts.push({ label: `${p.first} has turned away from you`, v: -6 });
+      else if (p.loyal >= 75) parts.push({ label: `${p.first} stands with you`, v: 3 });
+    } else {
+      let best = 5, nm = 'there in person';
+      for (const k of p.perks) { const K = LF.PERKS[k]; const v = Math.max(K.ap && K.ap === ap ? K.v : 0, K.kind && K.kind === kind ? K.v : 0, K.any || 0); if (v > best) { best = v; nm = K.name.toLowerCase(); } }
+      parts.push({ label: `${p.name}, ${nm}`, v: best });
+    }
+    if (p.deeds.length >= 3) parts.push({ label: `${p.first} has done this before`, v: 2 }); }
   return parts;
 };
 /* The odds as the player sees them and the dice use them (Lachlan, 2026-11-19; DESIGN.md "The odds"): the base, plus every modifier
    in flat percentage points, held between 5% and 95%. Where the cap cuts, a last line says so, so the lines always add up to the figure. */
-LF.withAttach = function (s, odds, ap, kind, test) {
-  if (!odds) return odds; const add = LF.attachMods(s, ap, kind, test), parts = odds.parts.filter(x => !x.cap).concat(add);
+LF.withAttach = function (s, odds, ap, kind, test, c) {
+  if (!odds) return odds; const add = LF.attachMods(s, ap, kind, test, c), parts = odds.parts.filter(x => !x.cap).concat(add);
   const raw = (odds.raw === undefined ? odds.p : odds.raw) + add.reduce((a, x) => a + x.v, 0), p = clamp(raw, 5, 95);
   if (raw !== p) parts.push({ label: raw > p ? 'No better than 95%' : 'No worse than 5%', v: p - raw, cap: 1 });
   return Object.assign({}, odds, { p, raw, parts });

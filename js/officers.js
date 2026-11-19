@@ -153,7 +153,7 @@ const IN_ARC = ['politics', 'state', 'th.knife', 'th.eaters', 'th.lie', 'th.fait
 const IN_ID = /^(pol\.|state\.unrest|aft\.blame|eat\.|knf\.|ch\.|lim\.(compound|stew|count2|shepherd2)|qk\.(door|term)|os\.mole|body\.|kid\.lock|gen\.(outside|wire)|ebb\.(sand|walkers)|tg\.penfeeds|bu\.comms|late\.born|wk\.tenants)/;
 LF.inside = function (s, c) { if (c && c.f && c.f.kind) return c.f.kind === 'faction';
   const id = s.cur && s.cur.id, st = id && LF.byId[id]; return !!id && (IN_ID.test(id) || !!(st && IN_ARC.includes(st.arc))); };
-LF.edgeMods = function (s, test, c) { if (test.aboard) return []; const out = [], on = edgeOn(s); if (!on.length) return out;
+LF.edgeMods = function (s, test, c, only) { if (test.aboard) return []; const out = [], on = edgeOn(s).filter(p => !only || p === only); if (!on.length) return out;
   const seats = (test.mods || []).filter(m => m.k === 'role').map(m => LF.SEAT_OF[m.role] || m.role);
   if (test.ap === 'force' && !seats.includes('security')) seats.push('security');   // force is the watch's work, named or not
   let inside = null;

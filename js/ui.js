@@ -228,10 +228,10 @@ function cardHTML() {
     h += talkHTML(def.text);
     { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
-    if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer in person · one at a time</div>${av.map(p =>
+    if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer · one at a time</div>${av.map(p =>
       `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
       `<button disabled class="spent"><b>${esc(LF.seatTag(p))}</b><span>Just back · ${esc(LF.monthsWord((p.spent - s.day) / LF.MONTH))}</span></button>`).join('')}
-      ${workLine()}<small>${on.length ? 'They share the risk of whatever you choose and go with any party you send. Whatever comes of it, they are not fit to go out again for two months or more.' : 'An officer counts for more in person, and can be hurt or killed even when it goes well. There is nobody to replace them.'}</small></div>`;
+      <small>${on.length ? 'Shares the risk, and rests two months after.' : 'Only an officer you send adds to the odds. They can be hurt or killed.'}</small></div>`;
     // What the colony has of whatever this card spends or turns on, in words, against what is asked.
     const g = s.adrift ? [] : LF.relevant(s);   // the voyage out has no colony stores to show
     if (g.length) h += `<div class="stock">${g.map(x => `<span class="${x.lv === 0 ? 'hot' : ''}">${ic(x.k)}${esc(x.w)}</span>`).join('')}</div>`;
@@ -441,9 +441,6 @@ function placesHTML(list) { if (!list.length) return '';
   return `<h3>${ic('map', 'h3i')}Places<span class="h3n">${fresh ? `${fresh} nobody has been to` : 'all visited'}</span></h3><div class="tiles">${shown.map(p => tileHTML(p) + (open === p ? placeHTML(p) : '')).join('')}</div>`
     + (L.length > 6 ? `<button class="pbtn more tmore" data-act="poimore">${poiAll ? 'Fewer' : `${L.length - shown.length} more`}</button>` : ''); }
 /* What work the card's options are, and so who could be offered: "Needs exploring or fighting". */
-function workLine() { const w = s.cur.aboard ? null : LF.cardWork(s); if (!w) return '';
-  const words = w.map(k => LF.SKILL_WORD[k]), list = words.length > 1 ? words.slice(0, -1).join(', ') + ' or ' + words[words.length - 1] : words[0];
-  return `<small class="work">This is ${esc(list)}. Only officers whose department does that are offered; Command can go anywhere.</small>`; }
 /* The six officers grow older with the colony (Lachlan, 2026-11-16): from year 12 the portrait is cast_<key>_mid, from
    year 25 cast_<key>_old, each with its own hollow version (tools/scenes.py AGED; aged() above). By the game year only: no state.
    A promoted colonist has no key and keeps the stand-in face. */
