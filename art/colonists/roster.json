@@ -1,0 +1,21 @@
+{
+ "_note": "Colonist roster drafted from the 18 reference portraits (Lachlan, 2026-11-19). Names, ages, roles are a first pass to review; images not regenerated yet. 'band' as in index.json: prime 30-40 default, child only for children, older only where a scene is about older colonists.",
+ "x01": {"name": "Adaeze Okafor",     "sex": "f", "age": 45, "band": "older-prime", "role": "Farm labour lead",            "look": "broad-shouldered West African woman, close-cropped hair, rust-orange work shirt"},
+ "x02": {"name": "Lars Eriksen",      "sex": "m", "age": 65, "band": "older",       "role": "Retired fisherman, net-mender", "look": "wiry pale Scandinavian man, white beard, weathered red cheeks, navy knitted jumper"},
+ "x03": {"name": "Rohan Mehta",       "sex": "m", "age": 22, "band": "young",       "role": "Apprentice technician",       "look": "young South Asian man, thick black hair, thin moustache, teal overall jacket"},
+ "x04": {"name": "Niamh Byrne",       "sex": "f", "age": 10, "band": "child",       "role": "Child",                       "look": "freckled Irish girl, ginger plait, ochre smock"},
+ "x05": {"name": "Tevita Lolohea",    "sex": "m", "age": 35, "band": "prime",       "role": "Construction labourer",       "look": "stocky Pacific Islander man, curly black hair, broad open face, cream work shirt with braces"},
+ "x06": {"name": "Mei Lin Tan",       "sex": "f", "age": 55, "band": "older",       "role": "Teacher",                     "look": "East Asian woman, grey bob, wire glasses, navy work coat"},
+ "x07": {"name": "Kofi Mensah",       "sex": "m", "age": 12, "band": "child",       "role": "Child",                       "look": "Black boy, short hair, rust jumper"},
+ "x08": {"name": "Leila Haddad",      "sex": "f", "age": 33, "band": "prime",       "role": "Nurse",                       "look": "Middle Eastern woman, dark hair under a teal headscarf, strong brows, brown work vest"},
+ "x09": {"name": "Pavel Novak",       "sex": "m", "age": 55, "band": "older",       "role": "Smelter foreman",             "look": "heavy-set balding Eastern European man, drooping grey moustache, ochre canvas jacket"},
+ "x10": {"name": "Valeria Ruiz",      "sex": "f", "age": 25, "band": "young",       "role": "Radio and comms operator",    "look": "slight Latin American woman, short dark curly hair, blue overalls"},
+ "x11": {"name": "Daniel Walker",     "sex": "m", "age": 45, "band": "older-prime", "role": "Surveyor and tracker",        "look": "tall Aboriginal Australian man, short greying beard, navy work shirt"},
+ "x12": {"name": "Lan Nguyen",        "sex": "f", "age": 72, "band": "older",       "role": "Cook, seed-keeper",           "look": "round-faced Southeast Asian grandmother, white hair in a bun, teal cardigan"},
+ "x13": {"name": "Hannah Clarke",     "sex": "f", "age": 32, "band": "prime",       "role": "Greenhouse grower",           "look": "fair-haired English woman, short ponytail, a few freckles, teal work shirt"},
+ "x14": {"name": "Marco Bellini",     "sex": "m", "age": 38, "band": "prime",       "role": "Machinist",                   "look": "dark-haired Italian man, short neat beard, strong jaw, rust canvas work jacket"},
+ "x15": {"name": "Kenji Sato",        "sex": "m", "age": 35, "band": "prime",       "role": "Power and turbine technician","look": "Japanese man, short black hair, clean-shaven, calm steady look, cream shirt under navy bib overalls"},
+ "x16": {"name": "Camila Souza",      "sex": "f", "age": 35, "band": "prime",       "role": "Soil scientist",              "look": "Brazilian woman, long dark wavy hair tied back, warm brown skin, ochre work shirt"},
+ "x17": {"name": "Jack Doyle",        "sex": "m", "age": 32, "band": "prime",       "role": "Farm labourer",               "look": "sandy-haired Australian man, cropped hair, stubble, sun-browned, cream shirt with rolled sleeves. Looks a lot like Toby O'Neal: never in a scene with Toby"},
+ "x18": {"name": "Wanjiru Kamau",     "sex": "f", "age": 38, "band": "prime",       "role": "Well and water engineer",     "look": "Kenyan woman, short natural hair, high cheekbones, navy jacket over rust shirt"}
+}
