@@ -183,7 +183,11 @@ function play(shots, cb, title) {
   // How many have gone before: ships launched and colonies established, from the play log's counts (js/log.js).
   if (title && window.LFLog && LFLog.tally) LFLog.tally(line => { const tl = el.querySelector('.title .tally'); if (tl && line) { tl.textContent = line; tl.classList.add('on'); } });
   // The sound switch on the landing page (Lachlan, 2026-11-19): the header's own button, drawn the same and kept in step.
-  { const b = el.querySelector('.title .snd'); if (b) { const draw = () => { if (window.LFUI && LFUI.soundBtn) { LFUI.soundBtn(b); LFUI.soundBtn(); } }; draw();
+  { const b = el.querySelector('.title .snd'); if (b) { const draw = () => { const on = !!(window.LFMusic && LFMusic.on);   // drawn here: the title can come up before js/ui.js has finished loading
+      b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
+      b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>${on
+        ? '<path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18 6.5a8 8 0 0 1 0 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg>`;
+      if (window.LFUI && LFUI.soundBtn) LFUI.soundBtn(); }; draw();
     b.addEventListener('click', e => { e.stopPropagation(); if (window.LFMusic) LFMusic.toggle(); draw(); }); } }
   // The landing page: the first tap starts the score and brings up what the game is and what is in it; the second begins.
   let waiting = title ? 2 : 0;
