@@ -330,7 +330,7 @@ There is reaction mass for one more burn. The long-range array has found ${['', 
 }
 /* The arrival (Lachlan, 2026-11-19): first the crossing report alone, then two tabs, the world (its picture and what the
    survey saw) and the orbital report (the readings against the truth, and what orbit can say). Both end on the name. */
-let arrStep = 0, arrTab = 'world';
+let arrStep = 0, arrTab = 'world', arrSeen = false;   // arrSeen: the orbital report has been opened, so the name can be given (Lachlan, 2026-11-19)
 const ORBIT_PIC = { barren: 'lib_planet_05', ice: 'lib_planet_01', drowned: 'lib_planet_02', jungle: 'lib_planet_04', garden: 'lib_planet_09', ruin: 'lib_planet_10' };
 function arrivalHTML() {
   const w = s.world, R = w.report;
@@ -351,8 +351,8 @@ function arrivalHTML() {
       <div class="rd"><div class="rh">${ic('lander')}<b>Landing zones</b></div>${R.zones.map(z => `<small><b>${esc(z.name.charAt(0).toUpperCase() + z.name.slice(1))}</b>: ${esc(z.see)}.</small>`).join('')}</div>
       <div class="rd"><div class="rh">${ic('array')}<b>Big enough to name</b></div>${R.features.map(f => `<small><b>${esc(f.name.charAt(0).toUpperCase() + f.name.slice(1))}</b>: ${esc(f.see)}.</small>`).join('')}</div></div>` : ''}`;
   return `<div class="lbl vname">Orbit over ${esc(w.planet)}</div>
-    <div class="seg arrtabs">${[['world', 'The world'], ['report', 'Orbital report']].map(([k, n]) => `<button data-act="arrtab" data-v="${k}" class="${k === arrTab ? 'on' : ''}">${n}</button>`).join('')}</div>
-    ${tab}<button class="opt go" data-act="arrive">Give it a name</button>`;
+    <div class="seg arrtabs">${[['world', 'The world'], ['report', 'Orbital report']].map(([k, n]) => `<button data-act="arrtab" data-v="${k}" class="${k === arrTab ? 'on' : k === 'report' ? 'hot' : ''}">${n}</button>`).join('')}</div>
+    ${tab}${arrSeen ? '<button class="opt go" data-act="arrive">Give it a name</button>' : ''}`;
 }
 
 /* ---------- the three views ---------- */
@@ -797,10 +797,10 @@ function menu(open) {
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
 function act(a, v, el) {
-  if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; arrStep = 0; arrTab = 'world'; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
+  if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'arrnext') { arrStep = 1; arrTab = 'world'; window.scrollTo(0, 0); return render(); }
-  else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; return render(); }
+  else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; if (arrTab === 'report') arrSeen = true; return render(); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
   else if (a === 'pre') return preGo(v);
