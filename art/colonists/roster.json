@@ -374,8 +374,7 @@
   "band": "older-prime",
   "role": "Build foreman, runs the construction crews",
   "kind": "colonist",
-  "look": "solid Mexican woman, light olive-brown skin, black hair pulled back hard, lined squinting face, rust work shirt with rolled sleeves",
-  "pending": true
+  "look": "solid Mexican woman, light olive-brown skin, black hair pulled back hard, lined squinting face, rust work shirt with rolled sleeves"
  },
  "x42": {
   "name": "Oleg Marchenko",
@@ -384,8 +383,7 @@
   "band": "prime",
   "role": "Night-shift lead",
   "kind": "colonist",
-  "look": "tall gaunt Ukrainian man, pale skin, close-cropped grey-blond hair, heavy-lidded tired eyes, navy work jacket",
-  "pending": true
+  "look": "tall gaunt Ukrainian man, pale skin, close-cropped grey-blond hair, heavy-lidded tired eyes, navy work jacket"
  },
  "x43": {
   "name": "Fatima Benali",
@@ -394,8 +392,7 @@
   "band": "older-prime",
   "role": "Cook, runs the mess kitchen",
   "kind": "colonist",
-  "look": "round-faced Moroccan woman, warm olive-brown skin, dark curly hair under a cream kerchief, flour on one cheek, ochre apron over a teal shirt",
-  "pending": true
+  "look": "round-faced Moroccan woman, warm olive-brown skin, dark curly hair under a cream kerchief, flour on one cheek, ochre apron over a teal shirt"
  },
  "x44": {
   "name": "Henrik Lund",
@@ -404,8 +401,7 @@
   "band": "older-prime",
   "role": "Stores clerk",
   "kind": "colonist",
-  "look": "thin Danish man, pale skin, neat sandy hair going thin, wire-rimmed glasses, buttoned cream shirt",
-  "pending": true
+  "look": "thin Danish man, pale skin, neat sandy hair going thin, wire-rimmed glasses, buttoned cream shirt"
  },
  "x45": {
   "name": "Amara Nwosu",
@@ -424,8 +420,7 @@
   "band": "older",
   "role": "Lamp trimmer and wash-house hand",
   "kind": "colonist",
-  "look": "stooped English man, pale ruddy skin, white stubble, bald on top with grey at the sides, soot on his fingers, faded navy cardigan",
-  "pending": true
+  "look": "stooped English man, pale ruddy skin, white stubble, bald on top with grey at the sides, soot on his fingers, faded navy cardigan"
  },
  "x47": {
   "name": "Jorge Medina",
@@ -434,8 +429,7 @@
   "band": "prime",
   "role": "Stoker at the smelter and boilers",
   "kind": "colonist",
-  "look": "broad Chilean man, light olive-brown skin, black hair slick with sweat, thick forearms, scorched rust singlet",
-  "pending": true
+  "look": "broad Chilean man, light olive-brown skin, black hair slick with sweat, thick forearms, scorched rust singlet"
  },
  "x48": {
   "name": "Bridget Kowalczyk",
@@ -444,8 +438,7 @@
   "band": "prime",
   "role": "Carter and boot mender",
   "kind": "colonist",
-  "look": "freckled Polish woman, pale skin, long straw-blonde braid, wind-burnt cheeks, ochre canvas jacket",
-  "pending": true
+  "look": "freckled Polish woman, pale skin, long straw-blonde braid, wind-burnt cheeks, ochre canvas jacket"
  },
  "x49": {
   "name": "Samuel Osei",
@@ -454,8 +447,7 @@
   "band": "young",
   "role": "Clinic orderly",
   "kind": "colonist",
-  "look": "slim Ghanaian man, deep dark brown skin, short hair, gentle careful face, cream clinic smock",
-  "pending": true
+  "look": "slim Ghanaian man, deep dark brown skin, short hair, gentle careful face, cream clinic smock"
  },
  "x50": {
   "name": "Aiko Mori",
@@ -474,8 +466,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "little Colombian girl, light olive-brown skin, two dark pigtails, missing front tooth, oversized rust jumper",
-  "pending": true
+  "look": "little Colombian girl, light olive-brown skin, two dark pigtails, missing front tooth, oversized rust jumper"
  },
  "x52": {
   "name": "Arjun Pillai",
@@ -484,8 +475,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "thin Tamil boy, warm brown skin, untidy black hair, serious dark eyes, teal shirt too big for him",
-  "pending": true
+  "look": "thin Tamil boy, warm brown skin, untidy black hair, serious dark eyes, teal shirt too big for him"
  },
  "x53": {
   "name": "Freya Olsen",
@@ -494,8 +484,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "Norwegian girl, pale freckled skin, white-blonde hair in a messy ponytail, scab on her chin, navy knitted jumper",
-  "pending": true
+  "look": "Norwegian girl, pale freckled skin, white-blonde hair in a messy ponytail, scab on her chin, navy knitted jumper"
  },
  "x54": {
   "name": "Moses Banda",
@@ -504,8 +493,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "small Zambian boy, deep dark brown skin, close-cropped hair, wide grin with the mouth closed, ochre shirt",
-  "pending": true
+  "look": "small Zambian boy, deep dark brown skin, close-cropped hair, wide grin with the mouth closed, ochre shirt"
  },
  "x55": {
   "name": "Hana Kovac",
@@ -514,8 +502,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "Croatian girl of fourteen, pale skin, long dark brown hair, wary watchful eyes, cream shirt and a rust scarf",
-  "pending": true
+  "look": "Croatian girl of fourteen, pale skin, long dark brown hair, wary watchful eyes, cream shirt and a rust scarf"
  },
  "x56": {
   "name": "Sela Lolohea",
@@ -524,8 +511,7 @@
   "band": "born",
   "role": "Born in the colony",
   "kind": "colonist",
-  "look": "Pacific Islander girl of about nine, warm brown skin, thick black curls, bare feet, a dress sewn from ship cloth in teal",
-  "pending": true
+  "look": "Pacific Islander girl of about nine, warm brown skin, thick black curls, bare feet, a dress sewn from ship cloth in teal"
  },
  "x57": {
   "name": "Ewan Mensah-Byrne",
@@ -534,8 +520,7 @@
   "band": "born",
   "role": "Born in the colony",
   "kind": "colonist",
-  "look": "lanky boy of sixteen of mixed heritage, light brown skin, short tight curls, sun-browned, rust shirt made from ship cloth",
-  "pending": true
+  "look": "lanky boy of sixteen of mixed heritage, light brown skin, short tight curls, sun-browned, rust shirt made from ship cloth"
  },
  "x58": {
   "name": "Noor Haddad",
@@ -544,8 +529,7 @@
   "band": "born",
   "role": "Born in the colony",
   "kind": "colonist",
-  "look": "young woman in her twenties of Lebanese heritage, olive skin, long black hair tied back, steady dark eyes, a coat stitched from ship cloth and native hide",
-  "pending": true
+  "look": "young woman in her twenties of Lebanese heritage, olive skin, long black hair tied back, steady dark eyes, a coat stitched from ship cloth and native hide"
  },
  "x59": {
   "name": "Spindle",
@@ -554,8 +538,7 @@
   "band": "outsider",
   "role": "Speaker for the machine-raised",
   "kind": "outsider",
-  "look": "feral young man of nineteen, pale skin, shaved scarred scalp, too-large staring eyes, clothes patched from machine insulation and wire",
-  "pending": true
+  "look": "feral young man of nineteen, pale skin, shaved scarred scalp, too-large staring eyes, clothes patched from machine insulation and wire"
  },
  "x60": {
   "name": "Tomas Reyes",
@@ -564,7 +547,6 @@
   "band": "outsider",
   "role": "Speaker of the upriver settlement",
   "kind": "outsider",
-  "look": "weathered Filipino man in his forties, warm brown skin, greying black hair, broad calm face, a colony work shirt mended many times and a river-reed hat in his hand",
-  "pending": true
+  "look": "weathered Filipino man in his forties, warm brown skin, greying black hair, broad calm face, a colony work shirt mended many times and a river-reed hat in his hand"
  }
 }
