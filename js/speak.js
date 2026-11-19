@@ -130,7 +130,7 @@ function stillHere(s, r) {
 const fromRoster = (s, r) => { const p = rosterIn(s, r);
   return { kind: r.kind === 'outsider' ? 'outsider' : 'colonist', name: r.name, first: r.first, post: r.role, rk: r.key, pic: 'art/colonists/' + r.key + '.webp', p }; };
 const fromPerson = (s, p) => {
-  if (p.key && p.role && p.seat) return { kind: 'officer', name: p.name, first: p.first, post: p.title || LF.title(p), seat: p.seat, p };
+  if (p.key && p.role && p.seat) return { kind: 'officer', name: p.name, first: p.first, post: LF.title(p), seat: p.seat, p };   // the chair's title (LF.SEATS[seat].lead)
   const r = p.rk && LF.ROSTER && LF.ROSTER[p.rk];
   return { kind: 'colonist', name: p.name, first: p.first, post: r ? r.role : (LF.job ? LF.job(p) : 'Colonist'), rk: p.rk || null, pic: r ? 'art/colonists/' + r.key + '.webp' : null, p }; };
 LF.speaker = function (s, who) {
@@ -139,7 +139,7 @@ LF.speaker = function (s, who) {
   if (/^p\d+$/.test(who)) { const p = (s.people || []).find(q => q.id === who); if (p) return fromPerson(s, p); }
   if (LF.ROSTER && LF.ROSTER[who]) return fromRoster(s, stillHere(s, LF.ROSTER[who]));
   for (const seat in LF.CAST) for (const k of LF.CAST[seat]) if (k.key === who) { const p = (s.people || []).find(q => q.key === who && q.alive && q.role);
-    return p ? fromPerson(s, p) : { kind: 'officer', name: k.first + ' ' + k.last, first: k.first, post: k.title, seat, castKey: k.key }; }
+    return p ? fromPerson(s, p) : { kind: 'officer', name: k.first + ' ' + k.last, first: k.first, post: (LF.SEATS[seat] && LF.SEATS[seat].lead) || k.title, seat, castKey: k.key }; }
   if (LF.SEAT_OF[who] || LF.SEATS[who]) { const p = LF.h.P(s, who); if (p) return fromPerson(s, p);
     const r = crewOf(who); if (r) return fromRoster(s, r); }
   return { kind: 'unknown', name: 'Someone', post: '' };

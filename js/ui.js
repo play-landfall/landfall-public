@@ -100,7 +100,7 @@ function preGo(v) { pre = pre || { step: 'ship', picks: {} }; window.scrollTo(0,
 
 /* The crew file (Lachlan, 2026-11-17): before the first card, the six officers two at a time, like leafing through a dossier. */
 let dossier = -1;
-const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
+const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span>` : ''; };   // the three-line record is no longer shown on the file cards (Lachlan, 2026-11-19)
 function dossierHTML() { const pg = LF.FILE_PAGES[dossier], seats = pg.seats;
   return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of ${LF.FILE_PAGES.length}</div><h2>${esc(pg.name)}</h2>${dossier === 0 ? '<p>Six officers keep the ship with you, all awake for the first two years and then two at a time. Nobody can replace them.</p>' : ''}
     ${seats.map((seat, i) => { const c = LF.CAST[seat][LF.castPick(s, seat)]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(LF.SEATS[seat].lead)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
