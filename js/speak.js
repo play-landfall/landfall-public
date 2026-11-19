@@ -102,4 +102,70 @@ LF.revoice = function (s, text) {
       return '"' + e.parts.map((x, i) => x + (i < e.map.length ? (e.map[i] >= 0 ? m[e.map[i] + 1] : '') : '')).join('') + '"'; }
     return whole; });
 };
+
+/* ---------- Who is speaking (Lachlan, 2026-11-19; DESIGN.md "Who is speaking") ----------
+   A line of speech on a card is its own paragraph, opened by a tag that says who says it:
+     [[engineer]] "They'll run. Each one's a heater and a pump."      a seat or old role key: the officer at the post; if the seat is
+                                                                      empty or its officer away, the colonist who stands in for it
+     [[${c.pid}]] "Because I know what it'll say."                    a person in the game, by id (p12)
+     [[x05]] "Fourteen-hour shifts..."                                one of the roster's forty by key (js/roster.js)
+     [[kovacs]] "..."                                                 one of the twelve by cast key, whoever holds the seat
+     [[machine:The flight computer]] "Item one complied."            a machine, with what to call it
+     [[note:Nailed to the mess door]] "FOR THE ONE IN TEN."          writing, not speech
+     [[unknown:A voice on the ship's channel]] "Is anybody there?"   one speaker the colony cannot name (a mystery, never a crowd)
+   One paragraph may hold several quoted lines by the same speaker; nothing else goes in it. The UI draws each as a face, a name
+   and a bubble; everything else on the card stays narration. The quote marks stay in the source, so LF.revoice still finds them. */
+const TAG = /^\[\[([^\]]+)\]\]\s*/;
+const crewOf = role => { const R = LF.ROSTER || {}, seat = LF.SEAT_OF[role] || role;
+  return Object.values(R).find(r => r.stands === role) || Object.values(R).find(r => r.stands === seat) || null; };
+const rosterIn = (s, r) => (s.people || []).find(p => p.rk === r.key) || null;
+const gone = p => !!p && (!p.alive || !!p.left);
+/* a roster person the story names who is dead or gone in this game: the next of the same band and sex who is not */
+function stillHere(s, r) {
+  if (!gone(rosterIn(s, r))) return r;
+  const all = Object.values(LF.ROSTER || {}).filter(x => x.kind === r.kind && !x.stands && x.band === r.band), i = all.indexOf(r);
+  for (let k = 1; k <= all.length; k++) { const x = all[(i + k) % all.length]; if (x.sex === r.sex && !gone(rosterIn(s, x))) return x; }
+  for (let k = 1; k <= all.length; k++) { const x = all[(i + k) % all.length]; if (!gone(rosterIn(s, x))) return x; }
+  return r; }
+const fromRoster = (s, r) => { const p = rosterIn(s, r);
+  return { kind: r.kind === 'outsider' ? 'outsider' : 'colonist', name: r.name, first: r.first, post: r.role, rk: r.key, pic: r.pic ? 'art/colonists/' + r.key + '.webp' : null, p }; };
+const fromPerson = (s, p) => {
+  if (p.key && p.role && p.seat) return { kind: 'officer', name: p.name, first: p.first, post: p.title || LF.title(p), seat: p.seat, p };
+  const r = p.rk && LF.ROSTER && LF.ROSTER[p.rk];
+  return { kind: 'colonist', name: p.name, first: p.first, post: r ? r.role : (LF.job ? LF.job(p) : 'Colonist'), rk: p.rk || null, pic: r && r.pic ? 'art/colonists/' + r.key + '.webp' : null, p }; };
+LF.speaker = function (s, who) {
+  who = String(who || '').trim(); const c = who.indexOf(':'), kind = c > 0 ? who.slice(0, c) : who, label = c > 0 ? who.slice(c + 1).trim() : '';
+  if (kind === 'machine' || kind === 'note' || kind === 'unknown') return { kind, name: label || (kind === 'machine' ? 'The ship' : kind === 'note' ? 'Written' : 'A voice'), post: '' };
+  if (/^p\d+$/.test(who)) { const p = (s.people || []).find(q => q.id === who); if (p) return fromPerson(s, p); }
+  if (LF.ROSTER && LF.ROSTER[who]) return fromRoster(s, stillHere(s, LF.ROSTER[who]));
+  for (const seat in LF.CAST) for (const k of LF.CAST[seat]) if (k.key === who) { const p = (s.people || []).find(q => q.key === who && q.alive && q.role);
+    return p ? fromPerson(s, p) : { kind: 'officer', name: k.first + ' ' + k.last, first: k.first, post: k.title, seat, castKey: k.key }; }
+  if (LF.SEAT_OF[who] || LF.SEATS[who]) { const p = LF.h.P(s, who); if (p) return fromPerson(s, p);
+    const r = crewOf(who); if (r) return fromRoster(s, r); }
+  return { kind: 'unknown', name: 'Someone', post: '' };
+};
+/* The card's text as blocks: { say: speaker, lines: [...] } or { text } (narration). Same speaker twice running is one block. */
+LF.talk = function (s, text) {
+  const out = [];
+  for (const para of String(text || '').split(/\n{2,}/)) {
+    const m = TAG.exec(para);
+    if (!m) { if (para.trim()) out.push({ text: para }); continue; }
+    const rest = para.slice(m[0].length), lines = []; let q; const re = /"([^"]*)"/g;
+    while ((q = re.exec(rest))) lines.push(q[1]);
+    if (!lines.length && rest.trim()) lines.push(rest.trim());
+    const sp = LF.speaker(s, m[1]), prev = out[out.length - 1];
+    if (prev && prev.say && prev.tag === m[1]) prev.lines.push(...lines); else out.push({ say: sp, tag: m[1], lines });
+  }
+  return out;
+};
+/* Plain text for anywhere a card's words are reused outside the card (the log, the chronicle, the sheet): Name: "line". */
+LF.unmark = function (s, text) {
+  if (!text || String(text).indexOf('[[') < 0) return text;
+  return String(text).split(/(\n{2,})/).map(para => { const m = TAG.exec(para); if (!m) return para;
+    const sp = LF.speaker(s, m[1]); return sp.name + ': ' + para.slice(m[0].length); }).join('');
+};
+LF.SAY_TAG = TAG;
+/* The name of a roster person for the narration (${LF.rn(s, 'x05')}): the same one the tag [[x05]] would show, so prose and bubble agree. */
+LF.rn = (s, key) => { const r = LF.ROSTER && LF.ROSTER[key]; return r ? stillHere(s, r).name : 'Someone'; };
+LF.rf = (s, key) => { const r = LF.ROSTER && LF.ROSTER[key]; return r ? stillHere(s, r).first : 'someone'; };
 })();

@@ -188,13 +188,31 @@ function sceneOf0(c) {
   let h = 0; for (const ch of String(c.title || '')) h = (h * 31 + ch.charCodeAt(0)) | 0;
   return pool[Math.abs(h) % pool.length];
 }
-/* Card text with each officer's quoted lines in their seat's colour (js/speak.js). */
-function said(text) { if (LF.revoice) text = LF.revoice(s, text); return LF.speech ? LF.speech(s, text, LF.saysOf(s)).map(g => g.seat || g.other ? `<span class="sp sp-${g.seat || 'other'}">${esc(g.t)}</span>` : esc(g.t)).join('') : esc(text); }
+/* Text in one line (an option's note): any speech tag read as Name: "line" (js/speak.js). */
+function said(text) { if (LF.revoice) text = LF.revoice(s, text); return esc(LF.unmark ? LF.unmark(s, text) : text); }
+/* A card's text: narration as paragraphs, speech as a face, a name and post, and the line in a bubble (Lachlan, 2026-11-19;
+   DESIGN.md "Who is speaking"; LF.talk in js/speak.js). Key crew in gold on their navy; colonists on their grey; a blank for one not painted. */
+function talkFace(w) {
+  if (w.kind === 'officer') { const key = w.p ? w.p.key : w.castKey;
+    if (key && facePainted(key) && SCENES.has('cast_' + key)) return `<img class="face off" src="art/scenes/${w.p ? castFace(w.p) : hollow(aged('cast_' + key))}.webp" alt="" loading="lazy" decoding="async">`;
+    return `<span class="face off icon">${ic('notable')}</span>`; }
+  if (w.kind === 'machine') return `<span class="face icon">${ic('machines')}</span>`;
+  if (w.kind === 'unknown') return `<span class="face icon">${ic('unknown')}</span>`;
+  return w.pic ? `<img class="face" src="${w.pic}" alt="" loading="lazy" decoding="async">` : `<span class="face blank"></span>`;
+}
+function talkHTML(text) {
+  if (LF.revoice) text = LF.revoice(s, text);
+  if (!LF.talk) return `<p class="narr">${esc(text)}</p>`;
+  return LF.talk(s, text).map(b => { if (!b.say) return `<p class="narr">${esc(b.text)}</p>`;
+    const w = b.say, cls = w.kind === 'officer' ? ' k' : w.kind === 'note' ? ' note' : '';
+    if (w.kind === 'note') return `<div class="talk note"><span class="face icon">${ic('log')}</span><div><div class="who">${esc(w.name)}</div>${b.lines.map(l => `<div class="bub">${esc(l)}</div>`).join('')}</div></div>`;
+    return `<div class="talk${cls}">${talkFace(w)}<div><div class="who">${esc(w.name)}${w.post ? `<span>${esc(w.post)}</span>` : ''}</div>${b.lines.map(l => `<div class="bub">${esc(l)}</div>`).join('')}</div></div>`; }).join('');
+}
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);
   let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
-    h += `<p>${said(def.text)}</p>`;
+    h += talkHTML(def.text);
     { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
     if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer in person · one at a time</div>${av.map(p =>
@@ -225,7 +243,7 @@ function cardHTML() {
     const r = s.cur.result;
     if (r.p !== undefined) h += `<div class="verdict ${r.success ? 'good' : 'bad'}">${esc(r.label)}: ${r.success ? 'it works' : 'it goes wrong'}</div>`;
     else if (r.label) h += `<div class="verdict">${esc(r.label)}</div>`;
-    h += `<p>${said(r.text)}</p><div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
+    h += talkHTML(r.text) + `<div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
     if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML();
     // Year 0 (Lachlan, 2026-11-16): at landfall, how other colonies answered the crossing and the descent.
     if (s.cur.id === 'landfall.site') h += yearHTML((s.ylog || []).filter(e => e.cid).map(e => ({ cid: e.cid, oid: e.oid, t: e.t, l: e.l, sent: e.sent, died: e.died })));

@@ -43,7 +43,7 @@ const someone = (s, spec) => { const seats = s.people.filter(p => p.role).map(p 
 /* The one who speaks for the people born here: a name the colony keeps hearing from the first vote to the last founder. */
 const voice = s => { const x = X(s); let p = x.voice && byPid(s, x.voice);
   if (p && p.alive && !p.away && !p.role) return p;
-  p = LF.makePerson(s, null); p.known = s.day || 1; p.bornHere = yr(s); x.voice = p.id; if (LF.societyInit) LF.societyInit(s);
+  p = LF.makePerson(s, null, false, 'born'); p.known = s.day || 1; p.bornHere = yr(s); x.voice = p.id; if (LF.societyInit) LF.societyInit(s);
   return p; };
 const voiceCtx = s => { const p = voice(s); return { pid: p.id, name: p.name, first: p.first }; };
 
@@ -181,7 +181,7 @@ C({ id: 'gen.rosterage', far: true, tone: 'crisis', title: 'Who Signed',
 /* ---------- 3. the incubators ---------- */
 C({ id: 'gen.bank', tone: 'pressure', title: 'Glass',
   when: s => few(s) && (!!s.flags.gn_duty || !!s.flags.lim_roster) && since(s, 'gn_duty_d') >= 5 * MONTH && s.day >= 400 && !s.flags.gn_bank && LF.down(s, 'reactor') && s.pop >= 24,
-  text: s => `${Nc(s, 'engineer')} has uncrated one of the embryo bank's incubators on the workshop floor. It is a steel cradle with a glass lid, built to carry a child from the bank to term with nobody carrying it. There are twelve.\n\n"They'll run. Each one's a heater and a pump on the old girl for nine months, and a kit of spares I haven't got."\n\n${Nc(s, 'physician')}, from the door: "And then there's a baby and it's nobody's. Who gets up in the night? You?"`,
+  text: s => `${Nc(s, 'engineer')} has uncrated one of the embryo bank's incubators on the workshop floor. It is a steel cradle with a glass lid, built to carry a child from the bank to term with nobody carrying it. There are twelve.\n\n[[engineer]] "They'll run. Each one's a heater and a pump on the old girl for nine months, and a kit of spares I haven't got."\n\nFrom the clinic door:\n\n[[physician]] "And then there's a baby and it's nobody's. Who gets up in the night? You?"`,
   choices: [
     { label: 'Run six. Each child goes to a household, by order', cost: { parts: 4 }, note: 'Nobody is asked whether they want the child they are handed.', info: [['yield', 'Six children a year'], ['danger', 'The households, and the children handed to them']],
       out: { text: 'The first six are lifted out in the workshop, because the clinic has no hoist. Each goes to a household on a list. Four of the households take to it. The other two do what the order says and no more, and the neighbours can hear the difference through the wall.',
@@ -219,7 +219,7 @@ C({ id: 'gen.tank6', far: true, tone: 'pressure', title: 'Whose Are They',
 C({ id: 'gen.tankage', far: true, tone: 'pressure', title: 'The Glass Cohort',
   when: s => { const t = X(s).tank; return !!t && yr(s) >= t.y + LF.AGE && !!s.flags.gn_tank6 && !s.flags.gn_tankage; },
   setup: s => { const t = X(s).tank, n = Math.max(5, t.n), x = X(s); let p = x.glass && byPid(s, x.glass);
-    if (!p || !p.alive) { p = LF.makePerson(s, null); p.known = s.day; p.bornHere = yr(s); x.glass = p.id; if (LF.societyInit) LF.societyInit(s); }
+    if (!p || !p.alive) { p = LF.makePerson(s, null, false, 'born'); p.known = s.day; p.bornHere = yr(s); x.glass = p.id; if (LF.societyInit) LF.societyInit(s); }
     return { pid: p.id, name: p.name, first: p.first, n, go: Math.max(2, Math.round(n * 0.4)), rear: REAR[t.rear || t.mode] }; },
   text: (s, c) => `The first children from the incubators came of age at the turn of the year: ${num(c.n)} of them, ${c.rear}. They went onto the roster as one crew and have asked to stay one. ${c.name} speaks for them, and none of the others interrupts.\n\nThe watch wants them. People with no cousins in the rows do not look away for a cousin.\n\nThey have asked for something else, which is the incubators. "We know what the ward is," ${c.first} says. "We wouldn't run it the way it was run."`,
   choices: [

@@ -482,3 +482,17 @@ html.grim2 h2 { letter-spacing:.01em; }
 .dossier .file .face.none { display:flex; align-items:center; justify-content:center; width:78px; height:98px; border-radius:10px; background:var(--card); flex:none; } .dossier .file .face.none img { width:34px; height:34px; opacity:.6; }
 .dossier .file .opt.go { margin-top:8px; } .dossier .file.small { align-items:center; padding:8px 10px; margin:6px 0; } .dossier .file.small .face, .dossier .file.small .face.none { width:52px; height:52px; border-radius:12px; } .dossier .file.small b { font-size:16px; }
 .dossier .file.small .lbl { margin:0; } .dossier > .pbtn.back { margin-top:12px; } .dossier > .opt.go + .opt.go { margin-top:8px; }
+
+/* Who is speaking (Lachlan, 2026-11-19; DESIGN.md "Who is speaking"; js/speak.js LF.talk): a face, a name and post, and the line in a
+   bubble. Key crew on their navy ground with name and post in gold; colonists on their light grey; one not painted yet is a white blank. */
+.card .talk { display:grid; grid-template-columns:44px 1fr; column-gap:10px; margin:2px 4px 14px; align-items:start; }
+.talk > .face { grid-row:1 / span 3; width:44px; height:44px; border-radius:50%; object-fit:cover; box-shadow:var(--rest); background:var(--face-col); display:grid; place-items:center; overflow:hidden; }
+.talk > .face.off { background:var(--face-off); } .talk > .face.blank { background:var(--face-blank); }
+.talk > .face.icon { background:var(--raise); } .talk > .face.icon img { width:26px; height:26px; }
+.talk .who { font:800 14px/1.2 var(--label); color:var(--ink); margin:2px 0 4px; }
+.talk .who span { font:700 11px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--dim); margin-left:6px; }
+.talk.k .who { color:var(--gold); } .talk.k .who span { color:color-mix(in srgb, var(--gold) 75%, var(--dim)); }
+.talk .bub { background:var(--raise); box-shadow:var(--rest); border-radius:4px 16px 16px 16px; padding:9px 13px 10px; font-size:16px; line-height:1.42; text-wrap:pretty; white-space:pre-line; }
+.talk .bub + .bub { margin-top:6px; border-radius:16px; }
+.talk.note .bub { font:700 14px/1.45 var(--label); letter-spacing:.04em; border-radius:4px; background:var(--ink); color:var(--paper); }
+.card .narr { margin:0 4px 12px; white-space:pre-line; font-size:16px; text-wrap:pretty; }

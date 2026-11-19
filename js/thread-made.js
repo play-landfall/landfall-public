@@ -51,7 +51,7 @@ function begin(s, as, n) {
 }
 const B = st => LF.beat(ID, 'quiet', Object.assign({ gap: 20, w: 9 }, st));
 const speaker = (s, t) => { let p = t.voice && byPid(s, t.voice);
-  if (!p || !p.alive) { p = LF.makePerson(s, null); p.known = s.day; p.made = true; t.voice = p.id; if (LF.societyInit) LF.societyInit(s); }
+  if (!p || !p.alive) { p = LF.makePerson(s, null, false, 'born'); p.known = s.day; p.made = true; t.voice = p.id; if (LF.societyInit) LF.societyInit(s); }
   return { pid: p.id, name: p.name, first: p.first }; };
 
 /* ---------- the proposal: the last step of the empty cradles ---------- */

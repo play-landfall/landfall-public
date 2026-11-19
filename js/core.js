@@ -119,8 +119,8 @@ LF.harvestCard = function (s, n) {
 LF.monthsWord = n => { const W = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve']; n = Math.max(1, Math.round(n)); return n === 1 ? 'a month' : `${W[n] || n} months`; };
 // The harvest: field crops stand until the end of each season and are brought in then. Hydroponics feeds every day.
 LF.toHarvest = s => Math.max(1, Math.ceil((SEASON - (s.day % SEASON)) / MONTH));
-LF.log = (s, t, k) => { s.log.push({ d: s.day, t, k: k || '' }); if (s.log.length > 250) s.log.shift(); };
-LF.chron = (s, t) => { s.chron.push({ d: s.day, t }); };
+LF.log = (s, t, k) => { if (LF.unmark) t = LF.unmark(s, t); s.log.push({ d: s.day, t, k: k || '' }); if (s.log.length > 250) s.log.shift(); };
+LF.chron = (s, t) => { if (LF.unmark) t = LF.unmark(s, t); s.chron.push({ d: s.day, t }); };
 LF.storyPoint = s => { if (s.recap) s.recap.major = true; };   // something the next recap should not wait for
 
 /* ---------- people ---------- */
@@ -133,11 +133,21 @@ const FAMILY = ['Okafor','Lindqvist','Reyes','Tanaka','Mbeki','Haldane','Castell
   'Yilmaz','Zuniga','Achterberg','Banerjee','Cohen','Duarte','Ekwueme','Fujita','Grenier','Hosseini','Ishikawa','Jaramillo','Kahananui','Lindgren','Mwangi','Nordin','Obuya','Pereira','Rautenbach','Sorensen','Tuilagi',
   'Ulloa','Valdivia','Waititi','Xiong','Yamada','Zielinski','Arslan','Boateng','Chen','Brekke','Quiroga','Fonoti','Gunawardena','Haddad','Ito','Kowalczyk','Mahlangu','Novak','Oduya','Rasmussen'];
 const TRAITS = ['cautious','reckless','devout','bitter','beloved','brilliant','stubborn','gentle'];
-function makePerson(s, role, green) {
-  let first, last, tries = 0;
-  do { first = LF.pick(s, GIVEN); last = LF.pick(s, FAMILY); }
-  while (s.people.some(p => (p.first === first && p.last === last) || (tries < 25 && (p.first === first || p.last === last))) && ++tries < 60);
-  const p = { id: 'p' + s.people.length, first, last, name: first + ' ' + last, role, trait: LF.pick(s, TRAITS), alive: true, green: !!green, marks: {}, perks: [], deeds: [] };
+/* A named colonist is one of the roster's forty (Lachlan, 2026-11-19; js/roster.js, DESIGN.md "Who is speaking"), never the same one
+   twice in a game: p.rk is the roster key, and the portrait. band: 'child', or 'born' for someone born in the colony; otherwise a grown
+   colonist, of working age (prime) two times in three. Those who stand in for a department and the outsiders are never drawn. Only when
+   every fitting one is taken does the old name list give a stranger with no portrait. */
+const ADULT = ['prime', 'young', 'older-prime', 'older'];
+function makePerson(s, role, green, band) {
+  const R = LF.ROSTER || {}, used = new Set(s.people.map(p => p.rk).filter(Boolean));
+  const fit = b => Object.values(R).filter(r => r.kind === 'colonist' && !r.stands && !used.has(r.key) && b.includes(r.band));
+  let pool = band ? fit([band]) : fit(['prime']); if (!band && (!pool.length || LF.rand(s) < 0.34)) pool = fit(ADULT).length ? fit(ADULT) : pool;
+  let first, last, rk = null, tries = 0;
+  if (pool.length) { const r = LF.pick(s, pool); first = r.first; last = r.last; rk = r.key; }
+  else do { first = LF.pick(s, GIVEN); last = LF.pick(s, FAMILY); }
+  while (!rk && s.people.some(p => (p.first === first && p.last === last) || (tries < 25 && (p.first === first || p.last === last))) && ++tries < 60);
+  const p = { id: 'p' + s.people.length, first, last, name: (first + ' ' + last).trim(), role, trait: LF.pick(s, TRAITS), alive: true, green: !!green, marks: {}, perks: [], deeds: [] };
+  if (rk) p.rk = rk;
   s.people.push(p); return p;
 }
 LF.makePerson = makePerson;

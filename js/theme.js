@@ -43,6 +43,10 @@ function set(key, keep) {
   for (const k in SPEAK) root.style.setProperty('--sp-' + k, `color-mix(in oklab, ${SPEAK[k]} ${t.light ? 62 : 58}%, ${t.ink})`);
   // Anyone who is not one of the twelve (a colonist, a child, a stranger): a light grey, set apart from the narration (Lachlan, 2026-11-18).
   root.style.setProperty('--sp-other', `color-mix(in oklab, ${t.light ? '#6c7078' : '#b4b9c2'} 80%, ${t.ink})`);
+  // The key crew's name and post over their speech (Lachlan, 2026-11-19): gold, darkened on the light theme so it reads on cream.
+  root.style.setProperty('--gold', t.light ? '#9a6f0e' : `color-mix(in oklab, ${SPEAK.command} 88%, ${t.ink})`);
+  // A colonist's portrait ground, and the blank of one not painted yet (white).
+  root.style.setProperty('--face-col', '#bebcb6'); root.style.setProperty('--face-off', '#02223a'); root.style.setProperty('--face-blank', '#ffffff');
   root.style.setProperty('--on', t.on || t.bg);
   root.style.setProperty('--shade', t.shade || 'rgba(0,0,0,.42)'); root.style.setProperty('--glint', t.glint || 'rgba(255,255,255,.055)');
   root.style.colorScheme = t.light ? 'light' : 'dark';

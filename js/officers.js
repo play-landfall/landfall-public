@@ -101,7 +101,8 @@ LF.FILE = {
 /* He, she or they (2026-11-18): four seats can be held by a man or a woman, so a line that needs a pronoun for a seat's
    officer asks who holds it. Anyone who is not one of the twelve is "they". */
 const SHE = ['solheim', 'nakamura', 'halloran', 'iyer'];
-const pro = (p, she, he, they) => !p || !p.key || !LF.BIO[p.key] ? they : SHE.includes(p.key) ? she : he;
+const pro = (p, she, he, they) => { const r = p && p.rk && LF.ROSTER && LF.ROSTER[p.rk]; if (r && r.sex) return r.sex === 'f' ? she : he;   // a roster colonist (js/roster.js) is who the portrait shows
+  return !p || !p.key || !LF.BIO[p.key] ? they : SHE.includes(p.key) ? she : he; };
 LF.he = p => pro(p, 'she', 'he', 'they'); LF.him = p => pro(p, 'her', 'him', 'them'); LF.his = p => pro(p, 'her', 'his', 'their');
 /* A line for whoever holds the seat and is at the post to say it: lines is { castkey: line } (a string, or a function of
    the person); plain is what the card says when the one in the chair has no line of their own, or nobody is there. */
