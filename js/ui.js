@@ -218,8 +218,8 @@ function talkHTML(text) {
   if (!LF.talk) return `<p class="narr">${esc(text)}</p>`;
   return LF.talk(s, text).map(b => { if (!b.say) return `<p class="narr">${esc(b.text)}</p>`;
     const w = b.say, cls = w.kind === 'officer' ? ' k' : w.kind === 'note' ? ' note' : '';
-    if (w.kind === 'note') return `<div class="talk note"><span class="face icon">${ic('log')}</span><div><div class="who">${esc(w.name)}</div>${b.lines.map(l => `<div class="bub">${esc(l)}</div>`).join('')}</div></div>`;
-    return `<div class="talk${cls}">${talkFace(w)}<div><div class="who">${esc(w.name)}${w.post ? `<span>${esc(w.post)}</span>` : ''}</div>${b.lines.map(l => `<div class="bub">${esc(l)}</div>`).join('')}</div></div>`; }).join('');
+    if (w.kind === 'note') return `<div class="talk note"><span class="face icon">${ic('log')}</span><div><div class="who">${esc(w.name)}</div><div class="bub">${esc(b.lines.join('\n'))}</div></div></div>`;
+    return `<div class="talk${cls}">${talkFace(w)}<div><div class="who">${esc(w.name)}${w.post ? `<span>${esc(w.post)}</span>` : ''}</div><div class="bub">${esc(b.lines.join('\n'))}</div></div></div>`; }).join('');
 }
 function cardHTML() {
   const def = LF.view(s), pic = sceneOf(s.cur);

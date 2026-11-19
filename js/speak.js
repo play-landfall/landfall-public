@@ -151,7 +151,8 @@ LF.talk = function (s, text) {
     const m = TAG.exec(para);
     if (!m) { if (para.trim()) out.push({ text: para }); continue; }
     const rest = para.slice(m[0].length), lines = []; let q; const re = /"([^"]*)"/g;
-    while ((q = re.exec(rest))) lines.push(q[1]);
+    const said = []; while ((q = re.exec(rest))) said.push(q[1].trim());
+    if (said.length) lines.push(said.join(' '));   // one speaker's lines run on in one bubble (Lachlan, 2026-11-19)
     if (!lines.length && rest.trim()) lines.push(rest.trim());
     const sp = LF.speaker(s, m[1]), prev = out[out.length - 1];
     if (prev && prev.say && prev.tag === m[1]) prev.lines.push(...lines); else out.push({ say: sp, tag: m[1], lines });
