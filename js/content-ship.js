@@ -75,7 +75,7 @@ add({ id: 'ship.orbit', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Lo
       info: [['yield', 'The ship holds her orbit'], ['danger', 'A flight\'s worth of fuel']],
       out: { text: 'The lander goes up empty and comes back empty, and in between the ship fires for eleven minutes. Her orbit holds.', fx: { fly: 1, machine: { lander: -6 } } } },
     { label: 'Boost her by hand from aboard', note: 'The old attitude thrusters, fired from the bridge by whoever is up there. If it goes wrong, it goes wrong in the hold.', hint: 'unknown',
-      test: { aboard: true, base: 40, mods: [R('engineer', 22), R('pilot', 14)] },
+      test: { aboard: true, base: 40, mods: [R('engineer', 10), R('pilot', 5)] },
       ok: { text: 'Six burns over a month, each one a little longer. The ship climbs. Down here nobody notices anything at all.', fx: { morale: 2 } },
       bad: { text: s => `A thruster fires and doesn't stop. The ship tumbles for nine minutes before it's caught. When the cryo report comes down, ${s.sleepers >= 18 ? 'bank D has lost power' : s.sleepers ? 'the last bank with anyone in it has lost power' : 'the empty banks have lost power'}${LF.aboard(s).length ? ', and so has something in the cargo hold' : ''}.`,
         fx: s => { const id = LF.aboard(s)[0]; return { sleepers: -Math.min(18, s.sleepers), aboard: true, machine: id ? { [id]: -25 } : {}, morale: -4 }; } } },
@@ -107,7 +107,7 @@ add({ id: 'ship.pods', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Amb
     return `Fifteen pods in bank B have gone amber. The cells are failing, and the people in them are warming by a fraction of a degree a day. Thawed slowly like that, they wake with their brains cooked.\n\n${up ? `${d.first} is aboard.\n\n[[${d.id}]] "I can thaw them properly up here, in the infirmary. Some of them. Give me the word."` : d && !d.orbit ? `${d.first} is on the ground, and nobody aboard knows how to do a thaw.\n\n[[${d.id}]] "Get them down here. Now. Or I'm talking someone through it by radio, and I won't promise anything."` : 'There is no doctor to ask.'}`; },
   choices: [
     { label: 'Thaw them aboard, in the ship\'s infirmary', note: 'Whoever is aboard does it. It goes well with a doctor up there, and badly without one.', hint: 'unknown',
-      test: { aboard: true, base: 35, mods: [R('physician', 30), R('engineer', 6)] },
+      test: { aboard: true, base: 30, mods: [R('physician', 10), R('engineer', 5)] },
       ok: { text: 'Thirteen of the fifteen come out of the cold, confused and alive, and go back under in sound pods. The two who didn\'t make it are put out through the lock.', fx: { sleepers: -2 } },
       bad: { text: 'The infirmary was built for one patient at a time. Nine of the fifteen die on the table or in the corridor waiting for it.', fx: { sleepers: -9, morale: -3 } } },
     { label: 'Fly them down now', note: s => `A flight for fifteen people the colony didn't plan to feed this year.`, req: s => LF.canFly(s) && !s.machines.lander.lost && s.machines.lander.hp > 15, reqText: s => s.machines.lander.lost ? 'There is no lander' : LF.flyWhy(s) || 'The lander is not fit to fly', hint: 'unknown',

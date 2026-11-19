@@ -267,7 +267,7 @@ LF.fireGen = function (s, f, frames) {
   const specs = fr.choices.slice();
   // Help from something else the colony has made terms with.
   if (fr.needs) { const b = LF.boons(s, f.id).find(b => fr.needs.includes(b.tag)); if (b) { const T = HELP[b.tag];
-    specs.push({ ap: 'accord', v: 'open', l: T[0](b.name), n: 'You will owe them for this.', b: 66, help: b,
+    specs.push({ ap: 'accord', v: 'open', l: T[0](b.name), n: 'You will owe them for this.', b: 70, help: b,
       ok: [T[1](b.name), { f: { threat: -28 }, helper: -12 }], bad: [T[2](b.name), { f: { threat: -6 }, lose: 0.5, helper: -22 }] }); } }
   // Leverage: if you know something about the person in front of you, you can use it. Once.
   if (LF.hookOn && LF.hookOn(s, leadP) && fr.stage >= 2 && fr.stage <= 4 && specs.some(c => c.ok))
@@ -281,6 +281,7 @@ LF.fireGen = function (s, f, frames) {
     const vv = val(c.v, x), tags = (vv !== undefined ? vv : AP_TAGS[c.ap] || '').split(' ').filter(Boolean), al = align(s, tags);
     const fi = fr.choices.indexOf(c), key = fi >= 0 ? String(fi) : c.hook !== undefined || (c.out && c.out[1] && c.out[1].hook) ? 'hook' : (c.lk || ('x' + c.ap + (c.dark ? '.dark' : '')));   // the option's id (decisions.js)
     const ch = { key, ap: c.ap, v: tags, label: val(c.l, x), note: val(c.n, x) || '', cost: c.cost ? Object.assign({}, c.cost) : null, against: al.against, lock: '', hint: c.hint || null, dark: !!c.dark, info: c.info || null };
+    if (c.about) ch.about = true;   // the option is about this officer, not a job to send someone on (DESIGN.md "The odds")
     if (c.send) { // a party leaves; the answer comes back later, or does not
       const days = ri(s, c.send.days[0], c.send.days[1]), n = c.send.n;
       ch.send = { n, months: Math.max(1, Math.round(days / LF.MONTH)), danger: c.send.danger };
@@ -308,19 +309,23 @@ LF.fireGen = function (s, f, frames) {
       return { text: t, fx }; };
     if (c.out) ch.out = build(c.out, true);
     else { ch.ok = build(c.ok, true); ch.bad = build(c.bad, false);
-      const mods = (c.m || []).map(r => H.R(r, 12));
-      if (f.insight >= 10) mods.push(H.If(() => true, Math.min(20, Math.round(f.insight / 5)), `What has been learned about ${f.name}`));
-      if (f.sev !== 2) mods.push(H.If(() => true, f.sev === 3 ? -8 : 5, f.sev === 3 ? `${f.Name}: worse than anything in the survey` : `${f.Name}: a manageable thing`));
-      if (c.ap === 'force' && f.uses.force) mods.push(H.If(() => true, -6 * Math.min(4, f.uses.force), f.kind === 'ruin' || f.kind === 'plague' ? 'It has been tried before' : 'They have learned your methods'));
-      if (c.ap === 'accord' && f.accord >= 10) mods.push(H.If(() => true, Math.round(f.accord / 5), `Standing with ${f.name}`));
-      if (c.ap === 'accord' && (f.uses.force || f.uses.exploit) && f.kind !== 'plague') mods.push(H.If(() => true, -6 * Math.min(4, (f.uses.force || 0) + (f.uses.exploit || 0)), 'What you have already done to them'));
+      // The scale (DESIGN.md "The odds"): the first office the frame names is the department whose job it is (+10), the others help
+      // (+5), one figure a seat; every other line in fives.
+      const seen = {}, mods = [];
+      for (const r of c.m || []) { const k = LF.SEAT_OF[r] || r; if (seen[k]) continue; seen[k] = 1; mods.push(H.R(r, mods.length ? 5 : 10)); }
+      const five = v => 5 * Math.round(v / 5);
+      if (f.insight >= 10 && five(Math.min(20, f.insight / 5))) mods.push(H.If(() => true, five(Math.min(20, f.insight / 5)), `What has been learned about ${f.name}`));
+      if (f.sev !== 2) mods.push(H.If(() => true, f.sev === 3 ? -10 : 5, f.sev === 3 ? `${f.Name}: worse than anything in the survey` : `${f.Name}: a manageable thing`));
+      if (c.ap === 'force' && f.uses.force) mods.push(H.If(() => true, -5 * Math.min(4, f.uses.force), f.kind === 'ruin' || f.kind === 'plague' ? 'It has been tried before' : 'They have learned your methods'));
+      if (c.ap === 'accord' && f.accord >= 10 && five(f.accord / 5)) mods.push(H.If(() => true, five(f.accord / 5), `Standing with ${f.name}`));
+      if (c.ap === 'accord' && (f.uses.force || f.uses.exploit) && f.kind !== 'plague') mods.push(H.If(() => true, -5 * Math.min(4, (f.uses.force || 0) + (f.uses.exploit || 0)), 'What you have already done to them'));
       if (c.ap === 'exploit' && f.uses.exploit) mods.push(H.If(() => true, 5, 'Practice'));
-      if (c.ap === 'study' && s.flags.returned >= 3 && !s.flags.returned_gone && ['ruin', 'flora', 'natives'].includes(f.kind)) mods.push(H.If(() => true, 6, 'The returned have seen something like it'));
-      if (c.ap === 'force' && s.cargo && s.cargo.arms) mods.push(H.If(() => true, 6, 'The arms locker'));
-      if (c.ap === 'study' && s.cargo && s.cargo.drones) mods.push(H.If(() => true, 6, 'The survey drones'));
-      if (al.fit) mods.push(H.If(() => true, 6, `A ${al.fit.toLowerCase()} colony, practised at this`));
-      if (leadP && leadP.marks.grudge) mods.push(H.If(() => true, -8, `${leadP.first} bears you a grudge`));
-      if (s.morale < 30) mods.push(H.If(() => true, -6, 'A colony near the end of its patience'));
+      if (c.ap === 'study' && s.flags.returned >= 3 && !s.flags.returned_gone && ['ruin', 'flora', 'natives'].includes(f.kind)) mods.push(H.If(() => true, 5, 'The returned have seen something like it'));
+      if (c.ap === 'force' && s.cargo && s.cargo.arms) mods.push(H.If(() => true, 5, 'The arms locker'));
+      if (c.ap === 'study' && s.cargo && s.cargo.drones) mods.push(H.If(() => true, 5, 'The survey drones'));
+      if (al.fit) mods.push(H.If(() => true, 5, `A ${al.fit.toLowerCase()} colony, practised at this`));
+      if (leadP && leadP.marks.grudge) mods.push(H.If(() => true, -10, `${leadP.first} bears you a grudge`));
+      if (s.morale < 30) mods.push(H.If(() => true, -5, 'A colony near the end of its patience'));
       ch.odds = LF.odds(s, { base: c.b || 50, mods, ap: c.ap }, x); ch.roles = mods.filter(m => m.k === 'role').map(m => ({ k: 'role', role: m.role, v: m.v })); }   // plain data: what an officer sent would add
     choices.push(ch);
   }

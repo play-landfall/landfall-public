@@ -733,7 +733,7 @@ add({ id: 'lim.jar', arc: 'lim.yoke', view: 'people', tone: 'crisis', title: 'Ev
   setup: s => ctxOf(jarPick(s)),
   text: (s, c) => `${c.name} has a month, perhaps two. ${Nc(s, 'physician')} found it too late and says so plainly: it is in the liver, the spine and the lungs, everywhere but the head.\n\nNobody else can do what ${c.first} does, and the apprentice is two years from ready. The autodoc could keep the head alive on a pump for a long time, wired to a speaker and a console. No body, no pain, no sleep, and everything ${c.first} knows still there to be asked.`,
   choices: [
-    { label: (s, c) => `Tell ${c.first} it is for a year, and get a signature`, dark: true, test: { base: 60, mods: [If((s, c) => !c.merciful, 10, 'Not the sentimental sort')] }, info: [['yield', 'What is in the head'], ['danger', 'A promise nobody means to keep']],
+    { label: (s, c) => `Tell ${c.first} it is for a year, and get a signature`, dark: true, about: true, test: { base: 60, mods: [If((s, c) => !c.merciful, 10, 'Not the sentimental sort')] }, info: [['yield', 'What is in the head'], ['danger', 'A promise nobody means to keep']],
       ok: { text: (s, c) => `${c.first} is told a year, until the apprentice is ready, and signs on one condition: when ${c.first} asks to be switched off, somebody does it. The tank goes in the corner of the workshop. Nobody who drafted the paper expects the year to be enough.`,
         fx: (s, c) => ({ morale: -2, sched: [['lim.jar2', 150, 240]], chips: [[`${c.name}: a head in a tank`, false]], do: s2 => { jar(s2, c, true); stain(s2, 'false_year', 1); } }) },
       bad: { text: (s, c) => `${c.first} asks who decides when the year is up, and gets no answer worth having, and says no. ${c.name} dies before the month is out in a bunk by the window, with the apprentice taking notes to the end.`,
@@ -1009,7 +1009,7 @@ add({ id: 'lim.organ', arc: 'lim.knife', view: 'people', tone: 'crisis', title: 
     { label: 'Fly. Take it', dark: true, info: [['danger', 'A sleeper']],
       out: { text: (s, c) => `The pod comes down sealed and goes into the autodoc bay sealed. ${c.name} is on light duties within the month. ${c.merciful ? `${c.first} finds out whose liver it is from the cryo index, and does not thank you.` : `${c.first} asks once whose it was, nods, and goes back to work.`}`,
         fx: (s, c) => ({ sleepers: -1, machine: { lander: -8 }, mark: [c.pid, 'liver', 'carries a liver taken from a sleeper in pod sixty-one'], do: s2 => { stain(s2, 'organ', 1); regard(s2, c.pid, c.merciful ? -18 : 10); } }) } },
-    { label: (s, c) => `Order a living match from the crews onto the table beside ${c.first}`, dark: true, test: { base: 50, mods: [R('physician', 10), M('medbay', 10)] }, info: [['yield', 'Nobody has to die'], ['danger', 'Two lives on one table']],
+    { label: (s, c) => `Order a living match from the crews onto the table beside ${c.first}`, dark: true, about: true, test: { base: 50, mods: [R('physician', 10), M('medbay', 10)] }, info: [['yield', 'Nobody has to die'], ['danger', 'Two lives on one table']],
       ok: { text: (s, c) => `The registry gives a field hand, who is told it is an order. Half a liver is moved across in nine hours. ${c.name} lives. The field hand is off the rows for a season and does not volunteer for anything again.`, fx: { machine: { medbay: -6 }, stain: ['donor', 1] } },
       bad: { text: (s, c) => `The registry gives a field hand, who is told it is an order. The autodoc loses the field hand first, a little after midnight, and ${c.name} an hour later.`, fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'died on the table beside the donor' }], pop: -1, stain: ['donor', 2] }) } },
     { label: (s, c) => `Ask ${c.first}`,
@@ -1081,7 +1081,7 @@ add({ id: 'lim.count2', urgent: true, arc: 'lim.soul', view: 'people', tone: 'cr
     { label: (s, c) => c.goat ? `${c.goat} did these things. Give the hall the ${c.goatT}` : 'Name the officers who signed the orders', dark: true, info: [['yield', 'Morale'], ['danger', 'An officer who did what you asked']],
       out: { text: (s, c) => c.goat ? `You read out the signatures yourself. Most of them are ${c.goat}'s, because that is whose desk the orders went across. The hall wants a rope and gets one before morning. The practices on the sheet go on under a new signature.` : 'You read out the signatures yourself. Two clerks who countersigned are put out past the wire that night. The practices on the sheet go on under new signatures.',
         fx: (s, c) => ({ kill: c.goatId ? [{ who: c.goatId, cause: 'hanged for orders that were yours' }] : [], leave: c.goatId ? 0 : 2, morale: 9, do: s2 => { s2.flags.lim_bills = (s2.flags.lim_bills || 0) + 1; stain(s2, 'culprit', 2); } }) } },
-    { label: (s, c) => `The watch clears the hall, and ${c.first} is not seen at breakfast`, dark: true, test: { base: 60, mods: [R('security', 10), Fl('lim_house_blessed', 10, 'The Warden owes you')] }, info: [['yield', 'It all goes on'], ['danger', 'Blood in the hall']],
+    { label: (s, c) => `The watch clears the hall, and ${c.first} is not seen at breakfast`, dark: true, about: true, test: { base: 60, mods: [R('security', 10), Fl('lim_house_blessed', 10, 'The Warden owes you')] }, info: [['yield', 'It all goes on'], ['danger', 'Blood in the hall']],
       ok: { text: (s, c) => `It takes the watch four minutes. ${c.name} goes out between two of them and is logged the next day as a fall. The ${num(c.n)} who stood up are on the heavy details by the end of the month, and the sheet is not found.`,
         fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'logged as a fall, the night of the list' }], morale: -4, do: s2 => { s2.flags.lim_bills = (s2.flags.lim_bills || 0) + 1; stain(s2, 'silenced', 2); fear(s2, 'lim.list', 55, 260, 'the one who read the list was not at breakfast'); } }) },
       bad: { text: (s, c) => `The hall does not clear. Benches go over, the watch is pushed back to the door, and four people are dead on the floor before it stops. ${c.name} is alive at the end of it, holding the sheet.`,
@@ -1188,12 +1188,12 @@ const LIMIT = {
       bad: [x => `Six prisoners are dead, and there is still no dose.`, { pop: -6, morale: -5, stain: ['trial', 2], f: { insight: 15 } }] },
   ],
   faction: [
-    { k: 'vanish', ap: 'force', v: 'severe order', show: (s, f, x) => !!(x.leadP && x.leadP.id === f.leader && !x.leadP.role && !x.leadP.away), l: x => `${x.leadF} does not come back from the night shift`, n: s => `${Wc(s)} has two people who would do it.`, b: 60, m: ['security'],
+    { k: 'vanish', ap: 'force', v: 'severe order', about: true, show: (s, f, x) => !!(x.leadP && x.leadP.id === f.leader && !x.leadP.role && !x.leadP.away), l: x => `${x.leadF} does not come back from the night shift`, n: s => `${Wc(s)} has two people who would do it.`, b: 60, m: ['security'],
       ok: [x => `${x.lead} is missed at the morning count. The watch finds a boot at the edge of the wire and stops looking. ${x.N} meet twice more, quietly, and then do not meet.`, x => ({ kill: [{ who: x.leadP.id, cause: 'went missing from the night shift' }], morale: -3, stain: ['vanish', 2], f: { threat: -40 } })],
       bad: [x => `The two from the watch are seen. ${x.lead} is dead by morning, and by noon ${x.n} have a martyr and twice the numbers.`, x => ({ kill: [{ who: x.leadP.id, cause: 'killed on the night shift by the watch' }], morale: -8, stain: ['vanish', 2], f: { threat: 25, accord: -40 } })] },
     { k: 'looms', ap: 'force', v: 'severe order', show: s => !!s.flags.lim_servitor && LF.down(s, 'medbay') && s.pop > 30, l: x => `Five names to the autodoc`, n: s => `The harness works on people who argue as well as on people who fell.`,
       out: [x => `Five of ${x.n} go into the autodoc over a week. There are no more meetings. The five are on the smelter face by the end of the month, working evenly.`, { harness: 5, morale: -7, stain: ['harness_many', 2], f: { threat: -45 } }] },
-    { k: 'forge', ap: 'exploit', v: 'severe order', show: (s, f, x) => !!(x.leadP && x.leadP.id === f.leader && !x.leadP.away), l: x => `Letters in ${x.leadF}'s bunk`, n: s => `${Wc(s)} can write a convincing hand.`, b: 60, m: ['security'],
+    { k: 'forge', ap: 'exploit', v: 'severe order', about: true, show: (s, f, x) => !!(x.leadP && x.leadP.id === f.leader && !x.leadP.away), l: x => `Letters in ${x.leadF}'s bunk`, n: s => `${Wc(s)} can write a convincing hand.`, b: 60, m: ['security'],
       ok: [x => `The letters are found at a bunk inspection, and they say what was needed. ${x.N} spend the season arguing about ${x.leadF} and not about you.`, x => ({ stain: ['forge', 1], mark: [x.leadP.id, 'smeared', 'was disgraced by letters nobody had written'], f: { threat: -30 } })],
       bad: [x => `The hand is recognised. Now ${x.n} have the letters, and they read them out in the mess hall with the Warden's name attached.`, { morale: -7, stain: ['forge', 1], f: { threat: 20, accord: -30 } }] },
   ],
@@ -1216,7 +1216,7 @@ LF.limitSpecs = function (s, f, fr, x) {
   const c = list.find(c => !f.limU[c.k] && (!c.show || c.show(s, f, x))); if (!c) return [];
   if (s.day - (f.limD || -99) < 20) return [];           // not on every card about the same thing
   f.limU[c.k] = s.day; f.limD = s.day;
-  const spec = { ap: c.ap, v: c.v, l: c.l, n: typeof c.n === 'function' ? c.n(s) : c.n, b: c.b, m: c.m, dark: true, hint: 'unknown' };
+  const spec = { ap: c.ap, v: c.v, l: c.l, n: typeof c.n === 'function' ? c.n(s) : c.n, b: c.b, m: c.m, dark: true, hint: 'unknown', about: c.about };
   for (const k of ['ok', 'bad', 'out']) if (c[k]) spec[k] = c[k];
   return [spec];
 };

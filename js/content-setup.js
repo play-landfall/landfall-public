@@ -191,7 +191,7 @@ const six = (k, d) => LF.SEAT_ORDER.map(seat => [seat, k, d]);
    and the under-way panel (world.js, ui.js). */
 const MODES = {
   thin: { short: 'two on watch', how: 'The ship crossed with two of your officers on watch at a time, as you set it.', awake: 'Nobody else is up.',
-    ok: 'Two pairs of hands did the work, and slept for most of a week afterwards.', bad: 'With only the watch awake, it was found late.', watch: [-12, 'Only the two on watch'], burn: 0,
+    ok: 'Two pairs of hands did the work, and slept for most of a week afterwards.', bad: 'With only the watch awake, it was found late.', watch: [-10, 'Only the two on watch'], burn: 0,
     tilt: { 'voy.spine': 2 } },
   full: { short: 'a work crew on watch', how: 'The ship crossed with a work crew awake beside the watch, as you set it.', awake: 'Ten of the work crews are up with them, in shifts.',
     ok: 'With the crews awake there were hands to spare.', bad: 'A dozen people were awake for it, and it went wrong anyway.', watch: [15, 'A work crew awake with the watch'], burn: 1,
@@ -203,16 +203,16 @@ const MODES = {
     ok: 'The watch did it, and were glad of something to do.', bad: 'The watch was awake for it, and it went wrong anyway.', burn: 0,
     tilt: { 'voy.dead': 3 } },
   cold: { short: 'the ship run cold', how: 'The ship crossed run cold, with its heat given to the cryo banks, as you set it.', awake: 'They are in coats, and slow with the cold.',
-    ok: 'It was done in gloves, with turns at the galley heater afterwards.', bad: 'The cold made every job take twice as long.', watch: [-6, 'The watch is half frozen'], burn: 1,
+    ok: 'It was done in gloves, with turns at the galley heater afterwards.', bad: 'The cold made every job take twice as long.', watch: [-5, 'The watch is half frozen'], burn: 1,
     tilt: { 'voy.sick': 2, 'voy.fire': 0 } },
   coast: { short: 'a long coast', how: 'The ship burned hard and then coasted, as you set it.', awake: 'The engine is cold, and anything that needs thrust needs a restart first.',
-    ok: 'There was time to do it properly.', bad: 'The engine was cold when they needed it.', watch: [-4, 'A coasting ship, the engine cold'], burn: 3,
+    ok: 'There was time to do it properly.', bad: 'The engine was cold when they needed it.', watch: [-5, 'A coasting ship, the engine cold'], burn: 3,
     tilt: { 'voy.dust': 3, 'voy.bearing': 0, 'voy.spine': 2 } },
   elders: { short: 'the oldest on watch', how: 'The ship crossed with its oldest sleepers on watch, as you set it.', awake: 'The old watch is up with them, and knows the ship well by now.',
     ok: 'The old watch did the fetching and carrying, slowly and well.', bad: 'Some of the old watch were too frail for the work.', watch: [10, 'A large old watch'], burn: 2,
     tilt: { 'voy.dead': 3, 'voy.petition': 2, 'voy.ledger': 2, 'voy.sick': 2 } },
   dose: { short: 'the shield water burned', how: 'The ship crossed on its shield water, as you set it.', awake: 'Both are taking the dose.',
-    ok: 'It was done quickly, so as to get back behind the bulkheads.', bad: 'Both of the watch were already sick from the dose.', watch: [-8, 'A watch sick from the dose'], burn: 1,
+    ok: 'It was done quickly, so as to get back behind the bulkheads.', bad: 'Both of the watch were already sick from the dose.', watch: [-10, 'A watch sick from the dose'], burn: 1,
     tilt: { 'voy.sick': 3, 'voy.fire': 1 } },
 };
 LF.CROSSING = MODES;
@@ -308,7 +308,7 @@ inc('cryo', 'Bank C', 'command', {
   choices: [
     { label: 'Patch it with pipe cut from the next bank', dark: true, note: 'There is no rated pipe left in stores. The next bank\'s loop has the right bore, and eight sleepers on it.', info: [['yield', 'The forty'], ['danger', 'Eight sleepers on the robbed loop']],
       out: end({ text: (s, c) => `${W(s, c)[0].first} cuts a length from the next bank's loop and brazes it in over the split. The forty sleep through it. The eight on the robbed loop warm over two days, and their pods are logged as lost to the same fault.`, fx: { sleepers: -8, stain: ['coolant', 1] } }) },
-    { label: 'Move the forty to a sound bank, pod by pod', note: 'It costs nothing if it is done in time, and it is one trolley and four hundred metres of spine.', info: [['danger', 'Whoever is still in the row when the time runs out']], test: { base: 52, mods: WATCH },
+    { label: 'Move the forty to a sound bank, pod by pod', note: 'It costs nothing if it is done in time, and it is one trolley and four hundred metres of spine.', info: [['danger', 'Whoever is still in the row when the time runs out']], test: { base: 50, mods: WATCH },
       ok: end({ text: (s, c) => `${W(s, c)[0].first} and ${W(s, c)[1].first} walk forty pods down the spine of the ship on a hand trolley and plug them in one at a time, with you on the cables. None are lost. ${went(s, 'ok')}` }),
       bad: end({ text: (s, c) => `The trolley takes one pod at a time and the warming does not wait. Eleven are past saving when their turn comes, and ${W(s, c)[1].first} is still pushing when ${W(s, c)[0].first} says to stop. ${went(s, 'bad')}`, fx: { sleepers: -11 } }) },
     { label: 'Shut off the worst row and save the rest', dark: true, note: (s, c) => `Six sleepers die, for certain, and ${X(s, c).first} has to pick which row is the worst.`, info: [['yield', 'Thirty-four, for certain'], ['danger', 'Six sleepers']],
@@ -318,13 +318,13 @@ inc('patch', 'The Patch', 'engineer', {
   text: (s, c) => `${year(s, c)} The patch over the meteor hole has lifted at one corner, and the forward section is losing air.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "That corner's past any line we've got." "I can reach it loose. I'd want it in the log that I said what I think of that."` : ''}`,
   choices: [
     { label: 'Seal the forward section for good', note: 'Whatever is stored forward of the doors is lost.', out: end({ text: 'The doors are welded shut. The plate stock in the forward bays stays where it is, in vacuum, for good, and so do the forward seed lockers. The colony will sow less than it meant to.', fx: { mat: -14, food: -60 } }) },
-    { label: (s, c) => `Send ${X(s, c).first} out with no tether`, dark: true, note: (s, c) => `The corner is past the reach of a line. ${X(s, c).first} knows that, and has said so.`, info: (s, c) => [['yield', 'The forward section, whole'], ['danger', X(s, c).first]], test: { base: 64, mods: WATCH },
+    { label: (s, c) => `Send ${X(s, c).first} out with no tether`, about: true, dark: true, note: (s, c) => `The corner is past the reach of a line. ${X(s, c).first} knows that, and has said so.`, info: (s, c) => [['yield', 'The forward section, whole'], ['danger', X(s, c).first]], test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `The corner is welded down under a second plate, and it holds. ${X(s, c).first} comes in along the hull hand over hand and does not speak to you for the rest of the watch. ${went(s, 'ok')}`, fx: { stain: ['ordered_out', 1] } }),
       bad: end({ text: (s, c) => { const x = X(s, c), a = W(s, c).find(p => p !== x) || W(s, c)[0];
           return dies(s, c, 0.6) ? `${x.first} loses the hull at the torn edge of the patch, with nothing to come back on. ${a.first} finishes the weld on a line that does not reach, with a second line tied to the first, and does not look aft. ${went(s, 'bad')}`
             : `${x.first} loses the hull at the torn edge of the patch. ${a.first} gets a thrown line to ${him(x)} on the third try and hauls ${him(x)} in with a shoulder out and a suit holding by one seam. The weld is finished the slow way. ${went(s, 'bad')}`; },
         fx: (s, c) => dies(s, c, 0.6) ? { kill: [lost(X(s, c), 'lost off the hull at the meteor patch')], morale: -2, stain: ['ordered_out', 1], do: fell(X(s, c)) } : Object.assign(hurt(X(s, c), -28), { mat: -6, stain: ['ordered_out', 1] }) }) },
-    { label: 'Shut the doors now, with the watch still forward', dark: true, note: (s, c) => `${W(s, c)[0].first} and ${W(s, c)[1].first} are working forward of the doors. Waiting for them costs the air in three more sections. Shut now, they have four minutes to reach the hatch.`, info: (s, c) => [['yield', 'The air, and the stores forward'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 62, mods: [] },
+    { label: 'Shut the doors now, with the watch still forward', dark: true, note: (s, c) => `${W(s, c)[0].first} and ${W(s, c)[1].first} are working forward of the doors. Waiting for them costs the air in three more sections. Shut now, they have four minutes to reach the hatch.`, info: (s, c) => [['yield', 'The air, and the stores forward'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 60, mods: [] },
       ok: end({ text: (s, c) => `The doors close on the count, as the drill says they must. ${W(s, c)[0].first} and ${W(s, c)[1].first} come through the hatch with a minute in hand and neither of them will look at you. The stores forward of the doors are recovered a week later, in suits.`, fx: { mat: 6, stain: ['doors', 1] } }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.3, 2) ? `The doors close on the count, as the drill says they must. The hatch jams on its own frost. ${a.first} and ${b.first} have about four minutes of air, and are on the intercom for all of it. The stores forward of the doors are recovered a week later, in suits.`
@@ -340,7 +340,7 @@ inc('bearing', 'The Third Bearing', 'engineer', {
   choices: [
     { label: 'Throttle back and take longer', note: 'The sleepers spend more years in the cold.', out: end({ text: s => `The engine is eased to two-thirds, and the bearing cools. The crossing will take ${longer(s, 0.15)} more year${longer(s, 0.15) > 1 ? 's' : ''}, and the cryo banks have to last them.`,
       fx: s => ({ sleepers: -3, chips: [[`${longer(s, 0.15)} year${longer(s, 0.15) > 1 ? 's' : ''} longer`, false]], do: s2 => { s2.world.transit.years += longer(s2, 0.15); } }) }) },
-    { label: (s, c) => `Send ${X(s, c).first} into the housing with the shaft turning`, dark: true, note: 'Stopping the shaft to repack it costs the years. Nobody who has seen the housing would go in by choice.', info: (s, c) => [['yield', 'No time lost, no sleepers lost'], ['danger', X(s, c).first]], test: { base: 58, mods: WATCH },
+    { label: (s, c) => `Send ${X(s, c).first} into the housing with the shaft turning`, about: true, dark: true, note: 'Stopping the shaft to repack it costs the years. Nobody who has seen the housing would go in by choice.', info: (s, c) => [['yield', 'No time lost, no sleepers lost'], ['danger', X(s, c).first]], test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `${X(s, c).first} goes in. It takes nine hours with the shaft turning a hand's width away. The temperature comes down and stays down. ${went(s, 'ok')}`, fx: { stain: ['ordered_in', 1] } }),
       bad: end({ text: (s, c) => { const x = X(s, c), a = W(s, c).find(p => p !== x) || W(s, c)[0];
           return dies(s, c, 0.55) ? `${x.first} goes in, and is caught by the shaft in the seventh hour. ${a.first} goes in to clear it, and repacks the bearing with spares that were set aside for the reactor. ${went(s, 'bad')}`
@@ -369,7 +369,7 @@ inc('pursuit', 'A Light Astern', 'security', {
   text: (s, c) => `${year(s, c)} There has been a drive flare on the stern scope for three weeks, on the ship's own heading and closing. Its spectrum matches the beacon's.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "Three weeks on our heading, closing, and not a word on any band." "Bloody friendly of them. Shall we wait and see what they'd like?"` : ''}`,
   choices: [
     { label: 'Go dark and coast', note: 'The cryo banks run warm while the reactor is banked.', out: end({ text: 'The engine is shut down and the reactor banked. The flare passes a long way off and keeps going. The cryo banks ran warm for the weeks it took, and four sleepers did not come through.', fx: { sleepers: -4 } }) },
-    { label: 'Burn hard and outrun it', test: { base: 52, mods: WATCH },
+    { label: 'Burn hard and outrun it', test: { base: 50, mods: WATCH },
       ok: end({ text: s => `The engine is run flat out for six days. The flare falls behind, and then off the bottom of the scope. ${went(s, 'ok')}` }),
       bad: end({ text: s => `The flare falls behind in the end. The reactor fed the engine everything it had for those six days, and shows it. ${went(s, 'bad')}`, fx: { parts: -4, machine: { reactor: -8 } } }) },
     { label: 'Cut a cryo bank loose as a decoy', dark: true, note: 'Twenty pods, warm, on their own power, drifting. Anything hunting by heat will go to them first.', info: [['danger', 'Twenty sleepers']],
@@ -379,7 +379,7 @@ inc('drift', 'The Fix', 'command', {
   text: (s, c) => `${year(s, c)} The star fix is off again. The error is small, and it grows every day it is flown.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "I make it two degrees." "A month of sightings tells us the same thing a month later. Give the order and I'll fly it."` : ''}`,
   choices: [
     { label: 'Stop the burn and take a month of sightings', note: 'It costs a month of stores and gives a heading that can be trusted.', out: end({ text: 'The engine is shut down for a month while every star in the catalogue is sighted twice. The new heading is good.', fx: { food: -110 } }) },
-    { label: (s, c) => `Correct on ${X(s, c).first}'s best reckoning`, test: { base: 50, mods: WATCH },
+    { label: (s, c) => `Correct on ${X(s, c).first}'s best reckoning`, about: true, test: { base: 50, mods: WATCH },
       ok: end({ text: s => `The correction is two degrees, made in an afternoon. The next fix lands where it should. ${went(s, 'ok')}` }),
       bad: end({ text: s => `The correction was out by half. It takes ${longer(s, 0.15)} more year${longer(s, 0.15) > 1 ? 's' : ''} to fly back onto the line. ${went(s, 'bad')}`,
         fx: s => ({ sleepers: -5, food: -60, chips: [[`${longer(s, 0.15)} year${longer(s, 0.15) > 1 ? 's' : ''} longer`, false]], do: s2 => { s2.world.transit.years += longer(s2, 0.15); } }) }) },
@@ -389,14 +389,14 @@ inc('drift', 'The Fix', 'command', {
 inc('wake', 'The Ones Who Cannot Sleep', 'doctor', {
   text: (s, c) => { const [a, b] = W(s, c); return `${year(s, c)} ${a.first} and ${b.first} have the watch this year, and neither has slept in a month. They sit in the wardroom through ship's night and talk about the dead world: what killed it, and whether the next one will be dead when the ship gets there. ${c.woke ? `${X(s, c).first}, woken to look at them, has woken you.` : 'The log has gaps in it now, and one of the gaps woke you.'}`; },
   choices: [
-    { label: 'Put both back under early, by force if it comes to that', dark: true, note: 'They have said they will not go. A second freeze inside the year is hard on anyone, and the next pair wake a year before their turn.', info: (s, c) => [['yield', 'A watch that sleeps'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 66, mods: [] },
+    { label: 'Put both back under early, by force if it comes to that', dark: true, note: 'They have said they will not go. A second freeze inside the year is hard on anyone, and the next pair wake a year before their turn.', info: (s, c) => [['yield', 'A watch that sleeps'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 70, mods: [] },
       ok: end({ text: (s, c) => `It comes to force for ${W(s, c)[1].first}. Both are sedated in the wardroom and carried down to the bay, and both lids frost over as they should. The next pair are told everything except why they were woken early, and work it out within the week.`, fx: (s, c) => ({ morale: -1, stain: ['refreeze', 1], off: c.w.map(id => [id, 'mind', -5]) }) }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.5) ? `It comes to force for ${b.first}. Both are sedated in the wardroom and carried down to the bay. ${b.first}'s pod shows a flat line before the lid is cold. The next pair are told everything except why they were woken early, and work it out within the week.`
             : `It comes to force for ${b.first}. Both are sedated in the wardroom and carried down to the bay. ${b.first}'s pod alarms twice in the night and has to be opened again, and ${he(b)} comes out of it with a heart that will never be what it was.`; },
         fx: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.5) ? { kill: [lost(b, 'did not come through a second freeze')], morale: -2, stain: ['refreeze', 1], do: fell(b) } : Object.assign(hurt(b, -28), { morale: -1, stain: ['refreeze', 1] }); } }) },
-    { label: 'Dose them, and keep them on the array', dark: true, note: 'The drug store has enough to keep two people quiet and working for a year. It was packed for surgery on the ground.', info: (s, c) => [['yield', 'A survey of the new star'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}, and the drug store`]], test: { base: 58, mods: WATCH },
+    { label: 'Dose them, and keep them on the array', dark: true, note: 'The drug store has enough to keep two people quiet and working for a year. It was packed for surgery on the ground.', info: (s, c) => [['yield', 'A survey of the new star'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}, and the drug store`]], test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `They are dosed at every meal and set to the array's readings of ${s.world.star}. They work slowly and say very little, and the ship arrives with a better survey of the new world than it had. Neither is quite the same person afterwards. ${went(s, 'ok')}`, fx: (s, c) => ({ survey: 6, machine: { medbay: -5 }, stain: ['sedated', 1], off: c.w.map(id => [id, 'mind', -8]) }) }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.45) ? `They are dosed at every meal and set to the array. In the fourth month ${b.first} saves a week of doses and takes them together, and leaves the survey notes squared on the wardroom table. ${a.first} finds ${him(b)} in the morning. ${went(s, 'bad')}`
@@ -411,10 +411,10 @@ inc('rock', 'A Grain of Rock', 'command', {
   text: (s, c) => `${year(s, c)} Something the size of a grain of rice has gone through the hangar bay, and through the lander's flank on its way.\n\n${awake(s, c)}`,
   choices: [
     { label: 'Seal the bay and leave the lander until orbit', note: 'It sits in vacuum for the rest of the crossing.', out: end({ text: 'The bay is sealed. The lander sits in vacuum for the rest of the crossing, and its seals age faster than they were meant to. Every flight it will not now make is twenty sleepers who stay in orbit.', fx: { machine: { lander: -10 }, cap: { lander: -4 } } }) },
-    { label: 'Repair it now, in the bay', cost: { parts: 3 }, test: { base: 58, mods: WATCH },
+    { label: 'Repair it now, in the bay', cost: { parts: 3 }, test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `${X(s, c).first} cuts the puncture out and plates it, and replaces every seal near it. ${went(s, 'ok')}` }),
       bad: end({ text: s => `The plate goes on, but the pressure test afterwards finds what the grain did further in, and there is nothing in stores for that. ${went(s, 'bad')}`, fx: { machine: { lander: -6 } } }) },
-    { label: (s, c) => `Send ${X(s, c).first} in a suit, with the bay still open to space`, dark: true, note: (s, c) => `It saves the parts and the week of pumping down. The suit seals are forty years old, and ${X(s, c).first} has looked at them and said no once.`, info: (s, c) => [['yield', 'The Lander, for nothing'], ['danger', X(s, c).first]], test: { base: 62, mods: WATCH },
+    { label: (s, c) => `Send ${X(s, c).first} in a suit, with the bay still open to space`, about: true, dark: true, note: (s, c) => `It saves the parts and the week of pumping down. The suit seals are forty years old, and ${X(s, c).first} has looked at them and said no once.`, info: (s, c) => [['yield', 'The Lander, for nothing'], ['danger', X(s, c).first]], test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `${X(s, c).first} spends four hours in a suit inside the lander's flank, working by helmet lamp. The puncture is closed from within and holds at test. ${went(s, 'ok')}`, fx: { machine: { lander: 3 }, stain: ['ordered_out', 1] } }),
       bad: end({ text: (s, c) => { const x = X(s, c);
           return dies(s, c, 0.55) ? `A wrist seal goes in the third hour. ${x.first} finishes the weld before the air runs out, and does not get back to the lock. The lander is sound. ${went(s, 'bad')}`
@@ -425,10 +425,10 @@ inc('fab', 'The Bracket', 'crew', {
   text: (s, c) => `${year(s, c)} The fabricator has been printing the same bracket for six days. It was not asked to, and it will not stop.\n\n${awake(s, c)}`,
   choices: [
     { label: 'Cut its power for the rest of the crossing', note: 'A machine like that does not like standing cold for years.', out: end({ text: 'It is shut down cold, with a bracket half printed, and it will need work before it runs again. Nothing that breaks for the rest of the crossing can be printed, and two things do.', fx: { machine: { fabricator: -8 }, parts: -3 } }) },
-    { label: 'Open the controller and find the fault', test: { base: 55, mods: WATCH },
+    { label: 'Open the controller and find the fault', test: { base: 50, mods: WATCH },
       ok: end({ text: s => `It is a stuck relay, found on the second day. The brackets are melted down for stock. ${went(s, 'ok')}`, fx: { parts: 2 } }),
       bad: end({ text: s => `The fault is found, after two boards are burned out on the way to it. ${went(s, 'bad')}`, fx: { parts: -4 } }) },
-    { label: (s, c) => `${X(s, c).first} goes in through the feed chute while it prints`, dark: true, note: (s, c) => `The jam is behind the head. Powering down to reach it is what a machine like this does not forgive. ${X(s, c).first} is the only one aboard narrow enough, and has not been asked yet.`, info: (s, c) => [['yield', 'The Fabricator, never switched off'], ['danger', X(s, c).first]], test: { base: 62, mods: WATCH },
+    { label: (s, c) => `${X(s, c).first} goes in through the feed chute while it prints`, about: true, dark: true, note: (s, c) => `The jam is behind the head. Powering down to reach it is what a machine like this does not forgive. ${X(s, c).first} is the only one aboard narrow enough, and has not been asked yet.`, info: (s, c) => [['yield', 'The Fabricator, never switched off'], ['danger', X(s, c).first]], test: { base: 60, mods: WATCH },
       ok: end({ text: (s, c) => `${X(s, c).first} goes in feet first with a pick and a lamp, timing the head as it passes. The relay is freed in twenty minutes, and six days of brackets are melted down for stock. ${went(s, 'ok')}`, fx: { parts: 5, stain: ['ordered_in', 1] } }),
       bad: end({ text: (s, c) => { const x = X(s, c);
           return dies(s, c, 0.5) ? `The head catches ${x.first} across the chest and does not stop. The fabricator is shut down cold to get ${him(x)} out, which was what the job was meant to avoid, and it is too late by then. ${went(s, 'bad')}`
@@ -442,7 +442,7 @@ inc('fire', 'Fire in the Racks', 'security', {
   choices: [
     { label: 'Vent the bay to space, once it is clear', note: 'The fire goes out in a breath, and so does every rack in the bay. The colony lands without the crop it was counting on.', info: [['danger', 'The first harvest']],
       out: end({ text: (s, c) => `${W(s, c)[1].first} is called out, and the outer door is opened. The bay empties in one breath. The racks are black and frozen when the watch goes in. For the rest of the crossing the watch eats from sealed stores, and the colony will land that much shorter.`, fx: { food: -150, machine: { hydroponics: -6 } } }) },
-    { label: 'Fight it from the door', note: 'Hoses from the galley and the cryo bay, and the two of them in the smoke.', test: { base: 54, mods: WATCH }, info: (s, c) => [['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]],
+    { label: 'Fight it from the door', note: 'Hoses from the galley and the cryo bay, and the two of them in the smoke.', test: { base: 50, mods: WATCH }, info: (s, c) => [['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]],
       ok: end({ text: s => `The fire is out in forty minutes, with a third of the racks lost. ${went(s, 'ok')}`, fx: { food: -50 } }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.35) ? `The fire gets into the lamp feeds and runs along the ceiling. It is out in the end, with most of the racks gone. ${b.first} was in the smoke longest, and dies of it two days later. ${went(s, 'bad')}`
@@ -451,7 +451,7 @@ inc('fire', 'Fire in the Racks', 'security', {
           return dies(s, c, 0.35) ? { kill: [lost(b, 'the smoke of the fire in the racks')], food: -110, machine: { hydroponics: -4 }, do: fell(b) } : Object.assign(hurt(b, -18), { food: -110, machine: { hydroponics: -4 } }); } }) },
     { label: 'Draw the air off through bank E', dark: true, note: 'The bay shares a scrubber line with bank E. Pull its air through the line and the fire smothers with the racks still whole. The eight pods on that line will not come through it.', info: [['yield', 'The racks, nearly all of them'], ['danger', 'Eight sleepers on the line']],
       out: end({ text: 'The scrubber valves are opened wide. The fire dies down to smoke in a quarter of an hour, and the racks come through it scorched and alive. The eight pods on the line foul over the following week and are logged as lost to the fire.', fx: { sleepers: -8, food: -20, stain: ['scrubbed', 1] } }) },
-    { label: (s, c) => `Vent it now, with ${W(s, c)[1].first} still at the back`, dark: true, note: (s, c) => `Opened now, the bay loses the front racks only. ${W(s, c)[1].first} would have the length of the bay to run, in the time the air takes to leave it. Waiting costs the rest of the racks.`, info: (s, c) => [['yield', 'Half the racks'], ['danger', W(s, c)[1].first]], test: { base: 52, mods: [] },
+    { label: (s, c) => `Vent it now, with ${W(s, c)[1].first} still at the back`, about: true, dark: true, note: (s, c) => `Opened now, the bay loses the front racks only. ${W(s, c)[1].first} would have the length of the bay to run, in the time the air takes to leave it. Waiting costs the rest of the racks.`, info: (s, c) => [['yield', 'Half the racks'], ['danger', W(s, c)[1].first]], test: { base: 50, mods: [] },
       ok: end({ text: (s, c) => `The door is opened on the count. The fire goes out before it reaches the far racks, and their sealed trays come through the cold. ${W(s, c)[1].first} comes through the inner door on hands and knees with frost on ${his(W(s, c)[1])} eyelashes, and asks who gave the count.`, fx: { food: -40, stain: ['vented', 1] } }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.7) ? `The door is opened on the count. The fire goes out before it reaches the far racks, and their sealed trays come through the cold. ${b.first} gets as far as the third rack. ${a.first} brings ${him(b)} in from the bay a day later, in a suit.`
@@ -464,7 +464,7 @@ inc('ledger', 'The Short Count', 'crew', {
   choices: [
     { label: 'Log it, and cut that share until orbit', note: 'The fitter eats half rations for the rest of the crossing, in front of everyone awake.', info: [['danger', 'The fitter'], ['danger', 'A watch that counts plates']],
       out: end({ text: 'It goes in the log with the name beside it. The thief eats half rations at the same table as everyone else, and everyone awake starts weighing their portions.', fx: { food: -60, morale: -2 } }) },
-    { label: 'Put the thief back in the cold', dark: true, note: 'A second freeze inside a year kills about one in three. Nobody will have to look at the thief again.', test: { base: 66, mods: [] }, info: [['yield', 'The stores safe'], ['danger', 'The thief']],
+    { label: 'Put the thief back in the cold', dark: true, note: 'A second freeze inside a year kills about one in three. Nobody will have to look at the thief again.', test: { base: 70, mods: [] }, info: [['yield', 'The stores safe'], ['danger', 'The thief']],
       ok: end({ text: 'The thief is sedated and put under in a spare pod. The lid frosts over as it should, and the rota is redrawn without the name.', fx: { food: -40, pop: -1, sleepers: 1, stain: ['put_under', 1] } }),
       bad: end({ text: 'The thief is sedated and put under in a spare pod, and the pod shows a flat line before morning. The rota is redrawn without the name.', fx: { food: -40, pop: -1, stain: ['put_under', 1] } }) },
     { label: 'Cut everyone\'s ration, and say it was short-packed at launch', dark: true, note: (s, c) => `The shortfall is made good and the thief keeps working. Everyone awake goes hungrier on a lie, and ${X(s, c).first} has to keep it.`, info: (s, c) => [['yield', 'The count made good'], ['danger', 'Everyone awake, thinner'], ['danger', `${X(s, c).first}, and the lie`]],
@@ -475,7 +475,7 @@ inc('spine', 'The Spine', 'engineer', {
   choices: [
     { label: 'Stop the ring and weld it in free fall', note: 'Everyone awake moves aft and works without weight for the year it takes. They will come off the watch weak.', info: (s, c) => [['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}, a year without weight`], ['danger', 'The autodoc']],
       out: end({ text: (s, c) => `The ring is spun down and the crack welded from both sides. ${W(s, c)[0].first} and ${W(s, c)[1].first} live a year without weight and come back to the ring with thin bones, and the autodoc spends a long time on them.`, fx: (s, c) => ({ parts: -3, machine: { medbay: -6 }, off: c.w.map(id => [id, 'body', -10]), chips: [['The watch weakened', false]] }) }) },
-    { label: (s, c) => `${X(s, c).first} welds it with the ring turning`, note: 'The welder works where the ring meets the spine, a metre from the spin.', test: { base: 55, mods: WATCH }, info: (s, c) => [['danger', X(s, c).first]],
+    { label: (s, c) => `${X(s, c).first} welds it with the ring turning`, about: true, note: 'The welder works where the ring meets the spine, a metre from the spin.', test: { base: 50, mods: WATCH }, info: (s, c) => [['danger', X(s, c).first]],
       ok: end({ text: (s, c) => `${X(s, c).first} lays the weld in three shifts with the ring turning beside ${him(X(s, c))}. It holds. ${went(s, 'ok')}` }),
       bad: end({ text: (s, c) => { const x = X(s, c), a = W(s, c).find(p => p !== x) || W(s, c)[0];
           return dies(s, c, 0.45) ? `${x.first}'s line fouls on the turning ring, and the ring does not stop for it. ${a.first} finishes the weld the next day, with spares from the reactor's store. ${went(s, 'bad')}`
@@ -491,7 +491,7 @@ inc('sick', 'The Fever', 'doctor', {
   text: (s, c) => { const [a, b] = W(s, c), x = X(s, c);
     return `${year(s, c)} ${b.first} came up from the thaw carrying something the cold had kept asleep, and ${a.first}, who has the watch with ${him(b)}, has it now too. ${c.woke ? `They got ${x.first} out of the bay before they went down with it, and ${x.first} has woken you.${c.own ? '' : ` ${x.first} cannot name it.`}` : `One of them got to your pod before the fever put them both in their bunks. Nobody awake can name it.`}${(MODES[V(s).mode] || {}).awake && V(s).mode !== 'thin' && V(s).mode !== 'dose' ? ' ' + MODES[V(s).mode].awake : ''}${c.woke && c.own ? `\n\n[[${c.sp}]] "I can't name it." "I've got two drugs that might touch it and a store packed for the ground. You woke me to treat them, so let me treat them."` : ''}`; },
   choices: [
-    { label: 'Nurse them, with everything in the drug store', note: 'The autodoc\'s drug store goes on two people, and whoever nurses them is next.', test: { base: 56, mods: WATCH }, info: [['danger', 'The drug store'], ['danger', 'Whoever nurses them']],
+    { label: 'Nurse them, with everything in the drug store', note: 'The autodoc\'s drug store goes on two people, and whoever nurses them is next.', test: { base: 60, mods: WATCH }, info: [['danger', 'The drug store'], ['danger', 'Whoever nurses them']],
       ok: end({ text: s => `The fever breaks in the second week, in both of them. The drug store is a good deal lighter. ${went(s, 'ok')}`, fx: { machine: { medbay: -6 } } }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.3) ? `It breaks in ${a.first} in the third week. It does not break in ${b.first}. ${went(s, 'bad')}`
@@ -499,7 +499,7 @@ inc('sick', 'The Fever', 'doctor', {
         fx: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.3) ? { kill: [lost(b, 'a fever that came up with a thaw')], morale: -1, machine: { medbay: -6 }, off: [[a.id, 'body', -10]], do: fell(b) }
             : { machine: { medbay: -6 }, off: [[a.id, 'body', -16], [b.id, 'body', -16]], chips: [[`${a.first} and ${b.first} are weakened`, false]] }; } }) },
-    { label: 'Seal them in their bunks and wait', dark: true, note: 'Nothing from the drug store is spent and nobody else goes near them. The two are on their own.', info: (s, c) => [['yield', 'The drug store, whole'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 48, mods: [] },
+    { label: 'Seal them in their bunks and wait', dark: true, note: 'Nothing from the drug store is spent and nobody else goes near them. The two are on their own.', info: (s, c) => [['yield', 'The drug store, whole'], ['danger', `${W(s, c)[0].first} and ${W(s, c)[1].first}`]], test: { base: 50, mods: [] },
       ok: end({ text: (s, c) => `The bunk doors are locked from outside and food goes in through the hatch. Both fevers break on their own in the third week. ${W(s, c)[0].first} and ${W(s, c)[1].first} come out thin, and neither says anything to you about the locks.`, fx: (s, c) => ({ stain: ['sealed_sick', 1], off: c.w.map(id => [id, 'body', -8]) }) }),
       bad: end({ text: (s, c) => { const [a, b] = W(s, c);
           return dies(s, c, 0.2, 2) ? `The bunk doors are locked from outside and food goes in through the hatch. ${b.first} stops taking the food in the second week, and ${a.first} in the third. The doors are opened by the next watch.`

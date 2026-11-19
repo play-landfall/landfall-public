@@ -108,7 +108,7 @@ LF.beat('builders', 'contact', { id: 'bld.hum', tone: 'pressure', title: 'The Hu
   choices: [
     { label: 'Seal it, properly, and post a watch', cost: { mat: 30 }, out: { text: 'Concrete over the opening, a hut beside it, and a watch on a rota. The hum goes on, a little fainter.', fx: { flags: { bld_sealed: true }, chron: 'The colony sealed the Builders\' machine and posted a watch on it.' } } },
     { label: 'Leave it to sleep', out: { text: 'The fence is mended and the site left alone. In the spring the hum drops below hearing, and nobody can say for certain it is still there. The crews who work that side of the colony ask to be moved.', fx: { morale: -2, flags: { bld_dormant: true }, chron: 'The Builders\' machine was left to sleep.' } } },
-    { label: 'Try the coupling after all', test: { base: 50, mods: [R('engineer', 15), Fl('bld_diagrams', 12, 'The diagrams')] },
+    { label: 'Try the coupling after all', test: { base: 50, mods: [R('engineer', 10), Fl('bld_diagrams', 10, 'The diagrams')] },
       ok: { text: 'The cable goes live. The colony has power to spare, and the spire is warmer than it was.', fx: { morale: 4, flags: { builders_power: true, bld_awake: true }, sched: [['bld.finish', 80, 120]] } },
       bad: { text: 'The coupling sends something back up the cable, and the reactor trips. The machine goes quiet afterwards, as if it had noticed.', fx: { machine: { reactor: -15 }, flags: { bld_dormant: true } } } },
     { label: 'Couple it, with somebody in the pit holding the breaker shut', dark: true, note: 'Whatever comes back up the cable has to go through something. The engineering crew can draw lots for who.', info: [['yield', 'The coupling, for certain'], ['danger', 'Whoever draws it']],
@@ -159,7 +159,7 @@ LF.beat('others', 'contact', { id: 'oth.terms', tone: 'pressure', title: 'What t
   when: (s, t) => !t.terms && s.day - t.since > 160,
   text: s => `It has been ${(m => m <= 1 ? 'a month' : m <= 12 ? TH.num(m) + ' months' : m < 24 ? 'more than a year' : 'more than two years')(Math.round((s.day - PT(s, 'others').since) / 10))} since the colony met the Reach, and nobody has decided what they are to it. They come north when they like, the colony goes south when it needs to, and none of it is written down.\n\n${Nc(s, 'chaplain')} thinks it is time somebody did.`,
   choices: [
-    { label: 'A treaty: trade, a road, and a meeting every year', test: { base: 50, mods: [R('chaplain', 12), R('teacher', 6), Fl('oth_friends', 12, 'They have eaten at our table')] },
+    { label: 'A treaty: trade, a road, and a meeting every year', test: { base: 50, mods: [R('teacher', 10), R('chaplain', 5), Fl('oth_friends', 10, 'They have eaten at our table')] },
       ok: { text: 'It is agreed on a riverbank, halfway, and tied in knotted hide and written on paper both. The road is walked twice a season after that.', fx: { flags: { oth_friends: true, oth_trade: true }, chron: 'The colony and the Reach agreed a treaty of trade.' } },
       bad: { text: 'The meeting goes badly, over old grudges. Both sides go home with their own version of who said what.', fx: { flags: { oth_cold: true } } } },
     { label: 'Leave it as it is. It works', out: { text: 'Nothing is written. People from both sides go on coming and going, and the colony stops thinking of them as strangers. The first time there is a quarrel over a boundary stone, there is nothing to settle it by.', fx: { morale: -1, flags: { oth_trade: true } } } },
