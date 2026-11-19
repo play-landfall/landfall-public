@@ -342,7 +342,7 @@ LF.crews = s => Math.min(LF.hands(s), LF.SCALE) / 60;
    back at 12%. The same day the orders landed (js/orders.js: the player wakes sleepers and flies the lander at will, so there are
    forty more hands on the ground in the early years) and the same dials read 41%: 3 puts it at 12% on two samples of 1,200
    games, worlds within six points, and 22 of 57 colonies that win are alive at year 40. */
-const BUILD = 3;
+const BUILD = (typeof process !== 'undefined' && process.env && +process.env.BUILD_X) || 3.3;   // BUILD_X=3.5 node tools/sim.js: try another figure without editing (Node only)
 LF.cost = function (s, id) {
   const p = LF.PROJECTS[id]; let mat = p.mat, labor = p.labor * (p.repeat ? 1 : BUILD);
   if (id === 'machineshop' && s.flags.toolset) labor *= 0.65;
