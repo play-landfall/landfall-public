@@ -225,6 +225,16 @@ main { flex:1; padding:6px 12px 40px; }
 @keyframes i-line { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 #intro .skip { position:absolute; z-index:3; bottom:calc(18px + env(safe-area-inset-bottom)); left:0; right:0; text-align:center; color:#8f8a76;
   font:500 10px/1.2 "Cinzel", Georgia, serif; letter-spacing:.42em; padding-left:.42em; }
+#intro .skip { display:flex; align-items:center; justify-content:center; gap:10px; user-select:none; -webkit-user-select:none; }
+#intro { -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; touch-action:none; }
+#intro .skip .ring { width:22px; height:22px; flex:none; }
+#intro .skip .ring svg { width:100%; height:100%; transform:rotate(-90deg); display:block; }
+#intro .skip .ring circle { fill:none; stroke-width:2.5; }
+#intro .skip .ring .track { stroke:rgba(143,138,118,.35); }
+#intro .skip .ring .fill { stroke:#efe4c8; stroke-linecap:round; stroke-dasharray:100; stroke-dashoffset:100; transition:stroke-dashoffset 300ms ease; }
+#intro .skip.holding .ring .fill { stroke-dashoffset:0; transition:stroke-dashoffset 3000ms linear; }
+#intro .skip.holding { color:#efe4c8; }
+#intro .skip.hint { animation:i-hint 900ms ease; } @keyframes i-hint { 0%, 100% { opacity:1; } 30% { opacity:.4; } 60% { opacity:1; transform:scale(1.06); } }
 #intro .title ~ .skip { animation:i-fade-in 1200ms ease 2600ms both; } @keyframes i-fade-in { from { opacity:0; } to { opacity:1; } }
 /* the title card on a new game: waits for the first tap, which also starts the opening score */
 #intro .title { position:absolute; inset:0; z-index:2; background:#05080d; display:flex; align-items:center; justify-content:center; transition:opacity 1200ms ease; }

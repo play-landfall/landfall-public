@@ -3,7 +3,8 @@
    the sleepers, the watch and the failing machinery, then the reason this ship is adrift (s.premise). Shots are drawn
    from a pool and ordered by the seed, so it is not the same twice. On a new game a title card waits for a tap first,
    so the opening score (js/music.js) can start with the pictures. After the burn: the engines, the new world, orbit.
-   After the landing site is chosen: the descent. Tap anywhere to skip, except during the departure film, which plays through. Reduced motion: crossfades only.
+   After the landing site is chosen: the descent. Hold anywhere (or hold a key) for three seconds to skip: a ring fills
+   round the label while held, so a stray tap never throws the intro away (Lachlan, 2026-11-19); that covers the departure film too. Reduced motion: crossfades only.
    Every shot fills the screen, caption over a dark fade at the foot. Space shots are layered: a starfield plate with
    transparent sprites (art/pieces/) moved over it; the stars are drawn live in a canvas (js/stars.js) and the ship's
    engine fire in CSS, not sprites.
@@ -100,6 +101,22 @@ function descent(s, zone) {
     { pic: 'intro_touchdown', move: 'pan', fx: 'shake', line: `${Z}. Landfall.` }];
 }
 let timer = 0, done = null;
+/* Hold to skip: the label with a ring that fills while a pointer or key is held on the intro. */
+const HOLD_MS = 3000;
+const RING = `<span class="ring"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="15"/><circle class="fill" cx="18" cy="18" r="15" pathLength="100"/></svg></span><span>Hold to skip</span>`;
+function hold(el, live, skip) {
+  let t = 0, keyed = false;
+  const tag = () => el.querySelector('.skip');
+  const start = () => { if (t || !live()) return; const g = tag(); if (g) { g.classList.remove('hint'); g.classList.add('holding'); } t = setTimeout(() => { t = 0; skip(); }, HOLD_MS); };
+  const stop = () => { if (!t) return; clearTimeout(t); t = 0; const g = tag(); if (g) { g.classList.remove('holding', 'hint'); void g.offsetWidth; g.classList.add('hint'); } };
+  el.addEventListener('pointerdown', e => { if (e.button === 0 || e.pointerType !== 'mouse') start(); });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, stop);
+  el.addEventListener('contextmenu', e => e.preventDefault());   // a long press on a phone would open the image menu
+  const kd = e => { if (!el.isConnected) return off(); if (e.repeat || e.key === 'Tab') return; if (!keyed && live()) { keyed = true; e.preventDefault(); e.stopImmediatePropagation(); start(); } };
+  const ku = () => { if (!el.isConnected) return off(); if (keyed) { keyed = false; stop(); } };
+  const off = () => { document.removeEventListener('keydown', kd, true); document.removeEventListener('keyup', ku, true); };
+  document.addEventListener('keydown', kd, true); document.addEventListener('keyup', ku, true);
+}
 function finish() {
   clearTimeout(timer);
   if (window.LFMusic) LFMusic.hush();
@@ -123,7 +140,7 @@ function play(shots, cb, title) {
   el.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lf-fire" x="-20%" y="-40%" width="140%" height="180%">
     <feTurbulence type="fractalNoise" baseFrequency="0.035 0.16" numOctaves="2" seed="1" result="n"><animate attributeName="seed" values="1;2;3;4;5;6;7" dur="0.5s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
     <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
-    <div class="stage"></div><div class="skip lbl">${title ? '' : 'Tap to skip'}</div>
+    <div class="stage"></div><div class="skip lbl">${title ? '' : RING}</div>
     ${title ? `<div class="title"><canvas class="stars" data-vx="-5" data-vy="0.6"></canvas><div><img class="em" src="art/crest.webp" alt=""><h1>Landfall</h1><i class="rule"></i>${WARN}</div><div class="tally"></div></div>` : ''}`;
   document.body.appendChild(el);
   skySeed = (Date.now() / 86400000) | 0;   // the sky changes from day to day, not from shot to shot
@@ -131,12 +148,12 @@ function play(shots, cb, title) {
   // How many have gone before: ships launched and colonies established, from the play log's counts (js/log.js).
   if (title && window.LFLog && LFLog.tally) LFLog.tally(line => { const tl = el.querySelector('.title .tally'); if (tl && line) { tl.textContent = line; tl.classList.add('on'); } });
   // The landing page: the first tap starts the score and brings up what the game is and what is in it; the second begins.
-  let waiting = title ? 2 : 0, locked = false;
+  let waiting = title ? 2 : 0;
   el.addEventListener('click', e => { e.stopPropagation();
-    if (locked) return;   // the departure film plays through (Lachlan, 2026-11-18)
-    if (!waiting) return finish();
+    if (!waiting) return;   // once playing, only a hold skips (hold() below)
     if (waiting === 2) { waiting = 1; el.querySelector('.title').classList.add('read'); return; }
-    waiting = 0; const tt = el.querySelector('.title'); tt.classList.add('off'); setTimeout(() => { unsky(tt); tt.remove(); }, 1300); el.querySelector('.skip').textContent = 'Tap to skip'; next(); });
+    waiting = 0; const tt = el.querySelector('.title'); tt.classList.add('off'); setTimeout(() => { unsky(tt); tt.remove(); }, 1300); el.querySelector('.skip').innerHTML = RING; next(); });
+  hold(el, () => !waiting, finish);
   const stage = el.querySelector('.stage');
   let i = 0;
   const next = () => {
@@ -158,9 +175,8 @@ function play(shots, cb, title) {
   const film = (x, sh) => {
     sh.className = 'shot film';
     sh.innerHTML = `<div class="frame"><video muted playsinline preload="auto" poster="art/video/${x.video}.webp" src="art/video/${x.video}.mp4"></video><i class="fx"></i></div><p></p>`;
-    const v = sh.querySelector('video'), p = sh.querySelector('p'), tag = el.querySelector('.skip'); let cap = -1, fired = 0, dead = false;
-    locked = true; tag.style.visibility = 'hidden';
-    const free = () => { locked = false; tag.style.visibility = ''; };
+    const v = sh.querySelector('video'), p = sh.querySelector('p'); let cap = -1, fired = 0, dead = false;
+    const free = () => {};
     const stills = () => { if (dead) return; dead = true; free(); clearTimeout(timer); sh.remove(); shots = shots.slice(0, i).concat((x.alt || []).filter(ok), shots.slice(i)); next(); };
     const words = t => t.replace(/\S+-\S+/g, w => `<span style="white-space:nowrap">${w}</span>`);
     v.addEventListener('timeupdate', () => { const at = v.currentTime; let k = -1; (x.caps || []).forEach((c, n) => { if (at >= c[0]) k = n; });
