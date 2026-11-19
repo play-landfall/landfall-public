@@ -30,7 +30,7 @@ const B = (ph, st) => LF.beat(ID, ph, Object.assign({ gap: 30, w: 2.6 }, st));
 
 B('cut', { id: 'knf.cut', chain: true, tone: 'pressure', title: 'Cut Line',
   setup: s => { const p = target(s, T(s)); return { pid: p ? p.id : null, name: p ? p.name : 'One of the crew chiefs', first: p ? p.first : 'the crew chief' }; },
-  text: (s, c) => `${c.name}'s safety line was cut most of the way through, on the inside where it wouldn't show. It parted on the reactor gantry this morning, four metres up. ${cap1(c.first)} caught a rail.\n\n"Somebody did that with a blade, and did it neatly, where it wouldn't show," says ${watch(s)}. "Lovely work. They took their time, and I don't like people who take their time."`,
+  text: (s, c) => `${c.name}'s safety line was cut most of the way through, on the inside where it wouldn't show. It parted on the reactor gantry this morning, four metres up. ${cap1(c.first)} caught a rail.\n\n[[security]] "Somebody did that with a blade, and did it neatly, where it wouldn't show." "Lovely work. They took their time, and I don't like people who take their time."`,
   choices: [
     { label: 'Find out who', note: 'The watch asks around. Everyone will know they\'re asking.', hint: 'unknown', test: { base: 45, mods: [h.R('security', 20)] },
       ok: { text: s => `A blade with a fresh nick in it, in a tool roll that belongs to nobody. Not a name, but a place to start.`, fx: s => ({ do: s2 => { T(s2).lead++; next(s2); } }) },
@@ -46,7 +46,7 @@ const next = (s, a, b) => { LF.phase(s, ID, 'note'); LF.cue(s, 'knf.note', a || 
 
 B('note', { id: 'knf.note', chain: true, tone: 'pressure', title: 'For What You Did',
   setup: s => ({ why: 'someone is making the officers pay for what the colony has done', deed: LF.worst ? LF.worst(s) : 'the things that were done' }),
-  text: (s, c) => `A note, nailed to the officers' mess door with a ration fork: "FOR ${c.deed.toUpperCase()}." The same hand that cut the line, by the look of it.\n\n${here(s).length ? `${here(s)[0].first} pulls the fork out and keeps it.` : 'Nobody wants to touch it.'} ${cap1(watch(s))}: "Well. At least we know they can spell."`,
+  text: (s, c) => `Someone has nailed a note to the officers' mess door with a ration fork.\n\n[[note:On the officers' mess door]] "FOR ${c.deed.toUpperCase()}."\n\nThe same hand that cut the line, by the look of it. ${here(s).length ? `${here(s)[0].first} pulls the fork out and keeps it.` : 'Nobody wants to touch it.'}\n\n[[security]] "Well. At least we know they can spell."`,
   choices: [
     { label: 'Answer it in the mess hall. Say what was done, and why', note: 'You own it in front of everyone. Some will hate you more for saying it. Some will stop wanting to kill anyone for it.', hint: 'unknown', info: [['yield', 'Maybe it ends'], ['danger', 'Morale, and your standing']],
       out: { text: (s, c) => `You stand up after the evening meal and say it: ${c.deed}, who gave the order, and why. Nobody interrupts. Nobody claps. Three people walk out before you finish.`, fx: s => ({ morale: -4, tension: -8, do: s2 => { T(s2).owned = 1; strike(s2); } }) } },
@@ -61,7 +61,7 @@ const strike = s => { LF.phase(s, ID, 'strike'); LF.cue(s, 'knf.strike', 20, 45)
 
 B('strike', { id: 'knf.strike', chain: true, tone: 'crisis', title: 'The Knife',
   setup: s => { const p = target(s, T(s)); return { pid: p ? p.id : null, name: p ? p.name : null, first: p ? p.first : null, seat: p ? p.seat : null, guard: !!T(s).guard, owned: !!T(s).owned }; },
-  text: (s, c) => c.pid ? `${cap1(watch(s))} wakes you before dawn. The pattern's clear now: whoever it is will go for ${c.name} next, and soon, probably tonight.${c.guard ? ' The guards are tired and everybody knows their rota.' : ''}\n\n"I can sit up with ${c.first} myself. Or we use someone as bait. Or we lock every officer in the armoury and let them try the doors."` : `${cap1(watch(s))} wakes you before dawn. Whoever it is has run out of officers to go for, and has started on the people closest to them.`,
+  text: (s, c) => c.pid ? `${cap1(watch(s))} wakes you before dawn. The pattern's clear now: whoever it is will go for ${c.name} next, and soon, probably tonight.${c.guard ? ' The guards are tired and everybody knows their rota.' : ''}\n\n[[security]] "I can sit up with ${c.first} myself. Or we use someone as bait. Or we lock every officer in the armoury and let them try the doors."` : `${cap1(watch(s))} wakes you before dawn. Whoever it is has run out of officers to go for, and has started on the people closest to them.`,
   choices: [
     { label: c => 'Sit up with them, armed', note: 'The watch\'s best, in the dark, waiting. If it goes wrong, it goes wrong in the room.', hint: 'unknown', test: { base: 46, mods: [h.R('security', 22), h.If((s, c) => c.guard, 6, 'The guards were already posted'), h.If((s, c) => c.owned, 8, 'You owned what was done')] },
       ok: { text: (s, c) => `Just after three a figure comes through the vent, not the door. There's a scuffle in the dark and a lot of noise. ${c.first ? cap1(c.first) + ' is cut on the arm and alive.' : 'Nobody is killed.'} The figure is on the floor, in irons.`, fx: (s, c) => ({ do: s2 => { T(s2).caught = 1; found(s2); } }) },
@@ -76,11 +76,11 @@ const found = s => { LF.phase(s, ID, 'found'); LF.cue(s, 'knf.hand', 10, 30); };
 B('found', { id: 'knf.hand', chain: true, tone: 'crisis', title: 'Whose Hand',
   setup: s => { const t = T(s), m = t.mole && h.byPid(s, t.mole), is = t.truth.is === 'officer' && m && m.alive ? 'officer' : t.truth.is === 'officer' ? 'kin' : t.truth.is;
     const k = LF.cast(s, { low: true, free: true });
-    return { is, pid: is === 'officer' ? m.id : k ? k.id : null, name: is === 'officer' ? m.name : k ? k.name : 'a stores clerk', first: is === 'officer' ? m.first : k ? k.first : 'the clerk', seat: is === 'officer' ? m.seat : null, caught: !!t.caught, deed: LF.worst ? LF.worst(s) : 'what was done' }; },
+    return { is, pid: is === 'officer' ? m.id : k ? k.id : null, name: is === 'officer' ? m.name : k ? k.name : LF.rn(s, 'x26'), first: is === 'officer' ? m.first : k ? k.first : LF.rf(s, 'x26'), seat: is === 'officer' ? m.seat : null, caught: !!t.caught, deed: LF.worst ? LF.worst(s) : 'what was done' }; },
   text: (s, c) => (c.caught ? '' : 'It takes the watch another month, and a confession from somebody who saw a light. ')
-    + (c.is === 'officer' ? `It's ${c.name}. Your own ${LF.SEATS[c.seat].name} officer. ${cap1(c.first)} doesn't deny it. "Somebody had to answer for ${c.deed}. You weren't going to."`
-      : c.is === 'cell' ? `It's five of them. ${c.name} speaks for the rest. "We drew lots for who'd do it. We'd do it again. Ask them about ${c.deed} and see if they sleep."`
-      : `It's ${c.name}. Someone in ${c.first}'s family died because of ${c.deed}. "I wasn't going to stop at one. I want you to know that. I wanted all of you."`),
+    + (c.is === 'officer' ? `It's ${c.name}. Your own ${LF.SEATS[c.seat].name} officer. ${cap1(c.first)} doesn't deny it.\n\n[[${c.pid}]] "Somebody had to answer for ${c.deed}. You weren't going to."`
+      : c.is === 'cell' ? `It's five of them. ${c.name} speaks for the rest.\n\n[[${c.pid || 'x26'}]] "We drew lots for who'd do it. We'd do it again. Ask them about ${c.deed} and see if they sleep."`
+      : `It's ${c.name}. Someone in ${c.first}'s family died because of ${c.deed}.\n\n[[${c.pid || 'x26'}]] "I wasn't going to stop at one. I want you to know that. I wanted all of you."`),
   choices: [
     { label: (s, c) => c.is === 'cell' ? 'Hang the five' : `Hang ${c.first}`, dark: true, note: (s, c) => c.is === 'officer' ? `${LF.SEATS[c.seat].name} will have nobody, for good.` : 'At the pad, at dawn, in front of everyone. Nobody will try it again.', hint: 'unknown', info: (s, c) => [['yield', 'It ends'], ['danger', c.is === 'officer' ? 'Your own officer' : c.is === 'cell' ? 'Five people' : 'One person']],
       out: { text: (s, c) => `${c.is === 'cell' ? 'Five ropes' : 'One rope'} at the pad at dawn. The whole colony is there. Nobody says anything, before or after.`, fx: (s, c) => ({ kill: c.pid ? { who: c.pid, cause: 'hanged for the knife' } : null, pop: c.is === 'cell' ? -4 : c.pid ? 0 : -1, tension: -15, morale: -2, stain: ['hanged_knife', c.is === 'cell' ? 2 : 1], do: s2 => LF.endThread(s2, ID, 'hanged', 'The one who had been killing the officers was hanged.') }) } },

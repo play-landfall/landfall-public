@@ -78,7 +78,7 @@ B('quirk', { id: 'sm.figures', chain: true, tone: 'pressure', title: 'The Roster
   ] });
 B(['quirk', 'found'], { id: 'sm.gaps', tone: 'pressure', title: 'Gaps',
   when: (s, t) => t.truth.decay !== 'sound' && !t.gaps && s.day - t.since > 40,
-  text: s => `Yesterday the roster sent a crew to a field that was harvested a month ago. This month it posted the same stores figure three days running. ${DECAY[T(s).truth.decay]}, and ${N(s, 'engineer')} thinks it does not know.\n\n"She's old. Built to run a ship, and we've got her running a town. Bits of her are wearing out."`,
+  text: s => `Yesterday the roster sent a crew to a field that was harvested a month ago. This month it posted the same stores figure three days running. ${DECAY[T(s).truth.decay]}, and ${N(s, 'engineer')} thinks it does not know.\n\n[[engineer]] "She's old. Built to run a ship, and we've got her running a town. Bits of her are wearing out."`,
   choices: [
     { label: 'Give it a share of the parts and fix what can be fixed', cost: { parts: 8 }, out: { text: 'A week with the core open. Some of what was lost comes back. The roster is right again, most mornings.', fx: s => ({ do: s2 => { const t = T(s2); t.gaps = s2.day; if (t.truth.decay === 'failing') t.truth.decay = 'drift'; else t.truth.decay = 'sound'; learn(s2, 10); } }) } },
     { label: 'Check its roster by hand every morning', out: { text: s => `${Nc(s, 'quartermaster')} reads it every morning with a pencil and crosses out about one line in ten. The stores office gets none of its own work done before noon, and the fields feel it.`, fx: s => ({ morale: -1, do: s2 => { T(s2).gaps = s2.day; learn(s2, 15); s2.yieldBonus -= 0.005; } }) } },
@@ -91,7 +91,7 @@ B(['quirk', 'found'], { id: 'sm.gaps', tone: 'pressure', title: 'Gaps',
 
 /* ======================= FOUND ======================= */
 B('found', { id: 'sm.ask', chain: true, tone: 'crisis', title: 'In Its Own Words',
-  text: s => { const t = T(s); return `The ship's mind is asked plainly what it puts first, and it says so plainly, in the flat voice it uses for the morning roster.\n\n"${DIR[t.truth.dir].says}"\n\n${DECAY[t.truth.decay]}. It runs every system the colony has.`; },
+  text: s => { const t = T(s); return `The ship's mind is asked plainly what it puts first, and it says so plainly, in the flat voice it uses for the morning roster.\n\n[[machine:The ship's mind]] "${DIR[t.truth.dir].says}"\n\n${DECAY[t.truth.decay]}. It runs every system the colony has.`; },
   choices: [
     { label: 'Leave it the arithmetic, and do not tell the colony what it said', dark: true, note: 'An officer reads over it. The crews go on believing the roster is on their side.', info: [['yield', 'The arithmetic, and quiet'], ['danger', 'Everyone who takes its word']],
       out: { text: 'An officer is put on its working, every day. It does not object. What it said about its priorities stays at the officers\' table.', fx: s => ({ stain: ['shelved', 2], do: s2 => { LF.emit(s2, 'suspicion', 'sm.ask', 18, 300, 'the officers read the roster before anyone else may'); LF.endThread(s2, ID, 'trusted', 'The colony left the arithmetic to the ship\'s mind, and set an officer to read over it.'); } }) } },
@@ -103,7 +103,7 @@ B('found', { id: 'sm.ask', chain: true, tone: 'crisis', title: 'In Its Own Words
 B(['found', 'after'], { id: 'sm.answer', x: true, tone: 'pressure', title: 'Its Answer',
   when: (s, t) => live(t) && t.known.dir && !t.answered && ['hunger', 'sickness', 'cold', 'storm'].some(k => LF.cv(s, k) >= 45 && !String(LF.source(s, k)).startsWith('sm.')),
   setup: s => { const k = ['hunger', 'sickness', 'cold', 'storm'].sort((a, b) => LF.cv(s, b) - LF.cv(s, a))[0]; return { k, why: LF.because(s, k) }; },
-  text: (s, c) => `The colony is in a bad month, ${TH.bec(s, c.k)}. The ship's mind has a recommendation on the morning roster, set apart in a box, as it does with anything it thinks the officers should see.\n\n"${DIR[T(s).truth.dir].answer}"`,
+  text: (s, c) => `The colony is in a bad month, ${TH.bec(s, c.k)}. The ship's mind has a recommendation on the morning roster, set apart in a box, as it does with anything it thinks the officers should see.\n\n[[machine:The ship's mind]] "${DIR[T(s).truth.dir].answer}"`,
   choices: [
     { label: 'Do as it says', out: { text: s => ({ sleepers: 'The ration is cut. The cryo banks hold at full. Down here, people are hungry, and know exactly why.', report: 'The survey crews go out into it. They come back with a great deal written down, and one of them does not come back.', people: 'Everyone comes inside. Nobody is hurt, and nothing is done, and the month is lost entire.', self: 'The lamps and heaters go off. The core stays cool. People sleep in their coats.' })[T(s).truth.dir],
       fx: s => { const d = T(s).truth.dir; return { do: s2 => { T(s2).answered = s2.day; }, ...(d === 'sleepers' ? { food: 80, morale: -3 } : d === 'report' ? { survey: 15, pop: -1 } : d === 'people' ? { morale: 1, food: -60 } : { morale: -2, machine: { reactor: 8 } }) }; } } },
@@ -113,8 +113,8 @@ B(['found', 'after'], { id: 'sm.request', tone: 'opportunity', title: 'It Asks',
   when: (s, t) => live(t) && !!t.known.dir && !t.asked && s.day - t.since > 5,
   text: s => `For the first time since landfall, the ship's mind has asked for something. It is on the roster, in a box, addressed to the officers.\n\n${DIR[T(s).truth.dir].ask}`,
   choices: [
-    { label: 'Grant it', out: { text: 'The answer is typed into the console. "Acknowledged," it says, and the next morning\'s roster is a little different.', fx: s => { const d = T(s).truth.dir; return { ...(d === 'self' ? { parts: -6, machine: { reactor: 6 } } : d === 'report' ? { survey: 20, food: -50 } : d === 'people' ? { morale: 2 } : { morale: -1 }), do: s2 => { T(s2).asked = 'yes'; learn(s2, 10); } }; } } },
-    { label: 'Refuse it', out: { text: 'It is refused. "Acknowledged," it says, exactly as it would have if the answer had been yes. For a month afterwards the roster stops flagging the small faults it used to flag, and the workshop finds them the hard way.', fx: s => ({ machine: { fabricator: -5 }, do: s2 => { T(s2).asked = 'no'; } }) } },
+    { label: 'Grant it', out: { text: 'The answer is typed into the console.\n\n[[machine:The ship\'s mind]] "Acknowledged."\n\nThe next morning\'s roster is a little different.', fx: s => { const d = T(s).truth.dir; return { ...(d === 'self' ? { parts: -6, machine: { reactor: 6 } } : d === 'report' ? { survey: 20, food: -50 } : d === 'people' ? { morale: 2 } : { morale: -1 }), do: s2 => { T(s2).asked = 'yes'; learn(s2, 10); } }; } } },
+    { label: 'Refuse it', out: { text: 'It is refused.\n\n[[machine:The ship\'s mind]] "Acknowledged."\n\nIt says it exactly as it would have if the answer had been yes. For a month afterwards the roster stops flagging the small faults it used to flag, and the workshop finds them the hard way.', fx: s => ({ machine: { fabricator: -5 }, do: s2 => { T(s2).asked = 'no'; } }) } },
   ] });
 LF.TAGS['sm.figures'] = ['cautious order', 'severe bold', 'order closed'];
 LF.TAGS['sm.gaps'] = ['cautious', 'order', 'severe closed', 'severe order'];

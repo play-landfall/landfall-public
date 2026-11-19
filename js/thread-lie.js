@@ -86,7 +86,7 @@ B('cracks', { id: 'lie.keeper', view: 'people', tone: 'pressure', title: 'Expect
   when: (s, t) => kpOK(s) && (t.puts || 0) < 2 && (t.insight >= 30 || s.day - t.since > 90),
   setup: s => TH.ctx(kp(s)),
   text: (s, c) => { const t = T(s); return t.insight >= 30
-    ? `${c.name} asks for a word, late, when the officers' table is empty. "You've been reading the old files. I'd rather you heard it from me than pieced it together."\n\nThere is a folder on the table between you, not opened yet.`
+    ? `${c.name} asks for a word, late, when the officers' table is empty.\n\n[[${c.pid}]] "You've been reading the old files. I'd rather you heard it from me than pieced it together."\n\nThere is a folder on the table between you, not opened yet.`
     : `${c.name} has been sleeping badly and working worse. Twice this month the ${c.title} has asked whether anyone has been in the ship's files, and twice has not waited for the answer.`; },
   choices: [
     { label: (s, c) => `Hear ${c.first} out, alone`, out: { text: (s, c) => `It takes an hour. ${c.first} does not ask for anything, and does not stop until it is all said. By morning the other officers know there was a meeting they were kept out of.`, fx: (s, c) => ({ do: s2 => { const t = T(s2), p = kp(s2); LF.emit(s2, 'suspicion', 'lie.keeper', 15, 120, 'two of the officers are keeping something from the rest'); t.known.whole = s2.day; t.how = 'private'; if (p) { LF.reveal(s2, p, 'It came from the keeper, in private.'); p.loyal = clamp(p.loyal + 8, 0, 100); } LF.phase(s2, ID, 'known'); LF.cue(s2, 'lie.truth', 0, 3); } }) } },
@@ -117,7 +117,7 @@ B(['cracks', 'buried'], { id: 'lie.talk', x: true, tone: 'pressure', title: 'Tal
 /* ======================= KNOWN ======================= */
 B('known', { id: 'lie.truth', chain: true, tone: 'crisis', title: 'What Was Kept',
   setup: s => TH.ctx(kp(s)),
-  text: s => { const t = T(s), p = kp(s); return `${LIE[t.truth.lie].is}.\n\n${p && p.alive ? `${p.name} has known from the start. "${WHY[t.truth.why].says}"` : `${kn(s)} knew from the start, and ${WHY[t.truth.why].given}.`} Nobody else at the table knew, and the colony still does not.`; },
+  text: s => { const t = T(s), p = kp(s); return `${LIE[t.truth.lie].is}.\n\n${p && p.alive ? `${p.name} has known from the start.\n\n[[${p.id}]] "${WHY[t.truth.why].says}"\n\n` : `${kn(s)} knew from the start, and ${WHY[t.truth.why].given}. `}Nobody else at the table knew, and the colony still does not.`; },
   choices: [
     { label: 'The whole colony hears it tonight', note: 'People will be hurt and angry, but it will be out in the open.', out: { text: 'You say it in the mess hall with the officers standing behind you. People hear it out and go back to their pods early. In the morning the arguments start over breakfast, and by noon the door of the keeper\'s pod has been kicked in.',
       fx: s => ({ morale: -4, do: s2 => { const p = kp(s2); if (p && p.alive) p.marks.blamed = { d: s2.day, txt: 'named as the one who kept the mission\'s lie' }; if (p && T(s2).truth.why === 'shame') p.loyal = clamp(p.loyal + 15, 0, 100); told(s2, 'told'); LF.endThread(s2, ID, 'told', 'The officers told the colony what the mission had kept from it.'); } }) } },
@@ -151,7 +151,7 @@ B(['cracks', 'buried'], { id: 'lie.out', chain: true, tone: 'crisis', title: 'Pi
 /* ======================= AFTER: what is left once it is said ======================= */
 B('after', { id: 'lie.files', view: 'people', tone: 'pressure', title: 'The Sealed Files',
   when: (s, t) => t.truth.lie === 'conscripts' && t.end !== 'kept' && !t.files && s.day - t.since > 20,
-  text: s => `The court records of the sentenced sleepers are still sealed in the manifest. Some of the people they describe are down here now, and some are still in orbit. ${Nc(s, 'security')} wants them read. ${Nc(s, 'chaplain')} wants them burned.\n\n"Whatever they did, they did it on a planet that's got no say over them now. Down here they're patients, same as you."`,
+  text: s => `The court records of the sentenced sleepers are still sealed in the manifest. Some of the people they describe are down here now, and some are still in orbit. ${Nc(s, 'security')} wants them read. ${Nc(s, 'chaplain')} wants them burned.\n\n[[chaplain]] "Whatever they did, they did it on a planet that's got no say over them now. Down here they're patients, same as you."`,
   choices: [
     { label: 'Burn them. Everyone starts here', out: { text: 'The files go into the furnace, one by one, with a witness from each pod row. Afterwards nobody can say who was sentenced. The watch says one of the files was for killing a child, and nobody can say whose that was either.', fx: s => ({ morale: 3, do: s2 => { LF.emit(s2, 'fear', 'lie.files', 18, 300, 'nobody knows now which of the sentenced did what'); T(s2).files = 'burned'; LF.ease(s2, 'schism', 'lie.files', 20, 300); } }) } },
     { label: 'Give each file to the person it describes', out: { text: 'Each one is handed over sealed. Most are burned unread. A few are read aloud, by choice, at the mess table. Most are less than anyone feared. Two are worse, and those two people eat alone now.', fx: s => ({ morale: 1, do: s2 => { T(s2).files = 'given'; LF.emit(s2, 'schism', 'lie.files', 15, 250, 'two of the sentenced read out what they had done'); } }) } },

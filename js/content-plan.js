@@ -11,7 +11,7 @@ const frac = t => t < 0.2 ? 'One plot in six' : t < 0.3 ? 'One plot in four' : t
 /* ================= THE SEED ================= */
 add({ id: 'plan.seeds', arc: 'crops', tone: 'council', title: 'The Seed Stock', w: 9, gap: 0,
   when: s => LF.need(s) === 'soil' && s.day >= 6 && !s.flags.first_sow,
-  text: s => `${Nc(s, 'botanist')} has the seed lockers open on the ramp: wheat, barley, beans. Enough to sow every cleared plot once.\n\n"Sow it all, and we're eating our own bread in a season. If the ground won't take it, that's the seed gone. There isn't any more." ${LF.down(s, 'hydroponics') ? 'The hydroponics bay feeds twenty-four' : 'The hydroponics bay is still up on the ship'}. There are ${s.pop} of you.`,
+  text: s => `${Nc(s, 'botanist')} has the seed lockers open on the ramp: wheat, barley, beans. Enough to sow every cleared plot once.\n\n[[botanist]] "Sow it all, and we're eating our own bread in a season. If the ground won't take it, that's the seed gone. There isn't any more."\n\n${LF.down(s, 'hydroponics') ? 'The hydroponics bay feeds twenty-four' : 'The hydroponics bay is still up on the ship'}. There are ${s.pop} of you.`,
   choices: [
     { label: 'Plant all of it now', note: 'The biggest harvest this ground can give, and no seed left if the soil is wrong.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A full harvest'], ['danger', 'Nothing held back']],
       out: { text: 'Every plot is sown by the end of the month. The lockers are swept out, and the sweepings are sown too.', fx: { flags: { first_sow: 'all' }, sched: [['plan.sprout', 24, 34]], chron: 'In the first season the colony put all its seed in the ground.' } } },
@@ -97,7 +97,7 @@ const oreTo = s => (s.world.report && s.world.report.features[0] && s.world.oreB
 add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: 'Where the Metal Is', w: s => s.day > 90 ? 9 : 4, repeat: 60, gap: 0,
   when: s => !s.flags.ore_found && s.day >= 200 && !s.away.some(a => a.ret === 'ore' || a.ret === 'seam'),   // since 2026-11-18 the ore is a place to send a party to (js/places.js LF.FINDS): this is the council's word if nobody has
   text: s => { const r = s.world.report && s.world.report.ore, d = did(s, 'plan.prospect');
-    return `${Nc(s, 'geologist')} has the orbital report pinned to the mess hall wall, one line circled: "${r ? r.text : 'Metal, somewhere.'}" Under it, in pencil: ${r ? r.conf : 50}%.\n\n`
+    return `${Nc(s, 'geologist')} has the orbital report pinned to the mess hall wall, one line circled.\n\n[[note:The orbital report]] "${r ? r.text : 'Metal, somewhere.'}"\n\nUnder it, in pencil: ${r ? r.conf : 50}%.\n\n`
       + (d && d.k === 'fly' && d.ok === false ? 'The last flight saw nothing worth landing for.' : d && d.k === 'wait' ? 'The smelter drawings have been waiting since the last time this was asked.' : 'Without ore there is no smelter, and without a smelter nothing after it gets built.'); },
   choices: [
     { key: 'send', label: s => `Send prospectors to ${oreTo(s)}`, hint: 'good', info: [['yield', 'An ore body, if it is there']],
@@ -122,7 +122,7 @@ add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: '
 /* ================= WATER ================= */
 add({ id: 'plan.water', arc: 'plan', tone: 'council', title: 'Every Drop Twice', w: 4, repeat: 140, gap: 0,
   when: s => !s.built.wells && LF.down(s, 'reclaimer') && s.machines.reclaimer.hp < 62 && s.day >= 50,
-  text: s => `The reclaimer ${s.machines.reclaimer.hp < 35 ? 'is failing' : 'is wearing out'}, and ${N(s, 'engineer')} wants to know how hard to run it. "Every litre you drink's been through that loop a hundred times. I can run her hard, and she'll go sooner. Ease off, and there's less water. Your call."`
+  text: s => `The reclaimer ${s.machines.reclaimer.hp < 35 ? 'is failing' : 'is wearing out'}, and ${N(s, 'engineer')} wants to know how hard to run it.\n\n[[engineer]] "Every litre you drink's been through that loop a hundred times. I can run her hard, and she'll go sooner. Ease off, and there's less water. Your call."`
     + (s.project === 'wells' ? `\n\nThe wells are going up, but they will not be ready in time.` : ''),
   choices: [
     { label: 'Ration water. Two litres a head', hint: 'unknown', info: [['yield', 'The reclaimer lasts longer'], ['danger', 'The crews who sweat it out by noon']],
@@ -201,7 +201,7 @@ add({ id: 'order.standing', urgent: true, arc: 'state', tone: 'council', title: 
   when: s => !!LF.habitDue(s),
   setup: s => { const id = LF.habitDue(s), st = LF.byId[id], hb = s.habit[id]; hb.asked = s.day; const ch = st.choices[hb.i];
     return { id, i: hb.i, card: st.title, label: (typeof ch.label === 'function' ? ch.label(s, {}) : ch.label).replace(/\.$/, '') }; },
-  text: (s, c) => `${c.card} has come to you twice now, and twice the answer has been the same: "${c.label}." The duty officer wants to know whether to wake you for it a third time.\n\nA standing order is carried out the same way every time, whatever else is going on that month, until it cannot be.`,
+  text: (s, c) => `${c.card} has come to you twice now, and twice the answer has been the same.\n\n[[note:The duty log, twice over]] "${c.label}."\n\nThe duty officer wants to know whether to wake you for it a third time.\n\nA standing order is carried out the same way every time, whatever else is going on that month, until it cannot be.`,
   choices: [
     { label: 'Make it the standing order', note: 'It is done that way from now on without coming to you, in a year when it suits and in a year when it does not.', hint: 'unknown', info: [['yield', 'One less thing brought to you'], ['danger', 'The year it should have been decided differently']],
       out: { text: (s, c) => `It is written into the duty book in one line, and initialled. The next time, the colony will read about it afterwards.`, fx: (s, c) => ({ do: s2 => { s2.standing = s2.standing || {}; s2.standing[c.id] = c.i; } }) } },
@@ -232,7 +232,7 @@ const lastF = s => { const id = (s.cur && s.cur.ctx && s.cur.ctx.fid) || (s.last
 const pl = f => !(LF.KINDS[f.kind] || {}).mass;
 const living = s => { const f = lastF(s); return !!f && ['fauna', 'natives', 'humans'].includes(f.kind); };   // something with wounded and young
 add({ id: 'aft.blame', arc: 'after', tone: 'pressure', chain: true, repeat: 50, title: 'Whose Order',
-  text: s => `Before the day is out, "${wasT(s)}" is being argued over in the mess hall, and the argument has come round to who gave the word.\n\n${Nc(s, 'chaplain')} is at your door. "They're not angry. Not yet. But somebody's got to tell them, and it had better be you."`,
+  text: s => `Before the day is out, the order on ${wasT(s)} is being argued over in the mess hall, and the argument has come round to who gave the word.\n\n${Nc(s, 'chaplain')} is at your door.\n\n[[chaplain]] "They're not angry. Not yet. But somebody's got to tell them, and it had better be you."`,
   choices: [
     { label: 'Stand up in the mess hall. It was your order', hint: 'unknown', info: [['danger', 'They will know whose order it was']], out: { text: 'You say it plainly and do not explain. Nobody answers, though a few people nod. Afterwards one of them stops bringing you anything but what is asked for.', fx: s => { const p = h.anyNamed(s); return { morale: 3, tension: -6, mark: p ? [p.id, 'grudge', `heard you say "${wasT(s)}" was your order, and has not forgiven the order`] : null }; } } },
     { label: 'Say nothing, and have the watch break up the talk', dark: true, note: 'An argument that is not allowed to gather in one room does not become a meeting.', info: [['yield', 'It blows over'], ['danger', 'People learn what may not be said']], test: { base: 60, mods: [If(s => s.morale >= 50, 10, 'A colony in good heart'), R('security', 8)] },
@@ -243,7 +243,7 @@ add({ id: 'aft.blame', arc: 'after', tone: 'pressure', chain: true, repeat: 50, 
   ] });
 add({ id: 'aft.press', view: 'world', arc: 'after', tone: 'pressure', chain: true, repeat: 50, title: 'While They Are Reeling',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${f.Name} ${pl(f) ? 'are' : 'is'} hurt and pulling back. ${Nc(s, 'security')} has people armed and standing at the wire, and wants to follow now. "Hurt things go to ground and mend," he says, "and then they come back, so I'd like to be standing there when ${pl(f) ? 'they do' : 'it does'}."`; },
+  text: s => { const f = lastF(s); return `${f.Name} ${pl(f) ? 'are' : 'is'} hurt and pulling back. ${Nc(s, 'security')} has people armed and standing at the wire, and wants to follow now.\n\n[[security]] "Hurt things go to ground and mend." "And then they come back, so I'd like to be standing there when ${pl(f) ? 'they do' : 'it does'}."`; },
   choices: [
     { label: s => living(s) ? 'Follow, and finish it. The wounded and the young as well' : 'Follow, and finish it', dark: true, note: s => living(s) ? 'What is left out there tonight is whatever could not get away fast.' : 'The watch goes out tired, in the dark, onto ground it does not know.', info: [['yield', 'Nothing comes from that way again'], ['danger', 'A fight in the dark']], test: { base: 56, mods: [R('security', 12), If(s => s.morale >= 50, 6, 'People believe in it')] },
       ok: { text: s => `They go out fast and come back at dawn, filthy, all of them.${living(s) ? ' They found what could not run, and left none of it.' : ''} It will be a long time before anything comes from that direction again.`, fx: s => ({ fops: [{ id: s.last.fid, threat: -26, harm: 32, accord: -25, kills: living(s) ? 6 : 0 }], morale: 2, stain: living(s) ? ['finished', 1] : null }) },
@@ -279,7 +279,7 @@ add({ id: 'aft.gift', view: 'world', arc: 'after', tone: 'opportunity', chain: t
   ] });
 add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: true, repeat: 50, title: 'The Thing That Does Not Fit',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n"I can test it tonight, I can test it right now, but don't ask me how, honestly, don't, you'll say no, and I'd really like not to be told no."`; },
+  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n[[xenobio]] "I can test it tonight, I can test it right now, but don't ask me how, honestly, don't, you'll say no, and I'd really like not to be told no."`; },
   choices: [
     { label: 'Test it tonight', info: [['danger', 'Unknown']], test: { base: 54, mods: [R('xenobio', 12)] },
       ok: { text: 'It was not an error. By morning there is a new page in the notebook, and three old ones crossed out.', fx: s => ({ fops: [{ id: s.last.fid, insight: 24, threat: -8 }] }) },
@@ -296,7 +296,7 @@ add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: t
 
 /* Frame-specific aftermaths (LF.aftermath, AFT_KIND in council.js) */
 add({ id: 'aft.beds', arc: 'after', view: 'colony', tone: 'pressure', chain: true, repeat: 60, title: 'Every Bed Taken',
-  text: s => `"${wasT(s)}" went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nc(s, 'physician')} says the Autodoc runs day and night until the corridor is empty, and is not asking.`,
+  text: s => `The order on ${wasT(s)} went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nc(s, 'physician')} says the Autodoc runs day and night until the corridor is empty, and is not asking.`,
   choices: [
     { label: 'Run the Autodoc until they are all on their feet', hint: 'unknown', info: [['yield', 'Everyone walks out'], ['danger', 'The Autodoc, and whoever needs it next year']], out: { text: 'It runs for nine days without stopping. Everyone walks out. The Autodoc makes a new noise when it starts up now, and the physician has started a list of what it should no longer be asked to do.', fx: { machine: { medbay: -9 }, cap: { medbay: -3 }, morale: 3 } } },
     { label: 'Stitch them by hand and send the walking ones back to their shifts', dark: true, note: 'The machine is saved and the work is not lost, and people who should be lying down are carrying loads.', hint: 'unknown', info: [['yield', 'The Autodoc spared, the shifts filled'], ['danger', 'The ones who open up again']], test: { base: 62, mods: [R('physician', 16)] },
@@ -327,7 +327,7 @@ add({ id: 'aft.carcass', arc: 'after', view: 'world', tone: 'pressure', chain: t
   ] });
 add({ id: 'aft.cutting', arc: 'after', view: 'colony', tone: 'opportunity', chain: true, repeat: 80, title: 'A Cutting in a Jar',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${N(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n"It could feed the wheat, or it could eat the wheat, I don't know which yet, and I have to know which, give me one plot and I'll find out, no wait, give me a fence and one plot."`; },
+  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${N(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n[[xenobio]] "It could feed the wheat, or it could eat the wheat, I don't know which yet, and I have to know which, give me one plot and I'll find out, no wait, give me a fence and one plot."`; },
   choices: [
     { label: 'Trial it in one plot, fenced off', info: [['yield', 'Maybe better harvests']], test: { base: 50, mods: [R('botanist', 12), R('xenobio', 10)] },
       ok: { text: 'The fenced plot comes up thicker and greener than any other. The roots stop at the fence.', fx: s => ({ yield: 0.07, fops: [{ id: s.last.fid, insight: 8 }] }) },

@@ -45,7 +45,7 @@ const nolabF = s => s.factors.filter(f => f.stage >= 1 && !f.res && !f.dormant &
 add({ id: 'bu.nolab', arc: 'bu_lab', view: 'colony', tone: 'pressure', title: 'Nowhere to Put It', gap: 40, repeat: 300, w: 1.6,
   when: s => landed(s) && s.day >= 120 && !has(s, 'lab') && !!nolabF(s) && !!P(s, 'xenobio'),
   setup: s => { const f = nolabF(s); return { fid: f.id, name: f.name, Name: f.Name, med: s.machines.medbay.up ? 'up' : s.machines.medbay.lost ? 'lost' : 'here' }; },
-  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. The soil laboratory is all seed trays and wheat, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'and the autodoc is kept for the living'}, and the colony has no laboratory.\n\n"I can do it on the seed bench, or I can't do it at all, and I know those are the only two choices, but look at it, you haven't even looked, just look!"`,
+  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. The soil laboratory is all seed trays and wheat, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'and the autodoc is kept for the living'}, and the colony has no laboratory.\n\n[[xenobio]] "I can do it on the seed bench, or I can't do it at all, and I know those are the only two choices, but look at it, you haven't even looked, just look!"`,
   choices: [
     { label: 'Work it on the seed bench, among next season\'s stock', note: 'It gets done this month, on the only clean bench there is, next to the seed for the next sowing.', info: [['yield', (s, c) => `What ${c.name} is`], ['danger', 'The seed stock']],
       test: { base: 46, mods: [R('xenobio', 14)] },
@@ -62,7 +62,7 @@ LF.TAGS['bu.nolab'] = ['bold open', 'severe', 'cautious'];
 add({ id: 'bu.lab', arc: 'bu_lab', view: 'colony', tone: 'opportunity', title: 'The Bench at Night', gap: 40, repeat: 400, w: 1.8,
   when: s => landed(s) && has(s, 'lab') && since(s, 'lab') >= 50 && !!P(s, 'xenobio'),
   setup: s => ({ wild: LF.lex(s, 'wild1') }),
-  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n"It could feed the north field, or it could get loose and feed everything else, probably both, honestly probably both, and I need to grow it on to know, which is the whole problem and the whole joy of it!"`,
+  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n[[xenobio]] "It could feed the north field, or it could get loose and feed everything else, probably both, honestly probably both, and I need to grow it on to know, which is the whole problem and the whole joy of it!"`,
   choices: [
     { label: 'Grow it on, in the cold room, under lock', note: 'A season of work for the laboratory, and one technician who handles it every day.', info: [['yield', 'Better harvests, if it holds'], ['danger', 'The technician who tends it']],
       test: { base: 52, mods: [R('xenobio', 14)] },
@@ -113,7 +113,7 @@ LF.TAGS['bu.comms'] = ['order', 'severe closed', 'free'];
 add({ id: 'bu.nocan', arc: 'bu_can', view: 'colony', tone: 'pressure', title: 'Soft in the Bins', gap: 40, repeat: 360, w: 2,
   when: s => landed(s) && !has(s, 'cannery') && (s.flags.harvests || 0) >= 1 && s.day % LF.SEASON < 20 && s.day >= 100 && foodDays(s) > 30,
   setup: s => ({ a: share(s, 0.12), b: share(s, 0.05) }),
-  text: s => `${Nc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n"Four's gone and five's going. No cold room, no jars, so it rots faster than we can eat it. We eat the soft first, or nobody eats it."`,
+  text: s => `${Nc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n[[quartermaster]] "Four's gone and five's going. No cold room, no jars, so it rots faster than we can eat it. We eat the soft first, or nobody eats it."`,
   choices: [
     { label: 'Everyone eats the soft grain first, the officers too', note: 'Nothing is thrown away. A month of sour bread, and the weakest stomachs feel it.', info: [['danger', 'The old and the sick']],
       out: { text: 'The soft grain goes into everything for a month. Nobody likes it. The clinic fills with stomachs, and one of the oldest doesn\'t get up.', fx: (s, c) => ({ food: c.b, morale: -3, pop: -1 }) } },
@@ -146,7 +146,7 @@ Object.assign(LF.DEEDS || {}, { bu_strip: 'the slope stripped to the roots and b
 add({ id: 'bu.nowatch', arc: 'bu_watch', view: 'world', tone: 'pressure', title: 'As Far as the Lamp', gap: 40, repeat: 260, w: 2.6,
   when: s => landed(s) && s.day >= 60 && !has(s, 'watch') && !!out(s) && out(s).threat >= 25,
   setup: s => { const f = out(s); return { fid: f.id, name: f.name, Name: f.Name, are: are(f) }; },
-  text: (s, c) => `${c.Name} came to the wire last night and went along it, post by post, the whole way round. Nobody saw. The tracks were found at first light, and the dogs had been quiet.\n\n${Nc(s, 'security')}: "We walk the inside of the fence with a lamp. We see as far as the lamp. Whatever's out there knows exactly how far that is."`,
+  text: (s, c) => `${c.Name} came to the wire last night and went along it, post by post, the whole way round. Nobody saw. The tracks were found at first light, and the dogs had been quiet.\n\n[[security]] "We walk the inside of the fence with a lamp. We see as far as the lamp. Whatever's out there knows exactly how far that is."`,
   choices: [
     { label: 'Double the night watch, on foot', note: 'Twelve more people up all night, and the day crews go short of them.', info: [['danger', 'The watch, and the day\'s work']],
       out: { text: 'Twice the lamps on the fence, and twice the people asleep on their feet by morning. The tracks stop coming as close.', fx: (s, c) => ({ fops: [{ id: c.fid, threat: -6 }], food: -60, morale: -1, flags: { watch_wanted: s.day } }) } },
@@ -195,7 +195,7 @@ const motion = s => LF.lean(s) ? 'ladle' : 'mess';
 add({ id: 'bu.hall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 'A Motion from the Floor', gap: 40, repeat: 400, w: 1.6,
   when: s => landed(s) && has(s, 'hall') && since(s, 'hall') >= 40 && s.pop >= 20,
   setup: s => ({ m: motion(s) }),
-  text: (s, c) => `The hall meets every rest-day now, and this week it voted, two hands to one: ${c.m === 'ladle' ? 'full rations for a month, whatever the store says' : 'the officers eat what everyone eats, in the mess, at the same tables'}.\n\n${Nc(s, 'command')}: "It's not binding. Yet. Say no and it will be."`,
+  text: (s, c) => `The hall meets every rest-day now, and this week it voted, two hands to one: ${c.m === 'ladle' ? 'full rations for a month, whatever the store says' : 'the officers eat what everyone eats, in the mess, at the same tables'}.\n\n[[command]] "It's not binding. Yet. Say no and it will be."`,
   choices: [
     { label: 'Accept it', note: (s, c) => c.m === 'ladle' ? 'A month of full ladles, out of a store that can\'t spare it.' : 'The officers eat in the mess, and every complaint in the colony knows where to find them at supper.', info: (s, c) => [['yield', 'Morale'], ['danger', c.m === 'ladle' ? 'The store' : 'The officers\' nerve']],
       out: { text: (s, c) => c.m === 'ladle' ? 'Full ladles for a month. The hall cheers the first one. The store ledger takes it hard.' : 'The officers carry their trays to the long tables. The first week they hardly eat for being talked to.', fx: (s, c) => c.m === 'ladle' ? { morale: 5, food: -120, lift: 4 } : { morale: 4, off: [['command', 'mind', -4], ['crew', 'mind', -3]] } } },

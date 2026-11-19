@@ -313,7 +313,7 @@ inc('cryo', 'Bank C', 'command', {
       out: end({ text: (s, c) => `${X(s, c).first} picks the row. The six pods nearest the split are shut off and their coolant fed to the others. ${X(s, c).first} writes the six names in the log by hand.`, fx: (s, c) => ({ sleepers: -6, stain: ['row', 1], off: [[c.sp, 'mind', -4]] }) }) },
   ] });
 inc('patch', 'The Patch', 'engineer', {
-  text: (s, c) => `${year(s, c)} The patch over the meteor hole has lifted at one corner, and the forward section is losing air.\n\n${awake(s, c)}${c.own ? `\n\n"That corner's past any line we've got," ${X(s, c).first} says. "I can reach it loose. I'd want it in the log that I said what I think of that."` : ''}`,
+  text: (s, c) => `${year(s, c)} The patch over the meteor hole has lifted at one corner, and the forward section is losing air.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "That corner's past any line we've got." "I can reach it loose. I'd want it in the log that I said what I think of that."` : ''}`,
   choices: [
     { label: 'Seal the forward section for good', note: 'Whatever is stored forward of the doors is lost.', out: end({ text: 'The doors are welded shut. The plate stock in the forward bays stays where it is, in vacuum, for good, and so do the forward seed lockers. The colony will sow less than it meant to.', fx: { mat: -14, food: -60 } }) },
     { label: (s, c) => `Send ${X(s, c).first} out with no tether`, dark: true, note: (s, c) => `The corner is past the reach of a line. ${X(s, c).first} knows that, and has said so.`, info: (s, c) => [['yield', 'The forward section, whole'], ['danger', X(s, c).first]], test: { base: 64, mods: WATCH },
@@ -334,7 +334,7 @@ inc('patch', 'The Patch', 'engineer', {
             : Object.assign(hurt(b, -30), { mat: 6, stain: ['doors', 1] }); } }) },
   ] });
 inc('bearing', 'The Third Bearing', 'engineer', {
-  text: (s, c) => `${year(s, c)} ${s.premise === 'engine' ? 'This engine was promised one burn, and it is not finished yet. ' : ''}The main engine's third bearing is running hot${V(s).mode === 'hot' ? ', as Jeremy said it would,' : ''} and the temperature is still climbing.\n\n${awake(s, c)}${c.own ? `\n\n"She'll take a repack with the shaft stopped, and it'll cost you the years," ${X(s, c).first} says. "Or somebody goes in with her turning. That'd be me, and I don't recommend it."` : ''}`,
+  text: (s, c) => `${year(s, c)} ${s.premise === 'engine' ? 'This engine was promised one burn, and it is not finished yet. ' : ''}The main engine's third bearing is running hot${V(s).mode === 'hot' ? ', as Jeremy said it would,' : ''} and the temperature is still climbing.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "She'll take a repack with the shaft stopped, and it'll cost you the years." "Or somebody goes in with her turning. That'd be me, and I don't recommend it."` : ''}`,
   choices: [
     { label: 'Throttle back and take longer', note: 'The sleepers spend more years in the cold.', out: end({ text: s => `The engine is eased to two-thirds, and the bearing cools. The crossing will take ${longer(s, 0.15)} more year${longer(s, 0.15) > 1 ? 's' : ''}, and the cryo banks have to last them.`,
       fx: s => ({ sleepers: -3, chips: [[`${longer(s, 0.15)} year${longer(s, 0.15) > 1 ? 's' : ''} longer`, false]], do: s2 => { s2.world.transit.years += longer(s2, 0.15); } }) }) },
@@ -348,7 +348,7 @@ inc('bearing', 'The Third Bearing', 'engineer', {
       out: end({ text: 'The coolant from the nearest bank is piped through the bearing housing, and the temperature drops inside the hour. The twelve pods on that loop warm past recovery over the following day. The engine does not lose a minute.', fx: { sleepers: -12, stain: ['coolant', 1] } }) },
   ] });
 inc('mould', 'Grey in the Stores', 'crew', {
-  text: (s, c) => `${year(s, c)} The grey mould is back, in the dry stores this time.\n\n${awake(s, c)}${c.own ? `\n\n"Three bays showing," ${X(s, c).first} says. "Could be thirty sacks. Could be all of it. Won't know till they're open."` : ' Three bays show it, and there is no telling how far it has spread.'}`,
+  text: (s, c) => `${year(s, c)} The grey mould is back, in the dry stores this time.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "Three bays showing." "Could be thirty sacks. Could be all of it. Won't know till they're open."` : ' Three bays show it, and there is no telling how far it has spread.'}`,
   choices: [
     { label: 'Burn all three bays', note: 'It is certain, and it costs everything in them.', out: end({ text: 'Three bays of sacks go out through the lock and burn off in the drive plume. The mould is not seen again. The colony will land with a month less in the hold than it counted on, and the first to feel a short month are the ones who were thin already.', fx: { food: -220 } }) },
     { label: 'Open every sack and sort it by hand', test: { base: 50, mods: WATCH },
@@ -364,7 +364,7 @@ inc('mould', 'Grey in the Stores', 'crew', {
             : { food: -100, off: [[a.id, 'body', -18], [b.id, 'body', -18]], chips: [[`${a.first} and ${b.first} are poisoned`, false]], morale: -1, stain: ['taster', 2] }; } }) },
   ] });
 inc('pursuit', 'A Light Astern', 'security', {
-  text: (s, c) => `${year(s, c)} There has been a drive flare on the stern scope for three weeks, on the ship's own heading and closing. Its spectrum matches the beacon's.\n\n${awake(s, c)}${c.own ? `\n\n"Three weeks on our heading, closing, and not a word on any band," ${X(s, c).first} says. "Bloody friendly of them. Shall we wait and see what they'd like?"` : ''}`,
+  text: (s, c) => `${year(s, c)} There has been a drive flare on the stern scope for three weeks, on the ship's own heading and closing. Its spectrum matches the beacon's.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "Three weeks on our heading, closing, and not a word on any band." "Bloody friendly of them. Shall we wait and see what they'd like?"` : ''}`,
   choices: [
     { label: 'Go dark and coast', note: 'The cryo banks run warm while the reactor is banked.', out: end({ text: 'The engine is shut down and the reactor banked. The flare passes a long way off and keeps going. The cryo banks ran warm for the weeks it took, and four sleepers did not come through.', fx: { sleepers: -4 } }) },
     { label: 'Burn hard and outrun it', test: { base: 52, mods: WATCH },
@@ -374,7 +374,7 @@ inc('pursuit', 'A Light Astern', 'security', {
       out: end({ text: (s, c) => `${X(s, c).first} blows the bank free on its own cells and the ship coasts cold behind it. The flare changes course toward it. Eleven days later the bank stops transmitting.`, fx: { sleepers: -20, parts: 3, stain: ['decoy', 2] } }) },
   ] });
 inc('drift', 'The Fix', 'command', {
-  text: (s, c) => `${year(s, c)} The star fix is off again. The error is small, and it grows every day it is flown.\n\n${awake(s, c)}${c.own ? `\n\n"I make it two degrees," ${X(s, c).first} says. "A month of sightings tells us the same thing a month later. Give the order and I'll fly it."` : ''}`,
+  text: (s, c) => `${year(s, c)} The star fix is off again. The error is small, and it grows every day it is flown.\n\n${awake(s, c)}${c.own ? `\n\n[[${c.sp}]] "I make it two degrees." "A month of sightings tells us the same thing a month later. Give the order and I'll fly it."` : ''}`,
   choices: [
     { label: 'Stop the burn and take a month of sightings', note: 'It costs a month of stores and gives a heading that can be trusted.', out: end({ text: 'The engine is shut down for a month while every star in the catalogue is sighted twice. The new heading is good.', fx: { food: -110 } }) },
     { label: (s, c) => `Correct on ${X(s, c).first}'s best reckoning`, test: { base: 50, mods: WATCH },
@@ -487,7 +487,7 @@ inc('spine', 'The Spine', 'engineer', {
   ] });
 inc('sick', 'The Fever', 'doctor', {
   text: (s, c) => { const [a, b] = W(s, c), x = X(s, c);
-    return `${year(s, c)} ${b.first} came up from the thaw carrying something the cold had kept asleep, and ${a.first}, who has the watch with ${him(b)}, has it now too. ${c.woke ? `They got ${x.first} out of the bay before they went down with it, and ${x.first} has woken you. ${c.own ? `"I can't name it," ${x.first} says. "I've got two drugs that might touch it and a store packed for the ground. You woke me to treat them, so let me treat them."` : `${x.first} cannot name it.`}` : `One of them got to your pod before the fever put them both in their bunks. Nobody awake can name it.`}${(MODES[V(s).mode] || {}).awake && V(s).mode !== 'thin' && V(s).mode !== 'dose' ? ' ' + MODES[V(s).mode].awake : ''}`; },
+    return `${year(s, c)} ${b.first} came up from the thaw carrying something the cold had kept asleep, and ${a.first}, who has the watch with ${him(b)}, has it now too. ${c.woke ? `They got ${x.first} out of the bay before they went down with it, and ${x.first} has woken you.${c.own ? '' : ` ${x.first} cannot name it.`}` : `One of them got to your pod before the fever put them both in their bunks. Nobody awake can name it.`}${(MODES[V(s).mode] || {}).awake && V(s).mode !== 'thin' && V(s).mode !== 'dose' ? ' ' + MODES[V(s).mode].awake : ''}${c.woke && c.own ? `\n\n[[${c.sp}]] "I can't name it." "I've got two drugs that might touch it and a store packed for the ground. You woke me to treat them, so let me treat them."` : ''}`; },
   choices: [
     { label: 'Nurse them, with everything in the drug store', note: 'The autodoc\'s drug store goes on two people, and whoever nurses them is next.', test: { base: 56, mods: WATCH }, info: [['danger', 'The drug store'], ['danger', 'Whoever nurses them']],
       ok: end({ text: s => `The fever breaks in the second week, in both of them. The drug store is a good deal lighter. ${went(s, 'ok')}`, fx: { machine: { medbay: -6 } } }),
@@ -601,7 +601,7 @@ LF.fallen = fallen;
 const eulogy = (s, d) => { const said = (SAID[d.key] || []).map(([k, line]) => [s.people.find(p => p.key === k && p.seat && p.role && p.alive), line]).filter(x => x[0]);
   const here = said.find(x => !x[0].orbit) || said[0];
   if (!here) return `Nobody finds the words for ${d.first}. The name is read into the log, and the wind takes the rest.`;
-  return `For ${d.name}, ${d.cause.replace(/, on the crossing$/, '')}: "${here[1]}" ${here[0].orbit ? `That is ${here[0].first}, from orbit, over the lander's radio.` : `That is ${here[0].first}.`}`; };
+  return `${here[0].first} speaks for ${d.name}, ${d.cause.replace(/, on the crossing$/, '')}${here[0].orbit ? ', from orbit, over the lander\'s radio' : ''}.\n\n[[${here[0].id}]] "${here[1]}"`; };
 add({ id: 'land.eulogy', view: 'people', arc: 'setup', tone: 'quiet', chain: true, title: 'What Is Said at the Ramp',
   setup: s => { const d = fallen(s); s.flags.fell_n = d.length; return { names: d.map(p => p.first), said: d.map(p => eulogy(s, p)) }; },
   text: (s, c) => `The ramp is down. Before anything comes off the lander, your officers stand at the foot of it for ${and3(c.names)}, who did not live to see this ground.\n\n${c.said.join('\n\n')}`,

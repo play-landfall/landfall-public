@@ -6,7 +6,12 @@
    m roles that help, cost, show/req, ok/bad/out: [text, fx]. fx.f adjusts the factor; fx.lose costs the stake. */
 (function () {
 'use strict';
-const F = LF.frame;
+/* Who speaks on a frame (DESIGN.md "Who is speaking"): the frame's lead, by person id, or the post itself when nobody holds it,
+   so the stand-in for that department says it. People from another human group speak through their envoy (the roster's outsiders). */
+const F = (kind, stage, fr) => { const t = fr.text, l0 = (fr.lead || ['security'])[0];
+  if (typeof t === 'function') fr.text = x => { x.who = x.leadP ? x.leadP.id : l0; return t(x); };
+  return LF.frame(kind, stage, fr); };
+const them = x => x.f && x.f.sub === 'feral' ? 'x39' : 'x38';
 const T = x => /^the [A-Z]/.test(x.n) ? x.N : x.N.replace(/^The /, '').replace(/^./, c => c.toUpperCase());
 const knows = x => x.f.insight >= 20;
 
@@ -34,7 +39,7 @@ F('fauna', 2, { id: 'fauna.blood', tone: 'crisis', lead: ['security', 'physician
       bad: [x => `They take the stretcher and are gone before the first shot. The watch walks back in without it.`, { pop: -1, morale: -5, stain: ['bait_live', 2], f: { threat: 8 } }] },
   ] });
 F('fauna', 3, { id: 'fauna.season', tone: 'pressure', lead: ['security', 'botanist'], needs: ['fighters', 'guides', 'weapons'], title: x => `${T(x)}: Another Season`,
-  text: x => `${x.N} are back, and this time they are working at ${x.st}, by day, in the open.\n\n"They've stopped being scared of us," says ${x.lead}. "Which means they learned something, and I'd like to know what, because it wasn't from anything we meant to teach them."`,
+  text: x => `${x.N} are back, and this time they are working at ${x.st}, by day, in the open.\n\n[[${x.who}]] "They've stopped being scared of us." "Which means they learned something, and I'd like to know what, because it wasn't from anything we meant to teach them."`,
   ask: x => `Do you cull ${x.n} with the field crews as beaters, feed ${x.them} well away from camp, or hunt ${x.them} for meat with the lock-up eating it first?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe bold', l: 'A cull, with the field crews walking the line as beaters', b: 50, m: ['security'], ok: [x => `It takes a week and most of the ammunition. The field crews walk the line unarmed to drive ${x.them} onto the guns, and one of the beaters is slow.`, { parts: -2, pop: -1, stain: ['driven', 1], f: { threat: -10 } }], bad: [x => `They scatter, regroup, and come back through the one gap nobody was watching.`, { lose: 1, parts: -2, stain: ['driven', 1] }] },
@@ -70,7 +75,7 @@ F('flora', 1, { id: 'flora.sign', tone: 'pressure', lead: ['botanist', 'engineer
     { ap: 'avoid', l: 'Clear a firebreak around the camp', cost: { mat: 15 }, out: [x => `The bare strip has to be raked every day, for as long as the camp stands.`, { f: { wall: 1 } }] },
   ] });
 F('flora', 2, { id: 'flora.reach', tone: 'crisis', lead: ['engineer', 'botanist'], title: x => `${T(x)}: Inside the Wire`,
-  text: x => `Overnight, ${x.n} reached ${x.st}. Nobody saw it arrive.\n\n${x.Lead}: "I can cut it out of the wire, two days if nobody gets in my way. All of it, though? I wouldn't promise that."`,
+  text: x => `Overnight, ${x.n} reached ${x.st}. Nobody saw it arrive.\n\n[[${x.who}]] "I can cut it out of the wire, two days if nobody gets in my way. All of it, though? I wouldn't promise that."`,
   ask: x => `Do you cut ${x.n} out of the wire with an unmasked crew, or tell the crews it is contained and watch how it spreads?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe bold', l: 'Cut and burn now. The crew works unmasked', n: 'There is no time to print filters for a cutting crew.', b: 55, m: ['engineer'], ok: [x => `After two days of ugly work it is gone from inside the wire. Three of the cutters are coughing by the end, and one does not stop.`, { mat: -10, pop: -1, stain: ['detail', 2], f: { threat: -10 } }], bad: [x => `It was deeper in than it looked, and the cutters breathed it for nothing.`, { lose: 1, pop: -1, stain: ['detail', 2] }] },
@@ -88,7 +93,7 @@ F('flora', 3, { id: 'flora.creep', tone: 'pressure', lead: ['botanist', 'enginee
       out: [x => `The lock-up is emptied onto the belt and worked in shifts with the watch standing upwind. It is cut back further than it has been all year, and the field crews go back to the fields. Three of the detail are buried before the season turns, and what they died of is not written down.`, { pop: -3, morale: -3, stain: ['detail', 2], f: { threat: -28, harm: 20 } }] },
   ] });
 F('flora', 3, { id: 'flora.bloom', tone: 'opportunity', lead: ['xenobio', 'botanist'], title: x => `${T(x)}: In Flower`,
-  text: x => `For a few days ${x.n} has stopped growing and started producing something: fruit, seed, spore, nobody is sure.\n\n"Look at it, look, it's put everything into this," says ${x.lead}. "So it's weak right now, or it's breeding, or both, no wait, definitely both, I need samples."`,
+  text: x => `For a few days ${x.n} has stopped growing and started producing something: fruit, seed, spore, nobody is sure.\n\n[[${x.who}]] "Look at it, look, it's put everything into this." "So it's weak right now, or it's breeding, or both, no wait, definitely both, I need samples."`,
   ask: x => `While ${x.n} ${x.are} in flower, do you burn ${x.them} everywhere with masks for only half, collect what ${x.they} make, or feed it to the lock-up to see if it can be eaten?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe bold', l: 'Hit it now, everywhere at once, masks or no masks', b: 60, m: ['botanist'], ok: [x => `Everyone turns out with torches, and by the end of the month it has been set back years. There were masks for half of them, and one of the other half is in the clinic for good.`, { pop: -1, stain: ['detail', 1], f: { harm: 45, threat: -30 } }], bad: [x => `Burning it spreads whatever it was making on the smoke, into the half who had no masks.`, { lose: 1, stain: ['detail', 1], f: { threat: 15 } }] },
@@ -116,7 +121,7 @@ F('plague', 1, { id: 'plague.sign', tone: 'pressure', lead: ['physician'], title
       out: [x => `The case goes out on a stretcher after dark, with a week of water and a blanket. Four days later ${x.lead} enters it in the log as a death from exposure. Nobody else in that bunkroom sickens for a month.`, { pop: -1, morale: -2, stain: ['carriers', 1], f: { threat: -18 } }] },
   ] });
 F('plague', 2, { id: 'plague.spread', tone: 'crisis', lead: ['physician', 'chaplain'], stakes: ['crew', 'morale'], title: x => `${T(x)}: It Spreads`,
-  text: x => `${x.N} is in a dozen people now, and ${x.st} has it worst.\n\n${x.Lead} has not slept. "Which is it? Patients, I can treat. If it's a fire, you say so, out loud, and you put it out yourself."`,
+  text: x => `${x.N} is in a dozen people now, and ${x.st} has it worst.\n\n${x.Lead} has not slept.\n\n[[${x.who}]] "Which is it? Patients, I can treat. If it's a fire, you say so, out loud, and you put it out yourself."`,
   ask: x => `Do you treat ${x.n} as a fire and bar the bunkhouse with the well still inside, or nurse the sick on open wards with people ordered onto them by rota?`,
   choices: [
     { ap: 'force', dark: true, l: 'A fire. Bar the bunkhouse, with the well ones still in it', n: 'Sorting the sick from the well takes two days, and it spreads in one.', v: 'severe order', b: 60, m: ['security', 'physician'], ok: [x => `The bunkhouse is barred with thirty inside, a dozen of them sick. It works. Five who went in healthy do not come out.`, { pop: -5, morale: -4, stain: ['barred_in', 2], f: { threat: -38 } }], bad: [x => `Someone gets out through a roof panel to see a child, and within the month it is everywhere.`, { lose: 1, morale: -4, stain: ['barred_in', 1] }] },
@@ -124,7 +129,7 @@ F('plague', 2, { id: 'plague.spread', tone: 'crisis', lead: ['physician', 'chapl
     { ap: 'exploit', dark: true, l: 'Trial the three candidate drugs on the sickest, untold', v: 'bold severe', b: 45, m: ['physician'], req: x => LF.down(x.s, 'fabricator'), reqText: 'Needs the Fabricator', ok: [x => `The second candidate works. The two who were given the first and the third are dead, and their families are told it was the fever.`, { pop: -2, stain: ['trial', 2], f: { insight: 30, threat: -28, accord: 0 } }], bad: [x => `None of the three works, and one of them is worse than the disease.`, { lose: 1, stain: ['trial', 2] }] },
   ] });
 F('plague', 3, { id: 'plague.return', tone: 'pressure', lead: ['physician', 'quartermaster'], needs: ['knowledge', 'guides'], title: x => `${T(x)}: A New Wave`,
-  text: x => `${x.N} is back with the change of season, and this time it has found ${x.st}.\n\n${x.Lead}: "We know more than last time. Trouble is, so does it. Don't ask me how a bug learns, ask me who's going to be in the beds."`,
+  text: x => `${x.N} is back with the change of season, and this time it has found ${x.st}.\n\n[[${x.who}]] "We know more than last time. Trouble is, so does it. Don't ask me how a bug learns, ask me who's going to be in the beds."`,
   ask: x => `Do you quarantine again against ${x.n}, chart this wave without treating it, or infect the young and strong to breed immunity?`,
   choices: [
     { ap: 'force', l: 'Quarantine again', v: 'order', b: 55, m: ['physician', 'security'], ok: [x => `The tape goes up. People line up on their side of it without being told.`, { morale: -3 }], bad: [x => `Nobody believes in the tape any more.`, { lose: 1, morale: -3 }] },
@@ -132,7 +137,7 @@ F('plague', 3, { id: 'plague.return', tone: 'pressure', lead: ['physician', 'qua
     { ap: 'exploit', dark: true, l: 'Deliberately infect the young and strong, to breed immunity', n: 'They would be told it was a vaccine.', v: 'bold severe', b: 45, m: ['physician'], ok: [x => `After a grim month in the pods there are sixty people it cannot touch, and they can nurse the rest. Two of the sixty did not come out of the pods.`, { pop: -2, stain: ['infected', 2], f: { threat: -38, accord: 0 } }], bad: [x => `The young and strong turn out to be exactly who it likes best.`, { lose: 1.5, stain: ['infected', 2] }] },
   ] });
 F('plague', 3, { id: 'plague.carrier', tone: 'pressure', lead: ['physician', 'security'], stakes: ['person'], title: x => `${T(x)}: The Carrier`,
-  text: x => `${x.Lead} has traced the last three outbreaks to one person: ${x.st}, who has never been sick a day, and sheds it constantly.\n\n"There's nothing to treat. Carriers aren't sick. So we work something out, and you don't do it without me in the room."`,
+  text: x => `${x.Lead} has traced the last three outbreaks to one person: ${x.st}, who has never been sick a day, and sheds it constantly.\n\n[[${x.who}]] "There's nothing to treat. Carriers aren't sick. So we work something out, and you don't do it without me in the room."`,
   ask: x => `What do you do about ${x.st}, who carries ${x.n} without ever being sick: shut them away beyond the fence, tell the whole colony, or bleed them for a serum?`,
   choices: [
     { ap: 'force', l: 'Permanent isolation. A pod alone, beyond the fence', v: 'severe order', out: [x => `The pod comes with a garden plot and a radio. People wave from the fence, though fewer of them as the months go by.`, x => ({ mark: [x.stake.pid, 'slighted', `was shut away as a carrier of ${x.n}`], morale: -3, f: { threat: -30 } })] },
@@ -160,7 +165,7 @@ F('ruin', 1, { id: 'ruin.sign', tone: 'opportunity', lead: ['geologist', 'xenobi
     { ap: 'avoid', l: 'Fence it and forbid the site', v: 'cautious closed order', out: [x => `A fence goes up, with a sign. By the end of the month there is a path worn to it.`, { f: { wall: 1 } }] },
   ] });
 F('ruin', 2, { id: 'ruin.touch', tone: 'pressure', lead: ['geologist', 'engineer'], stakes: ['person'], title: x => `${T(x)}: Contact`,
-  text: x => `${x.st} went into ${x.n} ${x.f.uses.avoid ? 'over the fence, at night' : 'alone, against instructions'}, and came out two days later, unharmed and in no hurry, but changed.\n\n"Whatever's in there," says ${x.lead}, "it isn't done with us, it's barely started, and I need to talk to ${x.st.split(' ')[0]}, now, before it fades, hold on, where are they, has anyone seen them."`,
+  text: x => `${x.st} went into ${x.n} ${x.f.uses.avoid ? 'over the fence, at night' : 'alone, against instructions'}, and came out two days later, unharmed and in no hurry, but changed.\n\n[[${x.who}]] "Whatever's in there, it isn't done with us, it's barely started, and I need to talk to ${x.st.split(' ')[0]}, now, before it fades, hold on, where are they, has anyone seen them."`,
   ask: x => `What do you do with ${x.st}, who came out of ${x.n} changed: keep them awake to get all of it out, lock them up and seal the way in, or send them back in for more?`,
   choices: [
     { ap: 'study', dark: true, v: 'severe cautious', l: x => `Keep ${x.st.split(' ')[0]} awake until all of it is out`, n: 'It fades with sleep. The clinic has stimulants enough for nine days.', out: [x => `Nine days without sleep, with someone always in the room. There are forty hours of recordings and two hundred drawings, some of them engineering. ${x.st} is not right afterwards.`, x => ({ mark: [x.stake.pid, 'touched', `went into ${x.n}, and was kept awake nine days to say what was in there`], stain: ['drawings', 2], f: { insight: 50 } })] },
@@ -170,7 +175,7 @@ F('ruin', 2, { id: 'ruin.touch', tone: 'pressure', lead: ['geologist', 'engineer
       out: [x => `${x.st} goes under for what is described as a longer scan, and does not wake from it. What is in the autodoc's notes afterwards is worth more than everything else known about ${x.n} put together.`, x => ({ kill: [{ who: x.stake.pid, cause: `died on the table, opened up after ${x.n}` }], morale: -5, stain: ['opened', 3], f: { insight: 60 } })] },
   ] });
 F('ruin', 3, { id: 'ruin.gift', tone: 'opportunity', lead: ['engineer', 'geologist'], needs: ['knowledge'], title: x => `${T(x)}: What It Offers`,
-  text: x => `${x.Lead} has worked out what ${x.n} is good for: ${x.K.wants}. It is there for the taking.\n\n"There's a catch," says ${x.lead}. "There always is. I've been over it twice and I can't find it, and I'd rather find it."`,
+  text: x => `${x.Lead} has worked out what ${x.n} is good for: ${x.K.wants}. It is there for the taking.\n\n[[${x.who}]] "There's a catch." "There always is. I've been over it twice and I can't find it, and I'd rather find it."`,
   ask: x => `Do you take what ${x.n} offers with the lock-up carrying it out, learn how it works first, or leave it and do without?`,
   choices: [
     { ap: 'exploit', dark: true, l: 'Take it. The lock-up carries it out by hand', n: 'Nobody knows what it does to hands.', v: 'bold severe', b: 55, m: ['engineer'], ok: [x => `It is everything promised. Six prisoners carry it out by hand, and are watched for a month afterwards.`, { parts: 16, mat: 45, stain: ['expend', 1], f: { threat: 10 } }], bad: [x => `Halfway through, every light in the site comes on at once, with the prisoners inside.`, { pop: -2, parts: 5, stain: ['expend', 2], f: { threat: 20 } }] },
@@ -186,7 +191,7 @@ F('ruin', 3, { id: 'ruin.wake', tone: 'pressure', lead: ['engineer', 'security']
     { ap: 'avoid', l: 'Pull everyone back two kilometres', out: [x => `The colony leans away from it, like people from a fire.`, { lose: 0.5, f: { threat: -10 } }] },
   ] });
 F('ruin', 4, { id: 'ruin.reckoning', tone: 'crisis', lead: ['engineer', 'geologist'], needs: ['knowledge'], stakes: ['machine', 'crew', 'person'], title: x => `${T(x)}: Awake`,
-  text: x => `${x.N} is fully awake. Every instrument within ten kilometres says so, and so does ${x.st}.\n\n${x.Lead}: "We get one go at this. We take the controls, or we learn to live next door to her. Anything in between, she picks for us, and I'd rather it was me with a hand on the lever."`,
+  text: x => `${x.N} is fully awake. Every instrument within ten kilometres says so, and so does ${x.st}.\n\n[[${x.who}]] "We get one go at this. We take the controls, or we learn to live next door to her. Anything in between, she picks for us, and I'd rather it was me with a hand on the lever."`,
   ask: x => `Do you try to take control of ${x.n}, destroy ${x.them}, or stand unarmed before ${x.them}, and whose lives go first?`,
   choices: [
     { ap: 'exploit', dark: true, l: 'Take control of it. The apprentices try the interface first', n: 'Somebody has to find out what it does to hands before the engineers put theirs on it.', v: 'bold severe', b: 35, m: ['engineer', 'geologist'], ok: [x => `The first two apprentices show the engineers what not to touch. The third time it accepts the hands on it, and ${x.N} answers to the colony now.`, x => ({ pop: -2, parts: 12, survey: 40, stain: ['expend', 2], f: { resolve: 'harnessed' } })], bad: [x => `It lets them try, and then it pushes back, hard. The apprentices were nearest.`, { lose: 1.5, pop: -2, stain: ['expend', 2], f: { threat: -25 } }] },
@@ -219,7 +224,7 @@ F('natives', 2, { id: 'natives.meeting', tone: 'pressure', lead: ['xenobio', 'ch
       out: [x => `It drops what it was carrying and sits down, and then lies down. The others do not run. They pick it up and walk away with it, slowly, with their backs to the rifles. What it was carrying turns out to be yours, cleaned and mended.`, { morale: -4, stain: ['parley', 2], f: { threat: -28, accord: -70, harm: 15, kills: 1 } }] },
   ] });
 F('natives', 3, { id: 'natives.ground', tone: 'pressure', lead: ['geologist', 'xenobio'], needs: ['guides', 'knowledge'], title: x => `${T(x)}: Whose Ground`,
-  text: x => `The colony needs something on land ${x.n} use: what would make ${x.st} whole. They have marked the place, and the marks are not ambiguous.\n\n${x.Lead}: "Ask, pay, or just take it, and they're up on the ridge right now watching to see which one we are, and isn't that something, that someone's watching to find out what we are?"`,
+  text: x => `The colony needs something on land ${x.n} use: what would make ${x.st} whole. They have marked the place, and the marks are not ambiguous.\n\n[[${x.who}]] "Ask, pay, or just take it, and they're up on the ridge right now watching to see which one we are, and isn't that something, that someone's watching to find out what we are?"`,
   ask: x => `How do you get the ground ${x.n} ${x.have} marked: ask and accept the answer, pay on your terms, or take it under guard?`,
   choices: [
     { ap: 'accord', l: 'Ask, and accept the answer', b: 50, m: ['xenobio', 'chaplain'], ok: [x => `The answer is yes, with conditions that take a week to understand and are entirely reasonable.`, { mat: 30 }], bad: [x => `The answer is no. You said you would accept it, and what it would have mended stays broken through the season.`, { lose: 0.5, morale: -3, f: { accord: 10 } }] },
@@ -230,7 +235,7 @@ F('natives', 3, { id: 'natives.ground', tone: 'pressure', lead: ['geologist', 'x
       bad: [x => `${x.lead} walks up to the marks with a pack and is led away. Some days later the pack is back at the marks, emptied and folded. The ground is the colony's; that part of the bargain they keep.`, x => ({ mat: 55, morale: -5, stain: ['pledge', 2], kill: [{ who: x.leadP.id, cause: `left with ${x.n} as surety, and not returned` }], f: { accord: -10, threat: 5, kills: 1 } })] },
   ] });
 F('natives', 3, { id: 'natives.sick', tone: 'pressure', lead: ['physician', 'xenobio'], title: x => `${T(x)}: Our Gift to Them`,
-  text: x => `${x.N} are dying of something that is on every door handle in the colony: human skin flora, harmless to us.\n\n"It's us," says ${x.lead}. "It's on our skin, our door handles. We did it just by getting off the ship. And last night one of them left a sick kid at the fence."`,
+  text: x => `${x.N} are dying of something that is on every door handle in the colony: human skin flora, harmless to us.\n\n[[${x.who}]] "It's us." "It's on our skin, our door handles. We did it just by getting off the ship. And last night one of them left a sick kid at the fence."`,
   ask: x => `Your own skin flora is killing ${x.n}: do you pull back so it stops spreading, leave it to run its course, or help it along?`,
   choices: [
     { ap: 'accord', l: 'Bring the child in. Treat any who come', v: 'mercy open', req: x => LF.down(x.s, 'medbay'), reqText: 'Needs the Autodoc', b: 50, m: ['physician', 'xenobio'], ok: [x => `The dose is a guess, but the child lives. The next morning there are forty of them at the fence, waiting in silence.`, { machine: { medbay: -10 }, f: { accord: 40, threat: -15 } }], bad: [x => `The child dies on the table. It is carried back to the fence, wrapped in the best cloth the colony has.`, { machine: { medbay: -10 }, f: { accord: 5 } }] },
@@ -256,7 +261,7 @@ F('humans', 1, { id: 'humans.sign', tone: 'pressure', lead: ['security', 'teache
   text: x => `The evidence is ${x.K.sign}. ${x.Lead} has pieced the rest together: ${x.K.form}.\n\nOther people, on a world the array called empty. The crews are calling them ${x.n}.`,
   ask: x => `Do you hail ${x.n} openly, learn what you can before they know you know, or go quiet and dark?`,
   choices: [
-    { ap: 'accord', l: 'Hail them openly', b: 60, m: ['teacher'], ok: [x => `After a long pause, a wary human voice answers. "About time. We were wondering when you'd call."`, {}], bad: [x => `Nobody replies, though you are sure the hail was heard. Now they know where you are, how many channels you have, and that you are the kind who call first.`, { morale: -2, f: { threat: 10 } }] },
+    { ap: 'accord', l: 'Hail them openly', b: 60, m: ['teacher'], ok: [x => `After a long pause, a wary human voice answers.\n\n[[${them(x)}]] "About time. We were wondering when you'd call."`, {}], bad: [x => `Nobody replies, though you are sure the hail was heard. Now they know where you are, how many channels you have, and that you are the kind who call first.`, { morale: -2, f: { threat: 10 } }] },
     { ap: 'study', l: 'Find out everything before they know we know', v: 'cautious order', out: [x => `They ${x.K.habit}. What they want is ${x.K.wants}.`, {}] },
     { ap: 'avoid', l: 'Go quiet. Lights out, radios off', out: [x => `The colony goes dark and silent, and within days people hate it.`, { morale: -3, f: { wall: 1 } }] },
   ] });
@@ -265,14 +270,14 @@ F('humans', 2, { id: 'humans.terms', tone: 'pressure', lead: ['quartermaster', '
   ask: x => `What do you give the delegation from ${x.n}: a share taken from your own weakest, a deal for their young as field hands, nothing but a stripping at the gate, or a cell until they are ransomed?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Share. It comes off the ladle of the ones who do not dig', v: 'open severe', out: [x => `The delegation leaves with a loaded cart. The difference is made up from the bowls of the clerks, the old and the sick list, who are told it is for a month. Two of the old do not last the month.`, { lose: 0.3, pop: -2, stain: ['starved_list', 2], f: { accord: 35, threat: -12 } }] },
-    { ap: 'exploit', dark: true, v: 'severe order', l: 'Bargain hard. Their young work our fields for the food', b: 55, m: ['quartermaster'], ok: [x => `They sign. Twelve of their young are in the bunkhouse by the end of the month, working for their families' ration and eating half of ours.`, { pop: 12, thralls: 12, mat: 30, stain: ['bond', 2], f: { accord: -20 } }], bad: [x => `They walk out. "Our kids, for your food. Right. We won't forget this."`, { stain: ['bond', 1], f: { threat: 18 } }] },
+    { ap: 'exploit', dark: true, v: 'severe order', l: 'Bargain hard. Their young work our fields for the food', b: 55, m: ['quartermaster'], ok: [x => `They sign. Twelve of their young are in the bunkhouse by the end of the month, working for their families' ration and eating half of ours.`, { pop: 12, thralls: 12, mat: 30, stain: ['bond', 2], f: { accord: -20 } }], bad: [x => `They walk out.\n\n[[${them(x)}]] "Our kids, for your food. Right. We won't forget this."`, { stain: ['bond', 1], f: { threat: 18 } }] },
     { ap: 'force', dark: true, l: 'Refuse, and send them home without their cart, their coats or their boots', v: 'closed severe', out: [x => `They are stripped at the gate of everything worth having and pointed the way they came. One of them says quietly that there are children where they come from. It is two days on foot.`, { mat: 15, morale: -2, stain: ['robbed', 1], f: { accord: -45, threat: 10 } }] },
     { ap: 'exploit', l: 'Shut the gate behind them. They are worth more than they came to ask for', n: 'Four people who came to talk, held until their own side pays to have them back.', v: 'severe closed', dark: true, b: 62, m: ['security'],
       ok: [x => `The gate is shut behind them. Four people who came under a flag are in the lock-up by dark, and a message goes out saying what they are worth. ${x.N} pay it, in full, within the month. The four walk home without their boots.`, { food: 320, mat: 30, stain: ['hostages', 2], f: { accord: -70, threat: 15 } }],
       bad: [x => `The gate is shut behind them. ${x.N} do not pay. They come for their people at night instead, and two of the four are dead before anyone works out who is shooting at whom.`, { lose: 1.5, morale: -4, stain: ['hostages', 2], f: { accord: -90, threat: 28, kills: 2 } }] },
   ] });
 F('humans', 3, { id: 'humans.night', tone: 'crisis', lead: ['security'], needs: ['fighters', 'weapons'], prefer: (s, f) => f.threat >= 50 && f.accord < 0, title: x => `${T(x)}: Night Work`,
-  text: x => `The watch is found tied up at dawn, unharmed and furious. ${x.N} came for ${x.st}, and knew exactly where it was.\n\n"Somebody told them," says ${x.lead}. "Or they're better at this than we are, and I know which one I'd rather lose sleep over, because the first one I can do something about."`,
+  text: x => `The watch is found tied up at dawn, unharmed and furious. ${x.N} came for ${x.st}, and knew exactly where it was.\n\n[[${x.who}]] "Somebody told them." "Or they're better at this than we are, and I know which one I'd rather lose sleep over, because the first one I can do something about."`,
   ask: x => `After the raid on ${x.st}, do you chase ${x.n} and bring back captives, send an envoy with an apprentice as surety, wall the colony and blame someone, or question the night watch hard?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe closed', l: 'Go after them, and bring back people as well as stores', b: 48, m: ['security'], ok: [x => `The pursuit catches them at a crossing, loaded and slow, gets most of it back, and brings seven of them home roped behind it.`, { pop: 7, thralls: 7, stain: ['coffle', 2], f: { harm: 25, accord: -40 } }], bad: [x => `They know the ground, and lead the pursuit into an ambush.`, { lose: 1.5 }] },
@@ -283,7 +288,7 @@ F('humans', 3, { id: 'humans.night', tone: 'crisis', lead: ['security'], needs: 
       bad: [x => `The third one gives a name on the second night, to make it stop. It is the wrong name. An innocent is put out past the wire, and whoever did tell them is still inside.`, { lose: 1, leave: 1, morale: -7, stain: ['torture', 2], f: { threat: 10 } }] },
   ] });
 F('humans', 3, { id: 'humans.defector', tone: 'opportunity', lead: ['security', 'chaplain'], title: x => `${T(x)}: The One Who Came Over`,
-  text: x => `Someone from ${x.n} is at the gate at night, alone, asking for asylum and carrying a satchel: maps, numbers, plans for ${x.st}.\n\n${x.Lead}: "Maps, numbers and plans, handed over at the gate for nothing, and I'm supposed to be grateful. Nobody walks out on their own people for nothing, so I'd like to know the price before I touch the satchel."`,
+  text: x => `Someone from ${x.n} is at the gate at night, alone, asking for asylum and carrying a satchel: maps, numbers, plans for ${x.st}.\n\n[[${x.who}]] "Maps, numbers and plans, handed over at the gate for nothing, and I'm supposed to be grateful. Nobody walks out on their own people for nothing, so I'd like to know the price before I touch the satchel."`,
   ask: x => `Do you take in the defector from ${x.n}, keep the satchel and send them back, turn them away, or make them your spy?`,
   choices: [
     { ap: 'accord', l: 'Take them in. No conditions', v: 'mercy open free', b: 60, m: ['chaplain'], ok: [x => `The maps in the satchel are real, and the defector is plainly terrified of being found.`, { pop: 1, f: { insight: 35, accord: -5 } }], bad: [x => `The asylum-seeker is gone within the month, with a better satchel.`, { lose: 1, f: { threat: 12 } }] },
@@ -294,7 +299,7 @@ F('humans', 3, { id: 'humans.defector', tone: 'opportunity', lead: ['security', 
       bad: [x => `It takes a week in a locked pod to make the terms plain. The defector goes home, tells them everything on the first night, and is hanged anyway. What comes back is a list of your watch posts, nailed to the gate.`, { morale: -4, stain: ['turned', 2], f: { threat: 20, accord: -40, kills: 1 } }] },
   ] });
 F('humans', 4, { id: 'humans.reckoning', tone: 'crisis', lead: ['security', 'teacher'], needs: ['fighters', 'weapons', 'labour'], stakes: ['crew', 'food', 'machine'], title: x => `${T(x)}: One World, Two Peoples`,
-  text: x => `${x.N} have come to settle it: everyone who can carry something, at the perimeter, at dawn. ${x.st.replace(/^./, c => c.toUpperCase())} is the first thing they will reach.\n\nTheir speaker's voice carries. "There's room here for one way of doing things. Ours."`,
+  text: x => `${x.N} have come to settle it: everyone who can carry something, at the perimeter, at dawn. ${x.st.replace(/^./, c => c.toUpperCase())} is the first thing they will reach.\n\nTheir speaker's voice carries.\n\n[[${them(x)}]] "There's room here for one way of doing things. Ours."`,
   ask: x => `With ${x.n} at the perimeter to settle it, do you force a union on your terms, fight them to the last, buy them off with six of your own, or offer peace and spring a trap?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Union on our terms: their stores in our bins, their people on half rations and no vote', v: 'open order severe', b: 42, m: ['teacher', 'chaplain'], ok: [x => `It takes a week of shouting in the mess hall. At the end of it there are more people at every table. The new ones sit at the far end and are served last.`, x => ({ pop: 25, thralls: 25, food: 150, stain: ['bond', 2], f: { resolve: 'accord' } })], bad: [x => `They hear the terms as what they are.`, { lose: 1.5, f: { threat: -20 } }] },
@@ -322,7 +327,7 @@ const W = x => WANT[x.f.sub];
 const OPP = { mercy: 'severe', severe: 'mercy', bold: 'cautious', cautious: 'bold', open: 'closed', closed: 'open', free: 'order', order: 'free', returned: 'closed cautious' };
 const side = x => x.f.sub === 'returned' ? 'open bold' : x.f.sub;
 F('faction', 1, { id: 'faction.forms', tone: 'pressure', lead: ['chaplain'], title: x => `${T(x)}: A Movement`,
-  text: x => `They have a name now: ${x.n}. ${x.Lead} speaks for them, and they hold ${W(x).creed}.\n\n${x.f.against ? `This is ${LF.an(x.f.against.toLowerCase())} colony. You made it one, a decision at a time, and they have kept count.` : 'They went out together and came back together, and nobody who stayed behind has been let all the way in since.'}${x.titles.length ? ' They can recite the cases: ' + x.titles.map(t => `"${t}"`).join('. ') + '.' : ''}`,
+  text: x => `They have a name now: ${x.n}. ${x.Lead} speaks for them, and they hold ${W(x).creed}.\n\n${x.f.against ? `This is ${LF.an(x.f.against.toLowerCase())} colony. You made it one, a decision at a time, and they have kept count.` : 'They went out together and came back together, and nobody who stayed behind has been let all the way in since.'}${x.titles.length ? ' They can recite the cases: ' + x.titles.map(t => `“${t}”`).join('. ') + '.' : ''}`,
   ask: x => `How do you answer the new movement, ${x.n}: hear them out in assembly, have the watch list who attends, forbid the meetings, or leave them alone?`,
   choices: [
     { ap: 'accord', l: 'Hear them out in open assembly', v: 'free', out: [x => `The meeting runs three hours, standing room only, on a working afternoon. Nothing is settled, everyone gets to say their piece, and twenty more people put their names down on the way out.`, { food: -30, morale: 1, f: { threat: 6 } }] },
@@ -355,7 +360,7 @@ F('faction', 3, { id: 'faction.slowdown', tone: 'crisis', lead: ['chaplain'], st
       out: [x => `The tally goes up beside the serving hatch, and the ladle follows it. Work picks up in two days. In the second week a man from the slowest shift goes down at his bench and does not get up, and his shift carries him to the clinic past your window, at exactly the pace they have been working.`, { pop: -1, morale: -6, stain: ['starved_list', 2], f: { threat: -32, harm: 30, accord: -25 }, flags: { ration_by_work: true } }] },
   ] });
 F('faction', 4, { id: 'faction.break', tone: 'crisis', lead: ['chaplain'], stakes: ['morale', 'crew'], title: x => `${T(x)}: The Break`,
-  text: x => `${x.N} is done asking. Half the colony is in the yard behind ${x.lead}; the other half is watching to see what you do. Their demand has not changed: ${W(x).demand(x)}. The difference is what they will do if you refuse.\n\n"Or we run ourselves," says ${x.lead}. "Here, or somewhere else. Your call."`,
+  text: x => `${x.N} is done asking. Half the colony is in the yard behind ${x.lead}; the other half is watching to see what you do. Their demand has not changed: ${W(x).demand(x)}. The difference is what they will do if you refuse.\n\n[[${x.who}]] "Or we run ourselves." "Here, or somewhere else. Your call."`,
   ask: x => `${x.N} will break away unless you give in: do you yield and hand over the stores clerk, crush the leadership with a hanging, or let them leave without the stores and tools?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Yield, and hand them whoever held the stores keys', v: x => `${side(x)} ${side(x)} ${side(x)}`, out: [x => `You say it in front of all of them, and from that afternoon the colony runs their way. The stores keys are handed over in the yard, and the clerk who carried them is handed over with them.`, x => Object.assign({ leave: 1, stain: ['goat', 2], f: { resolve: 'accord' } }, W(x).fx(x))] },
@@ -416,7 +421,7 @@ F('fauna', 3, { id: 'fauna.den', tone: 'opportunity', lead: ['security', 'xenobi
       ok: [x => `Forty minutes of footage before the battery goes. It is enough to count them.`, { f: { insight: 30 } }], bad: [x => `Something takes the drone out of the air.`, { f: { insight: 5 } }] },
   ] });
 F('flora', 3, { id: 'flora.heart', tone: 'opportunity', lead: ['botanist', 'xenobio'], title: x => `${T(x)}: Where It Begins`,
-  text: x => `${x.Lead} thinks ${x.n} has a centre: one place, upstream, that all of it grew out from.\n\n"It all comes from up there. You want to know it or kill it, that's where you go."`,
+  text: x => `${x.Lead} thinks ${x.n} has a centre: one place, upstream, that all of it grew out from.\n\n[[${x.who}]] "It all comes from up there. You want to know it or kill it, that's where you go."`,
   ask: x => `Do you send a party upstream to where ${x.n} began, small or large, core-sample the edge here instead, or leave it for later?`,
   choices: [
     small({ l: x => 'Send three to take samples', send: { days: [30, 55], danger: 3 } }),
@@ -446,7 +451,7 @@ F('natives', 3, { id: 'natives.invite', tone: 'opportunity', lead: ['xenobio', '
       bad: [x => `There were a great many more than six, and they had only left the rifles out of their reckoning for the length of one volley.`, { lose: 1.5, stain: ['captive', 1], f: { accord: -75, threat: 25, kills: 3 } }] },
   ] });
 F('humans', 3, { id: 'humans.parley', tone: 'opportunity', lead: ['teacher', 'security'], title: x => `${T(x)}: A Meeting Proposed`,
-  text: x => `A message from ${x.n}: a place, halfway, and a date. "Bring who you like. So will we."\n\n${x.Lead} reads it twice. "Talks, or an ambush. Could be both. Either way, they've told us where they'll be standing."`,
+  text: x => `A message from ${x.n}: a place, halfway, and a date.\n\n[[note:Their message]] "Bring who you like. So will we."\n\n${x.Lead} reads it twice.\n\n[[${x.who}]] "Talks, or an ambush. Could be both. Either way, they've told us where they'll be standing."`,
   ask: x => `Do you go to the meeting ${x.n} proposed with three or with ten, talk by radio only, or let the date pass?`,
   choices: [
     small({ l: x => 'Send three to talk', send: { days: [20, 35], danger: 3 }, v: 'open' }),
@@ -468,15 +473,15 @@ const lead = (id, title, text, ask, ret, danger, days, remote, when) => F('land'
   ] });
 lead('land.smoke', 'Steam on the Horizon', x => `A white column on the horizon, in the same place three mornings running, and ${x.lead} thinks it is steam, not smoke.\n\nIt is a long walk over ground nobody has crossed.`, 'Do you send a party to the steam on the horizon, small or large, have the ship image it, or mark it for later?', 'springs', 2, [35, 60],
   { ap: 'study', l: 'Have the ship image it on the next pass', hint: 'unknown', out: [x => `The image shows cloud. The ship will try again in eleven days.`, { survey: 6 }] });
-lead('land.wreck', 'Metal in the Hills', x => `Radar shows worked metal two hundred kilometres east, in a furrow a kilometre long. Something came down hard.\n\n${x.Lead}: "That's a ship. One of ours, or somebody else's, and I can't tell which from here, and I can't stand not knowing which."`, 'Do you send a party to the wreck in the hills, small or large, ping its transponder, or mark it for later?', 'salvage', 2, [40, 70],
+lead('land.wreck', 'Metal in the Hills', x => `Radar shows worked metal two hundred kilometres east, in a furrow a kilometre long. Something came down hard.\n\n[[${x.who}]] "That's a ship. One of ours, or somebody else's, and I can't tell which from here, and I can't stand not knowing which."`, 'Do you send a party to the wreck in the hills, small or large, ping its transponder, or mark it for later?', 'salvage', 2, [40, 70],
   { ap: 'study', l: 'Ping its transponder', hint: 'unknown', b: 45, m: ['engineer'], ok: [x => `A reply comes back: a cargo manifest, forty years old, listing a hold worth the walk.`, { survey: 12 }], bad: [x => `Nothing answers.`, {}] });
-lead('land.outcrop', 'A Stained Cliff', x => `The survey crew have photographed a cliff streaked blue-green and rust. ${x.Lead} wants to stand under it with a hammer.\n\n"That's metal weathering out, that has to be, but how much? You can't tell from a photo, you can't, I need to get a hammer on it."`, 'Do you send a party to the stained cliff, small or large, pan the river gravel downstream instead, or mark it for later?', 'ore', 1, [25, 45],
+lead('land.outcrop', 'A Stained Cliff', x => `The survey crew have photographed a cliff streaked blue-green and rust. ${x.Lead} wants to stand under it with a hammer.\n\n[[${x.who}]] "That's metal weathering out, that has to be, but how much? You can't tell from a photo, you can't, I need to get a hammer on it."`, 'Do you send a party to the stained cliff, small or large, pan the river gravel downstream instead, or mark it for later?', 'ore', 1, [25, 45],
   { ap: 'study', l: 'Assay the river gravel downstream', hint: 'good', b: 60, m: ['geologist'], ok: [x => `There are nuggets in the pan, small ones, but enough to say the cliff is real.`, { mat: 15, survey: 10 }], bad: [x => `The pan comes up empty.`, {}] });
 lead('land.valley', 'The Green Valley', x => `From the ridge, the survey crew saw a valley none of the orbital maps do justice: sheltered, watered, thick with growth.\n\nNobody knows what the growth is.`, 'Do you send a party into the green valley, small or large, scatter seed on it from the drone, or mark it for later?', 'soil', 2, [30, 50],
   { ap: 'study', l: 'Scatter seed from the drone and watch', hint: 'unknown', cost: { parts: 1, food: 20 }, out: [x => `The seed goes down. It will be a season before anyone knows.`, { survey: 8 }] });
 lead('land.lights', 'Lights in the Far Hills', x => `The night watch has logged lights in the far hills, four nights in seven. They move, and neither the ${x.s.world.ship} nor the weather accounts for them.\n\n${x.Lead} would very much like to know what they are before they know what we are.`, 'Do you send a party toward the lights in the far hills, small or large, signal them with the floodlights, or mark them for later?', 'mystery', 3, [40, 75],
   { ap: 'accord', l: 'Signal with the floodlights', hint: 'unknown', v: 'open bold', b: 40, ok: [x => `The lights stop. Then, slowly, they repeat the pattern back.`, { survey: 25, morale: 3 }], bad: [x => `The lights go out all at once and do not return, as if whoever carried them knows they were seen.`, { morale: -3 }] });
-lead('land.pod', 'A Beacon, Ours', x => `A recovery beacon has started up eighty kilometres west. Pod Fourteen: eight cryo units, written off in the descent.\n\n${x.Lead}: "It's been out there the whole time, eight units, and we wrote them off, so what switched it on, and why now, and what else did we write off?"`, 'Do you send a party to recover Pod Fourteen, small or large, query its telemetry, or mark it for later?', 'pod', 2, [25, 45],
+lead('land.pod', 'A Beacon, Ours', x => `A recovery beacon has started up eighty kilometres west. Pod Fourteen: eight cryo units, written off in the descent.\n\n[[${x.who}]] "It's been out there the whole time, eight units, and we wrote them off, so what switched it on, and why now, and what else did we write off?"`, 'Do you send a party to recover Pod Fourteen, small or large, query its telemetry, or mark it for later?', 'pod', 2, [25, 45],
   { ap: 'study', l: 'Query the pod\'s telemetry', hint: 'unknown', b: 55, m: ['engineer'], ok: [x => `Six units are still green. They can wait a little longer, but not indefinitely.`, { survey: 6 }], bad: [x => `No answer but the beacon.`, {}] });
 lead('land.herd', 'Herds on the Plain', x => `A river of animals is crossing the plain to the south. It has been passing for three days and the end is not in sight.\n\n${x.Lead} counts the stores and looks at you.`, 'Do you send a party after the herds on the plain, small or large, net what strays near the fence, or mark it for later?', 'herd', 2, [20, 40],
   { ap: 'exploit', l: 'Net what strays near the fence', hint: 'good', out: [x => `You net a dozen stragglers. The meat is tough, and all of it is eaten.`, { food: 70 }] }, s => !s.flags.no_native);
@@ -488,11 +493,11 @@ lead('land.timber', 'The Tall Stands', x => `Something like trees, sixty metres 
   { ap: 'study', l: 'Test the driftwood the river brings', hint: 'unknown', b: 60, m: ['botanist'], ok: [x => `It planes clean and holds a nail. There is not much of it.`, { mat: 12 }], bad: [x => `Once cut, it rots in a week.`, {}] }, s => !s.flags.no_native);
 lead('land.bones', 'Bones in the Scarp', x => `A cliff has shed a skeleton the length of the lander. ${x.Lead} wants to know how long ago it died, and whether it has relatives.`, 'Do you send a party to the bones in the scarp, small or large, photograph them from a drone, or mark it for later?', 'bones', 2, [20, 35],
   { ap: 'study', l: 'Photograph it from a drone', hint: 'good', out: [x => `The pictures are good, and the children want to know what it ate.`, { survey: 8 }] });
-lead('land.lake', 'The Still Lake', x => `A lake, perfectly round, that does not ripple in any wind. The survey crew who found it walked home faster than they walked out.\n\n${x.Lead}: "Round means a crater, or a sinkhole, or somebody made it round, and you can't tell me you don't want to know which."`, 'Do you send a party to the round lake, small or large, drop a sonde into it from a drone, or mark it for later?', 'mystery', 3, [35, 60],
+lead('land.lake', 'The Still Lake', x => `A lake, perfectly round, that does not ripple in any wind. The survey crew who found it walked home faster than they walked out.\n\n[[${x.who}]] "Round means a crater, or a sinkhole, or somebody made it round, and you can't tell me you don't want to know which."`, 'Do you send a party to the round lake, small or large, drop a sonde into it from a drone, or mark it for later?', 'mystery', 3, [35, 60],
   { ap: 'study', l: 'Drop a sonde from a drone', hint: 'unknown', cost: { parts: 1 }, b: 50, ok: [x => `Forty metres of clear water, and then a floor that is too flat.`, { survey: 15 }], bad: [x => `The sonde stops transmitting at forty metres.`, {}] });
 lead('land.crater', 'A Fresh Crater', x => `Something came down in the night, forty kilometres north. The flash lit the pods. Nickel-iron, if the colour was any guide, and still warm.`, 'Do you send a party to the fresh crater, small or large, sift what fell near the camp, or mark it for later?', 'ore', 2, [15, 30],
   { ap: 'exploit', l: 'Sift the ejecta that fell near the camp', hint: 'good', out: [x => `You rake beads of clean metal out of the fields.`, { mat: 10 }] });
-lead('land.pass', 'A Way Through', x => `The survey crews have found a pass through the range. Beyond it, everything on the map is blank.\n\n${x.Lead}: "Half the continent's through there, half, and nobody's even looked, we've been sitting here counting our stores and half the continent is through there."`, 'Do you send a party through the pass, small or large, have the ship image the far side, or mark it for later?', 'pass', 3, [45, 75],
+lead('land.pass', 'A Way Through', x => `The survey crews have found a pass through the range. Beyond it, everything on the map is blank.\n\n[[${x.who}]] "Half the continent's through there, half, and nobody's even looked, we've been sitting here counting our stores and half the continent is through there."`, 'Do you send a party through the pass, small or large, have the ship image the far side, or mark it for later?', 'pass', 3, [45, 75],
   { ap: 'study', l: 'Have the ship image the far side', hint: 'unknown', out: [x => `Cloud, mostly, and one long glint that might be water.`, { survey: 10 }] });
 lead('land.towers', 'Sweet Smoke', x => `Something small and many-legged builds towers on the south slope, taller than a person, out of a wax that burns with a clean flame. ${x.Lead} brought back a lump. The engineers will not give it back.`, 'Do you send a party to the wax towers on the south slope, small or large, smoke out one tower near the fence, or mark it for later?', 'wax', 2, [20, 40],
   { ap: 'exploit', l: 'Smoke out one tower near the fence', hint: 'unknown', b: 50, ok: [x => `A tower's worth of wax, and some annoyed residents.`, { parts: 3 }], bad: [x => `Every tower on the slope empties at once.`, { morale: -2 }] }, s => !s.flags.no_native);
@@ -500,7 +505,7 @@ lead('land.towers', 'Sweet Smoke', x => `Something small and many-legged builds 
 /* ======================= SECOND SIGNS, SECOND BLOOD, A THIRD MIDDLE =======================
    So that the shape of a thread does not repeat from one game to the next. */
 F('fauna', 1, { id: 'fauna.drone', tone: 'pressure', lead: ['xenobio', 'security'], title: x => `${T(x)}: What the Drone Saw`,
-  text: x => `A survey drone sent back forty seconds of footage before something knocked it down: ${x.K.form}, and more than one of them.\n\n${x.Lead} has watched it a dozen times. "Watch, there, they ${x.K.habit}, and right at the end, see, no, back it up, see? They've seen us. They know we're here."`,
+  text: x => `A survey drone sent back forty seconds of footage before something knocked it down: ${x.K.form}, and more than one of them.\n\n${x.Lead} has watched it a dozen times.\n\n[[${x.who}]] "Watch, there, they ${x.K.habit}, and right at the end, see, no, back it up, see? They've seen us. They know we're here."`,
   ask: x => `Do you send a second drone to watch ${x.n}, trap one alive, or mark ${x.their} range and keep out of it?`,
   choices: [
     { ap: 'study', l: 'Send another drone, higher', cost: { parts: 1 }, out: [x => `This one gets hours of footage. They want ${x.K.wants}, and they keep clear of ${x.K.weak}.`, { f: { insight: 30 } }] },
@@ -508,7 +513,7 @@ F('fauna', 1, { id: 'fauna.drone', tone: 'pressure', lead: ['xenobio', 'security
     { ap: 'avoid', l: 'Mark their range on the map and stay out of it', out: [x => `A red line on the map. It runs closer to the camp than anyone likes.`, { f: { threat: -4 } }] },
   ] });
 F('fauna', 2, { id: 'fauna.inside', tone: 'crisis', lead: ['security', 'xenobio'], title: x => `${T(x)}: Among Us`,
-  text: x => `${x.N} did not stop at the fence this time. They came inside it, in daylight, to ${x.st}, with people ten metres away.\n\n${x.Lead}: "They're done testing us, and I don't care for what that tells me, because ten metres from people, in daylight, means they've made their minds up and I doubt it's in our favour."`,
+  text: x => `${x.N} did not stop at the fence this time. They came inside it, in daylight, to ${x.st}, with people ten metres away.\n\n[[${x.who}]] "They're done testing us, and I don't care for what that tells me, because ten metres from people, in daylight, means they've made their minds up and I doubt it's in our favour."`,
   ask: x => `With ${x.n} inside the fence, do you drive ${x.them} out through the east pods, pay ${x.them} off with the dead from the cold room, film ${x.them} while three of yours stand still, or burn the compound with two of yours in it?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe bold', l: 'Drive them out through the east pods. It is the only side they will run to', b: 55, m: ['security'], ok: [x => `Flares, engines, every pot in the mess hall, and a gap left on the east side where the bunk pods are. They break through it and do not look back. Two people in the east pods had not been moved.`, { pop: -2, stain: ['decoy_ours', 2], f: { threat: -15 } }], bad: [x => `They charge straight through the flares.`, { lose: 1, stain: ['decoy_ours', 1] }] },
@@ -518,7 +523,7 @@ F('fauna', 2, { id: 'fauna.inside', tone: 'crisis', lead: ['security', 'xenobio'
       out: [x => `The gate is chained and the fuel line opened. Everything inside the fence burns: ${x.n}, ${x.st}, and the two who were working there and did not reach the gate before the chain went on. It is the last time ${x.they} come inside.`, { lose: 0.5, pop: -2, morale: -3, stain: ['burned_in', 2], f: { threat: -45, harm: 55 } }] },
   ] });
 F('fauna', 3, { id: 'fauna.hungry', tone: 'pressure', lead: ['xenobio', 'security'], needs: ['guides', 'fighters'], title: x => `${T(x)}: Hungry Season`,
-  text: x => `It has been a bad season for whatever ${x.n} usually eat. They are thin, bold, and all around ${x.st}.\n\n"They're starving," says ${x.lead}. "Look at the ribs on them, look, they'll come in, nothing that hungry just lies down and dies, and I'd give a great deal to see what it does instead."`,
+  text: x => `It has been a bad season for whatever ${x.n} usually eat. They are thin, bold, and all around ${x.st}.\n\n[[${x.who}]] "They're starving." "Look at the ribs on them, look, they'll come in, nothing that hungry just lies down and dies, and I'd give a great deal to see what it does instead."`,
   ask: x => `With ${x.n} starving around ${x.st}, do you feed ${x.them} from the rations of the sick and the old, shoot whatever comes in, or trap ${x.them} with the lock-up walking the line unarmed?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Feed them through it, off the ladle of the sick list and the old', cost: { food: 80 }, v: 'open severe', b: 60, m: ['xenobio'], ok: [x => `${x.They} eat, and stay out past the markers. The cart is filled from what the sick list and the old would have had, and one of the old does not see the end of the season.`, { pop: -1, stain: ['starved_list', 1], f: { threat: -10 } }], bad: [x => `${x.They} eat, and then follow the smell to where it came from.`, { lose: 0.5, stain: ['starved_list', 1] }] },
@@ -527,7 +532,7 @@ F('fauna', 3, { id: 'fauna.hungry', tone: 'pressure', lead: ['xenobio', 'securit
   ] });
 
 F('flora', 1, { id: 'flora.samples', tone: 'pressure', lead: ['botanist', 'xenobio'], title: x => `${T(x)}: In the Samples`,
-  text: x => `${x.Lead} has found the same thing in every soil sample from the east side: ${x.K.form}. It was not in last month's samples.\n\n"I can tell you how fast it's coming. Not why. Not why our ground."`,
+  text: x => `${x.Lead} has found the same thing in every soil sample from the east side: ${x.K.form}. It was not in last month's samples.\n\n[[${x.who}]] "I can tell you how fast it's coming. Not why. Not why our ground."`,
   ask: 'Do you plant test beds to learn what is in the east-side soil, dig it out and dump it in the river, or give up the east side?',
   choices: [
     { ap: 'study', l: 'Plant test beds and watch it work', out: [x => `The six beds go six different ways, but together they show that it ${x.K.habit}. It wants ${x.K.wants}, and it dislikes ${x.K.weak}.`, { f: { insight: 30 } }] },
@@ -535,7 +540,7 @@ F('flora', 1, { id: 'flora.samples', tone: 'pressure', lead: ['botanist', 'xenob
     { ap: 'avoid', l: 'Give up the east side', out: [x => `The work moves west, though the east side had the better ground.`, { yield: -0.03, f: { threat: -6 } }] },
   ] });
 F('flora', 2, { id: 'flora.night', tone: 'crisis', lead: ['botanist', 'engineer'], stakes: ['machine', 'project', 'mat', 'food'], title: x => `${T(x)}: Overnight`,
-  text: x => `Yesterday ${x.n} was at the fence. This morning it has ${x.st}, and it is still spreading.\n\n${x.Lead}: "Today. Whatever we do, it's today. Tomorrow it's in the beds."`,
+  text: x => `Yesterday ${x.n} was at the fence. This morning it has ${x.st}, and it is still spreading.\n\n[[${x.who}]] "Today. Whatever we do, it's today. Tomorrow it's in the beds."`,
   ask: x => `How do you stop ${x.n} today: everyone out with blades and fire, the sick list included, or a trench around the rest with the lock-up digging the far side?`,
   choices: [
     { ap: 'force', dark: true, v: 'severe bold', l: 'Everyone out with blades and fire, the sick list included', b: 55, m: ['botanist'], ok: [x => `By dark it is back outside the fence. The sick list cut beside everyone else, and one of them is in the clinic for good.`, { pop: -1, stain: ['driven', 1], f: { threat: -12 } }], bad: [x => `It grows back behind the cutters as fast as they cut.`, { lose: 1, stain: ['driven', 1] }] },
@@ -554,7 +559,7 @@ F('flora', 3, { id: 'flora.people', tone: 'pressure', lead: ['physician', 'botan
   ] });
 
 F('plague', 1, { id: 'plague.pattern', tone: 'pressure', lead: ['physician'], title: x => `${T(x)}: A Pattern`,
-  text: x => `${x.Lead} has been keeping a list nobody asked for. Headaches, a rash, a week of bad sleep: six people, none sick enough to report, all from one bunk row.\n\n"Six of them, one row. If I'm right — and I'd love not to be — next we'll see ${x.K.sign}."`,
+  text: x => `${x.Lead} has been keeping a list nobody asked for. Headaches, a rash, a week of bad sleep: six people, none sick enough to report, all from one bunk row.\n\n[[${x.who}]] "Six of them, one row. If I'm right — and I'd love not to be — next we'll see ${x.K.sign}."`,
   ask: 'Do you empty the bunk row and scrub it to the metal, or tell the six to rest and report back?',
   choices: [
     { ap: 'study', l: 'Test the whole bunk row', req: x => LF.down(x.s, 'medbay'), reqText: 'Needs the Autodoc', out: [x => `It is real, and the tests show that it ${x.K.habit}.`, { machine: { medbay: -5 }, f: { insight: 30 } }] },
@@ -562,7 +567,7 @@ F('plague', 1, { id: 'plague.pattern', tone: 'pressure', lead: ['physician'], ti
     { ap: 'avoid', l: 'Tell them to rest and report back', v: 'mercy', out: [x => `They rest. Two of them report back.`, { f: { threat: 10 } }] },
   ] });
 F('plague', 2, { id: 'plague.beds', tone: 'crisis', lead: ['physician', 'chaplain'], stakes: ['crew', 'person'], title: x => `${T(x)}: Four Beds`,
-  text: x => `${x.N} has put twenty people on their backs in a week. The clinic has four beds.\n\n${x.Lead} hands you the list. "Twenty names, four beds. So you tell me how I'm meant to choose, because I'm not doing it on my own."`,
+  text: x => `${x.N} has put twenty people on their backs in a week. The clinic has four beds.\n\n${x.Lead} hands you the list.\n\n[[${x.who}]] "Twenty names, four beds. So you tell me how I'm meant to choose, because I'm not doing it on my own."`,
   ask: 'Who gets the four clinic beds: those the colony can least spare, the officers and their families, a lottery you secretly rig, or whoever the clinic can turn over fastest?',
   choices: [
     { ap: 'force', dark: true, l: 'The ones the colony can least spare. The rest go to the corridor', v: 'severe order', out: [x => `It is a defensible rule. The people at the bottom of the list can do the arithmetic too, and they do it on blankets in the corridor.`, { lose: 0.4, morale: -3, stain: ['triage', 2], f: { threat: -22, harm: 0, accord: 0 } }] },
@@ -572,7 +577,7 @@ F('plague', 2, { id: 'plague.beds', tone: 'crisis', lead: ['physician', 'chaplai
       out: [x => `${x.Lead} marks the charts and the night orderly does the rest. Each bed turns over twice as fast, and eleven are treated who would not have been. Four names are entered as having died in their sleep.`, { pop: -4, morale: -3, stain: ['mercy_killing', 2], f: { threat: -28, accord: 0 } }] },
   ] });
 F('plague', 3, { id: 'plague.cure', tone: 'opportunity', lead: ['physician', 'xenobio'], title: x => `${T(x)}: A Cure, of Sorts`,
-  text: x => `${x.Lead} has something that stops ${x.n}: a compound from a native ${x.s.flags.no_native ? 'lichen' : 'root'} that kills it in the blood. It also does something to the liver that will take years to show.\n\n"It works. And I wouldn't let anyone I loved near it."`,
+  text: x => `${x.Lead} has something that stops ${x.n}: a compound from a native ${x.s.flags.no_native ? 'lichen' : 'root'} that kills it in the blood. It also does something to the liver that will take years to show.\n\n[[${x.who}]] "It works. And I wouldn't let anyone I loved near it."`,
   ask: x => `Do you give the compound that stops ${x.n} to the sick without telling them about the liver, refine it on the dying, or lock it away until it is safe?`,
   choices: [
     { ap: 'exploit', dark: true, l: 'Give it to everyone who is sick, and say nothing about the liver', v: 'bold severe', out: [x => `The wards empty in a week. Nobody who took it is told what else it does. ${x.Lead} starts a ledger of who took it, and when, for later.`, { stain: ['withheld', 2], f: { threat: -40, insight: 10, accord: 0 }, flags: { cure_debt: true } }] },
@@ -589,7 +594,7 @@ F('ruin', 1, { id: 'ruin.fragment', tone: 'opportunity', lead: ['geologist', 'en
     { ap: 'avoid', l: 'Put the fragment back where it was found', v: 'cautious closed', out: [x => `A crew walks two days to return a pebble. One of them says it felt like the right thing, and cannot say why.`, { f: { threat: -8 } }] },
   ] });
 F('ruin', 2, { id: 'ruin.reach', tone: 'pressure', lead: ['engineer', 'geologist'], stakes: ['machine', 'project', 'mat'], title: x => `${T(x)}: It Takes an Interest`,
-  text: x => `${x.N} has done something to ${x.st}. Nobody was near. The logs show eleven seconds of interference, and then the change.\n\n"Something reached out," says ${x.lead}. "Eleven seconds, then that. Handshake or shove, I couldn't tell you, and I don't like not knowing which. It's been in my kit."`,
+  text: x => `${x.N} has done something to ${x.st}. Nobody was near. The logs show eleven seconds of interference, and then the change.\n\n[[${x.who}]] "Something reached out." "Eleven seconds, then that. Handshake or shove, I couldn't tell you, and I don't like not knowing which. It's been in my kit."`,
   ask: x => `After ${x.n} reached into ${x.st}, do you leave a crew beside it to watch it happen again, bury the cables with the lock-up digging, or answer it through an apprentice's hands?`,
   choices: [
     { ap: 'study', dark: true, v: 'severe cautious', l: x => `Leave a crew beside ${x.st} with instruments, and wait for it to do it again`, b: 60, m: ['engineer'], ok: [x => `It does it again on the third night, with four people beside it and every instrument running. The change is precise and local, and looks very much like a measurement being taken. Two of the four have not spoken since.`, { morale: -2, stain: ['watched', 2], f: { insight: 45 } }], bad: [x => `It does it again while the instruments are watching, and this time it does it to the crew.`, { lose: 0.5, pop: -1, stain: ['watched', 2], f: { insight: 15 } }] },
@@ -597,7 +602,7 @@ F('ruin', 2, { id: 'ruin.reach', tone: 'pressure', lead: ['engineer', 'geologist
     { ap: 'accord', dark: true, l: 'Answer it. An apprentice holds the contact by hand', n: 'Nothing else in stores will carry the signal across the gap.', v: 'open bold severe', b: 45, m: ['xenobio'], ok: [x => `It replies at once, with twelve. The apprentice holding the contact is asked what it felt like and cannot say, then or later.`, { stain: ['expend', 1], f: { accord: 28, insight: 18 } }], bad: [x => `It replies at once, to everything, at full strength, through the apprentice holding the contact.`, { pop: -1, lose: 0.5, stain: ['expend', 2] }] },
   ] });
 F('ruin', 3, { id: 'ruin.pilgrims', tone: 'pressure', lead: ['chaplain', 'security'], title: x => `${T(x)}: The Ones Who Go and Look`,
-  text: x => `People have started walking out to ${x.n} on rest days. A dozen at first; now forty. They sit and look at it. Some have stopped coming back for the evening meal.\n\n${x.Lead}: "It's not calling them. I've sat out there with them and listened. They just go, like it's church, and I haven't got anything to put in its place."`,
+  text: x => `People have started walking out to ${x.n} on rest days. A dozen at first; now forty. They sit and look at it. Some have stopped coming back for the evening meal.\n\n[[${x.who}]] "It's not calling them. I've sat out there with them and listened. They just go, like it's church, and I haven't got anything to put in its place."`,
   ask: x => `What do you do about the people walking out to ${x.n}: forbid it, go and sit with them once, question them and hold the ones who will not answer, or order the watch to fire?`,
   choices: [
     { ap: 'avoid', l: 'Forbid it', v: 'order closed', out: [x => `A watch post on the path. People find other paths.`, { morale: -3, f: { threat: -5 } }] },
@@ -616,7 +621,7 @@ F('natives', 1, { id: 'natives.watched', tone: 'pressure', lead: ['security', 'x
     { ap: 'force', l: 'Burn the grass back two hundred metres', cost: { mat: 10 }, v: 'closed cautious', out: [x => `It leaves a black strip, bare to the dirt.`, { f: { accord: -12, threat: -5, harm: 0, wall: 1 } }] },
   ] });
 F('natives', 2, { id: 'natives.trade', tone: 'pressure', lead: ['quartermaster', 'xenobio'], stakes: ['food', 'mat'], title: x => `${T(x)}: Taken, and Paid For`,
-  text: x => `${x.N} came in the night and took from ${x.st}. In its place they left something of their own: worked, deliberate, and plainly meant as payment.\n\n${x.Lead}: "Maybe it's fair, to them. They still came in the dark and took it without asking."`,
+  text: x => `${x.N} came in the night and took from ${x.st}. In its place they left something of their own: worked, deliberate, and plainly meant as payment.\n\n[[${x.who}]] "Maybe it's fair, to them. They still came in the dark and took it without asking."`,
   ask: x => `How do you answer ${x.n} taking from ${x.st} and leaving payment: accept the trade at the sick bay's expense, shoot to kill, pay in worthless scrap, or leave out poisoned meal?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Accept the trade, and leave out what the sick bay would have eaten', v: 'open severe', out: [x => `More is left out each night, and more is left in its place, some of it useful. What goes out comes off the trays for the sick bay, who are not told. One of them does not get up again.`, { mat: 20, pop: -1, stain: ['starved_list', 1], f: { accord: 32, threat: -10 } }] },
@@ -642,11 +647,11 @@ F('humans', 1, { id: 'humans.voices', tone: 'pressure', lead: ['teacher', 'secur
   ask: x => `Do you listen in on ${x.n}, break in on their channel to say hello, or feed them false traffic about your numbers?`,
   choices: [
     { ap: 'study', l: 'Listen, and log everything', v: 'cautious', out: [x => `A month of logs shows that they ${x.K.habit}, and that they want ${x.K.wants}.`, {}] },
-    { ap: 'accord', l: 'Break in on their channel and say hello', b: 55, m: ['teacher'], ok: [x => `There is silence, then laughter, and then a voice: "Took you long enough."`, {}], bad: [x => `The channel goes dead and stays dead. They have others.`, { f: { threat: 6 } }] },
+    { ap: 'accord', l: 'Break in on their channel and say hello', b: 55, m: ['teacher'], ok: [x => `There is silence, then laughter, and then a voice.\n\n[[${them(x)}]] "Took you long enough."`, {}], bad: [x => `The channel goes dead and stays dead. They have others.`, { f: { threat: 6 } }] },
     { ap: 'exploit', l: 'Feed them false traffic about our numbers', v: 'closed order', b: 50, m: ['security'], ok: [x => `For now, they believe there are four hundred of you.`, { f: { threat: -12, accord: -5 } }], bad: [x => `They had been counting the cooking fires all along.`, { f: { accord: -15, threat: 8 } }] },
   ] });
 F('humans', 2, { id: 'humans.held', tone: 'crisis', lead: ['security', 'chaplain'], stakes: ['person', 'crew'], title: x => `${T(x)}: Held`,
-  text: x => `${x.N} are holding ${x.st}. Unharmed, they say, and not free to go until there is an understanding. What they want is ${x.K.wants}.\n\n${x.Lead}: "Scared people with a hostage. Lovely. That's how somebody ends up dead by accident."`,
+  text: x => `${x.N} are holding ${x.st}. Unharmed, they say, and not free to go until there is an understanding. What they want is ${x.K.wants}.\n\n[[${x.who}]] "Scared people with a hostage. Lovely. That's how somebody ends up dead by accident."`,
   ask: x => `How do you get ${x.st} back from ${x.n}: take hostages of your own, raid them at night, pay what they ask out of the watch's ration, or refuse to pay at all?`,
   choices: [
     { ap: 'accord', dark: true, l: 'Go and talk, and take two of their children on the way', v: 'bold severe', b: 50, m: ['chaplain', 'teacher'], ok: [x => `The talk is short. They have one of yours and you have two of theirs, and everyone walks home by evening.`, { stain: ['hostages', 2], f: { accord: -20, threat: -10 } }], bad: [x => `The watch misses the children and is seen trying. There is no talk.`, { lose: 1, stain: ['hostages', 1], f: { accord: -50, threat: 15 } }] },
@@ -656,7 +661,7 @@ F('humans', 2, { id: 'humans.held', tone: 'crisis', lead: ['security', 'chaplain
       out: [x => `The answer is read to them over the radio, once, by ${x.lead}. There is no reply. They take no more of the colony's people after that.`, { lose: 1, morale: -5, stain: ['written_off', 2], f: { threat: -28, accord: -20 } }] },
   ] });
 F('humans', 3, { id: 'humans.market', tone: 'opportunity', lead: ['quartermaster', 'security'], title: x => `${T(x)}: A Market`,
-  text: x => `Without anyone deciding it, a trading ground has grown up halfway to ${x.n}: a flat rock, a set day, and prices.\n\n${x.Lead}: "Our people are swapping spares for their dried meat. I can stop it. Tax it. Or do it properly, with fair weights."`,
+  text: x => `Without anyone deciding it, a trading ground has grown up halfway to ${x.n}: a flat rock, a set day, and prices.\n\n[[${x.who}]] "Our people are swapping spares for their dried meat. I can stop it. Tax it. Or do it properly, with fair weights."`,
   ask: x => `What do you do with the trading ground halfway to ${x.n}: make it official with fair weights, tax it and search every pack, or shut it down?`,
   choices: [
     { ap: 'accord', l: 'Make it official, with fair weights', b: 60, m: ['quartermaster'], ok: [x => `A ledger, a standing day, and more coming in than going out.`, { food: 200, mat: 20 }], bad: [x => `Fair weights turn out to be a matter of opinion.`, { parts: -3, f: { accord: 5 } }] },
@@ -695,7 +700,7 @@ F('plague', 3, { id: 'plague.valley', tone: 'opportunity', lead: ['physician', '
     { ap: 'study', l: 'Have the survey crew carry out what they can', hint: 'unknown', b: 50, ok: [x => `Three jars survive the walk home.`, { f: { insight: 18 } }], bad: [x => `The samples spoil on the way home.`, {}] },
   ] });
 F('ruin', 3, { id: 'ruin.second', tone: 'opportunity', lead: ['geologist', 'engineer'], title: x => `${T(x)}: Another One`,
-  text: x => `The readings from ${x.n} point to a second site, ${x.s.world.type === 'drowned' ? 'on another island' : 'far across the plain'}: larger, and joined to this one by something under the ground.\n\n${x.Lead}: "Bigger, and they're connected, joined right underneath us, so we go and find it, or we sit here till it finds us, and I know which I'd pick, and so do you."`,
+  text: x => `The readings from ${x.n} point to a second site, ${x.s.world.type === 'drowned' ? 'on another island' : 'far across the plain'}: larger, and joined to this one by something under the ground.\n\n[[${x.who}]] "Bigger, and they're connected, joined right underneath us, so we go and find it, or we sit here till it finds us, and I know which I'd pick, and so do you."`,
   ask: x => `Do you send a party to the second site joined to ${x.n}, small or large, trace the link with seismographs, or leave it for later?`,
   choices: [
     small({ send: { days: [60, 90], danger: 4 } }),
@@ -722,7 +727,7 @@ F('humans', 3, { id: 'humans.camp', tone: 'opportunity', lead: ['security', 'tea
     small({ l: x => 'Send three to pick it over', send: { days: [15, 30], danger: 3 } }),
     large({ l: x => 'Send eight, and strip it', send: { n: 8, days: [15, 30], danger: 2 }, v: 'bold' }),
     later(x => `Rain gets into the camp before anyone else does.`, {}),
-    { ap: 'accord', l: 'Ask them, by radio, what happened', hint: 'unknown', b: 50, m: ['teacher'], ok: [x => `After a long pause, someone tells you the whole story, and sounds glad to.`, { f: { accord: 15, insight: 10 } }], bad: [x => `They say "Stay away from it," and sign off.`, { f: { threat: 5 } }] },
+    { ap: 'accord', l: 'Ask them, by radio, what happened', hint: 'unknown', b: 50, m: ['teacher'], ok: [x => `After a long pause, someone tells you the whole story, and sounds glad to.`, { f: { accord: 15, insight: 10 } }], bad: [x => `They say one thing before they sign off.\n\n[[${them(x)}]] "Stay away from it."`, { f: { threat: 5 } }] },
   ] });
 
 /* ======================= WHERE TWO THINGS MEET =======================
@@ -730,7 +735,7 @@ F('humans', 3, { id: 'humans.camp', tone: 'opportunity', lead: ['security', 'tea
 const oth = kinds => (s, f) => s.factors.find(o => o.id !== f.id && kinds.includes(o.kind) && o.stage >= 1 && !o.res) || null;
 const two = kinds => ({ other: oth(kinds), when: (s, f) => !!oth(kinds)(s, f) });
 F('fauna', 3, Object.assign(two(['natives', 'humans']), { id: 'cross.prey', tone: 'opportunity', lead: ['security', 'xenobio'], title: x => `${T(x)}: A Common Enemy`,
-  text: x => `${x.N} have been at ${x.on} too, and harder than at us. ${x.oN} ${x.ohave} sent someone to the fence: one figure, alone, pointing first at the hills and then at the colony's rifles.\n\n${x.Lead}: "That's a request. They want our rifles on their side, and when somebody asks that nicely for the guns, I start counting who's standing behind them."`,
+  text: x => `${x.N} have been at ${x.on} too, and harder than at us. ${x.oN} ${x.ohave} sent someone to the fence: one figure, alone, pointing first at the hills and then at the colony's rifles.\n\n[[${x.who}]] "That's a request. They want our rifles on their side, and when somebody asks that nicely for the guns, I start counting who's standing behind them."`,
   ask: x => `${x.oN} ${x.ohave} asked for your rifles against ${x.n}: do you hunt alongside ${x.othem}, watch how ${x.othey} deal with it, stay out of it, or join the hunt and then turn on ${x.othem}?`,
   choices: [
     { ap: 'force', l: x => `Hunt alongside ${x.on}`, v: 'open bold', b: 55, m: ['security'], ok: [x => `With their knowledge of the ground and the colony's rifles, it is the most one-sided week ${x.n} have ever had.`, { f: { harm: 35, threat: -20, accord: -10 }, o: { accord: 30, threat: -10 } }], bad: [x => `Nobody can understand anyone else, and in the dark, with everyone armed, it goes badly.`, { lose: 1, o: { accord: 8 } }] },
@@ -741,7 +746,7 @@ F('fauna', 3, Object.assign(two(['natives', 'humans']), { id: 'cross.prey', tone
       bad: [x => `Somebody fires early. ${x.oN} ${x.ohave} fought in those hills for longer than there has been a colony, and it shows.`, { lose: 1.5, stain: ['betrayal', 2], o: { threat: 30, accord: -100 } }] },
   ] }));
 F('ruin', 3, Object.assign(two(['fauna', 'flora']), { id: 'cross.shun', tone: 'opportunity', lead: ['xenobio', 'geologist'], title: x => `${T(x)}: The Bare Ring`,
-  text: x => `${x.oN} ${x.oare} everywhere now, except in one place. Around ${x.n} there is a ring of ground, four hundred metres wide, where ${x.othey} will not go.\n\n${x.Lead}: "Something in there keeps ${x.othem} out, something ${x.othey} won't go near, and I want it, whatever it is, I want to know what it is more than I've wanted anything."`,
+  text: x => `${x.oN} ${x.oare} everywhere now, except in one place. Around ${x.n} there is a ring of ground, four hundred metres wide, where ${x.othey} will not go.\n\n[[${x.who}]] "Something in there keeps ${x.othem} out, something ${x.othey} won't go near, and I want it, whatever it is, I want to know what it is more than I've wanted anything."`,
   ask: x => `Do you find out what keeps ${x.on} out of the ring around ${x.n}, move the stores inside the ring with the lock-up guarding them at night, or leave the ring alone?`,
   choices: [
     { ap: 'study', l: 'Find out what keeps the ring clear', b: 55, m: ['xenobio', 'engineer'], ok: [x => `A tone, below hearing, that the ruin has been sounding for longer than there have been people. The workshop can copy it.`, { f: { insight: 20 }, o: { threat: -25, insight: 20 } }], bad: [x => `Whatever it is, the instruments cannot hear it. The crew come back with headaches.`, { f: { insight: 8 } }] },
@@ -749,7 +754,7 @@ F('ruin', 3, Object.assign(two(['fauna', 'flora']), { id: 'cross.shun', tone: 'o
     { ap: 'avoid', l: 'Two problems are enough. Leave the ring alone', out: [x => `The ring stays empty. Everywhere else ${x.on} ${x.oare} still at the wire, and a field hand is dead of it before the season is out.`, { pop: -1 }] },
   ] }));
 F('plague', 3, Object.assign(two(['natives', 'humans']), { id: 'cross.shared', tone: 'pressure', lead: ['physician', 'chaplain'], title: x => `${T(x)}: It Crosses Over`,
-  text: x => `${x.N} has reached ${x.on}. There are fresh graves beyond the boundary, and ${x.othey} ${x.ohave} no clinic.\n\n${x.Lead}: "We know next to nothing about it, and they've got less. No surgeon, no notes. They're just burying their dead, and I don't know how to stand here and let them."`,
+  text: x => `${x.N} has reached ${x.on}. There are fresh graves beyond the boundary, and ${x.othey} ${x.ohave} no clinic.\n\n[[${x.who}]] "We know next to nothing about it, and they've got less. No surgeon, no notes. They're just burying their dead, and I don't know how to stand here and let them."`,
   ask: x => `Now that ${x.n} ${x.have} reached ${x.on}, do you give ${x.othem} everything you have learned, sell it to ${x.othem}, or close the boundary until it burns out?`,
   choices: [
     { ap: 'accord', l: 'Give them everything we have learned', v: 'mercy open', b: 45, m: ['physician'], ok: [x => `A page, some drawings, and a nurse who volunteers to go. The graves stop multiplying.`, { o: { accord: 40, threat: -15 }, f: { insight: 10 } }], bad: [x => `Not everything that works in a human ward works for them, but they can see you tried.`, { o: { accord: 15 } }] },

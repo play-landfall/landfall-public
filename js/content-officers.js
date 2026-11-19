@@ -44,7 +44,7 @@ const sayOf = (s, c, KEY, SEAT) => { const p = byPid(s, c.pid); return (p && KEY
 add({ id: 'off.break', view: 'people', arc: 'officers', tone: 'pressure', chain: true, repeat: 30, title: 'Not Sleeping',
   when: s => !!who(s, 'mind', p => p.mind < 27),
   setup: s => ctxOf(s, who(s, 'mind', p => p.mind < 27), 'mind'),
-  text: (s, c) => `${c.name} ${BREAK[c.seat]}. ${c.first} has not slept through a night since before the last harvest, and ${c.crew} have started covering for it.\n\n${sayOf(s, c, BREAK_KEY, BREAK_SAYS)}\n\n${LF.altOf(s, c.seat) ? `${LF.altOf(s, c.seat).first} is deputy, and cannot have the chair while ${c.first} is in it.` : `There is nobody after ${c.first}.`}`,
+  text: (s, c) => `${c.name} ${BREAK[c.seat]}. ${c.first} has not slept through a night since before the last harvest, and ${c.crew} have started covering for it.\n\n[[${c.pid}]] ${sayOf(s, c, BREAK_KEY, BREAK_SAYS)}\n\n${LF.altOf(s, c.seat) ? `${LF.altOf(s, c.seat).first} is deputy, and cannot have the chair while ${c.first} is in it.` : `There is nobody after ${c.first}.`}`,
   choices: [
     { label: (s, c) => `Stand ${c.first} down until it passes`, note: (s, c) => `${c.dept} runs short for three months, in whatever comes during them.`, info: [['time', 'Three months'], ['danger', 'A department short']],
       out: { text: (s, c) => `${c.first} hands over the keys without an argument, which worries people more than an argument would have. The bunk light stays off for most of a week.`, fx: (s, c) => ({ off: [['ctx', 'mind', 30]], do: s2 => rest(s2, c, 3) }) } },
@@ -59,7 +59,7 @@ LF.TAGS['off.break'] = ['mercy cautious', 'bold severe', 'severe order'];
 add({ id: 'off.sick', view: 'people', arc: 'officers', tone: 'pressure', chain: true, repeat: 30, title: 'A Chair by the Stove',
   when: s => !!who(s, 'body', p => p.body < 22),
   setup: s => ctxOf(s, who(s, 'body', p => p.body < 22), 'body'),
-  text: (s, c) => `${c.name} has been running ${c.dept} from a chair by the stove for a month, and yesterday could not get out of it. It is the kind of illness the ship's clinic would have caught in a morning.\n\n${c.first} says it is nothing, and has said so to everyone who asked. ${sayOf(s, c, SICK_KEY, SICK_SAYS)}`,
+  text: (s, c) => `${c.name} has been running ${c.dept} from a chair by the stove for a month, and yesterday could not get out of it. It is the kind of illness the ship's clinic would have caught in a morning.\n\n${c.first} says it is nothing, and has said so to everyone who asked.\n\n[[${c.pid}]] ${sayOf(s, c, SICK_KEY, SICK_SAYS)}`,
   choices: [
     { label: (s, c) => `A bed, and the autodoc's time`, cost: { parts: 3 }, req: s => LF.down(s, 'medbay') && !s.machines.medbay.up, reqText: s => s.machines.medbay.up ? 'The autodoc is still aboard the ship' : 'The autodoc is gone', note: (s, c) => `Four months without ${c.first}, and consumables the autodoc will not get back.`, info: [['time', 'Four months'], ['yield', 'A cure, most likely']],
       out: { text: (s, c) => `${c.first} goes under the autodoc's arm complaining, and comes out thinner and quieter. The department sends its questions to the ward on slips of paper.`, fx: (s, c) => ({ machine: { medbay: -4 }, off: [['ctx', 'body', 35]], do: s2 => rest(s2, c, 4) }) } },
@@ -104,7 +104,7 @@ add({ id: 'off.promote', view: 'people', arc: 'officers', tone: 'council', urgen
   when: s => !!s.world && !LF.aloft(s) && !!openSeat(s),
   setup: s => { const seat = openSeat(s), S = LF.SEATS[seat], g = was(s, seat), a = LF.altOf(s, seat);
     return { seat, dept: S.name, crew: S.crew, title: LF.SEAT_TITLE[seat], key: a.key, name: a.first + ' ' + a.last, first: a.first, gone: g ? g.name : null, gfirst: g ? g.first : null, how: howOut(g), fell: !!(g && g.fell), mo: g ? Math.round((s.day - outDay(g)) / LF.MONTH) : 1 }; },
-  text: (s, c) => `${c.fell ? `${c.gone} did not live to see the ground, and ${c.crew} came down the ramp taking their orders from ${c.first}, who has no title to give them.` : sinceLine(s, c)}\n\n${c.name} came out on the ship as ${c.gfirst ? c.gfirst + "'s" : 'the'} second and has been deputy since the lander came down. There is nobody after ${c.first}: the colony brought two for each chair.\n\nAsked, ${c.first} has the answer ready. ${TAKES[c.key] || ''}`,
+  text: (s, c) => `${c.fell ? `${c.gone} did not live to see the ground, and ${c.crew} came down the ramp taking their orders from ${c.first}, who has no title to give them.` : sinceLine(s, c)}\n\n${c.name} came out on the ship as ${c.gfirst ? c.gfirst + "'s" : 'the'} second and has been deputy since the lander came down. There is nobody after ${c.first}: the colony brought two for each chair.\n\nAsked, ${c.first} has the answer ready.${TAKES[c.key] ? `\n\n[[${c.key}]] ${TAKES[c.key]}` : ''}`,
   choices: [
     { label: (s, c) => `Give ${c.first} the chair`, note: (s, c) => `${c.dept} has an officer again. ${c.first} is the last one it will ever have.`, info: (s, c) => [['people', `${c.dept}, whole again`], ['danger', `Nobody after ${c.first}`]],
       out: { text: (s, c) => `${c.name} takes the ${c.title}'s chair at the evening muster. ${cap(c.crew)} have been doing what ${c.first} said for a good while already, and nobody looks up from their plate.`,

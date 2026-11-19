@@ -25,7 +25,7 @@ add({ id: 'landfall.site', view: 'world', arc: 'core', tone: 'opportunity', chai
 /* ================= CROPS ================= */
 add({ id: 'crops.first', arc: 'crops', tone: 'pressure', title: 'The Yellow Wheat', w: 3,
   when: s => LF.need(s) === 'soil' && s.day >= 22 && (s.flags.sprouted || s.day >= 90),
-  text: s => `${s.flags.first_sow === 'all' ? 'You sowed everything, and most of it' : s.flags.first_sow === 'trial' ? 'Even in the trial squares, most of what was sown' : 'Most of the first open-air planting'} came up the colour of old paper, roots bare. ${s.flags.resown ? 'The second sowing held, in the few plots that would take it. ' : ''}"Ground's alive," says ${N(s, 'botanist')}. "Full of something. Nothing our wheat can live with."\n\n${ok(s, 'hydroponics') ? 'Hydroponics is carrying the colony, and was never meant to for long.' : 'The colony is eating out of the hold, and the hold was never meant to feed it for long.'}`,
+  text: s => `${s.flags.first_sow === 'all' ? 'You sowed everything, and most of it' : s.flags.first_sow === 'trial' ? 'Even in the trial squares, most of what was sown' : 'Most of the first open-air planting'} came up the colour of old paper, roots bare.${s.flags.resown ? ' The second sowing held, in the few plots that would take it.' : ''}\n\n[[botanist]] "Ground's alive." "Full of something. Nothing our wheat can live with."\n\n${ok(s, 'hydroponics') ? 'Hydroponics is carrying the colony, and was never meant to for long.' : 'The colony is eating out of the hold, and the hold was never meant to feed it for long.'}`,
   choices: [
     { label: s => ok(s, 'hydroponics') ? 'Pull back to the vats. They feed twenty-four, so name the twenty-four' : 'Pull back to the hold. A full ladle for twenty-four, so name the twenty-four', dark: true, note: 'No seed is risked and the field crews are kept strong, and everyone not on the list eats what is left of the hold.', info: [['yield', 'The crews fed, the seed kept'], ['danger', 'Everyone not on the list']],
       out: { text: s => `The plots are left to the wind. ${Nc(s, 'quartermaster')} posts twenty-four names on the ${ok(s, 'hydroponics') ? 'hydroponics' : 'stores'} door, all of them diggers and fitters. The rest eat from the hold on the thin ladle, and two of the oldest do not see the month out.`, fx: { food: 120, morale: -5, pop: -2, flags: { crops_retreat: true }, stain: ['ladle', 2] } } },
@@ -42,7 +42,7 @@ add({ id: 'crops.first', arc: 'crops', tone: 'pressure', title: 'The Yellow Whea
 
 add({ id: 'crops.native', arc: 'crops', tone: 'opportunity', title: 'Knucklewort',
   when: s => !s.flags.no_native && s.day >= 90 && (s.built.soillab || s.day >= 170),
-  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible. "Somebody's got to eat it, every day for a month, and I'd do it myself, honestly I'd start tonight, if you'd only let me, which you won't, I can see your face."\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
+  text: s => `${Nc(s, 'xenobio')} sets a knobbled grey tuber on your desk: knucklewort. It grows everywhere and is, on paper, nearly digestible.\n\n[[xenobio]] "Somebody's got to eat it, every day for a month, and I'd do it myself, honestly I'd start tonight, if you'd only let me, which you won't, I can see your face."\n\n${Nc(s, 'quartermaster')} has already volunteered.`,
   choices: [
     { label: s => `Let ${F(s, 'quartermaster')} eat it`, note: 'It is the quickest way to find out, and only one person is at risk.',
       test: { base: 55, mods: [R('physician', 12), M('medbay', 12)] },
@@ -90,14 +90,14 @@ add({ id: 'crops.adapt', arc: 'crops', tone: 'opportunity', title: 'A Wheat for 
         fx: { yield: 0.25, flags: { crops_adapted: true, crops_symbiotic: true }, chron: 'The colony let the Understory feed its wheat. The harvests that followed were extraordinary.' } } },
   ] });
 add({ id: 'crops.landrace', arc: 'crops', tone: 'quiet', chain: true, title: 'Landrace',
-  text: s => `Generation nine. ${Nc(s, 'botanist')} brings you a sheaf, short and tough and ugly, with roots that hold a clod of native soil like a fist. No machine had a hand in it.\n\n"Nine generations. It's ours. Nobody gave us this one."`,
+  text: s => `Generation nine. ${Nc(s, 'botanist')} brings you a sheaf, short and tough and ugly, with roots that hold a clod of native soil like a fist. No machine had a hand in it.\n\n[[botanist]] "Nine generations. It's ours. Nobody gave us this one."`,
   choices: [
     { label: s => `Name it for ${s.firstDead || 'the ship'}`, out: { text: 'The name sticks. Children will grow up thinking that is simply the word for wheat.', fx: { morale: 8, flags: { crops_adapted: true, breeding: false }, chron: s => `A hand-bred landrace wheat took to the soil. It was named for ${s.firstDead || 'the ship'}.` } } },
     { label: 'Get it in the ground. Sentiment later', out: { text: 'The crews are in the plots by afternoon.', fx: { morale: 3, food: 150, flags: { crops_adapted: true, breeding: false }, chron: 'A hand-bred landrace wheat took to the soil.' } } },
   ] });
 add({ id: 'crops.seedvault', arc: 'crops', tone: 'opportunity', title: 'The Seed Vault',
   when: s => s.flags.crops_adapted && s.day >= 300,
-  text: s => `With a wheat that grows, ${N(s, 'botanist')} wants to plant everything. The vault still holds forty Earth species nobody has trialled, and seed does not keep forever.\n\n${Nc(s, 'teacher')} says no, flat. "The vault is the only copy."`,
+  text: s => `With a wheat that grows, ${N(s, 'botanist')} wants to plant everything. The vault still holds forty Earth species nobody has trialled, and seed does not keep forever.\n\n${Nc(s, 'teacher')} says no, flat.\n\n[[teacher]] "The vault is the only copy."`,
   choices: [
     { label: 'Plant it all. Seed in a vault feeds no one', note: 'If anything here ever learns to eat these crops, there will be nothing to replant from.', out: { text: s => `Barley, beans, flax, three kinds of squash. Some die within a week, but enough of them take. ${Nc(s, 'teacher')} has the objection entered in the record, and after that talks to you about business and nothing else.`, fx: { yield: 0.2, morale: 4, flags: { no_seed_reserve: true }, do: s => { const p = P(s, 'teacher'); if (p && p.loyal !== undefined) p.loyal = LF.clamp(p.loyal - 15, 0, 100); } } } },
     { label: 'Plant half. Keep the reserve sealed', note: 'Half the harvest it could have been, in a year when people are still counting ladles.', out: { text: s => `Half the vault goes into the ground. The other half stays cold, dark and sealed. ${Nc(s, 'botanist')} tells the mess hall what the sealed half would have fed, and is asked not to do that again.`, fx: { yield: 0.1, morale: -2, flags: { seed_reserve: true } } } },
@@ -125,7 +125,7 @@ add({ id: 'crops.blight', arc: 'crops', tone: 'crisis', title: 'Rust',
 /* ================= MACHINERY ================= */
 add({ id: 'mach.biofilm', arc: 'machines', tone: 'pressure', title: 'Copper in the Water',
   when: s => s.day >= 35 && ok(s, 'reclaimer'),
-  text: s => `The water tastes of pennies. ${Nc(s, 'engineer')} holds a reclaimer membrane to the light: a violet film, eating the polymer.\n\n"That's native, and it's moved in. They were rated for twenty years and I'd give them two months, and I'd be generous." Four children were sick in the night, and the clinic is saying copper.`,
+  text: s => `The water tastes of pennies. ${Nc(s, 'engineer')} holds a reclaimer membrane to the light: a violet film, eating the polymer.\n\n[[engineer]] "That's native, and it's moved in. They were rated for twenty years and I'd give them two months, and I'd be generous."\n\nFour children were sick in the night, and the clinic is saying copper.`,
   choices: [
     { label: 'Swap in fresh membranes', cost: { parts: 6 }, out: { text: 'Clean water by evening. The old membranes are bagged and burned. The spares shelf has a gap in it.', fx: { machine: { reclaimer: 8 } } } },
     { label: 'Sterilise the loop with reactor heat', note: 'It costs no parts, as long as nothing cracks.',
@@ -141,7 +141,7 @@ add({ id: 'mach.biofilm', arc: 'machines', tone: 'pressure', title: 'Copper in t
   ] });
 add({ id: 'mach.printhead', arc: 'machines', tone: 'opportunity', title: 'Three Good Prints',
   when: s => s.day >= 80 && ok(s, 'fabricator') && LF.down(s, 'medbay'),
-  text: s => `${Nc(s, 'engineer')} has the fabricator's service log open. "Fine head's at ninety-one percent of rated life. She'll do coarse work and spares for years yet, but precision, she's got one job in her. Maybe. So pick it carefully."\n\n${Nc(s, 'physician')} has a list of the surgery that stops when the autodoc's consumables do. The workshop has a list too. Each list has names on it.`,
+  text: s => `${Nc(s, 'engineer')} has the fabricator's service log open.\n\n[[engineer]] "Fine head's at ninety-one percent of rated life. She'll do coarse work and spares for years yet, but precision, she's got one job in her. Maybe. So pick it carefully."\n\n${Nc(s, 'physician')} has a list of the surgery that stops when the autodoc's consumables do. The workshop has a list too. Each list has names on it.`,
   choices: [
     { label: 'A second print head', note: 'A new head would keep the fabricator doing precision work, if the print finishes.',
       test: { base: 50, mods: [R('engineer', 18), M('reactor', 6)] },
@@ -155,7 +155,7 @@ add({ id: 'mach.printhead', arc: 'machines', tone: 'opportunity', title: 'Three 
   ] });
 add({ id: 'mach.reactor', arc: 'machines', tone: 'crisis', title: 'Hairline',
   when: s => s.day >= 170 && ok(s, 'reactor'),
-  text: s => `A coolant alarm at 0300: a hairline fracture in the reactor's primary loop, weeping.\n\n${Nc(s, 'engineer')}: "Shut her down and weld it proper, that's ten days dark. Or somebody goes in hot with a patch. Or we turn her down and live with less for good. I don't like any of them, so pick one."`,
+  text: s => `A coolant alarm at 0300: a hairline fracture in the reactor's primary loop, weeping.\n\n[[engineer]] "Shut her down and weld it proper, that's ten days dark. Or somebody goes in hot with a patch. Or we turn her down and live with less for good. I don't like any of them, so pick one."`,
   choices: [
     { label: 'Cold shutdown. Ten days dark, and the battery heat goes to the crews\' pod', dark: true, note: 'The weld is done properly and nobody is sent into the loop, and the people who are not needed on the eleventh day are the ones who sleep cold.', info: [['yield', 'A proper weld'], ['danger', 'The pods without heat']],
       out: { text: 'Every lamp in the camp goes out. The one heated pod holds the welders, the watch and the field crews. Everyone else sleeps in their coats, and two of the oldest are found in them. On the eleventh day the hum comes back.', fx: { food: -200, pop: -2, morale: -5, machine: { reactor: 14 }, stain: ['cold', 1] } } },
@@ -176,7 +176,7 @@ add({ id: 'mach.reactor', arc: 'machines', tone: 'crisis', title: 'Hairline',
 add({ id: 'mach.cannibal', arc: 'state', tone: 'crisis', title: 'Robbing Peter', repeat: 80,
   setup: s => { const id = Object.keys(s.machines).filter(k => ok(s, k) && k !== 'lander').sort((a, b) => s.machines[a].hp - s.machines[b].hp)[0]; return { id, name: LF.MACHINES[id].name }; },
   when: s => s.res.parts < 6 && Object.keys(s.machines).some(k => k !== 'lander' && ok(s, k) && s.machines[k].hp < 28),
-  text: (s, c) => `The ${c.name} is failing, and the spares shelf is bare. ${Nc(s, 'engineer')} lays it out without drama.\n\n"I can keep her going, but the parts come out of something else, and that something's still working. I'll hear about it either way."`,
+  text: (s, c) => `The ${c.name} is failing, and the spares shelf is bare. ${Nc(s, 'engineer')} lays it out without drama.\n\n[[engineer]] "I can keep her going, but the parts come out of something else, and that something's still working. I'll hear about it either way."`,
   choices: [
     { label: 'Strip the lander', dark: true, req: s => ok(s, 'lander'), reqText: 'The lander is already gone',
       note: s => s.sleepers > 0 ? `${s.sleepers} sleepers are still in orbit, and this is the only way up to them.` : 'Nobody is left in orbit to fetch.', info: [['yield', 'The machine, and spares'], ['danger', 'Everyone still in orbit']],
@@ -193,7 +193,7 @@ add({ id: 'mach.cannibal', arc: 'state', tone: 'crisis', title: 'Robbing Peter',
   ] });
 add({ id: 'mach.lander', arc: 'machines', tone: 'pressure', title: 'Flight Hours',
   when: s => ok(s, 'lander') && s.machines.lander.cap < 62 && s.sleepers >= 40 && LF.canFly(s) && !s.flags.lander_grounded,
-  text: s => `${Nc(s, 'pilot')} finds you at the pad. "Shield's got one clean re-entry left. One and a half at a push." A glance up, at nothing. "${s.sleepers} people up there. There's no second flight for them."`,
+  text: s => `${Nc(s, 'pilot')} finds you at the pad.\n\n[[pilot]] "Shield's got one clean re-entry left. One and a half at a push."\n\nA glance up, at nothing.\n\n[[pilot]] "${s.sleepers} people up there. There's no second flight for them."`,
   choices: [
     { label: 'One last run, overloaded: forty in a hold built for twenty',
       test: { base: 55, mods: [R('pilot', 18), Tr('pilot', 'reckless', 5)] },
@@ -214,7 +214,7 @@ add({ id: 'mach.lander', arc: 'machines', tone: 'pressure', title: 'Flight Hours
 /* ================= SLEEPERS ================= */
 add({ id: 'sleep.manifest', arc: 'sleepers', tone: 'opportunity', title: 'The Manifest',
   when: s => s.day >= 28 && s.sleepers >= 23 && ok(s, 'lander') && LF.canFly(s) && !s.flags.lander_grounded,
-  text: s => `The first shuttle window opens tomorrow. ${Nc(s, 'quartermaster')} has the cryo manifest: a hundred and forty names, each with a trade and a calorie cost.\n\n"Twenty seats. Whoever comes down eats from the first day, and whoever stays up there sleeps in a bank the ship can't vouch for any more. I wouldn't promise anybody a second window."`,
+  text: s => `The first shuttle window opens tomorrow. ${Nc(s, 'quartermaster')} has the cryo manifest: a hundred and forty names, each with a trade and a calorie cost.\n\n[[quartermaster]] "Twenty seats. Whoever comes down eats from the first day, and whoever stays up there sleeps in a bank the ship can't vouch for any more. I wouldn't promise anybody a second window."`,
   choices: [
     { label: 'Field hands and builders', out: { text: s => `Twenty strong backs walk off the ramp, squinting. By the end of the month they are ${LF.lex(s, 'burnt')} and useful. Three of the amber pods they were chosen over are dark by the next window.`, fx: { pop: 20, sleepers: -23, fly: 1, machine: { lander: -12 } } } },
     { label: 'The specialists', note: 'Fewer hands, but people who know things.',
@@ -255,7 +255,7 @@ add({ id: 'sleep.lights', arc: 'sleepers', tone: 'quiet', chain: true, title: 'T
 /* ================= THE FEVER ================= */
 add({ id: 'fever.first', arc: 'fever', tone: 'pressure', title: 'Greensight',
   when: s => s.day >= 110, w: 0.9,
-  text: s => `Three of the ${s.flags.site_delta ? 'delta ditch crew' : 'field crew'} see a green haze at the edge of their vision. Something photosynthetic is growing in the fluid of their eyes.\n\n"No fever. No pain," says ${N(s, 'physician')}. "I don't know how it spreads. I don't know if it stops. So don't you dare tell those three it's nothing."`,
+  text: s => `Three of the ${s.flags.site_delta ? 'delta ditch crew' : 'field crew'} see a green haze at the edge of their vision. Something photosynthetic is growing in the fluid of their eyes.\n\n[[physician]] "No fever. No pain." "I don't know how it spreads. I don't know if it stops. So don't you dare tell those three it's nothing."`,
   choices: [
     { label: 'Quarantine the crew and everyone they bunk with', out: { text: 'Fourteen people behind a taped line, playing cards and going slowly blind. The fields go short-handed.', fx: { morale: -4, food: -120, flags: { fever_quarantine: true }, sched: [['fever.spread', 14, 24]] } } },
     { label: 'Full workup on the autodoc', req: s => ok(s, 'medbay'), reqText: 'Needs the Autodoc',
@@ -289,7 +289,7 @@ add({ id: 'fever.spread', arc: 'fever', tone: 'crisis', chain: true, title: 'The
 /* ================= STATE-DRIVEN ================= */
 add({ id: 'state.famine', urgent: true, max: 2, arc: 'state', tone: 'crisis', title: 'The Bottom of the Bins', repeat: 75,
   when: s => foodDays(s) < 22,
-  text: s => `${Nc(s, 'quartermaster')} does not bother with the ledger. "Two months. Less, if folk work hard enough to get hungry." Outside, a queue has formed at the stores door two hours before it opens.`,
+  text: s => `${Nc(s, 'quartermaster')} does not bother with the ledger.\n\n[[quartermaster]] "Two months. Less, if folk work hard enough to get hungry."\n\nOutside, a queue has formed at the stores door two hours before it opens.`,
   choices: [
     { label: 'Eat the seed grain', note: s => s.flags.first_sow === 'half' && s.flags.seed_grain ? 'These are the lockers you sealed in the first season. You eat now and harvest less later.' : 'You eat now and harvest less later.',
       req: s => !!(s.flags.seed_grain || s.flags.crops_adapted || s.day > 300), reqText: 'There is none. It all went into the ground in the first season',

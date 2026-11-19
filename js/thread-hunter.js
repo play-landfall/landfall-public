@@ -216,7 +216,7 @@ const STEP = { place: 'the galley step', person: true, staked: true, the: c => c
 /* ======================= SIGN: the lamp on the path ======================= */
 B('sign', { id: 'hu.first', view: 'world', tone: 'pressure', title: 'The Latrine Path',
   setup: s => Object.assign(crew(s), { ev: pickK(s, T(s)) }),
-  text: (s, c) => `${cap(c.vic)} went out to the latrine after lamp-down and did not come back. The lamp is on the path where it was set down, upright, still lit. There is no blood on the ${c.top}. The latrine door is latched from outside, and nobody in the bunk row heard anything.\n\n${c.W} has walked the wire twice and found it whole.${c.wv ? ` "Nobody walks out and leaves a lit lamp standing on the path, and nobody latches a door from the outside by accident," ${c.wv} says. "So that's the good news used up, and I'm bracing for the bad."` : ''}`,
+  text: (s, c) => `${cap(c.vic)} went out to the latrine after lamp-down and did not come back. The lamp is on the path where it was set down, upright, still lit. There is no blood on the ${c.top}. The latrine door is latched from outside, and nobody in the bunk row heard anything.\n\n${c.W} has walked the wire twice and found it whole.${c.wv ? `\n\n[[security]] "Nobody walks out and leaves a lit lamp standing on the path, and nobody latches a door from the outside by accident." "So that's the good news used up, and I'm bracing for the bad."` : ''}`,
   choices: [
     { label: 'Search the ground past the path at first light', note: 'The search is the day\'s field crew, and it goes looking for whatever took a grown adult without a sound.', test: { base: 52, mods: [R('security', 12), R('xenobio', 8)] },
       ok: { text: (s, c) => `${c.W} quarters the ground from the path to the wire before the crews are let out. ${ev('ground', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
@@ -235,7 +235,7 @@ B('sign', { id: 'hu.first', view: 'world', tone: 'pressure', title: 'The Latrine
 /* ======================= WIRE: inside the wire, and what was seen ======================= */
 B('wire', { id: 'hu.wire', tone: 'pressure', title: 'Head Height',
   setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t), ev2: pickK(s, t, 0.1) }); },
-  text: (s, c) => `The night hand from the pump house was found at first light behind the stores, inside the wire. ${c.D} has the body under a sheet and has asked that nobody else look. Parts of it are not there.\n\nOn the stores wall above the place are four marks cut into the hull plate, level with ${c.w}'s eyes. The wire is whole, the gate was barred, and the wall pair passed that corner twice in the night. The mess has begun calling it the Guest, since nobody let it in.${c.dv ? ` "No, you don't get to look," ${c.dv} says. "I'll tell you what's gone. Sit down first."` : ''}`,
+  text: (s, c) => `The night hand from the pump house was found at first light behind the stores, inside the wire. ${c.D} has the body under a sheet and has asked that nobody else look. Parts of it are not there.\n\nOn the stores wall above the place are four marks cut into the hull plate, level with ${c.w}'s eyes. The wire is whole, the gate was barred, and the wall pair passed that corner twice in the night. The mess has begun calling it the Guest, since nobody let it in.${c.dv ? `\n\n[[physician]] "No, you don't get to look." "I'll tell you what's gone. Sit down first."` : ''}`,
   choices: [
     { label: (s, c) => `Have ${c.d} go over the body properly, however long it takes`, note: 'The clinic is shut to the living for the month, and what is found will be all over the mess.', test: { base: 54, mods: [R('physician', 14), R('xenobio', 6)] },
       ok: { text: (s, c) => `${c.D} works behind a locked door and comes out with two pages. ${ev('body', c.ev, c)}`, fx: (s, c) => ({ morale: -1, do: s2 => learn(s2, T(s2), 24, c.ev) }) },
@@ -273,7 +273,7 @@ B(['wire', 'inside'], { id: 'hu.seen', tone: 'pressure', title: 'From the Galley
 /* ======================= INSIDE: the roof hatch, the trap, the one who goes out ======================= */
 B('inside', { id: 'hu.roof', tone: 'crisis', title: 'The Roof Hatch',
   setup: s => Object.assign(crew(s), { ev: pickK(s, T(s)) }),
-  text: (s, c) => `It has been inside a bunkhouse. At the dawn count the second row was one short: a bunk in the middle of the room, with nineteen people asleep on every side of it. The blanket is on the floor, halfway to the door. The roof hatch is open. The door bar is off its brackets and leaning against the wall, on the inside.\n\nNobody woke. The second row is standing in the yard with its bedding and will not go back in.${c.bv ? ` "Don't ask me if the doors'll hold," ${c.bv} says. "It didn't need the door. Not to get in."` : ''}`,
+  text: (s, c) => `It has been inside a bunkhouse. At the dawn count the second row was one short: a bunk in the middle of the room, with nineteen people asleep on every side of it. The blanket is on the floor, halfway to the door. The roof hatch is open. The door bar is off its brackets and leaning against the wall, on the inside.\n\nNobody woke. The second row is standing in the yard with its bedding and will not go back in.${c.bv ? `\n\n[[engineer]] "Don't ask me if the doors'll hold." "It didn't need the door. Not to get in."` : ''}`,
   choices: [
     { label: (s, c) => `Have ${c.e} go over the hatch, the bar and the rafters before anything is touched`, note: 'The second row sleeps on the mess floor until it is done, and the other rows hear what the hatch has to say.', test: { base: 54, mods: [R('engineer', 14), R('security', 6)] },
       ok: { text: (s, c) => `${c.E} takes the hatch off its frame and lays the pieces out on a bench. ${ev('hatch', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 24, c.ev) }) },
@@ -292,7 +292,7 @@ B('inside', { id: 'hu.roof', tone: 'crisis', title: 'The Roof Hatch',
 const POST = { place: 'the north post', person: true, staked: true, the: c => 'the hauler' }, CHIEF = { place: 'the north post', person: true, the: c => c.w, pid: c => c.wpid }, MEAT = { place: 'the north post', person: false };
 B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post',
   setup: s => { const t = T(s), p = LF.officer(s, 'security'), up = p && LF.seatState(s, 'security') === 'here'; return Object.assign(crew(s), { trapN: t.traps, wpid: up ? p.id : null, lean: lean(t) }); },
-  text: (s, c) => `${c.W} has a plan, and does not like it. Whatever this is, it comes where the colony is thinnest: the path, the corner, the one bunk. So put something at the north post, where the ground is open on three sides, lie up with every rifle there is, and see what comes for it.${c.wv ? ` "It likes one of us on our own, so fine, we give it one," ${c.wv} says. "I've a list of who I'd miss least if that helps you sleep, which I'd guess it doesn't."` : ' The watch has drawn up a list of who could be put there.'}\n\n${c.lean}`,
+  text: (s, c) => `${c.W} has a plan, and does not like it. Whatever this is, it comes where the colony is thinnest: the path, the corner, the one bunk. So put something at the north post, where the ground is open on three sides, lie up with every rifle there is, and see what comes for it.${c.wv ? `\n\n[[security]] "It likes one of us on our own, so fine, we give it one." "I've a list of who I'd miss least if that helps you sleep, which I'd guess it doesn't."` : ' The watch has drawn up a list of who could be put there.'}\n\n${c.lean}`,
   choices: [
     { label: 'Tie one of the punishment detail to the post with a lamp, and lie up', dark: true, note: 'It gets what it has been coming for, with rifles over it, and somebody is tied there to be that.', info: [['yield', 'A shot at it'], ['danger', 'The one at the post']],
       test: { base: 50, mods: [R('security', 16), If(s => T(s).hurt > 0, 6, 'It has been hit before')] },
@@ -309,16 +309,16 @@ B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post'
   ] });
 
 const WANTS = {
-  security: f => `"I've stood on that wall every night watching it not be there, and I'm done with that," ${f} says, "because it sleeps somewhere, and I'm going to go and find out where and be bloody rude to it."`,
-  command: f => `"One rifle. Two nights. Back on the third," ${f} says. "It lies up by day. I find where. Lift the bar."`,
-  engineer: f => `"Forty hatches I've welded, and it's had more of us since," ${f} says. "I'm tired. Tell me what to weld next, because I'm not stopping."`,
-  doctor: f => `"You keep sending me what's left of them," ${f} says. "I'm going to look at it once, before it sends me another. Open the gate."`,
-  scientist: f => `"It has to lie up somewhere, doesn't it? Everything does, half a day out, less, and nobody's even looked," ${f} says. "I only want to see the place, just the place, I wouldn't touch a, no wait, lift the bar, will you?"`,
-  crew: f => `"A thing that hunts has a bed," ${f} says. "You find the bed. We did it with foxes at home. I'll be back for the sowing."`,
+  security: `"I've stood on that wall every night watching it not be there, and I'm done with that." "Because it sleeps somewhere, and I'm going to go and find out where and be bloody rude to it."`,
+  command: `"One rifle. Two nights. Back on the third." "It lies up by day. I find where. Lift the bar."`,
+  engineer: `"Forty hatches I've welded, and it's had more of us since." "I'm tired. Tell me what to weld next, because I'm not stopping."`,
+  doctor: `"You keep sending me what's left of them." "I'm going to look at it once, before it sends me another. Open the gate."`,
+  scientist: `"It has to lie up somewhere, doesn't it? Everything does, half a day out, less, and nobody's even looked." "I only want to see the place, just the place, I wouldn't touch a, no wait, lift the bar, will you?"`,
+  crew: `"A thing that hunts has a bed." "You find the bed. We did it with foxes at home. I'll be back for the sowing."`,
 };
 B(['inside', 'bold'], { id: 'hu.out', tone: 'pressure', title: 'Going Out After It',
   setup: s => { const t = T(s), up = (LF.seated ? LF.seated(s) : []).filter(p => !p.away), p = up.find(q => q.seat === 'security') || (up.length ? LF.spick(s, up) : null), c = who(p, 'the watch sergeant', 'the sergeant');
-    return Object.assign(crew(s), c, { want: c.seat && WANTS[c.seat] ? WANTS[c.seat](c.first) : 'The sergeant means to find where it lies up by day, and says the wall has done nothing so far but count.', ev: pickK(s, t, 0.1), ev2: pickK(s, t, 0.05) }); },
+    return Object.assign(crew(s), c, { want: c.seat && WANTS[c.seat] ? `[[${c.pid}]] ${WANTS[c.seat]}` : 'The sergeant means to find where it lies up by day, and says the wall has done nothing so far but count.', ev: pickK(s, t, 0.1), ev2: pickK(s, t, 0.05) }); },
   text: (s, c) => `${c.Name} has not slept in a bunk since the roof hatch, and has stopped pretending to. Tonight ${c.first} is at the gate with a rifle and a pack and no lamp, asking for the bar to be lifted.\n\n${c.want}`,
   choices: [
     { label: 'Lift the bar', note: (s, c) => `${c.Name} goes alone into its ground, and the post is run by whoever is to hand until the gate opens again.`, test: { base: 48, mods: [R('security', 10), R('xenobio', 8)] },

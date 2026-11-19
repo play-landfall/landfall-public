@@ -48,10 +48,10 @@ const EV = {
     fever: c => 'Every sample that failed came from somebody with a temperature, and every one that passed from somebody without.',
     faking: c => 'Two of the failed samples smell of the clinic\'s cleaning spirit. Nobody in the clinic uses it on blood.' },
   refuse: {
-    spread: c => `"Because I know what it'll say," ${c.name} says, and nothing more all night.`,
-    dead: c => `${c.Name} will bleed anywhere but the mess, which is next to the cold room. "It's cold in there," ${c.first} says. "It's not supposed to be cold right through the wall."`,
-    fever: c => `${c.Name} is shaking and hot, and says the needle has been dipped in something, and that the clinic wants ${c.first} dead.`,
-    faking: c => `${c.Name} says the samples on the plate are not the samples that were drawn, and will say who carried the tray only to you.` },
+    spread: c => `\n\n[[${c.pid || 'x17'}]] "Because I know what it'll say."\n\n${c.Name} says nothing more all night.`,
+    dead: c => ` ${c.Name} will bleed anywhere but the mess, which is next to the cold room.\n\n[[${c.pid || 'x17'}]] "It's cold in there." "It's not supposed to be cold right through the wall."`,
+    fever: c => ` ${c.Name} is shaking and hot, and says the needle has been dipped in something, and that the clinic wants ${c.first} dead.`,
+    faking: c => ` ${c.Name} says the samples on the plate are not the samples that were drawn, and will say who carried the tray only to you.` },
   cold: {
     spread: c => 'The sheet over it has a stain spreading out from the middle, and the stain is warmer than the room.',
     dead: c => 'The sheet is on the floor. It is lying a metre from the slab, on its side, facing the door.',
@@ -254,7 +254,7 @@ const OPENER = { animal: c => c.sc, body: c => c.d };
 B('cart', { id: 'bt.cart', view: 'colony', tone: 'pressure', title: 'What Came Back in the Cart',
   setup: s => { const t = T(s), c = crew(s), lead = who(s, t.list.find(e => e.pid) || t.list[0]); c.opener = OPENER[t.what](c); c.Opener = cap(c.opener);
     return Object.assign(c, { ev: pickK(s, t), party: names(vic(s, t.list.filter(e => live(s, e))), 6), lead: lead.name, Lead: lead.Name, keys: t.list.map(e => e.k) }); },
-  text: (s, c) => `The six who went out to the far cut came back at dusk walking beside the cart, not riding it. ${c.what === 'body' ? 'Under the tarpaulin in the back is a seventh, a hauler who sat down on the road home complaining of the cold and was dead by the wire. There is not a mark on the body.' : 'Under the tarpaulin in the back is an animal of this world the size of a calf. It walked into their camp at the cut, lay down by the fire and did not get up, and it died in the cart on the way home.'}${c.dv ? ` "Gloves on anyone who touches it, and nobody touches it who doesn't have to," ${c.dv} says. "I mean it. You too."` : c.sv ? ` "Don't burn it," ${c.sv} says. "Please, whatever killed it, it's the first whole one we've had, and if there's anything in it at all, any, hold on, just give me the table before anyone lights anything."` : ''}\n\nThe six: ${c.party}.`,
+  text: (s, c) => `The six who went out to the far cut came back at dusk walking beside the cart, not riding it. ${c.what === 'body' ? 'Under the tarpaulin in the back is a seventh, a hauler who sat down on the road home complaining of the cold and was dead by the wire. There is not a mark on the body.' : 'Under the tarpaulin in the back is an animal of this world the size of a calf. It walked into their camp at the cut, lay down by the fire and did not get up, and it died in the cart on the way home.'}${c.dv ? `\n\n[[physician]] "Gloves on anyone who touches it, and nobody touches it who doesn't have to." "I mean it. You too."` : c.sv ? `\n\n[[scientist]] "Don't burn it." "Please, whatever killed it, it's the first whole one we've had, and if there's anything in it at all, any, hold on, just give me the table before anyone lights anything."` : ''}\n\nThe six: ${c.party}.`,
   choices: [
     { label: (s, c) => `Into the cold room, and have ${c.opener} open it`, note: 'The cold room holds the colony\'s meat as well, and whoever opens it breathes what it died of.', test: { base: 52, mods: [R('physician', 10), R('xenobio', 10)] },
       ok: { text: (s, c) => `${c.Opener} works on ${c.it} under the cold-room lamp with the door shut. ${ev('cart', c.ev, c)}`, fx: (s, c) => ({ do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev); t.kept = true; } }) },
@@ -276,7 +276,7 @@ B('cart', { id: 'bt.cart', view: 'colony', tone: 'pressure', title: 'What Came B
 /* ======================= WRONG: the first one who is slightly wrong ======================= */
 B(['wrong', 'test'], { id: 'bt.wrong', tone: 'pressure', title: 'A Beat Late',
   setup: s => { const t = T(s), e = t.list.find(x => here(s, x)) || t.list[0]; return Object.assign(crew(s), who(s, e), { ev: pickK(s, t), ev2: pickK(s, t, -0.05) }); },
-  text: (s, c) => `${c.Name} came back from the cut with the rest and went to work the next morning like the rest. Something is off. ${c.First} eats alone at the end of the long table, answers a beat late when spoken to, and sleeps with the lamp lit. The other five noticed first, and have moved their bunks to the far end of the row.${c.wv ? `\n\n"Could be nothing, could be ${c.first}'s always been like that and nobody ever looked," ${c.wv} says. "Nobody remembers a thing about anyone until they've got a reason to, and now we've got one."` : ''}`,
+  text: (s, c) => `${c.Name} came back from the cut with the rest and went to work the next morning like the rest. Something is off. ${c.First} eats alone at the end of the long table, answers a beat late when spoken to, and sleeps with the lamp lit. The other five noticed first, and have moved their bunks to the far end of the row.${c.wv ? `\n\n[[security]] "Could be nothing, could be ${c.first}'s always been like that and nobody ever looked." "Nobody remembers a thing about anyone until they've got a reason to, and now we've got one."` : ''}`,
   choices: [
     { label: (s, c) => `Have ${c.d} look ${c.first} over properly`, note: (s, c) => `${c.Name} is examined in front of whoever is in the clinic, and the row hears what was looked for.`, test: { base: 54, mods: [R('physician', 14)] },
       ok: { text: (s, c) => `${c.D} takes an hour over it. ${ev('wrong', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
@@ -295,7 +295,7 @@ B(['wrong', 'test'], { id: 'bt.wrong', tone: 'pressure', title: 'A Beat Late',
 /* ======================= TEST: the test proposed ======================= */
 B('test', { id: 'bt.test', tone: 'crisis', title: 'A Drop of Blood',
   setup: s => { const t = T(s); return Object.assign(crew(s), { list: listText(s, t), rw: round(s, t, 'wire'), ra: round(s, t, 'assay') }); },
-  text: (s, c) => `There are two ways to test the list, and the officers don't agree which. ${c.W} wants a drop of each one's blood on a plate and a hot wire put to it, in the mess, so everyone sees. ${c.D} wants the clinic's assay: slower, behind a door, and the clinic shut to the sick while it runs.${c.wv ? ` "Blood doesn't lie and people do, so we ask the blood," ${c.wv} says, "and we ask it where they can all watch, because a result nobody saw is a result somebody will say was fixed."` : ''}${c.dv ? ` "A hot wire," ${c.dv} says. "That isn't a test, it's a party trick, and somebody's going to be hurt by it. Give me the bench."` : ''}\n\nOn the list:\n${c.list}`,
+  text: (s, c) => `There are two ways to test the list, and the officers don't agree which. ${c.W} wants a drop of each one's blood on a plate and a hot wire put to it, in the mess, so everyone sees. ${c.D} wants the clinic's assay: slower, behind a door, and the clinic shut to the sick while it runs.${c.wv ? `\n\n[[security]] "Blood doesn't lie and people do, so we ask the blood." "And we ask it where they can all watch, because a result nobody saw is a result somebody will say was fixed."` : ''}${c.dv ? `\n\n[[physician]] "A hot wire." "That isn't a test, it's a party trick, and somebody's going to be hurt by it. Give me the bench."` : ''}\n\nOn the list:\n${c.list}`,
   choices: [
     { label: 'The wire, in the mess, in front of everyone', note: 'Everyone on the list bleeds in front of the hall, and whoever fails does it in front of the people they sleep beside.',
       out: { text: (s, c) => `The plates go out on the long table under the lamps. One at a time they hold out a thumb, and ${c.w} puts the wire to each drop. The hall watches every one.\n\n${resLine(s, T(s), c.rw)}`, fx: (s, c) => ({ tension: 2, do: s2 => { const t = T(s2); t.test = 'wire'; apply(s2, t, c.rw); } }) } },
@@ -315,7 +315,7 @@ B(['test', 'second'], { id: 'bt.refuse', tone: 'pressure', title: 'Will Not Blee
     const p = pool.length ? LF.spick(s, pool) : null, k = t.truth.is, inf = k === 'spread' && infected(s, t).length > 0 && LF.srand(s) < 0.45, fev = k === 'fever' && LF.srand(s) < 0.6;
     const e0 = t.list.find(x => x.pid && here(s, x)) || t.list[0], lab = p ? null : (LF.spick(s, LABS.filter(l => !t.list.some(e => e.lab === l))) || 'a hand from the yard'), c = Object.assign(crew(s), p ? { pid: p.id, name: p.name, Name: p.name, first: p.first } : { pid: null, name: lab, Name: cap(lab), first: lab.replace(/^an? /, 'the ') });
     const probe = { k: '_', inf, fev }; return Object.assign(c, { subj: nameOf(s, e0), inf, fev, ev: pickK(s, t), rr: testOne(s, t, probe, t.test || 'wire'), list: listText(s, t) }); },
-  text: (s, c) => `${c.Name} sleeps in the bunk next to ${c.subj}, is the next name on the list, and won't hold out an arm. ${ev('refuse', c.ev, c)}\n\nThe list so far:\n${c.list}`,
+  text: (s, c) => `${c.Name} sleeps in the bunk next to ${c.subj}, is the next name on the list, and won't hold out an arm.${ev('refuse', c.ev, c)}\n\nThe list so far:\n${c.list}`,
   choices: [
     { label: (s, c) => `Let ${c.first} refuse, and write it on the list`, note: (s, c) => `${c.Name} goes on sleeping in the row with "refused" beside the name, and the row sleeps beside that.`,
       out: { text: (s, c) => `"Refused" goes on the list in ${c.w}'s hand. ${c.Name} goes back to the row, and nobody in it says goodnight.`,
@@ -335,7 +335,7 @@ B(['test', 'second'], { id: 'bt.refuse', tone: 'pressure', title: 'Will Not Blee
 B(['test', 'second'], { id: 'bt.cold', tone: 'pressure', title: 'On the Slab',
   when: (s, t) => t.kept && !t.pyre,
   setup: s => { const t = T(s), e = t.list.find(x => x.pid && here(s, x)); return Object.assign(crew(s), { ev: pickK(s, t), ev2: pickK(s, t, 0.1), subj: e ? nm(s, e) : null, Subj: e ? nameOf(s, e) : null, sk: e ? e.k : null, spid: e ? e.pid : null }); },
-  text: (s, c) => `The cold-room hand won't go back in. ${c.It} has lain on the slab under a sheet at two degrees since the cart came home. This morning the hand opened the door for the meat, shut it again, and has sat on the step since without saying what was seen.${c.sv ? `\n\n"Let me in there," ${c.sv} says. "Just me. With a lamp. Whatever it's doing, it's doing it now, and I'd like to... look, just let me in."` : ''}`,
+  text: (s, c) => `The cold-room hand won't go back in. ${c.It} has lain on the slab under a sheet at two degrees since the cart came home. This morning the hand opened the door for the meat, shut it again, and has sat on the step since without saying what was seen.${c.sv ? `\n\n[[scientist]] "Let me in there." "Just me. With a lamp. Whatever it's doing, it's doing it now, and I'd like to... look, just let me in."` : ''}`,
   choices: [
     { label: (s, c) => `Have ${c.sc} open the door, with rifles behind`, note: 'Whoever goes in first goes in with it, and the watch stands in the doorway with no idea what to aim at.', test: { base: 50, mods: [R('xenobio', 12), R('security', 8)] },
       ok: { text: (s, c) => `${c.Sc} goes in with a lamp and the watch in the doorway. ${ev('cold', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
@@ -400,13 +400,13 @@ B(['second', 'night'], { id: 'bt.fight', tone: 'crisis', title: 'In the Second R
 
 /* The one drawing the blood has drawn their own, and it failed. */
 const OWN = {
-  doctor: f => `"Mine failed. I ran it twice," ${f} says. "So put me on your list. You're still not taking the needle off me until somebody else here can find a vein."`,
-  scientist: f => `"Mine failed," ${f} says. "Which is interesting, isn't it? I feel exactly the same. So either the test's wrong, or I wouldn't know. Would I?"`,
+  doctor: `[[doctor]] "Mine failed. I ran it twice." "So put me on your list. You're still not taking the needle off me until somebody else here can find a vein."`,
+  scientist: `[[scientist]] "Mine failed." "Which is interesting, isn't it? I feel exactly the same. So either the test's wrong, or I wouldn't know. Would I?"`,
 };
 B(['second', 'night'], { id: 'bt.officer', tone: 'pressure', title: 'Their Own Sample',
   setup: s => { const t = T(s), seat = ['doctor', 'scientist'].find(k => voice(s, k)), o = seat ? LF.officer(s, seat) : anyNamed(s, LF.SEAT_ORDER.concat(t.list.map(e => e.pid).filter(Boolean)));
     const k = t.truth.is, c = crew(s); return Object.assign(c, o ? { pid: o.id, oname: o.name, Oname: o.name, ofirst: o.first } : { pid: null, oname: 'the clinic orderly', Oname: 'The clinic orderly', ofirst: 'the orderly' },
-      { seat: seat || null, line: seat ? OWN[seat](o.first) : '', inf: k === 'spread' && LF.srand(s) < 0.35, fev: k === 'fever' && LF.srand(s) < 0.7 }); },
+      { seat: seat || null, line: seat ? OWN[seat] : '', inf: k === 'spread' && LF.srand(s) < 0.35, fev: k === 'fever' && LF.srand(s) < 0.7 }); },
   text: (s, c) => `${c.seat ? c.Oname : `${c.Oname}, the clinic orderly,`} has been drawing the list's blood since the cart came in, and last night drew ${c.ofirst}'s own, to be fair about it. It failed. It failed again on the second plate.${c.line ? `\n\n${c.line}` : ''}`,
   choices: [
     { label: (s, c) => `${cap(c.ofirst)} stays at the bench, on the list, and the hall is told`, note: 'The sick are treated by somebody on the list, and the hall knows it.',

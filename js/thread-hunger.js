@@ -72,10 +72,10 @@ const EV = {
     seed: 'The gut is clean and working. What is in the stomach is meat, a good deal of it, and the galley has not served meat since landfall.',
     fear: 'The gut is clean and working. The stomach holds the galley\'s own ladle, the same meal as everyone\'s, half digested, and nothing else.' },
   say: {
-    water: c => `"${c.Wild1}. A handful, boiled. That's the whole of it," says the first, and the rest say the same in their own words.`,
-    gut: c => `Each says the same thing: ${c.wild1}, boiled in stove ash until it burns going down. "First while, you'll wish you were dead," says one. "Then you're hungry again. Properly hungry."`,
+    water: c => `The first to stand speaks for all of them.\n\n[[x33]] "${c.Wild1}. A handful, boiled. That's the whole of it."\n\nThe rest say the same in their own words.`,
+    gut: c => `Each says the same thing: ${c.wild1}, boiled in stove ash until it burns going down.\n\n[[x33]] "First while, you'll wish you were dead." "Then you're hungry again. Properly hungry."`,
     seed: c => `Each says ${c.wild1}, boiled, a handful a night, and each says it in very nearly the same words. Asked who else has ever eaten from the pot, none of them can think of a name.`,
-    fear: c => '"Same as you. Out of the same hatch," says the first, and the rest agree. "We take it outside, that\'s all. You try eating in here with everyone looking at your wrists."' },
+    fear: c => 'The first to stand speaks for all of them, and the rest agree.\n\n[[x33]] "Same as you. Out of the same hatch." "We take it outside, that\'s all. You try eating in here with everyone looking at your wrists."' },
 };
 const ev = (kind, k, c) => { const x = EV[kind][k]; return typeof x === 'function' ? x(c) : x; };
 const LEANS = { water: 'the water, and what grows here', gut: 'something living in the gut', seed: 'what the colony has grown', fear: 'nothing in the food at all' };
@@ -221,7 +221,7 @@ B(['scales', 'apart'], { id: 'wst.well', tone: 'pressure', title: 'The Ones Who 
 /* ======================= APART: the other pot ======================= */
 B('apart', { id: 'wst.pot', tone: 'pressure', title: 'The Other Pot',
   setup: s => { const t = T(s); t.pot = s.day; return Object.assign(base(s, t), { ev: pickK(s, t), ev2: pickK(s, t, 0.15) }); },
-  text: (s, c) => `The fed have a pot of their own. It is kept on the back of the drying-shed stove, and by the black on it, it has been there since soon after landfall. Tonight it holds ${c.wild}, boiled down to a grey paste that smells of wet metal.\n\nNobody denies it. "Eat it or don't," says the one who was stirring. "Nobody asked you to. Nobody asked us either." ${c.Sc} wants the pot. Half the hall wants it emptied over the wire, and the other half wants a spoon.`,
+  text: (s, c) => `The fed have a pot of their own. It is kept on the back of the drying-shed stove, and by the black on it, it has been there since soon after landfall. Tonight it holds ${c.wild}, boiled down to a grey paste that smells of wet metal.\n\nNobody denies it. The one who was stirring answers for them.\n\n[[x33]] "Eat it or don't." "Nobody asked you to. Nobody asked us either."\n\n${c.Sc} wants the pot. Half the hall wants it emptied over the wire, and the other half wants a spoon.`,
   choices: [
     { label: (s, c) => `Give the pot to ${c.sc} for the month`, note: 'The fed go without it while it is on the bench, and the hall waits a month for a word.', test: { base: 50, mods: [R('xenobio', 14), R('physician', 6)] },
       ok: { text: (s, c) => `${c.Sc} takes the pot and the shelf it stands on. ${ev('pot', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 26, c.ev) }) },
@@ -258,26 +258,26 @@ B(['apart', 'night'], { id: 'wst.open', tone: 'pressure', title: 'No Cause Writt
 
 /* An officer is going the same way, and has been hiding it. */
 const CHAIR = {
-  solheim: c => '"I\'m not coming off the roster," Jane says. "Give me something that works, or give me my coat."',
-  dahl: c => '"Lovely. Starved to death at a full table," Nolan says, "and don\'t put me on that ward, because I\'ve seen who comes out of it, and it\'s not the people who went in."',
-  kovacs: c => '"I\'ve got a season in me. Less if you put me in a bed," Jeremy says. "So tell me what you want fixed first."',
-  nakamura: c => '"Don\'t you dare take me off the ward," Andrea says. "There\'s eleven in there worse than me. Go and weigh them."',
-  yurbin: c => '"It\'s interesting, though, isn\'t it? I eat more than anyone, I\'ve been writing it down," Mac says. "Use me. I\'m the best-kept record you\'ve got."',
-  estrada: c => '"I\'ve fasted before. This isn\'t that," Samuel says. "Don\'t feed me ahead of the crews. That\'s all I\'m asking."',
+  solheim: c => '"I\'m not coming off the roster." "Give me something that works, or give me my coat."',
+  dahl: c => '"Lovely. Starved to death at a full table." "And don\'t put me on that ward, because I\'ve seen who comes out of it, and it\'s not the people who went in."',
+  kovacs: c => '"I\'ve got a season in me. Less if you put me in a bed." "So tell me what you want fixed first."',
+  nakamura: c => '"Don\'t you dare take me off the ward." "There\'s eleven in there worse than me. Go and weigh them."',
+  yurbin: c => '"It\'s interesting, though, isn\'t it? I eat more than anyone, I\'ve been writing it down." "Use me. I\'m the best-kept record you\'ve got."',
+  estrada: c => '"I\'ve fasted before. This isn\'t that." "Don\'t feed me ahead of the crews. That\'s all I\'m asking."',
   // the seats' second officers (2026-11-18), each in their own voice (VOICES.md)
-  achebe: c => `"Listen, I'm not coming off the roster," Lucas says. "Give me something that works, because if you can't, I'll get my coat, and I'd rather we didn't come to that."`,
-  zulu: c => `"I'd rather you heard it from me. I'm starving at a full table, and I'm sorry I hid it," Toby says, "and I'd ask you not to put me on that ward, because I've seen who comes out of it, and they aren't the people who went in."`,
-  halloran: c => `"I've got a season in me, boss, and less if you stick me in a bloody bed," Roberta says. "So tell me what you want fixed first, because I'm not fucking stopping!"`,
-  brandt: c => `"I'm staying on the ward, and a bed won't improve my prognosis," Lou says. "There are people in there worse off than I am. Go and weigh them, since you'd rather read it off a scale than take it from me."`,
-  iyer: c => `"It's of some interest, I think. I eat more than anyone here, and I've been recording it," Michelle says. "Use me, Administrator. I'm the most complete record you have."`,
-  waititi: c => `"I've been hungry before, my friend, and this isn't that," Hamond says. "Feed the crews and the children before me. I eat last, and I won't have it any other way."`,
+  achebe: c => `"Listen, I'm not coming off the roster." "Give me something that works, because if you can't, I'll get my coat, and I'd rather we didn't come to that."`,
+  zulu: c => `"I'd rather you heard it from me. I'm starving at a full table, and I'm sorry I hid it." "And I'd ask you not to put me on that ward, because I've seen who comes out of it, and they aren't the people who went in."`,
+  halloran: c => `"I've got a season in me, boss, and less if you stick me in a bloody bed." "So tell me what you want fixed first, because I'm not fucking stopping!"`,
+  brandt: c => `"I'm staying on the ward, and a bed won't improve my prognosis." "There are people in there worse off than I am. Go and weigh them, since you'd rather read it off a scale than take it from me."`,
+  iyer: c => `"It's of some interest, I think. I eat more than anyone here, and I've been recording it." "Use me, Administrator. I'm the most complete record you have."`,
+  waititi: c => `"I've been hungry before, my friend, and this isn't that." "Feed the crews and the children before me. I eat last, and I won't have it any other way."`,
 };
 const DOSE = { water: 5, gut: -2, seed: -5, fear: 3 };
 B(['apart', 'night', 'choice'], { id: 'wst.chair', tone: 'pressure', title: 'Two Holes in the Belt',
   when: s => LF.SEAT_ORDER.some(r => P(s, r)),
   setup: s => { const t = T(s), pool = LF.SEAT_ORDER.map(r => P(s, r)).filter(Boolean), p = LF.spick(s, pool), c = who(p, 'the night shift lead', 'the shift lead');
     t.chair = { pid: c.pid, name: c.name };
-    return Object.assign(c, base(s, t, c.pid), { kg2: kilos(t) + 6, line: (p.key && CHAIR[p.key] ? CHAIR[p.key]() : `${c.Name} asks for one thing, which is not to be fed ahead of anyone else.`), pot: !!t.pot && !t.banned, ev: pickK(s, t, 0.1) }); },
+    return Object.assign(c, base(s, t, c.pid), { kg2: kilos(t) + 6, line: (p.key && CHAIR[p.key] ? `[[${c.pid}]] ${CHAIR[p.key]()}` : `${c.Name} asks for one thing, which is not to be fed ahead of anyone else.`), pot: !!t.pot && !t.banned, ev: pickK(s, t, 0.1) }); },
   text: (s, c) => `${c.Name} has lost ${num(c.kg2)} kilos, more than anyone on the work crews, and has been hiding it under a coat. It came out when ${c.first} sat down on the yard floor in the middle of giving an order and could not get up.\n\n${c.line}`,
   choices: [
     { label: (s, c) => `Stand ${c.first} down to a bed on the ward`, note: (s, c) => `The department runs on a deputy, and rest has not put weight back on anybody yet.`,
@@ -310,7 +310,7 @@ B('night', { id: 'wst.night', tone: 'crisis', title: 'The Fed',
       out: { text: (s, c) => `${c.W} clears the mess and gives the ${num(c.well)} the tool store to sleep in, with a guard on it. The crew goes to its bunks. Before the month is out one of the ${num(c.well)} is caught between the store and the latrine by people nobody can name, and dies on the ward two nights later.`,
         fx: s => ({ pop: -1, morale: -2, do: s2 => { const t = T(s2); t.guard = s2.day; t.did.guard = true; t.toll++; t.feud++; t.well = Math.max(1, t.well - 1); LF.emit(s2, 'schism', 'wst.guard', 30, 150, 'half the hall wanted the fed put out, and was stopped'); } }) } },
     { label: 'Stand them on a bench, and have each one tell the hall what they eat', note: 'The hall judges it on the spot, and whatever is said will be all over the colony as fact by morning.',
-      out: { text: (s, c) => `They are stood up one at a time. ${ev('say', c.ev, c)} The hall hears every one of them out. The crew lets them go back to their bunks, and by breakfast a good part of the mess has made up its mind to eat as they do.`,
+      out: { text: (s, c) => `They are stood up one at a time. ${ev('say', c.ev, c)}\n\nThe hall hears every one of them out. The crew lets them go back to their bunks, and by breakfast a good part of the mess has made up its mind to eat as they do.`,
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 18, c.ev); t.did.said = true; if (!t.banned) t.open = t.open || s2.day; } }) } },
   ] });
 

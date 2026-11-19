@@ -12,7 +12,7 @@ const FAITH = s => s.flags.und_contact ? 'the Listeners, who sit barefoot in the
 /* ================= POLITICS ================= */
 add({ id: 'pol.rations', urgent: true, arc: 'politics', tone: 'pressure', title: 'The Curve', w: 2.5,
   when: s => s.day >= 40 && foodDays(s) < 95 && !LF.lean(s),
-  text: s => `${Nc(s, 'quartermaster')} draws you a line on a slate. Stores on the left, days along the bottom. It reaches zero in about ${Math.round(foodDays(s) / 10) * 10} days.\n\n"I can move where it lands, but it costs somebody whichever way I do it. You'll have to say who goes short."`,
+  text: s => `${Nc(s, 'quartermaster')} draws you a line on a slate. Stores on the left, days along the bottom. It reaches zero in about ${Math.round(foodDays(s) / 10) * 10} days.\n\n[[quartermaster]] "I can move where it lands, but it costs somebody whichever way I do it. You'll have to say who goes short."`,
   choices: [
     { label: 'Three-quarter rations for everyone, starting with us', note: 'The oldest and the sick feel a short ladle first.', info: [['danger', 'The weakest']],
       out: { text: 'You make a point of eating in the mess hall where people can see your plate. The oldest feel it first. One of them does not get up in the second month.', fx: { rations: 'tight', morale: -2, pop: -1, flags: { shared_hunger: true } } } },
@@ -40,14 +40,14 @@ function anyNamedPreview(s) { return s.people.some(p => p.alive && p.role !== 's
 
 add({ id: 'pol.charter', arc: 'politics', tone: 'pressure', title: 'Article One', w: 1.5,
   when: s => s.day >= 140 && !s.flags.council && !s.flags.command_rule && !s.flags.committee,
-  text: s => `The charter's first article: the Administrator governs until the colony is self-sustaining. A delegation led by ${N(s, 'teacher')} has read all four hundred pages.\n\n"Four hundred pages, and nobody who wrote them is alive. We want a vote. First one's on whether we get one."`,
+  text: s => `The charter's first article: the Administrator governs until the colony is self-sustaining. A delegation led by ${N(s, 'teacher')} has read all four hundred pages.\n\n[[teacher]] "Four hundred pages, and nobody who wrote them is alive. We want a vote. First one's on whether we get one."`,
   choices: [
     { label: 'Call elections for a governing Council', note: 'They will not always choose what you would, and the first thing they will vote is full ladles.', info: [['yield', 'Morale'], ['danger', 'The stores']],
       out: { text: 'Seven seats. The count takes an evening, and the argument about the count takes the rest of the month. The Council\'s first vote is full ladles for a month, and it carries.', fx: { morale: 10, food: -120, flags: { council: true }, chron: 'The colony elected its first Council.' } } },
     { label: 'An assembly, with the officers choosing who sits in it', dark: true, note: 'It will look like a vote and advise what it is told to.', info: [['yield', 'Morale, and nothing changes'], ['danger', 'If they work out who chose the seats']],
       out: { text: s => `Seven seats, filled from a list the officers drew up. It meets weekly and advises what the officers already meant to do. ${Nc(s, 'teacher')} is not on the list, and has worked out why.`, fx: { morale: 4, flags: { assembly: true }, mark: ['teacher', 'slighted'], stain: ['rigged', 1] } } },
     { label: 'The charter is the charter', note: 'Decisions stay quick, and people will hold it against you for a long time.',
-      out: { text: s => `"Fine. Now we know where we stand," says ${N(s, 'teacher')}, and gathers the papers.`, fx: { morale: -8, flags: { command_rule: true } } } },
+      out: { text: s => `[[teacher]] "Fine. Now we know where we stand."\n\n${Nc(s, 'teacher')} gathers the papers.`, fx: { morale: -8, flags: { command_rule: true } } } },
     { label: 'Have the delegation in the lock-up before breakfast', dark: true, note: 'Nine people are taken from their bunks, and the question does not come up again.', req: s => !!P(s, 'security'), reqText: 'There is no Warden to do it', info: [['yield', 'Nobody asks twice'], ['danger', 'Nine colonists']],
       out: { text: s => `The watch goes round the bunkrooms at four in the morning with a list. The nine are held for a month on half rations and let out one at a time, to different crews. The four hundred pages go into the kiln. People stop reading things in the mess hall.`,
         fx: { morale: -4, tension: -10, flags: { command_rule: true, crackdown: true }, mark: ['teacher', 'grudge', 'was taken from a bunk at four in the morning for asking for a vote'], stain: ['arrests', 2], chron: 'A delegation that asked for elections was arrested in the night.' } } },
@@ -79,7 +79,7 @@ add({ id: 'pol.faith', arc: 'politics', tone: 'quiet', title: 'A Congregation',
 add({ id: 'pol.schism', arc: 'politics', tone: 'pressure', title: 'The Upriver Party',
   when: s => s.day >= 330 && s.pop >= 55 && (s.morale < 48 || s.flags.command_rule || s.flags.faith_suppressed || s.flags.crackdown),
   setup: s => { const p = anyNamed(s, ['engineer', 'physician']); return { pid: p.id, name: p.name, first: p.first }; },
-  text: (s, c) => `Fifteen people want to leave, and not only out of anger. ${c.name} has a site picked out four days upriver, a list of supplies, and a speech.\n\n"Look, it's one camp. One fire, one bad winter, and that's all of us. ${s.flags.command_rule ? 'And some of us want to live somewhere we get a say.' : s.flags.faith_suppressed ? 'And some of us want to pray without posting a lookout.' : 'You know that better than anyone.'}"`,
+  text: (s, c) => `Fifteen people want to leave, and not only out of anger. ${c.name} has a site picked out four days upriver, a list of supplies, and a speech.\n\n[[${c.pid}]] "Look, it's one camp. One fire, one bad winter, and that's all of us. ${s.flags.command_rule ? 'And some of us want to live somewhere we get a say.' : s.flags.faith_suppressed ? 'And some of us want to pray without posting a lookout.' : 'You know that better than anyone.'}"`,
   choices: [
     { label: 'Let them go, with a third of what is on the list', dark: true, note: 'The whole list comes out of the mouths of the ones who stay. A third of it will not see fifteen people through the Dim.', info: [['yield', 'The stores, mostly kept'], ['danger', 'Fifteen people, short of everything']], cost: { food: 120, parts: 1 },
       out: { text: (s, c) => `They leave at dawn with the handcarts a third full, having been told the rest would follow. ${c.first} shakes your hand. That night there are fifteen empty bunks. Nothing follows.`,
@@ -104,7 +104,7 @@ add({ id: 'pol.daughter', arc: 'politics', tone: 'quiet', chain: true, title: 'S
     { label: 'Come home, or the river is closed to you', dark: true, note: 'They have no salt, no nails and no medicine that did not come from here.', info: [['yield', 'Hands back'], ['danger', 'A camp cut off']],
       test: { base: 50, mods: [Fl('daughter_bitter', -15, 'They left in anger'), Fl('council', 10, 'They would have a vote'), Fl('daughter_hostages', 12, 'Their children are in your school')] },
       ok: { text: 'The envoy takes it upriver. A month later nine of them come back, with two children born out there, because a camp with no salt and no nails does not see out a year. The others stayed, and nothing goes up the river to them.', fx: { pop: 11, morale: 2, stain: ['blockade', 1] } },
-      bad: { text: '"We came to tell you we\'re doing fine. We didn\'t come to ask," says the envoy. Nothing goes up the river after that. The next boat that comes down it is empty and drifting.', fx: { morale: -3, flags: { daughter_bitter: true }, stain: ['blockade', 2] } } },
+      bad: { text: 'The envoy hears it out.\n\n[[x38]] "We came to tell you we\'re doing fine. We didn\'t come to ask."\n\nNothing goes up the river after that. The next boat that comes down it is empty and drifting.', fx: { morale: -3, flags: { daughter_bitter: true }, stain: ['blockade', 2] } } },
     { label: 'Follow the boat home and take the place', dark: true, req: s => !!P(s, 'security'), reqText: 'There is no Warden to lead it', test: { base: 56, mods: [R('security', 14), Fl('daughter_hostages', 10, 'Their children are in your school')] }, info: [['yield', 'Their harvest and their hands'], ['danger', 'Lives']],
       ok: { text: 'The watch goes up behind the boat and is inside their fence before anyone there is awake. Their store comes down the river on their own boats, and nine of them with it, under guard. The huts are burned behind them.',
         fx: { food: 520, mat: 40, pop: 9, thralls: 9, morale: -4, flags: { daughter_taken: true }, stain: ['upriver', 2], chron: 'The upriver settlement was taken by force. Its people were brought back to work.' } },
@@ -192,10 +192,10 @@ add({ id: 'q.walkabout', view: 'world', arc: 'quiet', tone: 'quiet', title: 'Gon
   when: s => s.day >= 130,
   // The one who walks off is the one who most wants to know what is out there.
   setup: s => { const any = anyNamed(s, ['physician', 'engineer']), p = (LF.cast && LF.cast(s, { want: 'know', not: ['physician', 'engineer'], need: 2 })) || any; return p ? { pid: p.id, name: p.name, first: p.first } : {}; },
-  text: (s, c) => `${c.name || 'One of the surveyors'} left a note on the mess table ("Need to see what's over the ridge. Back in a week") and took a pack and a water filter. That was eleven days ago.`,
+  text: (s, c) => `${c.name || 'One of the surveyors'} took a pack and a water filter, and left a note.\n\n[[note:On the mess table]] "Need to see what's over the ridge. Back in a week"\n\nThat was eleven days ago.`,
   choices: [
     { label: 'Send a search party', note: 'Six people off the fields for a week, looking for one.', info: [['danger', 'A week of six people\'s work']], test: { base: 60, mods: [R('security', 10), If(s => s.survey > 60, 10, 'Good maps')] },
-      ok: { text: (s, c) => `They find ${c.first || 'the walker'} on a ridge two valleys over, thinner, ${LF.lex(s, 'burnt')}, entirely calm, with forty pages of sketches. "Just wanted to see the next valley. Then there was another one."`, fx: { survey: 30, morale: 3, food: -40 } },
+      ok: { text: (s, c) => `They find ${c.first || 'the walker'} on a ridge two valleys over, thinner, ${LF.lex(s, 'burnt')}, entirely calm, with forty pages of sketches.\n\n[[${c.pid || 'x25'}]] "Just wanted to see the next valley. Then there was another one."`, fx: { survey: 30, morale: 3, food: -40 } },
       bad: { text: (s, c) => `They find the pack, and the water filter, and a place where the scree gave way.`, fx: (s, c) => (c.pid ? { food: -40, kill: { who: c.pid, cause: 'a fall, walking alone beyond the ridge' } } : { food: -40, pop: -1 }) } },
     { label: 'Wait', out: { text: (s, c) => `On the fourteenth day ${c.first || 'the walker'} strolls in at dinner time, sits down, and asks what is for eating. The sketches are remarkable. By the end of the month two more people have gone to see a ridge of their own, with packs from the stores.`, fx: { survey: 18, leave: 2, food: -30 } } },
     { label: 'Post it as desertion, and give the bunk away', dark: true, note: 'Nobody goes looking, and whoever comes back, comes back to a charge.', info: [['yield', 'Nobody else walks off'], ['danger', 'One person, alone out there']],
@@ -230,7 +230,7 @@ add({ id: 'pol.mutiny', urgent: true, arc: 'politics', tone: 'crisis', title: 'T
   when: s => s.lowMorale >= 14 && s.day >= 60 && s.pop >= 16,
   setup: s => { const p = s.people.find(x => x.alive && !x.role && !x.away && x.marks.grudge) || anyNamed(s, ['security', 'quartermaster', 'teacher']);
     return p ? { pid: p.id, name: p.name, first: p.first } : { name: 'A shift foreman', first: 'the foreman' }; },
-  text: (s, c) => `They come for the officers at the change of shift: forty people, ${c.name} at the front, nobody armed and nobody smiling. ${Nc(s, 'security')} is backed against the armoury door. ${Nc(s, 'quartermaster')} has the stores keys in a fist.\n\n"We're not touching the ship," ${c.first} says, looking up at the nearest camera. "You can stay. They go."`,
+  text: (s, c) => `They come for the officers at the change of shift: forty people, ${c.name} at the front, nobody armed and nobody smiling. ${Nc(s, 'security')} is backed against the armoury door. ${Nc(s, 'quartermaster')} has the stores keys in a fist. ${c.first.charAt(0).toUpperCase() + c.first.slice(1)} looks up at the nearest camera.\n\n[[${c.pid || 'x05'}]] "We're not touching the ship." "You can stay. They go."`,
   choices: [
     { label: 'Back the officers. Lock the stores and starve the corridor out', dark: true, note: 'Nobody in the crowd eats until the crowd goes home.', info: [['yield', 'The officers keep their posts'], ['danger', 'Blood, if it goes wrong']],
       test: { base: 50, mods: [R('security', 14), Fl('council', 8, 'There is a lawful Council to appeal to'), Fl('crackdown', -10, 'They remember the last time'), If(s => s.res.food > 400, 8, 'The stores are not empty')] },

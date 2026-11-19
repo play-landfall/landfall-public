@@ -221,7 +221,7 @@ B(['near', 'night', 'bill'], { id: 'vo.gone', chain: true, tone: 'crisis', title
 B(['near', 'night'], { id: 'vo.tape', tone: 'pressure', w: 4, title: 'Played Slow',
   when: (s, t) => !!t.taped,
   setup: s => { const t = T(s); return Object.assign(crew(s), { tape: pickK(s, t), tracks: pickK(s, t), blood: pickK(s, t) }); },
-  text: (s, c) => `${c.S} has the wire recordings on the bench, slowed eight times. "There's structure in it. There, see? And there again. That much I'll swear to. Past that I'm guessing, and I'd love to guess."\n\nHalf the colony has a theory by now, and each theory wants something different done. No crew will take a job that ends near the wire after mid-afternoon.`,
+  text: (s, c) => `${c.S} has the wire recordings on the bench, slowed eight times.\n\n[[xenobio]] "There's structure in it. There, see? And there again. That much I'll swear to. Past that I'm guessing, and I'd love to guess."\n\nHalf the colony has a theory by now, and each theory wants something different done. No crew will take a job that ends near the wire after mid-afternoon.`,
   choices: [
     { label: 'Give it the bench and a month', note: 'A month of the survey team on something that cannot be eaten.', test: { base: 50, mods: [R('xenobio', 14), R('physician', 6), If(s => !!(s.cargo && s.cargo.lab), 10, 'The field laboratory')] },
       ok: { text: (s, c) => `${EV.bench[c.tape]} It is one reading of one tape, and the people who made the tape were frightened.`, fx: (s, c) => ({ food: -40, do: s2 => learn(s2, T(s2), 26, c.tape) }) },
@@ -293,7 +293,7 @@ B('night', { id: 'vo.two', chain: true, tone: 'crisis', title: 'Two of Them',
 B(['night', 'bill'], { id: 'vo.inside', chain: true, tone: 'pressure', title: 'The One Inside',
   when: (s, t) => !!t.hall && !t.two && !t.seen && !!t.dbl && here(s, t.dbl),
   setup: s => { const t = T(s), k = t.truth.is; return Object.assign(cast(s, t), { body: !!t.body, lean: lean(t), odd: LF.srand(s) < (k === 'copy' ? 0.75 : 0.2), lives: LF.srand(s) < 0.45 }); },
-  text: (s, c) => `${c.Name} has not slept since the meeting. ${c.body ? `The body from the wire is in the cold store, and it has ${c.first}'s face.` : 'The voice was at the wall again last night, asking the same thing.'} The hall wants to know which of them it has been taking orders from.\n\n"I'm who I've always been," ${c.name} says. "And I can't think of one thing that'd prove it to you. Not one." ${c.lean}`,
+  text: (s, c) => `${c.Name} has not slept since the meeting. ${c.body ? `The body from the wire is in the cold store, and it has ${c.first}'s face.` : 'The voice was at the wall again last night, asking the same thing.'} The hall wants to know which of them it has been taking orders from.\n\n[[${c.pid || 'x27'}]] "I'm who I've always been." "And I can't think of one thing that'd prove it to you. Not one."\n\n${c.lean}`,
   choices: [
     { label: (s, c) => `Have ${c.first} cut and tested in front of the hall`, dark: true, note: 'One of your own is held down and opened on a guess, and what comes of it is a reading that could be wrong.',
       out: { text: (s, c) => `Four of the watch hold ${c.name} down on a mess table while ${c.d} takes blood, and then a plug of muscle from the forearm. ${c.odd ? `It matches the record made before the crossing in every marker, and ${c.d} does not like how well: there is none of the wear the cold leaves. ${c.Name} hears that with the arm still open, and says nothing.`
@@ -377,7 +377,7 @@ B(['near', 'night', 'bill'], { id: 'vo.back', chain: true, view: 'world', tone: 
 const WAS = {
   mimic: (t, c) => `It was an animal. It lies up past the light and gives back pieces of what it has heard at the wire, in the voices it heard them in, until somebody walks out to it. It has no notion what any of the sounds mean.${c.pid ? ` The words at the meeting were ${c.first}'s own, shouted at the gate watch on some other night.` : ''}`,
   copy: (t, c) => `It copies people whole. Whoever walks out to it is kept, alive and asleep, and something walks back at first light with the same face and the same memories as far as the lamp-line. Some of the kept woke, and got as far as the wire. The voices at the end were theirs.`,
-  lost: (t, c) => `They were the ${LF.SHIP}'s own. A sleeper pod broke loose in the descent and came down a long way off. Its people thawed without help, and badly: it took their speech and left them the sound of it, and daylight hurt them, so they came to the lamps at night and called.${c.name ? ` The hall heard "that's not me in there". Slowed, the tape has ${c.first}'s name, and "in there", and "me".` : ''}`,
+  lost: (t, c) => `They were the ${LF.SHIP}'s own. A sleeper pod broke loose in the descent and came down a long way off. Its people thawed without help, and badly: it took their speech and left them the sound of it, and daylight hurt them, so they came to the lamps at night and called.${c.name ? ` What the hall heard was this:\n\n[[unknown:The voice at the wire]] "That's not me in there."\n\nSlowed, the tape has ${c.first}'s name, and "in there", and "me".` : ''}`,
 };
 /* What each thing the colony did amounted to, given what it was. doubt: the same deeds with nothing to weigh them against. */
 function reckon(s, t, c, doubt) {

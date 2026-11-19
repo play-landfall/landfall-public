@@ -58,7 +58,7 @@ function callback(s, f, x) {
   if (s.flags.returned >= 3 && !s.flags.returned_gone && ['ruin', 'flora', 'natives'].includes(f.kind) && f.stage >= 1) out.push(`Two of those who came back from ${s.flags.returned_to} have come to listen, and they nod along before anything has been explained.`);
   const lp = x.leadP;
   if (lp) { const k = ['grudge', 'bereaved', 'maimed', 'hero', 'convict', 'spared', 'slighted', 'touched'].find(k => lp.marks[k] && lp.marks[k].txt);
-    if (k) out.push(`${lp.name}, who ${lp.marks[k].txt}, ${k === 'grudge' || k === 'bereaved' || k === 'slighted' ? 'does not look at you while speaking.' : 'is the one standing in front of you.'}`); }
+    if (k) out.push(`${lp.name}, who ${lp.marks[k].txt.replace(/"([^"]*)"/g, '“$1”')}, ${k === 'grudge' || k === 'bereaved' || k === 'slighted' ? 'does not look at you while speaking.' : 'is the one standing in front of you.'}`); }
   return out.join(' ');
 }
 
