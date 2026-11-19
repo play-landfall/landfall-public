@@ -243,7 +243,12 @@ function cardHTML() {
       if (o.send) tips.push(`<span>${ic('people')}${o.send.n} go${o.send.lead ? ', led' : ''}</span>`, `<span>${ic('time')}${o.send.months} month${o.send.months > 1 ? 's' : ''}</span>`, `<span class="${o.send.danger >= 4 ? 'hot' : ''}">${ic('danger')}${DANGER[o.send.danger]}</span>`);
       const cost = o.cost || o.ch.cost; if (cost) for (const k in cost) tips.push(`<span class="${cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${ic(k)}${esc(LF.amount(s, k, -cost[k]))}</span>`);
       // how the figure is made, in percentage points that add up to it: the base, then every line (DESIGN.md "The odds")
-      const mods = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.base !== undefined ? `<span>${o.odds.base}% to start</span>` : ''}${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : '\u2212'}${Math.abs(m.v)}% ${esc(m.label)}</span>`).join('')}</div>` : '';
+      // who is worth sending, before anyone is: each department the test names and what its officer would add (DESIGN.md "The odds")
+      const roles = o.odds ? (s.cur.gen ? (o.ch.roles || []) : ((o.ch.test && o.ch.test.mods) || []).filter(m => m.k === 'role')) : [], best = {};
+      for (const m of roles) { const k = LF.SEAT_OF[m.role] || m.role; best[k] = Math.max(best[k] || 0, m.v); }
+      const sendHint = Object.keys(best).length && !(s.cur.attach || []).length ? `<div class="mods send">${Object.entries(best).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span>Send the ${esc(LF.SEATS[k].lead)} +${v}%</span>`).join('')}</div>` : '';
+      const mods0 = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.base !== undefined ? `<span>${o.odds.base}% to start</span>` : ''}${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : '\u2212'}${Math.abs(m.v)}% ${esc(m.label)}</span>`).join('')}</div>` : '';
+      const mods = mods0 + sendHint;
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
       const face = pk && o.ch.pid ? faceOf(LF.h.byPid(s, o.ch.pid(s))) : null;
       h += `<button class="opt${st}${o.odds ? ' roll' : ''}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`

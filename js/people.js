@@ -13,13 +13,13 @@ LF.PERKS = {
   pathfinder: { name: 'Pathfinder', desc: 'Parties they go with seldom vanish.', w: { silence: 0.45 } },
   survivor:   { name: 'Survivor', desc: 'Hard to kill. Parties they go with lose fewer.', w: { partial: 0.7 } },
   scavenger:  { name: 'Scavenger', desc: 'Parties they go with bring back a quarter more.', reward: 1.25 },
-  medic:      { name: 'Field medic', desc: '+8 against disease. Nothing is carried home.', kind: 'plague', v: 8, w: { diseased: 0.3 } },
-  speaker:    { name: 'Go-between', desc: '+8 when making terms. Strangers trust them.', ap: 'accord', v: 8, w: { stranger: 1.6, followed: 0.6 } },
-  marksman:   { name: 'Dead shot', desc: '+8 when force is used.', ap: 'force', v: 8 },
-  observer:   { name: 'Naturalist', desc: '+8 when studying. Finds more in the field.', ap: 'study', v: 8, w: { triumph: 1.3 } },
-  fixer:      { name: 'Fixer', desc: '+8 when taking what can be used.', ap: 'exploit', v: 8 },
-  steady:     { name: 'Steady hand', desc: '+4 to anything they are part of.', any: 4, w: { changed: 0.5 } },
-  touched:    { name: 'Touched', desc: '+8 where ruins are concerned. Not entirely ours any more.', kind: 'ruin', v: 8, w: { changed: 1.5, triumph: 1.3 } },
+  medic:      { name: 'Field medic', desc: '+10% against disease. Nothing is carried home.', kind: 'plague', v: 10, w: { diseased: 0.3 } },
+  speaker:    { name: 'Go-between', desc: '+10% when making terms. Strangers trust them.', ap: 'accord', v: 10, w: { stranger: 1.6, followed: 0.6 } },
+  marksman:   { name: 'Dead shot', desc: '+10% when force is used.', ap: 'force', v: 10 },
+  observer:   { name: 'Naturalist', desc: '+10% when studying. Finds more in the field.', ap: 'study', v: 10, w: { triumph: 1.3 } },
+  fixer:      { name: 'Fixer', desc: '+10% when taking what can be used.', ap: 'exploit', v: 10 },
+  steady:     { name: 'Steady hand', desc: '+5% to anything they are part of.', any: 5, w: { changed: 0.5 } },
+  touched:    { name: 'Touched', desc: '+10% where ruins are concerned. Not entirely ours any more.', kind: 'ruin', v: 10, w: { changed: 1.5, triumph: 1.3 } },
   guide:      { name: 'Knows the country', desc: 'Parties they go with find the way, and find more.', w: { silence: 0.5, triumph: 1.25 } },
 };
 const RANKS = ['', 'Known by name', 'Veteran', 'Renowned'];
@@ -106,21 +106,21 @@ LF.attachMods = function (s, ap, kind, test, c) {
   for (const p of LF.attached(s)) { if (!LF.canDo(p, work)) continue;   // not their kind of work: they stay behind on this option
     const mine = p.seat ? roles.filter(m => (LF.SEAT_OF[m.role] || m.role) === p.seat) : [];
     if (mine.length) {
-      let v = mine.reduce((a, m, i) => a + (i ? Math.round(m.v / 2) : m.v), 0) + (p.trait === 'brilliant' ? 3 : 0);
+      let v = Math.max(...mine.map(m => m.v)) + (p.trait === 'brilliant' ? 5 : 0);   // one seat counts once: its best figure on the card
       let label = `${p.name}, ${LF.title(p)}`;
-      if (test && test.aboard && !p.orbit) { v = Math.round(v / 3); label = `${p.name}, by radio from the ground`; }
-      else if (LF.green && LF.green(s, p)) { v = Math.round(v / 2); label = `${p.name}, new to the post`; }
+      if (test && test.aboard && !p.orbit) { v = 5; label = `${p.name}, by radio from the ground`; }
+      else if (LF.green && LF.green(s, p)) { v = Math.max(5, v - 5); label = `${p.name}, new to the post`; }
       parts.push({ label, v });
       if (LF.offMods) for (const q of LF.offMods(s, p)) parts.push({ label: q.label, v: q.v });
       if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c, p)) { const e = Math.round(q.rel * 100); if (e) parts.push({ label: q.label, v: e }); }
-      if (p.loyal !== undefined && p.loyal < 25) parts.push({ label: `${p.first} has turned away from you`, v: -6 });
-      else if (p.loyal >= 75) parts.push({ label: `${p.first} stands with you`, v: 3 });
+      if (p.loyal !== undefined && p.loyal < 25) parts.push({ label: `${p.first} has turned away from you`, v: -5 });
+      else if (p.loyal >= 75) parts.push({ label: `${p.first} stands with you`, v: 5 });
     } else {
       let best = 5, nm = 'there in person';
       for (const k of p.perks) { const K = LF.PERKS[k]; const v = Math.max(K.ap && K.ap === ap ? K.v : 0, K.kind && K.kind === kind ? K.v : 0, K.any || 0); if (v > best) { best = v; nm = K.name.toLowerCase(); } }
       parts.push({ label: `${p.name}, ${nm}`, v: best });
     }
-    if (p.deeds.length >= 3) parts.push({ label: `${p.first} has done this before`, v: 2 }); }
+    if (p.deeds.length >= 3) parts.push({ label: `${p.first} has done this before`, v: 5 }); }
   return parts;
 };
 /* The odds as the player sees them and the dice use them (Lachlan, 2026-11-19; DESIGN.md "The odds"): the base, plus every modifier

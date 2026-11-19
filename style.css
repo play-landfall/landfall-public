@@ -518,3 +518,4 @@ html.grim2 h2 { letter-spacing:.01em; }
 /* An option that rolls the dice (Lachlan, 2026-11-19; DESIGN.md "The odds"): the same surface as any option, a gold edge and a gold title. */
 .opt.roll:not(:disabled) { box-shadow:inset 0 0 0 1.5px var(--gold), var(--rest); } .opt.roll:not(:disabled) .l { color:var(--gold); }
 .opt .mods span:first-child:not(.up):not(.dn) { color:var(--ink); }
+.opt .mods.send span, .opt .mods.send span:first-child { color:var(--gold); }

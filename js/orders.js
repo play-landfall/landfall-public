@@ -312,7 +312,7 @@ LF.odds = function (s, test, c) {
   if (s.rations !== 'double' || !s.world || test.aboard || LF.aloft(s)) return o;
   const k = [].concat(test.kind || []);
   if (k.includes('fight') || test.ap === 'force' || (test.mods || []).some(m => m.k === 'role' && WILL.includes(m.role))) {
-    o.parts.push({ label: 'Two ladles a day', v: 4 }); o.raw = (o.raw === undefined ? o.p : o.raw) + 4; o.p = LF.clamp(o.raw, 5, 95); }
+    o.parts.push({ label: 'Two ladles a day', v: 5 }); o.raw = (o.raw === undefined ? o.p : o.raw) + 5; o.p = LF.clamp(o.raw, 5, 95); }
   return o;
 };
 })();

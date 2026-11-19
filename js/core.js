@@ -767,6 +767,7 @@ function autoInfo(s, ch, c) {
     else if (ch.test && bad.morale < 0) out.push(['danger', 'Morale']); }
   return out.length ? out : null;
 }
+const h5 = v => Math.sign(v) * Math.max(5, Math.round(Math.abs(v) / 10) * 5);   // half a figure, in steps of 5 (the odds go in fives)
 LF.odds = function (s, test, c) {
   const parts = []; let p = test.base;
   for (const m of test.mods || []) {
@@ -775,8 +776,8 @@ LF.odds = function (s, test, c) {
     if (m.k === 'role') continue;
     if (m.k === 'machine') { const mm = s.machines[m.id], n = LF.MACHINES[m.id].name;
       // The laboratory stands in for the autodoc wherever a card needs an assay: half its weight, never a penalty.
-      if (m.id === 'medbay' && (mm.lost || (mm.up && !test.aboard)) && LF.has(s, 'lab')) { v = Math.round(m.v / 2); label = 'The laboratory, in the autodoc\'s place'; }
-      else if (mm.lost) { v = -m.v; label = `${n} lost`; } else if (mm.up && !test.aboard) { v = -Math.round(m.v / 2); label = `${n} still aboard the ship`; } else if (mm.hp < 50) { v = Math.round(m.v / 2); label = `${n} degraded`; } else { v = m.v; label = `${n} online`; } }
+      if (m.id === 'medbay' && (mm.lost || (mm.up && !test.aboard)) && LF.has(s, 'lab')) { v = h5(m.v); label = 'The laboratory, in the autodoc\'s place'; }
+      else if (mm.lost) { v = -m.v; label = `${n} lost`; } else if (mm.up && !test.aboard) { v = -h5(m.v); label = `${n} still aboard the ship`; } else if (mm.hp < 50) { v = h5(m.v); label = `${n} degraded`; } else { v = m.v; label = `${n} online`; } }
     else if (m.k === 'flag') { if (s.flags[m.flag]) v = m.v; }
     else if (m.k === 'if') { if (m.fn(s, c)) v = m.v; }
     else if (m.k === 'trait') { const x = P(s, m.role); if (x && x.trait === m.trait && LF.attached && LF.attached(s).includes(x)) { v = m.v; label = `${x.first} is ${m.trait}`; } }   // only the officer sent
@@ -788,7 +789,7 @@ LF.odds = function (s, test, c) {
 /* Buildings that help a kind of work (WO-3, DESIGN.md "Buildings"). One place in the odds for every card, hand-written or
    generated: the work a test is (its kind, else its approach, else the offices it names) against what stands. A test
    aboard the ship, or before landfall, gets none of it. */
-LF.BUILD_WORK = [['lab', 'research', 8, 'The laboratory'], ['machineshop', 'fix', 8, 'The machine shop'], ['watch', 'fight', 8, 'The watchtowers'], ['hall', 'talk', 6, 'The meeting hall']];
+LF.BUILD_WORK = [['lab', 'research', 10, 'The laboratory'], ['machineshop', 'fix', 10, 'The machine shop'], ['watch', 'fight', 10, 'The watchtowers'], ['hall', 'talk', 5, 'The meeting hall']];
 const BW_ROLE = { research: ['xenobio', 'geologist', 'scientist', 'physician', 'doctor'], fix: ['engineer'], fight: ['security'], talk: ['command', 'teacher', 'chaplain'] };
 const BW_AP = { study: 'research', exploit: 'fix', force: 'fight', accord: 'talk' };
 const BW_MACH = ['reactor', 'reclaimer', 'fabricator', 'hydroponics'];

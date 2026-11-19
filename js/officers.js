@@ -277,11 +277,11 @@ LF.STATS = {
   mind:   { name: 'Nerve', words: [[70, 'steady'], [45, 'on edge'], [25, 'frayed'], [0, 'coming apart']] },
 };
 LF.statWord = (p, k) => LF.STATS[k].words.find(w => (p[k] || 0) >= w[0])[1];
-LF.expBonus = p => Math.floor((p.native || 0) / 20);   // 0 to 5 on any test their office is in
+LF.expBonus = p => (p.native || 0) >= 80 ? 10 : (p.native || 0) >= 40 ? 5 : 0;   // on any test their office is in: 0, 5 or 10 (the odds go in steps of 5)
 LF.offMods = function (s, p) { const out = [], e = LF.expBonus(p);
   if (e) out.push({ k: 'native', v: e, label: `${p.first} ${LF.statWord(p, 'native')}` });
-  if (p.body < 20) out.push({ k: 'body', v: -5, label: `${p.first} is failing` }); else if (p.body < 40) out.push({ k: 'body', v: -3, label: `${p.first} is unwell` });
-  if (p.mind < 25) out.push({ k: 'mind', v: -6, label: `${p.first} is coming apart` }); else if (p.mind < 45) out.push({ k: 'mind', v: -3, label: `${p.first} is frayed` });
+  if (p.body < 20) out.push({ k: 'body', v: -10, label: `${p.first} is failing` }); else if (p.body < 40) out.push({ k: 'body', v: -5, label: `${p.first} is unwell` });
+  if (p.mind < 25) out.push({ k: 'mind', v: -10, label: `${p.first} is coming apart` }); else if (p.mind < 45) out.push({ k: 'mind', v: -5, label: `${p.first} is frayed` });
   return out; };
 /* Move one of the three. who: a person, a pid, or a seat or old role key. Says so on the card when the word changes. */
 LF.shift = function (s, who, k, d, chips) {
