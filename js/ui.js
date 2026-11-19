@@ -129,7 +129,7 @@ const PILL = { food: 'Food', water: 'Water', energy: 'Power', industry: 'Industr
 const underWay = () => !!s.world && !!s.voyage && !s.arrival && !s.world.catalogue && !s.world.zone;
 /* The sound button in the header (Lachlan, 2026-11-16): music, beds and card sounds all on one switch (js/music.js). */
 const SPEAKER = '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/>';
-function soundBtn() { const b = $('soundBtn'); if (!b) return; const on = !!(window.LFMusic && LFMusic.on);
+function soundBtn(b = $('soundBtn')) { if (!b) return; const on = !!(window.LFMusic && LFMusic.on);
   b.classList.toggle('off', !on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
   b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">${SPEAKER}${on
     ? '<path d="M15.5 9a4.5 4.5 0 0 1 0 6"/><path d="M18 6.5a8 8 0 0 1 0 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>'}</svg>`; }
@@ -868,5 +868,5 @@ const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.p
 const firstPics = s.adrift ? ['art/adrift.webp'].concat(window.LFIntro && isNew ? (LF.proOn && LF.proOn(s) ? LFIntro.departure(s) : LFIntro.opening(s)).map(x => LFBoot.scene(x.pic)).concat('sfx/burn.mp3') : []) : s.cur ? [LFBoot.scene(sceneOf(s.cur))] : [];
 const start = () => { log('open', { detail: isNew ? 'no saved game' : (s.over && !s.over.cont) ? 'on the end screen' : 'resumed' }); if (s.adrift || surveying() || (s.over && !s.over.cont)) render(); else if (s.cur) arrive(true); else proceed(); if (needCrew()) { if (isNew || proFresh) splash(); /* then the ship and the crew; the departure plays after (preGo) */ } else if (isNew || proFresh) intro(); else if (s.adrift && !s.cur && LF.proOn && LF.proOn(s)) proGo(); };
 if (window.LFBoot) LFBoot.first(firstPics.filter(Boolean), start); else start();
-window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, due, REVIEW_MS };
+window.LFUI = { get state() { return s; }, get hold() { return hold; }, get review() { return review; }, render, bringCard, due, REVIEW_MS, soundBtn };
 })();

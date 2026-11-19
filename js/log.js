@@ -87,7 +87,7 @@ function tally(done) {
     const out = st.out || {}, won = (out.win || 0) + (out.fell || 0), n = typeof st.launched === 'number' ? Math.max(st.launched, st.n) : 0;
     const f = x => Number(x).toLocaleString('en'), col = `${won ? f(won) : 'No'} colon${won === 1 ? 'y' : 'ies'} established.`;
     if (!n && !won) return done('');
-    done(n ? `${f(n)} ship${n === 1 ? '' : 's'} launched. ${col}` : col);   // no launched count until the Apps Script is redeployed: say only what is known
+    done(n ? `${f(n)} ship${n === 1 ? '' : 's'} launched.\n${col}` : col);   // two lines on the landing page (white-space: pre-line)   // no launched count until the Apps Script is redeployed: say only what is known
   }).catch(() => done(''));
 }
 /* peers(s, done): two or three lines for the end screen, or none if the counts cannot be had. */

@@ -167,12 +167,15 @@ function play(shots, cb, title) {
     <feTurbulence type="fractalNoise" baseFrequency="0.035 0.16" numOctaves="2" seed="1" result="n"><animate attributeName="seed" values="1;2;3;4;5;6;7" dur="0.5s" calcMode="discrete" repeatCount="indefinite"/></feTurbulence>
     <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
     <div class="stage"></div><div class="skip lbl">${title ? '' : RING}</div>
-    ${title ? `<div class="title"><canvas class="stars" data-vx="-5" data-vy="0.6"></canvas><div><img class="em" src="art/crest.webp" alt=""><h1>Landfall</h1><i class="rule"></i>${WARN}</div><div class="tally"></div></div>` : ''}`;
+    ${title ? `<div class="title"><canvas class="stars" data-vx="-5" data-vy="0.6"></canvas><div><img class="em" src="art/crest.webp" alt=""><h1>Landfall</h1><i class="rule"></i>${WARN}</div><div class="tally"></div><button class="hbtn snd" type="button"></button></div>` : ''}`;
   document.body.appendChild(el);
   skySeed = (Date.now() / 86400000) | 0;   // the sky changes from day to day, not from shot to shot
   sky(el);
   // How many have gone before: ships launched and colonies established, from the play log's counts (js/log.js).
   if (title && window.LFLog && LFLog.tally) LFLog.tally(line => { const tl = el.querySelector('.title .tally'); if (tl && line) { tl.textContent = line; tl.classList.add('on'); } });
+  // The sound switch on the landing page (Lachlan, 2026-11-19): the header's own button, drawn the same and kept in step.
+  { const b = el.querySelector('.title .snd'); if (b) { const draw = () => { if (window.LFUI && LFUI.soundBtn) { LFUI.soundBtn(b); LFUI.soundBtn(); } }; draw();
+    b.addEventListener('click', e => { e.stopPropagation(); if (window.LFMusic) LFMusic.toggle(); draw(); }); } }
   // The landing page: the first tap starts the score and brings up what the game is and what is in it; the second begins.
   let waiting = title ? 2 : 0;
   el.addEventListener('click', e => { e.stopPropagation();
