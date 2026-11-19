@@ -107,9 +107,13 @@ LF.attachMods = function (s, ap, kind, test) {
     parts.push({ label: `${p.name}, ${nm}`, v: best + (p.deeds.length >= 3 ? 2 : 0) }); }
   return parts;
 };
+/* The odds as the player sees them and the dice use them (Lachlan, 2026-11-19; DESIGN.md "The odds"): the base, plus every modifier
+   in flat percentage points, held between 5% and 95%. Where the cap cuts, a last line says so, so the lines always add up to the figure. */
 LF.withAttach = function (s, odds, ap, kind, test) {
-  if (!odds) return odds; const parts = LF.attachMods(s, ap, kind, test); if (!parts.length) return odds;
-  return { p: clamp(odds.p + parts.reduce((a, x) => a + x.v, 0), 5, 95), parts: odds.parts.concat(parts) };
+  if (!odds) return odds; const add = LF.attachMods(s, ap, kind, test), parts = odds.parts.filter(x => !x.cap).concat(add);
+  const raw = (odds.raw === undefined ? odds.p : odds.raw) + add.reduce((a, x) => a + x.v, 0), p = clamp(raw, 5, 95);
+  if (raw !== p) parts.push({ label: raw > p ? 'No better than 95%' : 'No worse than 5%', v: p - raw, cap: 1 });
+  return Object.assign({}, odds, { p, raw, parts });
 };
 const AP_PERK = { force: 'marksman', study: 'observer', accord: 'speaker', exploit: 'fixer', avoid: 'pathfinder' };
 /* What a deed makes of someone, when the card does not say: the work that was done (2026-11-16: with no arc and no

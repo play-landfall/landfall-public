@@ -239,13 +239,14 @@ function cardHTML() {
     for (const o of opts) {
       const tips = [];
       for (const [k, t] of o.info || []) tips.push(`<span class="${k === 'danger' ? 'hot' : ''}">${ic(INFO[k] || 'unknown')}${esc(t)}</span>`);
-      if (o.odds) tips.push(`<span class="${o.odds.p < 40 ? 'hot' : ''}">${ic('difficulty')}${DIFF(o.odds.p)}${showOdds ? ` ${o.odds.p}%` : ''}</span>`);
+      if (o.odds) tips.push(`<span class="${o.odds.p < 40 ? 'hot' : ''}">${ic('difficulty')}${o.odds.p}% · ${DIFF(o.odds.p)}</span>`);
       if (o.send) tips.push(`<span>${ic('people')}${o.send.n} go${o.send.lead ? ', led' : ''}</span>`, `<span>${ic('time')}${o.send.months} month${o.send.months > 1 ? 's' : ''}</span>`, `<span class="${o.send.danger >= 4 ? 'hot' : ''}">${ic('danger')}${DANGER[o.send.danger]}</span>`);
       const cost = o.cost || o.ch.cost; if (cost) for (const k in cost) tips.push(`<span class="${cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${ic(k)}${esc(LF.amount(s, k, -cost[k]))}</span>`);
-      const mods = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : ''}${m.v} ${esc(m.label)}</span>`).join('')}</div>` : '';
+      // how the figure is made, in percentage points that add up to it: the base, then every line (DESIGN.md "The odds")
+      const mods = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.base !== undefined ? `<span>${o.odds.base}% to start</span>` : ''}${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : '\u2212'}${Math.abs(m.v)}% ${esc(m.label)}</span>`).join('')}</div>` : '';
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
       const face = pk && o.ch.pid ? faceOf(LF.h.byPid(s, o.ch.pid(s))) : null;
-      h += `<button class="opt${st}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`
+      h += `<button class="opt${st}${o.odds ? ' roll' : ''}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`
         + (tips.length ? `<span class="tips">${tips.join('')}</span>` : '') + mods
         + (o.against && !o.lock ? `<span class="why">Against the colony's ${esc(o.against.toLowerCase())} character</span>` : '')
         + (o.lock ? `<span class="why">${esc(o.lock)}</span>` : '') + `</span></button>`;
@@ -789,7 +790,6 @@ function menu(open) {
   const sh = $('sheet'), opening = sh.hidden; sh.hidden = !open; if (!open) return;
   sh.classList.toggle('in', opening);
   sh.innerHTML = `<div class="box"><h3 style="margin-top:0">Landfall</h3>
-    <div class="row"><div class="t"><b>Show exact odds</b><small>Percentages and what feeds them, instead of a word.</small></div><button class="pbtn" data-act="odds">${showOdds ? 'On' : 'Off'}</button></div>
     <div class="row"><div class="t"><b>Music</b><small>Quiet score and sound that follow how the colony is doing.</small></div><button class="pbtn" data-act="music">${window.LFMusic && LFMusic.on ? 'On' : 'Off'}</button></div>
     <div class="row" style="border:0;padding-bottom:2px"><div class="t"><b>Colours</b><small>${LFTheme.THEMES[LFTheme.current].name}</small></div></div>
     <div class="sws">${Object.entries(LFTheme.THEMES).map(([k, t]) => `<button data-act="theme" data-v="${k}" class="${k === LFTheme.current ? 'on' : ''}" style="background:${t.paper}" aria-label="${t.name}"><i style="background:${t.rust}"></i></button>`).join('')}</div>

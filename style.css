@@ -514,3 +514,7 @@ html.grim2 h2 { letter-spacing:.01em; }
 @keyframes static-roll { from { background-position:0 0; } to { background-position:0 44px; } }
 @keyframes static-flicker { 0%, 100% { opacity:.42; } 47% { opacity:.15; } 49% { opacity:.7; } 51% { opacity:.42; } 88% { opacity:.25; } 89% { opacity:.42; } }
 @media (prefers-reduced-motion: reduce) { .talk > .face.static::before, .talk > .face.static::after { animation:none; } }
+
+/* An option that rolls the dice (Lachlan, 2026-11-19; DESIGN.md "The odds"): a slightly different surface, so a gamble reads as one. */
+.opt.roll:not(:disabled) { background:color-mix(in oklab, var(--raise) 84%, var(--gold)); }
+.opt .mods span:first-child:not(.up):not(.dn) { color:var(--ink); }

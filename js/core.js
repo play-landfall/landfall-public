@@ -796,8 +796,9 @@ LF.odds = function (s, test, c) {
     if (v) { parts.push({ label, v }); p += v; }
   }
   for (const q of LF.buildMods(s, test)) { parts.push(q); p += q.v; }
-  if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c)) { const v = Math.round(clamp(p, 5, 95) * q.rel); if (v) { parts.push({ label: q.label, v }); p += v; } }   // what the officer in the chair is good at (LF.EDGE)
-  return { p: clamp(Math.round(p), 5, 95), parts };
+  // What the officer in the chair is good at (LF.EDGE): flat points like every other modifier ("15% better odds" is +15).
+  if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c)) { const v = Math.round(q.rel * 100); if (v) { parts.push({ label: q.label, v }); p += v; } }
+  return { p: clamp(Math.round(p), 5, 95), raw: Math.round(p), base: test.base, parts };
 };
 /* Buildings that help a kind of work (WO-3, DESIGN.md "Buildings"). One place in the odds for every card, hand-written or
    generated: the work a test is (its kind, else its approach, else the offices it names) against what stands. A test
