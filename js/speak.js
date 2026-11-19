@@ -128,11 +128,11 @@ function stillHere(s, r) {
   for (let k = 1; k <= all.length; k++) { const x = all[(i + k) % all.length]; if (!gone(rosterIn(s, x))) return x; }
   return r; }
 const fromRoster = (s, r) => { const p = rosterIn(s, r);
-  return { kind: r.kind === 'outsider' ? 'outsider' : 'colonist', name: r.name, first: r.first, post: r.role, rk: r.key, pic: r.pic ? 'art/colonists/' + r.key + '.webp' : null, p }; };
+  return { kind: r.kind === 'outsider' ? 'outsider' : 'colonist', name: r.name, first: r.first, post: r.role, rk: r.key, pic: 'art/colonists/' + r.key + '.webp', p }; };
 const fromPerson = (s, p) => {
   if (p.key && p.role && p.seat) return { kind: 'officer', name: p.name, first: p.first, post: p.title || LF.title(p), seat: p.seat, p };
   const r = p.rk && LF.ROSTER && LF.ROSTER[p.rk];
-  return { kind: 'colonist', name: p.name, first: p.first, post: r ? r.role : (LF.job ? LF.job(p) : 'Colonist'), rk: p.rk || null, pic: r && r.pic ? 'art/colonists/' + r.key + '.webp' : null, p }; };
+  return { kind: 'colonist', name: p.name, first: p.first, post: r ? r.role : (LF.job ? LF.job(p) : 'Colonist'), rk: p.rk || null, pic: r ? 'art/colonists/' + r.key + '.webp' : null, p }; };
 LF.speaker = function (s, who) {
   who = String(who || '').trim(); const c = who.indexOf(':'), kind = c > 0 ? who.slice(0, c) : who, label = c > 0 ? who.slice(c + 1).trim() : '';
   if (kind === 'machine' || kind === 'note' || kind === 'unknown') return { kind, name: label || (kind === 'machine' ? 'The ship' : kind === 'note' ? 'Written' : 'A voice'), post: '' };

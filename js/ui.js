@@ -198,7 +198,8 @@ function talkFace(w) {
     return `<span class="face off icon">${ic('notable')}</span>`; }
   if (w.kind === 'machine') return `<span class="face icon">${ic('machines')}</span>`;
   if (w.kind === 'unknown') return `<span class="face icon">${ic('unknown')}</span>`;
-  return w.pic ? `<img class="face" src="${w.pic}" alt="" loading="lazy" decoding="async">` : `<span class="face blank"></span>`;
+  // a roster portrait not painted yet is simply not there: the blank takes its place, so a painting that lands is picked up as it is
+  return w.pic ? `<img class="face" src="${w.pic}" alt="" loading="lazy" decoding="async" onerror="this.outerHTML='<span class=&quot;face blank&quot;></span>'">` : `<span class="face blank"></span>`;
 }
 function talkHTML(text) {
   if (LF.revoice) text = LF.revoice(s, text);
