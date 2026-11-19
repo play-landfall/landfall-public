@@ -318,12 +318,20 @@ There is reaction mass for one more burn. The long-range array has found ${['', 
       <button class="opt go" data-act="embark" data-v="${i}">Burn for ${esc(c.star)}</button></div>`; });
   return h;
 }
+/* The arrival (Lachlan, 2026-11-19): first the crossing report alone, then two tabs, the world (its picture and what the
+   survey saw) and the orbital report (the readings against the truth, and what orbit can say). Both end on the name. */
+let arrStep = 0, arrTab = 'world';
+const ORBIT_PIC = { barren: 'lib_planet_05', ice: 'lib_planet_01', drowned: 'lib_planet_02', jungle: 'lib_planet_04', garden: 'lib_planet_09', ruin: 'lib_planet_10' };
 function arrivalHTML() {
   const w = s.world, R = w.report;
-  return `<div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2>
-    <p>${esc(LF.transitText(s))}</p><p>The ship makes one full survey from orbit before anyone goes down. After this, what the colony learns it learns on foot.</p></div>
-    ${LF.planetStory ? `<h3>${ic('world', 'h3i')}What the survey saw</h3><div class="card">${LF.planetStory(s).map(p => `<p>${esc(p)}</p>`).join('')}</div>` : ''}
-    <h3>${ic('array', 'h3i')}The readings, and the truth</h3><div class="box">${w.readings.map(r => readingHTML(r, true)).join('')}</div>
+  const head = `<div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2>`;
+  if (arrStep === 0) return `${head}<p>${esc(LF.transitText(s))}</p><p>The ship makes one full survey from orbit before anyone goes down. After this, what the colony learns it learns on foot.</p></div>
+    <button class="opt go" data-act="arrnext">Next</button>`;
+  const pic = (LF.SCENES || []).includes(`orbit_${w.type}`) ? `orbit_${w.type}` : ORBIT_PIC[w.type] || 'lib_planet_09';
+  const tab = arrTab === 'world'
+    ? `<div class="banner"><img class="scene planet" src="art/scenes/${pic}.webp" alt=""></div>
+      ${LF.planetStory ? `<h3>${ic('world', 'h3i')}What the survey saw</h3><div class="card">${LF.planetStory(s).map(p => `<p>${esc(p)}</p>`).join('')}</div>` : ''}`
+    : `<h3>${ic('array', 'h3i')}The readings, and the truth</h3><div class="box">${w.readings.map(r => readingHTML(r, true)).join('')}</div>
     ${LF.arrivalNotes(s).map(t => `<div class="note">${esc(t)}</div>`).join('')}
     ${R ? `<h3>${ic('world', 'h3i')}The orbital report</h3><div class="box">
       <div class="rd"><div class="rh">${ic('parts')}<b>Metal</b><span>${R.ore.conf}% sure</span></div><small>${esc(R.ore.text)}</small></div>
@@ -331,8 +339,10 @@ function arrivalHTML() {
       <div class="rd"><div class="rh">${ic('danger')}<b>Weather</b><span>${R.weather.conf}% sure</span></div><small>${esc(R.weather.text)}</small></div>
       ${LF.anomaly(s) ? `<div class="rd"><div class="rh">${ic('unknown')}<b>The anomaly</b></div><small>${esc(LF.anomaly(s).charAt(0).toUpperCase() + LF.anomaly(s).slice(1))}. Orbit cannot say what it is.</small></div>` : ''}
       <div class="rd"><div class="rh">${ic('lander')}<b>Landing zones</b></div>${R.zones.map(z => `<small><b>${esc(z.name.charAt(0).toUpperCase() + z.name.slice(1))}</b>: ${esc(z.see)}.</small>`).join('')}</div>
-      <div class="rd"><div class="rh">${ic('array')}<b>Big enough to name</b></div>${R.features.map(f => `<small><b>${esc(f.name.charAt(0).toUpperCase() + f.name.slice(1))}</b>: ${esc(f.see)}.</small>`).join('')}</div></div>` : ''}
-    <button class="opt go" data-act="arrive">Give it a name</button>`;
+      <div class="rd"><div class="rh">${ic('array')}<b>Big enough to name</b></div>${R.features.map(f => `<small><b>${esc(f.name.charAt(0).toUpperCase() + f.name.slice(1))}</b>: ${esc(f.see)}.</small>`).join('')}</div></div>` : ''}`;
+  return `<div class="lbl vname">Orbit over ${esc(w.planet)}</div>
+    <div class="seg arrtabs">${[['world', 'The world'], ['report', 'Orbital report']].map(([k, n]) => `<button data-act="arrtab" data-v="${k}" class="${k === arrTab ? 'on' : ''}">${n}</button>`).join('')}</div>
+    ${tab}<button class="opt go" data-act="arrive">Give it a name</button>`;
 }
 
 /* ---------- the three views ---------- */
@@ -777,8 +787,10 @@ function menu(open) {
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
 function act(a, v, el) {
-  if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
+  if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; arrStep = 0; arrTab = 'world'; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
+  else if (a === 'arrnext') { arrStep = 1; arrTab = 'world'; window.scrollTo(0, 0); return render(); }
+  else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; return render(); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
   else if (a === 'pre') return preGo(v);
