@@ -826,6 +826,8 @@ document.addEventListener('keydown', e => {
 });
 
 s = load(); if (s) { LF.dropCut(s); if (LF.migrateOrders) LF.migrateOrders(s); LF.renameCast(s); }
+// Saved after every choice already; this also covers swiping the installed app away mid-card.
+document.addEventListener('visibilitychange', () => { if (document.hidden && s) save(); });
 const isNew = !s; if (isNew) fresh(true);
 const proFresh = !isNew && s.adrift && !s.cur && LF.proOn && LF.proOn(s) && !s.pro.i;   // closed before the first card of the voyage out: play it from the title
 // The first screen's pictures arrive behind a loading bar on the first visit; everything else loads as it is needed.

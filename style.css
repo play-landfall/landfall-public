@@ -29,6 +29,8 @@ header { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:8px 
 /* A new build is out (js/update.js): a strip under the header, never over the card. */
 #update { position:sticky; top:var(--head, 64px); z-index:4; margin:0 12px; display:flex; align-items:center; gap:10px; padding:10px 12px 10px 16px; border-radius:18px; background:var(--raise); box-shadow:var(--lift); }
 #update[hidden] { display:none; } #update span { flex:1; font-size:14px; } #update button { padding:8px 14px; border-radius:12px; background:var(--rust); color:var(--on); font-weight:800; }
+#install { position:sticky; top:var(--head, 64px); z-index:4; margin:0 12px; display:flex; align-items:center; gap:8px; padding:10px 12px 10px 16px; border-radius:18px; background:var(--raise); box-shadow:var(--lift); }
+#install span { flex:1; font-size:14px; } #install button { padding:8px 12px; border-radius:12px; font-weight:800; } #install [data-k=yes] { background:var(--rust); color:var(--on); }
 
 main { flex:1; padding:6px 12px 40px; }
 
