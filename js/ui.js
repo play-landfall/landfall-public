@@ -245,7 +245,7 @@ function cardHTML() {
       const mods = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : ''}${m.v} ${esc(m.label)}</span>`).join('')}</div>` : '';
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
       const face = pk && o.ch.pid ? faceOf(LF.h.byPid(s, o.ch.pid(s))) : null;
-      h += `<button class="opt${st}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.edge ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}${o.ch && o.ch.edge ? edgeHTML(o.ch.edge(s, s.cur && s.cur.ctx)) : ''}`
+      h += `<button class="opt${st}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`
         + (tips.length ? `<span class="tips">${tips.join('')}</span>` : '') + mods
         + (o.against && !o.lock ? `<span class="why">Against the colony's ${esc(o.against.toLowerCase())} character</span>` : '')
         + (o.lock ? `<span class="why">${esc(o.lock)}</span>` : '') + `</span></button>`;

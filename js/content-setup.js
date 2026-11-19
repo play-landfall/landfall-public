@@ -16,7 +16,7 @@ LF.makeSlate = function (s) {
   return true;
 };
 /* What an officer on the first-flight pick does for the colony, and the strength they were chosen for (Lachlan, 2026-11-19: trimmed from their nature). */
-const wakeNote = p => LF.SEATS[p.seat].does;   // the strength itself is drawn under it, as on the crew pick (choice.edge)
+const wakeNote = p => LF.SEATS[p.seat].does;   // no strength line here (Lachlan, 2026-11-19): it is shown on the crew pick
 /* A line of past. The six have their own (LF.OWN_PAST, by p.key), written against LF.BIO, their nature, the portraits and the
    watch scheme: two or three each, one drawn per run. LF.PAST is for a colonist raised to an empty seat (LF.pastOf): a sleeper's
    past, so nothing in it happens awake on the voyage and nobody in it is an officer or a captain. */
@@ -64,7 +64,7 @@ const and3 = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' and ' + a[a.lengt
 const slot = k => ({
   show: s => { const p = byPid(s, s.slate[0][k]); return !!p && p.alive; },
   label: s => { const p = byPid(s, s.slate[0][k]); return `${p.name}, ${LF.title(p)}`; },
-  note: s => wakeNote(byPid(s, s.slate[0][k])), edge: s => byPid(s, s.slate[0][k]).key,
+  note: s => wakeNote(byPid(s, s.slate[0][k])), officer: true,
   info: s => [['people', LF.SEATS[byPid(s, s.slate[0][k]).seat].name]], pid: s => s.slate[0][k] });
 add({ id: 'setup.wake1', view: 'people', arc: 'setup', tone: 'council', chain: true, title: 'Who Goes Down First', pick: 3, pickLabel: 'Take these three down',
   text: s => { const n = s.people.filter(p => p.seat && p.role && p.alive).length, W = ['none', 'one', 'two', 'three', 'four', 'five', 'six']; return `The ${s.world.ship} holds orbit, and all ${W[n]} of your officers are awake for it. The lander goes down once with the reactor and the first sixty, and it has seats for three of ${n === 6 ? 'the six' : `them. ${W[6 - n].charAt(0).toUpperCase() + W[6 - n].slice(1)} of the six did not live to see orbit, and nobody has ${6 - n === 1 ? 'that seat' : 'those seats'}`}. The three you take run the colony's first months with you. Each of them is one department that works from the first day.\n\nThe other ${n - 3 === 1 ? 'one stays' : W[n - 3] + ' stay'} aboard and keep${n - 3 === 1 ? 's' : ''} the ship: the sleepers, the systems still in the hold, the lander's turnarounds. Each shuttle run can bring one of them down, and the lander has fuel for three. Whatever they are for, the colony does badly without it until they are down.\n\nChoose three.`; },
@@ -86,7 +86,7 @@ add({ id: 'seat.down', view: 'people', arc: 'sleepers', tone: 'council', chain: 
     return `The lander is docked at the ${s.world.ship}'s spine, the sleepers strapped in for the drop. One seat is kept for an officer, and ${n === 1 ? `${up3(s, c, 0).name} is the last of them still aboard` : `${n === 2 ? 'two' : 'three'} of yours are still aboard`}.\n\n${n === 1 ? 'There is nobody else to choose.' : `Whoever doesn't take the seat waits for the next flight. After this one the tanks hold ${s.fuel ? `${s.fuel} more` : 'nothing'}${s.fuel ? '' : ': the next flight burns food'}.`}`; },
   choices: [0, 1, 2].map(k => ({ show: (s, c) => !!up3(s, c, k),
     label: (s, c) => { const p = up3(s, c, k); return `${p.name}, ${LF.title(p)}`; },
-    note: (s, c) => wakeNote(up3(s, c, k)), edge: (s, c) => up3(s, c, k).key,
+    note: (s, c) => wakeNote(up3(s, c, k)), officer: true,
     info: (s, c) => [['people', LF.SEATS[up3(s, c, k).seat].name]],
     out: { then: (s, c) => c.then, text: (s, c) => { const p = up3(s, c, k); return p ? DOWN[Math.abs(s.seed + k + (s.flights || 0)) % DOWN.length](p) : ''; },
       fx: (s, c) => ({ do: s2 => LF.bringDown(s2, up3(s2, c, k)) }) } })) });
