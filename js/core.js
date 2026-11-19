@@ -301,7 +301,7 @@ LF.seasonYield = s => { const q = LF.date(s.day).season; return (s.world.climate
 LF.harsh = s => s.world.truth.temp < -15 || s.world.truth.temp > 32;   // cargo pods were not built for it
 LF.hands = s => Math.max(0, s.pop - s.away.reduce((a, x) => a + x.n, 0));
 LF.hydroProd = s => 24 * (s.world.hydro || 1) * LF.eff(s, 'hydroponics') * LF.power(s);
-LF.foodProd = s => 0.15 * LF.hands(s) * s.jobs.farm * LF.ration(s).work * (0.8 + 0.2 * LF.dept(s, 'crew')) * LF.pressure(s).labor * LF.yieldOf(s) * LF.seasonYield(s) * (s.flags.ration_by_work ? 1.08 : 1)
+LF.foodProd = s => 0.15 * LF.hands(s) * s.jobs.farm * LF.ration(s).work * (0.8 + 0.2 * LF.dept(s, 'crew')) * LF.pressure(s).labor * LF.yieldOf(s) * LF.seasonYield(s) * (s.flags.ration_by_work ? 1.08 : 1) * (LF.edge ? LF.edge(s, 'grow') : 1)
   + LF.hydroProd(s);
 LF.KID_EATS = 0.2;   // a child's share of an adult's ration
 LF.mouths = s => LF.hands(s) + LF.KID_EATS * LF.kidCount(s);
@@ -325,7 +325,7 @@ const MAT_RATE = { wreck: 1, country: 0.45, ore: 2.2 };
 LF.matSource = s => s.built.smelter ? 'ore' : (s.wreck || 0) > 0 ? 'wreck' : 'country';
 LF.matIn = function (s, lab, take) {
   if (lab === undefined) lab = LF.crews(s) * LF.pressure(s).labor;
-  const src = LF.matSource(s), v = s.jobs.extract * 0.5 * lab * (0.8 + 0.2 * LF.dept(s, 'crew')) * MAT_RATE[src] * (s.flags.site_highland ? 1.15 : 1);
+  const src = LF.matSource(s), v = s.jobs.extract * 0.5 * lab * (0.8 + 0.2 * LF.dept(s, 'crew')) * MAT_RATE[src] * (s.flags.site_highland ? 1.15 : 1) * (LF.edge ? LF.edge(s, 'extract') : 1);
   if (take && src === 'wreck') { s.wreck = Math.max(0, s.wreck - v);
     if (!s.wreck) s.flags.wreck_out = s.day;
     if (!s.wreck) LF.log(s, 'The last of the cargo pods has been cut up. The salvage crews are out picking over the country for whatever can be used.', 'bad'); }
@@ -348,6 +348,7 @@ LF.cost = function (s, id) {
   if (id === 'wells' && s.flags.biofilm_studied) mat *= 0.7;
   if (id === 'school' && s.cargo && s.cargo.archive) labor *= 0.7;                       // the archive came down with the first load
   if (id === 'wells') { const w = s.world.truth.water; labor *= w < 20 ? 1.3 : w > 60 ? 0.8 : 1; }   // dry worlds dig deeper
+  if (LF.edge && !p.repeat) labor *= LF.edge(s, 'build');   // who is in the chair (LF.EDGE)
   return { mat: Math.round(mat), labor: Math.round(labor) };
 };
 /* A building standing (WO-3): s.built.<id> is the day it was finished. The meeting hall can be shut by order (bu.hall). */
@@ -489,7 +490,7 @@ LF.tick = function (s) {
     const m = s.machines[id]; if (m.lost) continue;
     // Service life: maintenance restores condition, but only up to a ceiling that never stops falling.
     m.cap = Math.max(0, m.cap - 0.085);
-    m.hp = Math.min(m.cap, m.hp - LF.MACHINES[id].wear * (m.up ? 0.4 : PR.wear * (s.flags.push_on ? 1.1 : 1) * (1.25 - 0.25 * D('engineer'))));   // aboard: cold and idle
+    m.hp = Math.min(m.cap, m.hp - LF.MACHINES[id].wear * (m.up ? 0.4 : PR.wear * (s.flags.push_on ? 1.1 : 1) * (1.25 - 0.25 * D('engineer')) * LF.edge(s, 'wear')));   // aboard: cold and idle
     if (m.hp <= 0 || m.cap < 8) loseMachine(s, id);
   }
   // maintenance: worst machine first
@@ -530,6 +531,7 @@ LF.tick = function (s) {
   const done = Object.values(pil).filter(Boolean).length;
   let target = 50 + (LF.lean(s) && LF.has(s, 'cannery') ? LF.ration(s).morale / 2 : LF.ration(s).morale) + (s.built.housing ? 8 : 0) + done * 3 - s.grief
     - 8 * (1 - D('command')) - (s.res.food <= 0 ? 25 : 0) - (pf < 0.5 ? 8 : 0) - (LF.harsh(s) && !s.built.housing ? 3 : 0) + (s.flags.council ? 4 : 0) - (s.pop > 110 && !s.built.housing ? 6 : 0) + (s.lift || 0);   // s.lift: hope lent by a card, fading (js/ebb.js)
+  if (target > 0) target *= LF.edge(s, 'morale');   // a Chief Agronomist who keeps the table cheerful (LF.EDGE)
   if (LF.has(s, 'hall')) target = Math.max(target + 3, 27);   // the meeting hall: a floor under what conditions justify
   s.morale += PR.morale;
   s.morale = clamp(s.morale + (target - s.morale) * 0.02, 0, 100);
@@ -792,6 +794,7 @@ LF.odds = function (s, test, c) {
     if (v) { parts.push({ label, v }); p += v; }
   }
   for (const q of LF.buildMods(s, test)) { parts.push(q); p += q.v; }
+  if (LF.edgeMods) for (const q of LF.edgeMods(s, test, c)) { const v = Math.round(clamp(p, 5, 95) * q.rel); if (v) { parts.push({ label: q.label, v }); p += v; } }   // what the officer in the chair is good at (LF.EDGE)
   return { p: clamp(Math.round(p), 5, 95), parts };
 };
 /* Buildings that help a kind of work (WO-3, DESIGN.md "Buildings"). One place in the odds for every card, hand-written or
@@ -801,11 +804,14 @@ LF.BUILD_WORK = [['lab', 'research', 8, 'The laboratory'], ['machineshop', 'fix'
 const BW_ROLE = { research: ['xenobio', 'geologist', 'scientist', 'physician', 'doctor'], fix: ['engineer'], fight: ['security'], talk: ['command', 'teacher', 'chaplain'] };
 const BW_AP = { study: 'research', exploit: 'fix', force: 'fight', accord: 'talk' };
 const BW_MACH = ['reactor', 'reclaimer', 'fabricator', 'hydroponics'];
-LF.buildMods = function (s, test) {
-  if (!s.world || !s.built || test.aboard || s.adrift || (LF.aloft && LF.aloft(s))) return [];
-  let k = [].concat(test.kind || []);
+/* The kinds of work a test is: its kind, else its approach, else the offices and machines it names. */
+LF.workKinds = function (test) { const k = [].concat(test.kind || []);
   if (!k.length) { if (BW_AP[test.ap]) k.push(BW_AP[test.ap]);
     for (const m of test.mods || []) { if (m.k === 'role') { for (const w in BW_ROLE) if (BW_ROLE[w].includes(m.role)) k.push(w); } else if (m.k === 'machine' && BW_MACH.includes(m.id)) k.push('fix'); } }
+  return k; };
+LF.buildMods = function (s, test) {
+  if (!s.world || !s.built || test.aboard || s.adrift || (LF.aloft && LF.aloft(s))) return [];
+  const k = LF.workKinds(test);
   return LF.BUILD_WORK.filter(b => k.includes(b[1]) && LF.has(s, b[0])).map(b => ({ label: b[3], v: b[2] }));
 };
 const ARC_PERK = { crops: 'observer', machines: 'fixer', fever: 'medic', politics: 'speaker', flare: 'survivor', winter: 'survivor', storm: 'survivor', builders: 'touched', hive: 'speaker', others: 'speaker', understory: 'observer', sleepers: 'pathfinder' };
@@ -956,7 +962,7 @@ LF.apply = function (s, fx, out, c) {
   if (fx.progress && s.project) { s.progress = Math.max(0, s.progress * (1 + fx.progress)); chip('Project set back', false); }
   if (fx.fops) for (const o of fx.fops) { const f = s.factors.find(x => x.id === o.id); if (!f || (f.res && !o.resolve)) continue;
     const t0 = f.threat, a0 = f.accord, i0 = f.insight;
-    for (const k of ['threat', 'insight', 'accord', 'harm']) if (o[k]) f[k] = clamp(f[k] + (k === 'insight' && o[k] > 0 ? o[k] * (0.7 + 0.3 * LF.dept(s, 'scientist')) * (LF.has(s, 'lab') ? 1.33 : 1) : o[k]), k === 'accord' ? -100 : 0, 100);
+    for (const k of ['threat', 'insight', 'accord', 'harm']) if (o[k]) f[k] = clamp(f[k] + (k === 'insight' && o[k] > 0 ? o[k] * (0.7 + 0.3 * LF.dept(s, 'scientist')) * (LF.has(s, 'lab') ? 1.33 : 1) * LF.edge(s, 'insight') : o[k]), k === 'accord' ? -100 : 0, 100);
     if (o.kills) f.kills += o.kills; if (o.wall) f.wall = 1;
     if (Math.abs(f.threat - t0) >= 5) chip(`${f.Name}: threat ${f.threat > t0 ? 'rising' : 'falling'}`, f.threat < t0);
     if (f.insight - i0 >= 5) chip(`${f.Name}: better understood`, true);

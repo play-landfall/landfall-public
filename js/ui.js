@@ -67,26 +67,28 @@ const SEAT_ASKS = { command: 'One of them thinks first of the mission, the other
 const facePainted = key => !!key && !(LF.UNPAINTED_FACES || LF.UNPAINTED || []).includes(key);
 const castImg = (c, cls) => !facePainted(c.key) || !SCENES.has('cast_' + c.key) ? `<span class="face none">${ic('people')}</span>`
   : `<img class="${cls || 'face'}" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async">`;
-const fileCard = (c, i, btn) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${btn || ''}</div></div>`;
+/* What an officer brings and what it costs, while in the chair (LF.EDGE, 2026-11-19). */
+const edgeHTML = k => { const e = LF.EDGE && LF.EDGE[k]; return e ? `<div class="edge"><span class="up">${esc(e.up)}</span></div>` : ''; };
+const fileCard = (c, i, btn, seat) => `<div class="file" style="--i:${i}">${castImg(c)}<div class="t"><b>${esc(c.first)} ${esc(c.last)}</b>${seat ? '' : `<span class="lbl">${esc(c.title || '')}</span>`}${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p>${seat ? edgeHTML(c.key) : ''}${btn || ''}</div></div>`;
 function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrift, st = pre.step;
   if (st === 'ship') return `<div class="banner"><img class="scene" src="art/ship_new.webp" alt=""></div><div class="card enter dossier"><div class="lbl tone">Outbound from Earth</div><h2>Select your ship</h2>
     <div class="shipcard on"><b>${esc(a.ship)}</b><span class="lbl">Colony ship · the only one fitted out</span>
       <dl class="facts">${SHIP_FACTS(a).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>
     <button class="opt go" data-act="pre" data-v="crew">Take the ${esc(a.ship)}</button></div>`;
   if (st === 'crew') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)}</div><h2>Select your crew</h2>
-    <p>Six officers keep the ship with you and run the colony's six departments when you land. Two were trained for each post, and they are not alike. Take one of each. The other comes too, as that department's deputy, and takes the chair if the first is lost. After those two there is nobody.</p>
+    <p>Six officers keep the ship with you and run the colony's six departments when you land. Two were trained for each post, and they are not alike: each is good at something different. Take one of each to head the department. The other comes too as their second, and takes the chair if the first is lost. After those two there is nobody.</p>
     <button class="opt go" data-act="pre" data-v="seat0">Choose the command crew</button>
     <button class="opt go" data-act="pre" data-v="random">Randomise</button>
     <button class="pbtn back" data-act="pre" data-v="ship">Back to the ship</button></div>`;
   if (st === 'review') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)} · crew file</div><h2>Your command crew</h2>
-    ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].name)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(c.title)}</span></div></div>`; }).join('')}
+    ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0], d = LF.CAST[k][1 - (pre.picks[k] || 0)]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].lead)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(LF.SEATS[k].second)}: ${esc(d.first)} ${esc(d.last)}</span>${edgeHTML(c.key)}</div></div>`; }).join('')}
     <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
     <button class="opt go" data-act="pre" data-v="${pre.rolled ? 'random' : 'seat0'}">${pre.rolled ? 'Roll again' : 'Change them'}</button>
     ${pre.rolled ? '<button class="pbtn back" data-act="pre" data-v="seat0">Choose them yourself</button>' : ''}</div>`;
   const n = +st.slice(4), k = LF.SEAT_ORDER[n], S = LF.SEATS[k];
   return `<div class="card enter dossier"><div class="lbl tone">Command crew · ${n + 1} of ${LF.SEAT_ORDER.length}</div><h2 class="sp sp-${k}">${esc(S.name)}</h2>
-    <p>${esc(S.does)} ${esc(SEAT_ASKS[k])}</p>
-    ${LF.CAST[k].map((c, i) => fileCard(c, i, `<button class="opt go${pre.picks[k] === i ? ' on' : ''}" data-act="pre" data-v="pick${i}">Take ${esc(c.first)}</button>`)).join('')}
+    <p>${esc(S.does)} ${esc(SEAT_ASKS[k])}</p><p>The one you take is ${esc(S.lead)}. The other is ${esc(S.second)}.</p>
+    ${LF.CAST[k].map((c, i) => fileCard(c, i, `<button class="opt go${pre.picks[k] === i ? ' on' : ''}" data-act="pre" data-v="pick${i}">Take ${esc(c.first)}</button>`, k)).join('')}
     <button class="pbtn back" data-act="pre" data-v="${n ? 'seat' + (n - 1) : 'crew'}">Back</button></div>`; }
 function preGo(v) { pre = pre || { step: 'ship', picks: {} }; window.scrollTo(0, 0);
   if (v === 'random') { pre.picks = {}; for (const k of LF.SEAT_ORDER) pre.picks[k] = Math.random() < 0.5 ? 0 : 1; pre.rolled = true; pre.step = 'review'; }
@@ -101,7 +103,7 @@ let dossier = -1;
 const fileFacts = k => { const f = LF.FILE && LF.FILE[k]; return f ? `<span class="who">${f.age} · ${esc(f.from)}</span><ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''; };
 function dossierHTML() { const pg = LF.FILE_PAGES[dossier], seats = pg.seats;
   return `<div class="card enter dossier"><div class="lbl tone">The ${esc(s.adrift.ship)} · crew file · ${dossier + 1} of ${LF.FILE_PAGES.length}</div><h2>${esc(pg.name)}</h2>${dossier === 0 ? '<p>Six officers keep the ship with you, all awake for the first two years and then two at a time. Nobody can replace them.</p>' : ''}
-    ${seats.map((seat, i) => { const c = LF.CAST[seat][LF.castPick(s, seat)]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(c.title)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
+    ${seats.map((seat, i) => { const c = LF.CAST[seat][LF.castPick(s, seat)]; return `<div class="file" style="--i:${i}"><img class="face" src="art/scenes/cast_${c.key}${SCENES.has('cast_' + c.key + '_ship') ? '_ship' : ''}.webp" alt="" decoding="async"><div class="t"><b>${esc(c.first)} ${esc(c.last)}</b><span class="lbl">${esc(LF.SEATS[seat].lead)}</span>${fileFacts(c.key)}<p>${esc(LF.BIO[c.key])}</p></div></div>`; }).join('')}
     <button class="opt go" data-act="dossier">${dossier < LF.FILE_PAGES.length - 1 ? 'Next' : 'Begin the voyage'}</button></div>`; }
 function dossierGo() { if (dossier < 0) return; dossier++; window.scrollTo(0, 0); if (dossier >= LF.FILE_PAGES.length) { dossier = -1; return proGo(); } render(); }
 function proHTML() { const y = LF.proYear(s);
@@ -656,7 +658,7 @@ function profileHTML(p, f) {
   const stats = p.role && p.body !== undefined && !p.orbit ? `<small class="stats">${Object.keys(LF.STATS).map(k => `<span class="${k !== 'native' && p[k] < 45 ? 'low' : ''}">${LF.STATS[k].name}: ${LF.statWord(p, k)}</span>`).join('')}</small>` : '';
   const last = p.deeds.length ? p.deeds[p.deeds.length - 1].txt : (Object.values(p.marks).find(m => m.txt) || {}).txt;
   return `<div class="box profile enter"><button class="pbtn back" data-act="who" data-v="${esc(p.id)}">Back to the crew</button>
-    <div class="phead">${faceOf(p) || ic('people')}<div class="t"><b>${esc(f.name)}</b><span class="lbl sp sp-${p.seat}">${esc(f.title)} · ${esc(f.seat)}</span><small>${f.age ? `Age ${f.age} · ` : ''}${esc(f.from)}</small><small>${esc(LF.dutyWord(s, p))}${(p.perks || []).length ? ' · ' + p.perks.map(k => LF.PERKS[k].name).join(', ') : ''}</small></div></div>
+    <div class="phead">${faceOf(p) || ic('people')}<div class="t"><b>${esc(f.name)}</b><span class="lbl sp sp-${p.seat}">${esc(f.title)} · ${esc(f.seat)}</span><small>${f.age ? `Age ${f.age} · ` : ''}${esc(f.from)}</small><small>${esc(LF.dutyWord(s, p))}${(p.perks || []).length ? ' · ' + p.perks.map(k => LF.PERKS[k].name).join(', ') : ''}</small>${p.role ? edgeHTML(p.key) : ''}</div></div>
     ${sec('Their normal', `<p>${esc(f.normal)}</p>${f.record.length ? `<ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}`)}
     ${sec('Right now', (f.where ? `<p>${esc(f.where)}</p>` : '') + (f.now ? q(f.now) : '') + stats + (last ? `<small class="deed">${esc(last.charAt(0).toUpperCase() + last.slice(1))}.</small>` : '') + (p.arcs || []).map(a => `<small class="deed">${LF.dateStr(a.d)} · ${esc(a.txt)}.</small>`).join(''))}
     ${sec('On the colony', q(f.colony))}

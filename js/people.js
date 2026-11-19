@@ -24,7 +24,7 @@ LF.PERKS = {
 };
 const RANKS = ['', 'Known by name', 'Veteran', 'Renowned'];
 LF.rank = p => RANKS[Math.min(3, (p.deeds || []).length)];
-LF.title = p => p.role ? (p.title || LF.ROLES[p.role].title) : (p.perks && p.perks.length ? LF.PERKS[p.perks[0]].name : 'Colonist');
+LF.title = p => p.role ? (p.seat && p.key && LF.SEATS[p.seat] ? LF.SEATS[p.seat].lead : p.title || LF.ROLES[p.role].title) : (p.perks && p.perks.length ? LF.PERKS[p.perks[0]].name : 'Colonist');
 LF.notables = s => s.people.filter(p => p.alive && !p.role);
 LF.laidUp = (s, p) => !!p.hurt && p.hurt > s.day;
 /* ---------- who can be sent to do what (Lachlan, 2026-11-15) ----------

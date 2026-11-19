@@ -18,6 +18,7 @@ const PER_STAIN = 1.25, CEIL_PER_STAIN = 0.5, DECENT = 0.3;
 LF.hum = s => (s.hum === undefined ? 100 : s.hum);
 LF.humCeil = s => clamp(100 - CEIL_PER_STAIN * ((s.flags && s.flags.stain) || 0), 12, 100);
 LF.humMove = function (s, d) {
+  if (d < 0 && LF.edge) d *= LF.edge(s, 'hum');   // a Flight Commander who keeps the colony decent (LF.EDGE)
   const was = LF.hum(s); let v = clamp(was + d, 0, 100);
   if (d > 0) v = Math.min(v, Math.max(was, LF.humCeil(s)));
   s.hum = Math.round(v * 10) / 10; s.humLow = Math.min(s.humLow === undefined ? 100 : s.humLow, s.hum);

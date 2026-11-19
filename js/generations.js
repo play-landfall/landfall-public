@@ -68,6 +68,7 @@ LF.heart = function (s) {
 };
 LF.HEART_FLOOR = [s => (s.flags.lim_roster && s.flags.lim_roster !== 'refused' ? 0.6 : 0)];   // childbearing made a duty (lim.roster)
 LF.BIRTH_MODS = [
+  s => (LF.edge ? LF.edge(s, 'births') : 1),   // a Head Surgeon who wants the cradles full (LF.EDGE)
   s => (s.flags.births_deferred ? 0.1 : 1),          // implants for everyone (pol.births): the few that happen anyway
   s => (s.flags.births ? 1.35 : 1),                  // the colony has said children are the point
   s => (s.flags.embryo_program ? 1.25 : 1),          // and assigns them from the bank as well
