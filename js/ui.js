@@ -211,7 +211,13 @@ function talkFace(w) {
   if (w.kind === 'machine') return `<span class="face icon">${ic('machines')}</span>`;
   if (w.kind === 'unknown') return `<span class="face static" aria-hidden="true"></span>`;   // a voice nobody can put a face to: a screen of static (Lachlan, 2026-11-19)
   // a roster portrait not painted yet is simply not there: the blank takes its place, so a painting that lands is picked up as it is
-  return w.pic ? `<img class="face" src="${w.pic}" alt="" loading="lazy" decoding="async" onerror="this.outerHTML='<span class=&quot;face blank&quot;></span>'">` : `<span class="face blank"></span>`;
+  return rosterFace(w.pic);
+}
+/* A roster face (Lachlan, 2026-11-20): the portrait if its file is there, else the same moving static as a voice nobody can name, so a
+   person not painted yet is never a blank. Asked for every time, so a portrait that lands is shown with no step after. */
+const STATIC_FACE = '<span class="face static" aria-hidden="true"></span>';
+function rosterFace(pic) {
+  return pic ? `<img class="face" src="${pic}" alt="" loading="lazy" decoding="async" onerror="this.outerHTML='<span class=&quot;face static&quot; aria-hidden=&quot;true&quot;></span>'">` : STATIC_FACE;
 }
 function talkHTML(text) {
   if (LF.revoice) text = LF.revoice(s, text);
@@ -454,6 +460,7 @@ const castFace = p => p.orbit && SCENES.has('cast_' + p.key + '_ship') ? 'cast_'
 function faceOf(p) {
   if (p && p.key && !facePainted(p.key)) return null;   // one of the twelve whose portrait is not painted yet: the icon, never a stranger's face
   if (p && facePainted(p.key) && SCENES.has('cast_' + p.key)) return `<img class="face" src="art/scenes/${castFace(p)}.webp" alt="" loading="lazy" decoding="async">`;   // the officers have a face of their own
+  if (p && p.rk && LF.ROSTER && LF.ROSTER[p.rk]) return rosterFace('art/colonists/' + p.rk + '.webp');   // one of the roster's named people: their portrait, or static until it is painted
   const deck = FACES.slice(); let h = s.seed | 0;
   for (let i = deck.length - 1; i > 0; i--) { h = (Math.imul(h, 1103515245) + 12345) | 0; const q = (h >>> 8) % (i + 1); [deck[i], deck[q]] = [deck[q], deck[i]]; }
   const k = `lib_portrait_${String(deck[(+p.id.slice(1)) % deck.length]).padStart(2, '0')}`;
