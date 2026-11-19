@@ -62,41 +62,58 @@ const unsky = el => { for (const c of el.querySelectorAll('canvas.stars')) if (c
 const layered = (k, line) => Object.assign({ line }, LAYERED[k]);
 /* A new game: the ship drifting, the sleepers, three of the pool, then why it is adrift (s.premise). */
 /* rest: after the voyage out (js/content-social.js), the burn has been seen already: the long sleep, then what went wrong. */
+/* The films (Lachlan, 2026-11-19; tools/films.py): Wan clips of the Ariadne from Blender layouts of her 3D model, each with its
+   own sound. FILM_MS and FILM_CUTS are what `python tools/films.py` prints. FILMS off plays the stills instead. */
+const FILMS = true;
+const FILM_MS = { departure: 14200, crossing: 18800, meteor: 5000, lights: 4000, arrival: 9600, detach: 5000 };
+const FILM_CUTS = { departure: [0, 4.6, 9.2], crossing: [0, 4.6, 9.2, 13.8], arrival: [0, 4.6] };
+const FILM_VOL = 0.8;
+const reel = (id, lines, alt) => ({ video: id, ms: FILM_MS[id], alt, caps: lines.map((t, n) => [(FILM_CUTS[id] || [0])[n] + 0.3, t]) });
 function opening(s, rest) {
   const r = rng(hash(s.seed)), ship = s.adrift ? s.adrift.ship : s.world.ship, keys = Object.keys(POOL).filter(k => !rest || k !== 'window');   // the long sleep opens on the porthole already
   for (let i = keys.length - 1; i > 0; i--) { const q = Math.floor(r() * (i + 1)); [keys[i], keys[q]] = [keys[q], keys[i]]; }
-  const PM = LF.PREMISES[s.premise] || LF.PREMISES.dead;
-  return (rest ? [{ pic: 'intro_window', move: 'push', line: 'Then the long years. Two awake at a time, and everyone else in the cold.' }] : [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` }]).concat([
-    layered('cruise', `The ${ship}, forty-one years out.`),
-    { pic: 'sleep_manifest', move: 'push', line: `${s.adrift ? s.adrift.kit.sleepers : s.sleepers} asleep in the cryo banks.` }]
-    .concat(keys.slice(0, 3).map(k => POOL[k](s, r)))
-    .concat([Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead)]));
+  const PM = LF.PREMISES[s.premise] || LF.PREMISES.dead, asleep = `${s.adrift ? s.adrift.kit.sleepers : s.sleepers} asleep in the cryo banks.`;
+  const first = rest ? [{ pic: 'intro_window', move: 'push', line: 'Then the long years. Two awake at a time, and everyone else in the cold.' }] : [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` }];
+  const reveal = Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead);
+  if (!FILMS) return first.concat([layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }]).concat(keys.slice(0, 3).map(k => POOL[k](s, r)), [reveal]);
+  // the long years are the crossing film (the watch, the amber lights and the porthole are in it); one more of the pool, then why she is adrift
+  const stills = [layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }];
+  const rest1 = keys.filter(k => k === 'array' || k === 'reactor').slice(0, 1).map(k => POOL[k](s, r));
+  return (rest ? [] : first.slice(0, 1)).concat([
+    reel('crossing', [rest ? 'Then the long years. Two awake at a time, and everyone else in the cold.' : 'The long years. Two awake at a time, and everyone else in the cold.',
+      `The ${ship}, forty-one years out.`, `${asleep} Some of the lights on the pods have gone amber.`, 'Two of your officers have the watch.'], stills)],
+    rest1, [s.premise === 'meteor' ? reel('meteor', [PM.intro], [reveal]) : reveal],
+    [reel('lights', ['The ship wakes her officers.'], [])]);
 }
 /* A new game with a voyage out: the burn that leaves Earth, and the ship under way, before the first card. */
-const DEPART_FILM = true, DEPART_CUTS = [0, 4.6, 9.2, 13.8], DEPART_MS = 18800;   // from `python3 tools/departure.py film`
+const DEPART_FILM = true;   // the departure film is tools/films.py now (FILM_MS, FILM_CUTS above); tools/departure.py made the 2026-11-18 one
 function departure(s) {
   const ship = s.adrift ? s.adrift.ship : s.world.ship;
   const stills = [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `The ${ship} lights its drive and leaves Earth.` },
     layered('cruise', `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`)];
-  // The film (tools/video.py film): the Ariadne new, as she left. Four shots; DEPART_CUTS is where each starts, in seconds.
-  // tools/departure.py: the real ship's own pixels, repainted clean, moved by Wan image-to-video. DEPART_FILM off plays the stills.
+  // The film: the Ariadne new, as she left (tools/films.py). DEPART_FILM off plays the stills.
   if (!DEPART_FILM) return stills;
-  return [{ video: 'departure', ms: DEPART_MS, alt: stills, sfxAt: [[DEPART_CUTS[1] + 1.0, 'burn']], caps: [
-    [0.3, `The ${ship}, new from the yards, in orbit over Earth.`], [DEPART_CUTS[1], 'She lights her drive.'],
-    [DEPART_CUTS[2], 'Earth falls behind.'], [DEPART_CUTS[3], `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`]] }];
+  // 2026-11-19: the new film is tools/films.py (new over Earth; the cold drive; she lights it), with its own sound, so no sfxAt
+  return [reel('departure', [`The ${ship}, new from the yards, in orbit over Earth.`,
+    `${s.adrift ? s.adrift.kit.pop + s.adrift.kit.sleepers : s.sleepers} asleep in the cold, and six awake to run the ship in.`,
+    'She lights her drive, and Earth falls behind.'], stills)];
 }
 /* After the burn is committed: the engines, the years, the new world, and orbit. Nobody goes down yet: the survey
    from orbit and the choice of who goes first come before the descent. */
 function arrival(s) {
   const w = s.world;
-  return [Object.assign(layered('approach', `${w.transit.years} years after the burn: ${w.planet}.`), { alt: { pic: PLANET[w.type] || 'lib_planet_09', move: 'drift' },
+  const stills = [Object.assign(layered('approach', `${w.transit.years} years after the burn: ${w.planet}.`), { alt: { pic: PLANET[w.type] || 'lib_planet_09', move: 'drift' },
       layers: [{ src: P(`limb_${w.type}.webp`), cls: 'limb' }, { src: P('ship_front.webp'), cls: 'bow' }] }),
     { pic: 'intro_orbit', move: 'drift', line: `The ${w.ship} makes orbit.` }];
+  // the arrival film's world is green, teal and ochre: only the green worlds get it until each world has its own
+  if (!FILMS || !(w.type === 'garden' || w.type === 'jungle')) return stills;
+  return [reel('arrival', [`${w.transit.years} years after the burn: ${w.planet}.`, `The ${w.ship} makes orbit.`], stills)];
 }
 /* The landing site is chosen: the lander goes down. zone: the zone's name, as LF.zone gives it. */
 function descent(s, zone) {
   const w = s.world, Z = zone ? zone.charAt(0).toUpperCase() + zone.slice(1) : w.planet;
-  return [{ pic: 'intro_separate', move: 'drift', line: `The lander drops away from the ${w.ship}.` },
+  const sep = { pic: 'intro_separate', move: 'drift', line: `The lander drops away from the ${w.ship}.` };
+  return [FILMS ? reel('detach', [sep.line], [sep]) : sep,
     { pic: 'intro_descent', move: 'push', fx: 'flare', line: 'Down through the cloud, with the reactor in the hold.' },
     { pic: 'intro_touchdown', move: 'pan', fx: 'shake', line: `${Z}. Landfall.` }];
 }
@@ -174,7 +191,7 @@ function play(shots, cb, title) {
      (caps: [[seconds, line]]) and sounds (sfxAt: [[seconds, name]]). If it cannot play, the stills in x.alt stand in. */
   const film = (x, sh) => {
     sh.className = 'shot film';
-    sh.innerHTML = `<div class="frame"><video muted playsinline preload="auto" poster="art/video/${x.video}.webp" src="art/video/${x.video}.mp4"></video><i class="fx"></i></div><p></p>`;
+    sh.innerHTML = `<div class="frame"><video playsinline preload="auto" poster="art/video/${x.video}.webp" src="art/video/${x.video}.mp4"></video><i class="fx"></i></div><p></p>`;
     const v = sh.querySelector('video'), p = sh.querySelector('p'); let cap = -1, fired = 0, dead = false;
     const free = () => {};
     const stills = () => { if (dead) return; dead = true; free(); clearTimeout(timer); sh.remove(); shots = shots.slice(0, i).concat((x.alt || []).filter(ok), shots.slice(i)); next(); };
@@ -186,7 +203,9 @@ function play(shots, cb, title) {
     v.addEventListener('error', stills);
     for (const o of stage.querySelectorAll('.shot.on')) o.classList.add('off');
     stage.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on'));
-    const pl = v.play(); if (pl && pl.catch) pl.catch(stills);
+    // the films carry their own sound (2026-11-19): play it under the score; a browser that refuses sound gets them muted
+    v.volume = FILM_VOL;
+    const pl = v.play(); if (pl && pl.catch) pl.catch(() => { if (dead) return; v.muted = true; const p2 = v.play(); if (p2 && p2.catch) p2.catch(stills); });
     timer = setTimeout(() => { if (!dead) { dead = true; free(); next(); } }, (x.ms || 30000) + 4000);   // never hang on a stalled download
   };
   if (!waiting) next();
