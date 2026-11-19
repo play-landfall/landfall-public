@@ -46,7 +46,7 @@ function set(key, keep) {
   // The key crew's name and post over their speech (Lachlan, 2026-11-19): gold, darkened on the light theme so it reads on cream.
   root.style.setProperty('--gold', t.light ? '#9a6f0e' : `color-mix(in oklab, ${SPEAK.command} 88%, ${t.ink})`);
   // A colonist's portrait ground, and the blank of one not painted yet (white).
-  root.style.setProperty('--face-col', '#bebcb6'); root.style.setProperty('--face-off', '#02223a'); root.style.setProperty('--face-blank', '#ffffff');
+  root.style.setProperty('--face-col', '#bebcb6'); root.style.setProperty('--face-off', '#02223a'); root.style.setProperty('--face-blank', '#ffffff'); root.style.setProperty('--face-static', t.light ? '#42474e' : '#1a1d21');
   root.style.setProperty('--on', t.on || t.bg);
   root.style.setProperty('--shade', t.shade || 'rgba(0,0,0,.42)'); root.style.setProperty('--glint', t.glint || 'rgba(255,255,255,.055)');
   root.style.colorScheme = t.light ? 'light' : 'dark';

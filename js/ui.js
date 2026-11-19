@@ -199,7 +199,7 @@ function talkFace(w) {
     if (key && facePainted(key) && SCENES.has('cast_' + key)) return `<img class="face off" src="art/scenes/${w.p ? castFace(w.p) : hollow(aged('cast_' + key))}.webp" alt="" loading="lazy" decoding="async">`;
     return `<span class="face off icon">${ic('notable')}</span>`; }
   if (w.kind === 'machine') return `<span class="face icon">${ic('machines')}</span>`;
-  if (w.kind === 'unknown') return `<span class="face icon">${ic('unknown')}</span>`;
+  if (w.kind === 'unknown') return `<span class="face static" aria-hidden="true"></span>`;   // a voice nobody can put a face to: a screen of static (Lachlan, 2026-11-19)
   // a roster portrait not painted yet is simply not there: the blank takes its place, so a painting that lands is picked up as it is
   return w.pic ? `<img class="face" src="${w.pic}" alt="" loading="lazy" decoding="async" onerror="this.outerHTML='<span class=&quot;face blank&quot;></span>'">` : `<span class="face blank"></span>`;
 }
