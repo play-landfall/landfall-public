@@ -19,12 +19,15 @@ const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(se
 const two = n => String(n).padStart(2, '0');
 // pic: a scene id. move: push (slow zoom in), pan, drift. fx: flicker (failing light), flare (engine glow), shake.
 // The pool is the ship as it is now: who is awake, what is failing. Three are dealt per game.
+// The watch shots show the seat's officer (Lachlan, 2026-11-19: every ship-prologue picture with people shows the key crew):
+// <scene>@<castkey> when it is painted (tools/scenes.py CAST_SCENES), else the plain scene.
+const castPic = (s, k, seat) => { const p = s && s.people && LF.officer ? LF.officer(s, seat) : null, v = p && p.key ? k + '@' + p.key : null; return v && (LF.SCENES || []).includes(v) ? v : k; };
 const POOL = {
-  watch:   s => ({ pic: 'intro_bridge', move: 'push', line: 'Two of your officers have the watch.' }),
+  watch:   s => ({ pic: castPic(s, 'intro_bridge', 'command'), move: 'push', line: 'Two of your officers have the watch.' }),
   amber:   s => ({ pic: 'lib_tech_05', move: 'push', fx: 'flicker', line: 'Some of the lights on the pods have gone amber.' }),
   array:   s => ({ pic: 'intro_array', move: 'drift', line: 'The long-range array keeps listening.' }),
   reactor: s => ({ pic: 'mach_reactor', move: 'pan', fx: 'flicker', line: 'The reactor has been running for forty-one years.' }),
-  window:  s => ({ pic: 'intro_window', move: 'push', line: 'The two on watch look out at the stars and do not talk much.' }),
+  window:  s => ({ pic: castPic(s, 'intro_window', 'scientist'), move: 'push', line: 'The two on watch look out at the stars and do not talk much.' }),
 };
 const REVEAL = {
   dead:    { pic: 'lib_planet_05', move: 'push' },
@@ -73,7 +76,7 @@ function opening(s, rest) {
   const r = rng(hash(s.seed)), ship = s.adrift ? s.adrift.ship : s.world.ship, keys = Object.keys(POOL).filter(k => !rest || k !== 'window');   // the long sleep opens on the porthole already
   for (let i = keys.length - 1; i > 0; i--) { const q = Math.floor(r() * (i + 1)); [keys[i], keys[q]] = [keys[q], keys[i]]; }
   const PM = LF.PREMISES[s.premise] || LF.PREMISES.dead, asleep = `${s.adrift ? s.adrift.kit.sleepers : s.sleepers} asleep in the cryo banks.`;
-  const first = rest ? [{ pic: 'intro_window', move: 'push', line: 'Then the long years. Two awake at a time, and everyone else in the cold.' }] : [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` }];
+  const first = rest ? [{ pic: castPic(s, 'intro_window', 'scientist'), move: 'push', line: 'Then the long years. Two awake at a time, and everyone else in the cold.' }] : [{ pic: 'intro_burn', move: 'ignite', fx: 'ignite', ms: 7000, sfx: 'burn', line: `Forty-one years ago, the ${ship} lit its drive and left.` }];
   const reveal = Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead);
   if (!FILMS) return first.concat([layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }]).concat(keys.slice(0, 3).map(k => POOL[k](s, r)), [reveal]);
   // the long years are the crossing film (the watch, the amber lights and the porthole are in it); one more of the pool, then why she is adrift
