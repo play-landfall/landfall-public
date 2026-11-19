@@ -112,13 +112,19 @@ function arrival(s) {
   if (!FILMS || !(w.type === 'garden' || w.type === 'jungle')) return stills;
   return [reel('arrival', [`${w.transit.years} years after the burn: ${w.planet}.`, `The ${w.ship} makes orbit.`], stills)];
 }
+const DESCENT_MS = 5200;
+const world = (x, alt) => Object.assign(x, { alt });
 /* The landing site is chosen: the lander goes down. zone: the zone's name, as LF.zone gives it. */
 function descent(s, zone) {
   const w = s.world, Z = zone ? zone.charAt(0).toUpperCase() + zone.slice(1) : w.planet;
   const sep = { pic: 'intro_separate', move: 'drift', line: `The lander drops away from the ${w.ship}.` };
   return [FILMS ? reel('detach', [sep.line], [sep]) : sep,
-    { pic: 'intro_descent', move: 'push', fx: 'flare', line: 'Down through the cloud, with the reactor in the hold.' },
-    { pic: 'intro_touchdown', move: 'pan', fx: 'shake', line: `${Z}. Landfall.` }];
+    // 2026-11-20: each world's own entry and touchdown (painted locally, approved by Lachlan; still pictures until the
+    // films are made), on a slow tilt with a sound; the old shared pictures stand in if a world's are missing
+    world({ pic: `descent_${w.type}`, move: 'sink', sfx: 'burn', ms: DESCENT_MS, line: 'Down through the cloud, with the reactor in the hold.' },
+      { pic: 'intro_descent', move: 'push', fx: 'flare' }),
+    world({ pic: `touchdown_${w.type}`, move: 'settle', sfx: 'lander_down_1', sfxGain: 0.5, ms: DESCENT_MS, line: `${Z}. Landfall.` },
+      { pic: 'intro_touchdown', move: 'pan', fx: 'shake' })];
 }
 let timer = 0, done = null;
 /* Hold to skip: the label with a ring that fills while a pointer or key is held on the intro. */
@@ -187,7 +193,7 @@ function play(shots, cb, title) {
     stage.appendChild(sh); sky(sh);
     requestAnimationFrame(() => sh.classList.add('on'));
     const old = stage.querySelectorAll('.shot'); if (old.length > 2) { unsky(old[0]); old[0].remove(); }
-    if (x.sfx && window.LFMusic) LFMusic.sfx(x.sfx);
+    if (x.sfx && window.LFMusic) LFMusic.sfx(x.sfx, x.sfxGain ? { gain: x.sfxGain } : undefined);
     timer = setTimeout(next, x.ms || SHOT_MS);
   };
   /* A film (2026-11-18): one MP4 of several shots, muted (the game plays its own sound), with captions timed to the cut

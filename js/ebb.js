@@ -89,7 +89,7 @@ const canSleep = s => s.sleepers >= 0 && !s.flags.qs_dark && !s.machines.lander.
 add({ id: 'ebb.sleep', arc: 'ebb', gap: 35, view: 'ship', tone: 'pressure', title: 'Back to Sleep', w: 2.4, repeat: 320,
   when: s => low(s, 20) && s.pop >= 24 && canSleep(s),
   setup: s => { const p = someone(s); return Object.assign(ctxOf(p), { n: crowd(s, 0.1, 4, 12) }); },
-  text: (s, c) => `${c.name || 'A shift foreman'} brings the petition: ${num(c.n)} names, in the same careful hand. They want to go back up to the ship and back into the cryo banks, and be woken when the colony is a place worth waking up in.\n\n[[${c.pid || 'x05'}]] "We're no use to you like this." "Put us on the shelf."`,
+  text: (s, c) => `${c.name || 'A shift foreman'} brings the petition: ${num(c.n)} names, in the same careful hand. They want to go back up to the ship and back into the cryo banks, and be woken when the colony is a place worth waking up in.\n\n[[${c.pid || 'x42'}]] "We're no use to you like this." "Put us on the shelf."`,
   choices: [
     { label: (s, c) => `Fly the ${num(c.n)} up and let them sleep`, note: 'A flight, and the hands they take with them. Everyone left will know there is a way out.', hint: 'unknown', info: [['yield', 'Fewer mouths, and the rest relieved'], ['danger', 'The lander, and the work'], ['danger', 'Everyone who stays']],
       out: { text: (s, c) => `The lander goes up with ${num(c.n)} people who wave from the ramp. A week later the ship reports them under. The mess hall is quieter, and some of the quiet is envy.`, fx: (s, c) => ({ fly: 1, leave: c.n, sleepers: c.n, morale: 5, lift: 6, flags: { ebb_slept: (s.flags.ebb_slept || 0) + c.n } }) } },
@@ -239,7 +239,7 @@ LF.TAGS['ebb.ways'] = ['severe order', 'severe', 'bold mercy', 'mercy free', 'cl
 add({ id: 'ebb.rite', arc: 'ebb', view: 'people', tone: 'pressure', title: 'The Short Straw', urgent: true, w: 9, repeat: 150, gap: 20,   // w 4 until 2026-11-17: its window is narrow and it went unfired on 1,200 games once there were five dreads
   when: s => !!s.flags.ebb_rite && s.day - s.flags.ebb_rite >= 120 && s.morale < 30 && !LF.aloft(s) && s.pop >= 16,
   setup: s => { const p = someone(s); return Object.assign(ctxOf(p), { pen: s.flags.pen || 0 }); },
-  text: (s, c) => `The sack is hanging on the mess hall door again. Nobody admits to hanging it there. ${c.name || 'A crew lead'} comes to ask what everyone is asking: is it time.\n\n[[${c.pid || 'x27'}]] "It worked last time." "Everyone says it worked."`,
+  text: (s, c) => `The sack is hanging on the mess hall door again. Nobody admits to hanging it there. ${c.name || 'A crew lead'} comes to ask what everyone is asking: is it time.\n\n[[${c.pid || 'x41'}]] "It worked last time." "Everyone says it worked."`,
   choices: [
     { label: 'Draw again', dark: true, note: 'It becomes what the colony does when it is frightened.', hint: 'unknown', info: [['yield', 'What worked last time'], ['danger', 'Whoever draws it'], ['danger', 'Every lean season after this']],
       out: { text: 'They draw. The short straw is the oldest of the workshop crew, who seems almost relieved. The colony sings at the wire again, and knows the words this time.', fx: s => ({ pop: -1, stain: ['ebb_lot', 2], morale: 8, lift: 16, flags: { ebb_rite: s.day, ebb_rites: (s.flags.ebb_rites || 0) + 1 }, chron: 'The colony drew lots again.' }) } },

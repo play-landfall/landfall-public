@@ -28,6 +28,8 @@ for (const k of ['gen.born', 'gen.rule', 'gen.city']) LF.ARC_VIEW[k] = 'people';
    the wire) waited. So the milestones of childhood are aside: true (js/core.js LF.deal): like the harvest they come
    with their own card and the month's real card follows. The rest weigh little early, and the far ones have a thin
    deal to themselves. */
+/* Who speaks for the born when no born person is named on the card: the eldest the colony could have raised by now (roster of sixty, 2026-11-20). */
+const bornRk = s => { const y = LF.date(s.day || 1).year; return y >= 24 ? 'x58' : y >= 18 ? 'x30' : y >= 16 ? 'x57' : 'x56'; };
 const mile = s => s.asideDay === undefined || s.day - s.asideDay >= 3 * MONTH;   // milestones come a season apart at the least
 const B = st => add(Object.assign({ arc: 'gen.born', view: 'people', gap: 24, w: st.aside ? 3 : st.far ? 4 : 1.3 }, st));
 const RU = st => add(Object.assign({ arc: 'gen.rule', view: 'people', gap: 30, w: 5 }, st));
@@ -314,7 +316,7 @@ RU({ id: 'gen.chair', far: true, tone: 'quiet', title: 'The First Thing Asked', 
   when: s => !!askSeat(s),
   setup: s => { const g = G(s), seat = askSeat(s), o = LF.officer(s, seat), p = h.anyNamed(s, LF.SEAT_ORDER); g.asked = g.asked || {}; g.asked[seat] = s.day; if (p) p.bornHere = p.bornHere || yr(s);
     return { pid: p ? p.id : null, name: p ? p.name : 'A young woman from the far rows', first: p ? p.first : 'she', seat, dept: LF.SEATS[seat].name, title: LF.SEAT_TITLE[seat], holder: o ? o.name : null, want: CHAIR[seat].want(s) }; },
-  text: (s, c) => `${c.name} was born here, in the colony's early years, and speaks for the born who work in ${c.dept}. ${c.holder ? `${c.holder} has held the ${c.title}'s chair since before any of them could walk.` : `The ${c.title}'s chair is empty. The people who could have sat in it came on the ship, and they are gone.`} The born have asked for one thing.\n\n${c.want}${CHAIR[c.seat].say ? `\n\n[[${c.pid || 'x30'}]] ${CHAIR[c.seat].say}` : ''}\n\nThe founders who are left have already heard about it.`,
+  text: (s, c) => `${c.name} was born here, in the colony's early years, and speaks for the born who work in ${c.dept}. ${c.holder ? `${c.holder} has held the ${c.title}'s chair since before any of them could walk.` : `The ${c.title}'s chair is empty. The people who could have sat in it came on the ship, and they are gone.`} The born have asked for one thing.\n\n${c.want}${CHAIR[c.seat].say ? `\n\n[[${c.pid || bornRk(s)}]] ${CHAIR[c.seat].say}` : ''}\n\nThe founders who are left have already heard about it.`,
   choices: [
     { label: 'Let them do it', info: [['yield', 'The born, and what the change brings'], ['danger', 'The founders']],
       out: { text: (s, c) => txt(CHAIR[c.seat].yes, s), fx: (s, c) => Object.assign({ do: s2 => { grudge(s2, -2); const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal + 12, 0, 100); if (CHAIR[c.seat].yesDo) CHAIR[c.seat].yesDo(s2); } }, CHAIR[c.seat].yesFx) } },

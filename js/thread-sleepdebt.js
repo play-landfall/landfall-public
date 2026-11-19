@@ -267,7 +267,7 @@ B(['spread', 'night', 'bill'], { id: 'sd.own', tone: 'pressure', title: 'Hands W
   setup: s => { const t = T(s), pool = ['engineer', 'physician', 'xenobio', 'quartermaster'].map(r => P(s, r)).filter(Boolean);
     const p = pool.length ? LF.spick(s, pool) : anyNamed(s, LF.SEAT_ORDER), c = who(p, 'the night foreman', 'the foreman'); t.own = { pid: c.pid, name: c.name, Name: c.Name, first: c.first };
     const o = OWN[c.seat] || OWN.none; return Object.assign(c, crew(s, c.pid), { doing: o[0], says: o[1], ev: pickK(s, t), lean: lean(t) }); },
-  text: (s, c) => `${c.W} found ${c.name} at the fourth hour ${c.doing}. ${c.Name} did not look up. In the morning ${c.first} went over the night's work awake and found nothing to correct.\n\n[[${c.pid || 'x27'}]] ${c.says}\n\n${c.Name} wants to know whether to go on signing for it. ${c.lean}`,
+  text: (s, c) => `${c.W} found ${c.name} at the fourth hour ${c.doing}. ${c.Name} did not look up. In the morning ${c.first} went over the night's work awake and found nothing to correct.\n\n[[${c.pid || 'x42'}]] ${c.says}\n\n${c.Name} wants to know whether to go on signing for it. ${c.lean}`,
   choices: [
     { label: (s, c) => `Have the clinic keep ${c.first} for the month and test everything`, note: (s, c) => `${c.Name} is a patient for the month, and the work is left to a deputy.`, about: true, test: { base: 50, mods: [R('physician', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `${c.D} takes blood, runs the reflexes and sits up through the nights. ${ev('body', c.ev, c)}`, fx: (s, c) => ({ off: [['ctx', 'body', -3]], do: s2 => learn(s2, T(s2), 24, c.ev) }) },

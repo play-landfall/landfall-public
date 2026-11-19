@@ -265,6 +265,9 @@ main { flex:1; padding:6px 12px 40px; }
 #intro .shot.push .frame:not(.layered) > img { animation:i-push var(--ms) ease-out both; } @keyframes i-push { from { transform:scale(1.02); } to { transform:scale(1.16); } }
 #intro .shot.pan .frame:not(.layered) > img { animation:i-pan-pos var(--ms) linear both; } @keyframes i-pan-pos { from { object-position:18% 50%; transform:scale(1.04); } to { object-position:82% 50%; transform:scale(1.1); } }
 #intro .shot.drift .frame:not(.layered) > img { animation:i-drift var(--ms) ease-in-out both; } @keyframes i-drift { from { transform:scale(1.12) translate(-3%, 2%) rotate(-1deg); } to { transform:scale(1.12) translate(3%, -2%) rotate(1deg); } }
+/* the descent pictures are tall: sink follows the lander down, settle eases in on the ground (2026-11-20) */
+#intro .shot.sink .frame:not(.layered) > img { animation:i-sink var(--ms) ease-in-out both; } @keyframes i-sink { from { transform:scale(1.14) translateY(5%); } to { transform:scale(1.14) translateY(-5%); } }
+#intro .shot.settle .frame:not(.layered) > img { animation:i-settle var(--ms) ease-out both; } @keyframes i-settle { from { transform:scale(1.16) translateY(-4%); } to { transform:scale(1.06) translateY(1%); } }
 #intro .fx { position:absolute; inset:0; pointer-events:none; }
 /* the main burn (intro_burn): the cold nozzle holds, a dull red glow grows in its throat (57% 49% of the picture),
    then at 62% of the shot the engine lights: a white-hot bloom over everything, a flickering core, the frame shaking */

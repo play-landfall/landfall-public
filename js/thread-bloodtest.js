@@ -48,8 +48,8 @@ const EV = {
     fever: c => 'Every sample that failed came from somebody with a temperature, and every one that passed from somebody without.',
     faking: c => 'Two of the failed samples smell of the clinic\'s cleaning spirit. Nobody in the clinic uses it on blood.' },
   refuse: {
-    spread: c => `\n\n[[${c.pid || 'x17'}]] "Because I know what it'll say."\n\n${c.Name} says nothing more all night.`,
-    dead: c => ` ${c.Name} will bleed anywhere but the mess, which is next to the cold room.\n\n[[${c.pid || 'x17'}]] "It's cold in there." "It's not supposed to be cold right through the wall."`,
+    spread: c => `\n\n[[${c.pid || c.rk || 'x17'}]] "Because I know what it'll say."\n\n${c.Name} says nothing more all night.`,
+    dead: c => ` ${c.Name} will bleed anywhere but the mess, which is next to the cold room.\n\n[[${c.pid || c.rk || 'x17'}]] "It's cold in there." "It's not supposed to be cold right through the wall."`,
     fever: c => ` ${c.Name} is shaking and hot, and says the needle has been dipped in something, and that the clinic wants ${c.first} dead.`,
     faking: c => ` ${c.Name} says the samples on the plate are not the samples that were drawn, and will say who carried the tray only to you.` },
   cold: {
@@ -72,6 +72,9 @@ const lean = t => { const e = KINDS.map(k => [k, t.ev[k] || 0]).sort((a, b) => b
 /* ---------- the list ---------- */
 const LABS = ['a hauler from the second row', 'the second cook', 'the pump hand', 'a rigger off the night shift', 'the wash-house hand', 'a fitter from the yard', 'a sower from the east field',
   'the stores clerk', 'a welder from the shed', 'the net mender', 'a carter', 'the night cook', 'a field hand from the far furrow', 'the boot mender', 'a stoker', 'the lamp trimmer', 'a digger from the pits', 'the bread hand'];
+/* Who each label is on the card (js/roster.js), one face each so no two on the list share one (roster of sixty, 2026-11-20). */
+const LAB_RK = ['x26', 'x43', 'x45', 'x25', 'x33', 'x27', 'x13', 'x44', 'x34', 'x02', 'x48', 'x12', 'x17', 'x32', 'x47', 'x46', 'x24', 'x50'];
+const rkOf = lab => LAB_RK[LABS.indexOf(lab)] || (lab === 'the clinic orderly' ? 'x49' : 'x17');
 const person = (s, e) => e && e.pid ? byPid(s, e.pid) : null;
 const OUT = { burned: 1, out: 1, dead: 1, back: 1, shot: 1, gone: 1 };
 const live = (s, e) => { if (OUT[e.fate]) return false; const p = person(s, e); return !e.pid || (!!p && p.alive); };
@@ -120,7 +123,7 @@ const nmR = (s, role) => { const p = P(s, role); return p ? p.name : LF.seatWord
 const voice = (s, seat) => { const p = LF.officer(s, seat); return p && LF.seatState(s, seat) === 'here' ? p.first : null; };
 const crew = s => { const o = {}; for (const [k, role] of [['w', 'security'], ['d', 'physician'], ['sc', 'xenobio'], ['e', 'engineer'], ['cm', 'command']]) { o[k] = nmR(s, role); o[k.charAt(0).toUpperCase() + k.slice(1)] = cap(o[k]); }
   const t = T(s); o.wv = voice(s, 'security'); o.dv = voice(s, 'doctor'); o.sv = voice(s, 'scientist'); o.what = t.what; o.it = t.what === 'body' ? 'the body' : 'the animal'; o.It = cap(o.it); o.lean = lean(t); return o; };
-const who = (s, e) => e ? { k: e.k, pid: e.pid, name: nm(s, e), Name: nameOf(s, e), first: firstOf(s, e), First: cap(firstOf(s, e)) } : { k: null, pid: null, name: 'one of the six', Name: 'One of the six', first: 'the hauler', First: 'The hauler' };
+const who = (s, e) => e ? { k: e.k, pid: e.pid, rk: e.pid ? null : rkOf(e.lab), name: nm(s, e), Name: nameOf(s, e), first: firstOf(s, e), First: cap(firstOf(s, e)) } : { k: null, pid: null, name: 'one of the six', Name: 'One of the six', first: 'the hauler', First: 'The hauler' };
 const sour = (s, pid, v, txt) => { const p = pid && byPid(s, pid); if (!p || !p.alive) return; if (p.loyal !== undefined) p.loyal = clamp(p.loyal - v, 0, 100); if (txt) p.marks.doubted = { d: s.day, txt }; };
 const jump = (s, id, back) => { if (!s.sched.some(e => e.id === id)) s.sched.push({ id, day: s.day - back }); };
 

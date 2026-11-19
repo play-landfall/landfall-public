@@ -332,7 +332,7 @@ LF.ASK = {
 'ob.find': 'Do you study the old settlement properly, walk it once and photograph it, or call it a rock fall and put it out of bounds?',
 'ob.log': 'Who hears what the old log says: the whole colony, only the officers, or nobody, with the pages burned?',
 'ob.graves': 'Do you bury the old settlement\'s dead and take nothing, bury them and bring back what is useful, strip the site, or open the graves too?',
-'ob.heir': 'Do you bring the survivor down and lock them up, go up and listen when they allow it, leave them alone on the ridge, or bring them down and question them without end?',
+'ob.heir': 'Do you bring the survivor down and lock him up, go up and listen when he allows it, leave him alone on the ridge, or bring him down and question him without end?',
 'ob.end': 'What lesson does the school take from the old settlement: how to lay the fields, breaking up hoarders, a stone as a warning, or not feeding those who cannot work?',
 'nb.belief': 'Do you tell them plainly what the colony is, play up to what they believe, leave their beliefs alone, or collect on what they think is owed?',
 'nb.between': 'Do you make the visits across the valley official, let them go on quietly, stop them, or have the visitor report back on the camp?',

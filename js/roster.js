@@ -1,4 +1,4 @@
-/* Landfall — the forty named people (art/colonists/roster.json; written by node tools/roster.js, never edit by hand).
+/* Landfall — the sixty named people (art/colonists/roster.json; written by node tools/roster.js, never edit by hand).
    pic false: not painted yet, drawn as a blank. DESIGN.md "Who is speaking". */
 LF.ROSTER = {"x01":{"key":"x01","name":"Adaeze Okafor","first":"Adaeze","last":"Okafor","sex":"f","age":45,"band":"older-prime","role":"Farm labour lead","kind":"colonist","stands":"crew","pic":true},
   "x02":{"key":"x02","name":"Lars Eriksen","first":"Lars","last":"Eriksen","sex":"m","age":65,"band":"older","role":"Retired fisherman, net-mender","kind":"colonist","stands":null,"pic":true},
@@ -39,4 +39,24 @@ LF.ROSTER = {"x01":{"key":"x01","name":"Adaeze Okafor","first":"Adaeze","last":"
   "x37":{"key":"x37","name":"Cassius Dorn","first":"Cassius","last":"Dorn","sex":"m","age":68,"band":"outsider","role":"Old speaker of the Reach","kind":"outsider","stands":null,"pic":true},
   "x38":{"key":"x38","name":"Lena Harrow","first":"Lena","last":"Harrow","sex":"f","age":45,"band":"outsider","role":"Envoy of the other settlement","kind":"outsider","stands":null,"pic":true},
   "x39":{"key":"x39","name":"Wick","first":"Wick","last":"","sex":"m","age":35,"band":"outsider","role":"Envoy of the Warrens","kind":"outsider","stands":null,"pic":true},
-  "x40":{"key":"x40","name":"Abel Strand","first":"Abel","last":"Strand","sex":"m","age":72,"band":"outsider","role":"Hermit, last of an earlier landing","kind":"outsider","stands":null,"pic":true}};
+  "x40":{"key":"x40","name":"Abel Strand","first":"Abel","last":"Strand","sex":"m","age":72,"band":"outsider","role":"Hermit, last of an earlier landing","kind":"outsider","stands":null,"pic":true},
+  "x41":{"key":"x41","name":"Marisol Ochoa","first":"Marisol","last":"Ochoa","sex":"f","age":44,"band":"older-prime","role":"Build foreman, runs the construction crews","kind":"colonist","stands":null,"pic":false},
+  "x42":{"key":"x42","name":"Oleg Marchenko","first":"Oleg","last":"Marchenko","sex":"m","age":39,"band":"prime","role":"Night-shift lead","kind":"colonist","stands":null,"pic":false},
+  "x43":{"key":"x43","name":"Fatima Benali","first":"Fatima","last":"Benali","sex":"f","age":41,"band":"older-prime","role":"Cook, runs the mess kitchen","kind":"colonist","stands":null,"pic":false},
+  "x44":{"key":"x44","name":"Henrik Lund","first":"Henrik","last":"Lund","sex":"m","age":48,"band":"older-prime","role":"Stores clerk","kind":"colonist","stands":null,"pic":false},
+  "x45":{"key":"x45","name":"Amara Nwosu","first":"Amara","last":"Nwosu","sex":"f","age":27,"band":"young","role":"Pump hand","kind":"colonist","stands":null,"pic":false},
+  "x46":{"key":"x46","name":"Walter Higgs","first":"Walter","last":"Higgs","sex":"m","age":63,"band":"older","role":"Lamp trimmer and wash-house hand","kind":"colonist","stands":null,"pic":false},
+  "x47":{"key":"x47","name":"Jorge Medina","first":"Jorge","last":"Medina","sex":"m","age":37,"band":"prime","role":"Stoker at the smelter and boilers","kind":"colonist","stands":null,"pic":false},
+  "x48":{"key":"x48","name":"Bridget Kowalczyk","first":"Bridget","last":"Kowalczyk","sex":"f","age":33,"band":"prime","role":"Carter and boot mender","kind":"colonist","stands":null,"pic":false},
+  "x49":{"key":"x49","name":"Samuel Osei","first":"Samuel","last":"Osei","sex":"m","age":26,"band":"young","role":"Clinic orderly","kind":"colonist","stands":null,"pic":false},
+  "x50":{"key":"x50","name":"Aiko Mori","first":"Aiko","last":"Mori","sex":"f","age":30,"band":"prime","role":"Bread hand at the ovens","kind":"colonist","stands":null,"pic":false},
+  "x51":{"key":"x51","name":"Lucia Romero","first":"Lucia","last":"Romero","sex":"f","age":6,"band":"child","role":"Child","kind":"colonist","stands":null,"pic":false},
+  "x52":{"key":"x52","name":"Arjun Pillai","first":"Arjun","last":"Pillai","sex":"m","age":9,"band":"child","role":"Child","kind":"colonist","stands":null,"pic":false},
+  "x53":{"key":"x53","name":"Freya Olsen","first":"Freya","last":"Olsen","sex":"f","age":11,"band":"child","role":"Child","kind":"colonist","stands":null,"pic":false},
+  "x54":{"key":"x54","name":"Moses Banda","first":"Moses","last":"Banda","sex":"m","age":7,"band":"child","role":"Child","kind":"colonist","stands":null,"pic":false},
+  "x55":{"key":"x55","name":"Hana Kovac","first":"Hana","last":"Kovac","sex":"f","age":14,"band":"child","role":"Child","kind":"colonist","stands":null,"pic":false},
+  "x56":{"key":"x56","name":"Sela Lolohea","first":"Sela","last":"Lolohea","sex":"f","age":9,"band":"born","role":"Born in the colony","kind":"colonist","stands":null,"pic":false},
+  "x57":{"key":"x57","name":"Ewan Mensah-Byrne","first":"Ewan","last":"Mensah-Byrne","sex":"m","age":16,"band":"born","role":"Born in the colony","kind":"colonist","stands":null,"pic":false},
+  "x58":{"key":"x58","name":"Noor Haddad","first":"Noor","last":"Haddad","sex":"f","age":24,"band":"born","role":"Born in the colony","kind":"colonist","stands":null,"pic":false},
+  "x59":{"key":"x59","name":"Spindle","first":"Spindle","last":"","sex":"m","age":19,"band":"outsider","role":"Speaker for the machine-raised","kind":"outsider","stands":null,"pic":false},
+  "x60":{"key":"x60","name":"Tomas Reyes","first":"Tomas","last":"Reyes","sex":"m","age":47,"band":"outsider","role":"Speaker of the upriver settlement","kind":"outsider","stands":null,"pic":false}};

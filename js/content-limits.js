@@ -544,7 +544,7 @@ add({ id: 'lim.meat', urgent: true, arc: 'lim.hunger', view: 'colony', tone: 'cr
 add({ id: 'lim.stew', chain: true, arc: 'lim.hunger', view: 'people', tone: 'crisis', title: 'What Was in the Stew',
   when: s => !!s.flags.lim_table_secret,
   setup: s => ctxOf((LF.cast && LF.cast(s, { low: true, not: ['physician', 'quartermaster'] })) || anyNamed(s, ['physician', 'quartermaster'])),
-  text: (s, c) => `${c.name} comes to you with a closed hand and opens it on the table. A steel pin, the kind a surgeon sets in a broken wrist, with a serial number on it. It was in ${c.first}'s bowl.\n\n[[${c.pid || 'x20'}]] "I looked the number up. I know whose arm it was. By morning so will everyone, unless you give me a reason not to tell them."`,
+  text: (s, c) => `${c.name} comes to you with a closed hand and opens it on the table. A steel pin, the kind a surgeon sets in a broken wrist, with a serial number on it. It was in ${c.first}'s bowl.\n\n[[${c.pid || 'x44'}]] "I looked the number up. I know whose arm it was. By morning so will everyone, unless you give me a reason not to tell them."`,
   choices: [
     { label: 'Tell all of it, and put it to a vote',
       out: { text: 'You tell them over the mess hall speakers, with the pin on the table. The vote is held hungry. It goes for the pot, on two conditions: every name is read before the meal, and nobody is lied to about it again.',
@@ -844,7 +844,7 @@ add({ id: 'lim.goat', arc: 'lim.knife', view: 'people', tone: 'pressure', title:
 add({ id: 'lim.sheet', chain: true, arc: 'lim.knife', view: 'people', tone: 'crisis', title: 'The Duty Sheet',
   when: s => !!s.flags.lim_goat && !s.flags.lim_goat_done,
   setup: s => Object.assign(ctxOf((LF.cast && LF.cast(s, { val: 'mercy', not: ['security'] })) || anyNamed(s, ['security'])), { g: s.flags.lim_goat_n, how: s.flags.lim_goat_how }),
-  text: (s, c) => `${c.name} has found the duty sheet for the day it happened, the real one, in the Warden's own hand. ${c.g} was nowhere near. ${c.first} has not shown it to anyone else yet.\n\n[[${c.pid || 'x20'}]] "Say you didn't know. I want to hear you say it."`,
+  text: (s, c) => `${c.name} has found the duty sheet for the day it happened, the real one, in the Warden's own hand. ${c.g} was nowhere near. ${c.first} has not shown it to anyone else yet.\n\n[[${c.pid || 'x44'}]] "Say you didn't know. I want to hear you say it."`,
   choices: [
     { label: 'I knew. Tell them', info: [['danger', 'Your standing with everyone']],
       out: { text: (s, c) => `It is read out in the mess hall with you listening. People take it more quietly than they took the hearing. ${c.g}'s name goes into the record with a line under it that the other names do not have.`,

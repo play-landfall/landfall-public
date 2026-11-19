@@ -11,7 +11,7 @@
 const F = (kind, stage, fr) => { const t = fr.text, l0 = (fr.lead || ['security'])[0];
   if (typeof t === 'function') fr.text = x => { x.who = x.leadP ? x.leadP.id : l0; return t(x); };
   return LF.frame(kind, stage, fr); };
-const them = x => x.f && x.f.sub === 'feral' ? 'x39' : 'x38';
+const them = x => x.f && x.f.sub === 'feral' ? 'x59' : 'x38';   // the machine-raised (none over thirty) have their own speaker, Spindle (roster of sixty, 2026-11-20)
 const T = x => /^the [A-Z]/.test(x.n) ? x.N : x.N.replace(/^The /, '').replace(/^./, c => c.toUpperCase());
 const knows = x => x.f.insight >= 20;
 

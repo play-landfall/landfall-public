@@ -187,7 +187,7 @@
       });
       if (card) stop(card, 900);
       card = cue;
-    } else g.gain.value = SFX_VOL;
+    } else g.gain.value = SFX_VOL * ((o && o.gain) || 1);   // gain: a card sound's loudness correction, when the intro borrows one
     a.addEventListener('ended', () => { g.disconnect(); fx = fx.filter(c => c !== cue); if (card === cue) card = null; });
     fx.push(cue); a.play().catch(() => {});
   }

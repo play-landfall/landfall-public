@@ -141,7 +141,9 @@ const ADULT = ['prime', 'young', 'older-prime', 'older'];
 function makePerson(s, role, green, band) {
   const R = LF.ROSTER || {}, used = new Set(s.people.map(p => p.rk).filter(Boolean));
   const fit = b => Object.values(R).filter(r => r.kind === 'colonist' && !r.stands && !used.has(r.key) && b.includes(r.band));
-  let pool = band ? fit([band]) : fit(['prime']); if (!band && (!pool.length || LF.rand(s) < 0.34)) pool = fit(ADULT).length ? fit(ADULT) : pool;
+  let pool = band ? fit([band]) : fit(['prime']);
+  // Born-here people only once the colony is old enough to have raised them (roster of sixty, 2026-11-20): roster ages do not move.
+  if (band === 'born') { const y = LF.date(s.day || 1).year, ok = pool.filter(r => r.age === null || r.age === undefined || r.age <= y); if (ok.length) pool = ok; } if (!band && (!pool.length || LF.rand(s) < 0.34)) pool = fit(ADULT).length ? fit(ADULT) : pool;
   let first, last, rk = null, tries = 0;
   if (pool.length) { const r = LF.pick(s, pool); first = r.first; last = r.last; rk = r.key; }
   else do { first = LF.pick(s, GIVEN); last = LF.pick(s, FAMILY); }

@@ -83,9 +83,9 @@ const someone = (s, t) => { const a = s.people.filter(p => p.alive && !p.away &&
 /* The moon-struck: the counted ones (t.cnt) and the named ones still alive and at home. */
 const namedHere = (s, t) => t.named.map(id => byPid(s, id)).filter(p => p && p.alive && !p.away && !p.orbit);
 const total = (s, t) => t.cnt + namedHere(s, t).length;
-const LABS = ['a hauler from the low rows', 'the second cook', 'the pump hand', 'a rigger off the night shift', 'the wash-house hand', 'a fitter from the yard', 'a field hand from the far furrow', 'the tanner', 'the lamp trimmer', 'a digger from the pits'];
+const LABS = ['a hauler from the low rows', 'the second cook', 'the pump hand', 'a rigger off the night shift', 'the wash-house hand', 'a fitter from the yard', 'a field hand from the far furrow', 'the stores clerk', 'the lamp trimmer', 'a digger from the pits'];
 /* Who each of them is on the card (js/roster.js): the face and name in the speech bubble (DESIGN.md "Who is speaking"). */
-const LAB_RK = ['x26', 'x12', 'x18', 'x25', 'x05', 'x27', 'x17', 'x33', 'x15', 'x24'];
+const LAB_RK = ['x26', 'x43', 'x45', 'x25', 'x33', 'x27', 'x17', 'x44', 'x46', 'x24'];   // roster of sixty (2026-11-20): cook, pump hand, clerk and lamp trimmer are their own people
 const whoStruck = (s, t) => { const n = namedHere(s, t); if (n.length) { const p = LF.spick(s, n); return { pid: p.id, name: p.name, Name: p.name, first: p.first }; }
   const lab = LF.spick(s, LABS), the = lab.replace(/^an? /, 'the '); return { pid: null, rk: LAB_RK[LABS.indexOf(lab)], name: lab, Name: cap(the), first: the }; };
 const names = (s, t, cut) => { const n = namedHere(s, t).map(p => p.name), parts = n.slice(0, cut || 4); if (n.length > parts.length) parts.push(`${num(n.length - parts.length)} more`);

@@ -10,6 +10,9 @@
    if the children were killed first, only opening the graves will ever say.
    It writes unexplained, changed, fear, suspicion, resentment and grief, and costs labour while parents will not work.
    Every card's text reads only what setup put in ctx: the UI draws the card again under its outcome. */
+/* The child who answers: one of the roster's children near eight, fixed for the game (roster of sixty, 2026-11-20). */
+const EIGHT = ['x28', 'x54', 'x52', 'x51'], kidRk = s => EIGHT[Math.abs((s && s.seed) | 0) % EIGHT.length];
+
 (function () {
 'use strict';
 const { clamp, h } = LF; const { P, N, Nc, R, M, If, byPid, anyNamed } = h;
@@ -50,11 +53,11 @@ const SURE = {
   gift: 'Every test the clinic can devise now agrees that the thread takes nothing from the children. No test says what it is for.',
   clock: 'The thread stopped growing in every child on the same day. On the scans it is finished and connected, and is doing nothing yet.',
   wasting: 'The newest scans of the youngest children show gaps where there was tissue a season ago. The gaps follow the thread.' };
-function evidence(t) { const a = [], L = t.lean, out = [], flush = () => { if (a.length) out.push(a.splice(0).join(' ')); };
+function evidence(t, s) { const a = [], L = t.lean, out = [], flush = () => { if (a.length) out.push(a.splice(0).join(' ')); };
   if (t.got.scan) a.push(SCAN[L.scan] + '.');
   if (t.got.culture) a.push(CULTURE[L.culture] + '.');
   if (t.got.cut) a.push(CUT[L.cut] + '.');
-  if (t.got.child) { a.push('One of the children was asked what is coming.'); flush(); out.push(`[[x28]] ${CHILD[L.child]}`); }
+  if (t.got.child) { a.push('One of the children was asked what is coming.'); flush(); out.push(`[[${kidRk(s)}]] ${CHILD[L.child]}`); }
   if (t.got.ring) a.push(RING_EV[L.ring] + '.');
   if (t.known.sure) a.push(SURE[t.truth.what]);
   flush(); return out.length ? out.join('\n\n') : 'Nobody has looked closely enough to say what the thread is for.'; }
@@ -247,7 +250,7 @@ B(['spread', 'night'], { id: 'kid.knows', tone: 'pressure', title: 'What the Chi
       ok: { text: s => `Six children are held still by their own parents. None of them cries out. In the schoolroom across the yard the others put down their pencils at the moment each needle goes in. ${CULTURE[T(s).lean.culture]}.`, fx: s => ({ do: s2 => { const t = T(s2); t.got.culture = s2.day; learn(s2, t, 24); } }) },
       bad: { text: 'Six children are held still by their own parents. The fifth sample is taken badly, and that child drags one leg afterwards. The samples go grey in the dish within a day and show nothing.', fx: s => ({ morale: -2, do: s2 => { const t = T(s2); learn(s2, t, 6); adj(par(s2, t), -6); } }) } },
     { label: 'Have the child questioned alone, through the night', dark: true, note: 'A child who does not sleep can be asked for as long as the asker stays awake. The parents would not be in the room.', info: [['yield', 'What the children say is coming'], ['danger', 'One child']],
-      out: { text: (s, c) => `${Nc(s, 'security')} asks, and a clerk writes it down. The child answers everything, in order, without fear, for eleven hours: things ${c.df || 'the technician'} knew, and things nobody now living was there for. The last question is what is coming.\n\n[[x28]] ${CHILD[T(s).lean.child]}\n\nThe parents are let in at dawn, and have to unclench the child's hands from the chair.`,
+      out: { text: (s, c) => `${Nc(s, 'security')} asks, and a clerk writes it down. The child answers everything, in order, without fear, for eleven hours: things ${c.df || 'the technician'} knew, and things nobody now living was there for. The last question is what is coming.\n\n[[${kidRk(s)}]] ${CHILD[T(s).lean.child]}\n\nThe parents are let in at dawn, and have to unclench the child's hands from the chair.`,
         fx: s => ({ stain: ['kid_questioned', 1], do: s2 => { const t = T(s2); t.got.child = s2.day; learn(s2, t, 18); LF.emit(s2, 'fear', 'kid.asked', 25, 150, 'what the child said under questioning has got round'); } }) } },
     { label: 'Put a clerk in the schoolroom, and have the children asked what the dead knew', dark: true, note: 'The dead knew where things were stowed and what was signed off unchecked. The children would be worked as a ledger, and the bereaved would hear of it.', info: [['yield', 'Spares and materials'], ['danger', 'The children, and the bereaved']],
       out: { text: 'A clerk sits in the schoolroom after the last bell with a ledger. The children say where a dead rigger stowed a crate of fittings, and which seals on the lander were signed off unchecked. Within the month the bereaved are queuing at the door with questions of their own, and some of the answers are more than they can carry.',
@@ -338,7 +341,7 @@ B('night', { id: 'kid.order', tone: 'crisis', title: 'The Order',
   setup: s => { const t = T(s), p = P(s, 'security'), refuses = !!(p && p.vals && p.vals.mercy === 1);
     // The knife: how many would not wake. A colony without its Doctor, or without the autodoc, loses more of them.
     const mb = s.machines.medbay, share = clamp(0.5 + (P(s, 'physician') ? -0.08 : 0.15) + (mb.lost ? 0.1 : mb.hp < 50 ? 0.05 : 0) - (t.known.cut ? 0.06 : 0) - (t.cutOne === 'ok' ? 0.06 : 0), 0.3, 0.8);
-    return Object.assign(p ? TH.ctx(p) : { name: 'The sergeant of the night watch', first: 'the sergeant' }, { refuses, kids: t.kids, die: Math.max(1, Math.round(t.kids * share)), left: months(t.clock - s.day), ev: evidence(t) }); },
+    return Object.assign(p ? TH.ctx(p) : { name: 'The sergeant of the night watch', first: 'the sergeant' }, { refuses, kids: t.kids, die: Math.max(1, Math.round(t.kids * share)), left: months(t.clock - s.day), ev: evidence(t, s) }); },
   text: (s, c) => `${c.name} comes to you alone, after the lamps are out.\n\n`
     + (c.refuses ? `[[security]] "I know what they're saying in the hall. You write that order and the watch won't carry it out, not while I've got the keys, and I'd sooner you heard that from me than found out when nobody moves."`
       : `[[security]] "${Cap(c.left)} till the number runs out, and I can't tell you what happens then. There's one thing that'd make it not matter. I'm not having the watch do it on my say-so. If it's happening, I want it in writing, in your hand, so that when somebody asks who gave the order it isn't my name they find."`)
@@ -364,7 +367,7 @@ B('night', { id: 'kid.order', tone: 'crisis', title: 'The Order',
           : { stain: ['kid_undated', 2], do: s2 => { T(s2).undated = s2.day; } } } },
   ] });
 B('eve', { id: 'kid.eve', tone: 'crisis', title: 'The Night Before',
-  setup: s => { const t = T(s); return { kids: t.kids, hold: t.hold, inside: !!t.inside, ev: evidence(t) }; },
+  setup: s => { const t = T(s); return { kids: t.kids, hold: t.hold, inside: !!t.inside, ev: evidence(t, s) }; },
   text: (s, c) => `The number runs out tomorrow night. ${({ school: 'The children are in their own beds, with a parent awake beside each.', dorm: `The children are behind the bolt${c.inside ? ', and their parents with them' : ''}.`, camp: `The children are at the camp past the wire, with the adults who went out with them.` })[c.hold]} ${c.ev}\n\n${Nc(s, 'physician')} can put every one of them under until it is past, and says plainly that the dose for a body that size is a guess. ${Nc(s, 'security')} wants to know where the watch stands tomorrow, and which way it faces.`,
   choices: [
     { label: (s, c) => ({ school: 'Their own beds, like any other night', dorm: 'The bolt stays on', camp: 'The camp stays where it is' })[c.hold],
