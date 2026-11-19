@@ -175,8 +175,7 @@
   "role": "Watch sergeant",
   "kind": "colonist",
   "stands": "security",
-  "look": "tall Zimbabwean woman, close-shaved head, steady hard stare, navy watch jacket over a rust shirt",
-  "pending": true
+  "look": "tall Zimbabwean woman, close-shaved head, steady hard stare, navy watch jacket over a rust shirt"
  },
  "x20": {
   "name": "Ivo Petrovic",
@@ -186,8 +185,7 @@
   "role": "Stores clerk",
   "kind": "colonist",
   "stands": "quartermaster",
-  "look": "thin Croatian man, receding grey hair, reading glasses pushed up, cream shirt with a pencil behind one ear",
-  "pending": true
+  "look": "thin Croatian man, receding grey hair, reading glasses pushed up, cream shirt with a pencil behind one ear"
  },
  "x21": {
   "name": "Siobhan Kearney",
@@ -196,8 +194,7 @@
   "band": "older",
   "role": "Midwife",
   "kind": "colonist",
-  "look": "sturdy Irish woman, short grey-red hair, lined kind face, teal clinic smock",
-  "pending": true
+  "look": "sturdy Irish woman, short grey-red hair, lined kind face, teal clinic smock"
  },
  "x22": {
   "name": "Thomas Adeyemi",
@@ -206,8 +203,7 @@
   "band": "older",
   "role": "Lay preacher",
   "kind": "colonist",
-  "look": "Nigerian man, white close-cropped hair and beard, deep-set eyes, ochre collarless shirt",
-  "pending": true
+  "look": "Nigerian man, white close-cropped hair and beard, deep-set eyes, ochre collarless shirt"
  },
  "x23": {
   "name": "Ana Lucia Vargas",
@@ -216,8 +212,7 @@
   "band": "older-prime",
   "role": "Counsellor",
   "kind": "colonist",
-  "look": "Colombian woman, dark hair with a white streak tied back, warm tired eyes, rust cardigan",
-  "pending": true
+  "look": "Colombian woman, dark hair with a white streak tied back, warm tired eyes, rust cardigan"
  },
  "x24": {
   "name": "Bogdan Lazarev",
@@ -226,8 +221,7 @@
   "band": "prime",
   "role": "Pit digger, ore crew",
   "kind": "colonist",
-  "look": "broad Bulgarian man, shaved head, heavy black beard, dust-grey canvas jacket",
-  "pending": true
+  "look": "broad Bulgarian man, shaved head, heavy black beard, dust-grey canvas jacket"
  },
  "x25": {
   "name": "Finn Gallagher",
@@ -236,8 +230,7 @@
   "band": "young",
   "role": "Rigger",
   "kind": "colonist",
-  "look": "lanky young Irish man, untidy brown hair, freckles, rust work shirt with a rope coil over one shoulder",
-  "pending": true
+  "look": "lanky young Irish man, untidy brown hair, freckles, rust work shirt with a rope coil over one shoulder"
  },
  "x26": {
   "name": "Nomvula Dube",
@@ -246,8 +239,7 @@
   "band": "prime",
   "role": "Hauler",
   "kind": "colonist",
-  "look": "strong South African woman, hair in short twists, sweat-sheened, cream vest under navy overalls",
-  "pending": true
+  "look": "strong South African woman, hair in short twists, sweat-sheened, cream vest under navy overalls"
  },
  "x27": {
   "name": "Yusra Farah",
@@ -256,8 +248,7 @@
   "band": "prime",
   "role": "Fitter, speaks for the shifts",
   "kind": "colonist",
-  "look": "Somali woman, ochre headscarf, sharp direct gaze, teal fitter's jacket",
-  "pending": true
+  "look": "Somali woman, ochre headscarf, sharp direct gaze, teal fitter's jacket"
  },
  "x28": {
   "name": "Tama Ngata",
@@ -266,8 +257,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "small Maori boy, black curly hair, gap-toothed, oversized navy jumper",
-  "pending": true
+  "look": "small Maori boy, black curly hair, gap-toothed, oversized navy jumper"
  },
  "x29": {
   "name": "Ines Duarte",
@@ -276,8 +266,7 @@
   "band": "child",
   "role": "Child",
   "kind": "colonist",
-  "look": "Portuguese girl, long dark hair in a low ponytail, serious face, teal smock",
-  "pending": true
+  "look": "Portuguese girl, long dark hair in a low ponytail, serious face, teal smock"
  },
  "x30": {
   "name": "Kiri Tane",
@@ -286,8 +275,7 @@
   "band": "born",
   "role": "Born in the colony",
   "kind": "colonist",
-  "look": "young woman of mixed heritage, around eighteen, cropped dark hair, sun-browned, rust work shirt made from ship cloth",
-  "pending": true
+  "look": "young woman of mixed heritage, around eighteen, cropped dark hair, sun-browned, rust work shirt made from ship cloth"
  },
  "x31": {
   "name": "Joss Halvorsen",
@@ -296,8 +284,7 @@
   "band": "born",
   "role": "Born in the colony",
   "kind": "colonist",
-  "look": "young man of mixed heritage, around twenty, fair hair, broad shoulders, cream shirt patched with navy",
-  "pending": true
+  "look": "young man of mixed heritage, around twenty, fair hair, broad shoulders, cream shirt patched with navy"
  },
  "x32": {
   "name": "Abebe Tadesse",
@@ -306,8 +293,7 @@
   "band": "older",
   "role": "Retired machinist",
   "kind": "colonist",
-  "look": "slight Ethiopian elder, white beard, thin face, navy coat buttoned to the neck",
-  "pending": true
+  "look": "slight Ethiopian elder, white beard, thin face, navy coat buttoned to the neck"
  },
  "x33": {
   "name": "Dmitri Volkov",
@@ -316,8 +302,7 @@
   "band": "prime",
   "role": "Butcher and tanner",
   "kind": "colonist",
-  "look": "Russian man, cropped fair hair, pale blue eyes, heavy forearms, rust leather apron over cream shirt",
-  "pending": true
+  "look": "Russian man, cropped fair hair, pale blue eyes, heavy forearms, rust leather apron over cream shirt"
  },
  "x34": {
   "name": "Priya Raman",
@@ -326,8 +311,7 @@
   "band": "prime",
   "role": "Fabricator operator",
   "kind": "colonist",
-  "look": "Tamil woman, black hair in a long plait, small nose stud, navy overalls with ochre patches",
-  "pending": true
+  "look": "Tamil woman, black hair in a long plait, small nose stud, navy overalls with ochre patches"
  },
  "x35": {
   "name": "Mara Quell",
@@ -336,8 +320,7 @@
   "band": "outsider",
   "role": "Speaker for the Neighbours",
   "kind": "outsider",
-  "look": "lean weathered woman, hair cut ragged and grey, home-woven ochre wrap, a bone toggle at the throat",
-  "pending": true
+  "look": "lean weathered woman, hair cut ragged and grey, home-woven ochre wrap, a bone toggle at the throat"
  },
  "x36": {
   "name": "Ilse Varnholt",
@@ -346,8 +329,7 @@
   "band": "outsider",
   "role": "Captain of the other ship",
   "kind": "outsider",
-  "look": "severe northern European woman, iron-grey hair scraped back, a faded navy flight jacket with someone else's insignia",
-  "pending": true
+  "look": "severe northern European woman, iron-grey hair scraped back, a faded navy flight jacket with someone else's insignia"
  },
  "x37": {
   "name": "Cassius Dorn",
@@ -356,8 +338,7 @@
   "band": "outsider",
   "role": "Old speaker of the Reach",
   "kind": "outsider",
-  "look": "old pale man, long white hair, pinched hungry face, patched rust coat of salvaged ship cloth",
-  "pending": true
+  "look": "old pale man, long white hair, pinched hungry face, patched rust coat of salvaged ship cloth"
  },
  "x38": {
   "name": "Lena Harrow",
@@ -366,8 +347,7 @@
   "band": "outsider",
   "role": "Envoy of the other settlement",
   "kind": "outsider",
-  "look": "composed woman, dark hair in a tight knot, clean cream tunic, a teal sash of office",
-  "pending": true
+  "look": "composed woman, dark hair in a tight knot, clean cream tunic, a teal sash of office"
  },
  "x39": {
   "name": "Wick",
@@ -376,8 +356,7 @@
   "band": "outsider",
   "role": "Envoy of the Warrens",
   "kind": "outsider",
-  "look": "gaunt man, matted dark hair, filthy face, eyes too bright, hide wrap over a rotten ship jumpsuit",
-  "pending": true
+  "look": "gaunt man, matted dark hair, filthy face, eyes too bright, hide wrap over a rotten ship jumpsuit"
  },
  "x40": {
   "name": "Abel Strand",
@@ -386,7 +365,6 @@
   "band": "outsider",
   "role": "Hermit, last of an earlier landing",
   "kind": "outsider",
-  "look": "wiry old man, long white beard, deep tan, faded navy jumpsuit worn to threads",
-  "pending": true
+  "look": "wiry old man, long white beard, deep tan, faded navy jumpsuit worn to threads"
  }
 }
