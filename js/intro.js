@@ -69,9 +69,11 @@ const layered = (k, line) => Object.assign({ line }, LAYERED[k]);
    own sound. FILM_MS and FILM_CUTS are what `python tools/films.py` prints. FILMS off plays the stills instead. */
 const FILMS = true;
 const FILM_MS = { departure: 14240, crossing: 18800, meteor: 5000, lights: 4000, arrival: 9600, detach: 5000,
-  descent_barren: 9680, descent_ruin: 9680, descent_ice: 9680, descent_drowned: 9660, descent_jungle: 9680, descent_garden: 9680 };
+  descent_barren: 9680, descent_ruin: 9680, descent_ice: 9680, descent_drowned: 9660, descent_jungle: 9680, descent_garden: 9680,
+  arrival_barren: 9680, arrival_ruin: 9680, arrival_ice: 9680, arrival_drowned: 9680, arrival_jungle: 9680, arrival_garden: 9680 };
 const FILM_CUTS = { departure: [0, 4.6, 9.24], crossing: [0, 4.6, 9.2, 13.8], arrival: [0, 4.6],
-  ...Object.fromEntries(['barren', 'ruin', 'ice', 'drowned', 'jungle', 'garden'].map(w => [`descent_${w}`, [0, w === 'drowned' ? 4.62 : 4.64]])) };
+  ...Object.fromEntries(['barren', 'ruin', 'ice', 'drowned', 'jungle', 'garden'].map(w => [`descent_${w}`, [0, w === 'drowned' ? 4.62 : 4.64]])),
+  ...Object.fromEntries(['barren', 'ruin', 'ice', 'drowned', 'jungle', 'garden'].map(w => [`arrival_${w}`, [0, 4.64]])) };
 const FILM_VOL = 0.8;
 const reel = (id, lines, alt) => ({ video: id, ms: FILM_MS[id], alt, caps: lines.map((t, n) => [(FILM_CUTS[id] || [0])[n] + 0.3, t]) });
 function opening(s, rest) {
@@ -110,7 +112,10 @@ function arrival(s) {
   const stills = [Object.assign(layered('approach', `${w.transit.years} years after the burn: ${w.planet}.`), { alt: { pic: PLANET[w.type] || 'lib_planet_09', move: 'drift' },
       layers: [{ src: P(`limb_${w.type}.webp`), cls: 'limb' }, { src: P('ship_front.webp'), cls: 'bow' }] }),
     { pic: 'intro_orbit', move: 'drift', line: `The ${w.ship} makes orbit.` }];
-  // the arrival film's world is green, teal and ochre: only the green worlds get it until each world has its own
+  // 2026-11-20: each world's own arrival film (approach, then orbit) where there is one
+  const own = `arrival_${w.type}`;
+  if (FILMS && FILM_MS[own]) return [reel(own, [`${w.transit.years} years after the burn: ${w.planet}.`, `The ${w.ship} makes orbit.`], stills)];
+  // the old arrival film's world is green, teal and ochre: only the green worlds get it
   if (!FILMS || !(w.type === 'garden' || w.type === 'jungle')) return stills;
   return [reel('arrival', [`${w.transit.years} years after the burn: ${w.planet}.`, `The ${w.ship} makes orbit.`], stills)];
 }
