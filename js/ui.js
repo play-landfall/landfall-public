@@ -228,7 +228,7 @@ function cardHTML() {
     h += talkHTML(def.text);
     { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
-    if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}Send an officer · one at a time</div>${av.map(p =>
+    if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}${LF.sendMost(s) > 1 ? 'Send up to two officers' : 'Send an officer · one at a time'}</div>${av.map(p =>
       `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
       `<button disabled class="spent"><b>${esc(LF.seatTag(p))}</b><span>Just back · ${esc(LF.monthsWord((p.spent - s.day) / LF.MONTH))}</span></button>`).join('')}
       <small>${on.length ? 'Shares the risk, and rests two months after.' : 'Only an officer you send adds to the odds. They can be hurt or killed.'}</small></div>`;

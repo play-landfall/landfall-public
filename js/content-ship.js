@@ -66,7 +66,7 @@ add({ id: 'ship.dry', urgent: true, view: SHIPV, arc: 'sleepers', tone: 'crisis'
   ] });
 
 /* ---------- aboard: what the officers up there deal with ---------- */
-add({ id: 'ship.orbit', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Losing Height', aboard: true, repeat: 400, w: 1.4,
+add({ id: 'ship.orbit', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Losing Height', aboard: true, two: true, repeat: 400, w: 1.4,
   when: s => s.day >= 130 && (s.sleepers > 20 || LF.aboard(s).length >= 1),
   text: s => { const up = LF.inOrbit(s);
     return `The ${s.world.ship}'s orbit is decaying: the upper atmosphere is thicker than the survey said, and every pass drags her a little lower. In about a year she starts to burn.\n\n${up.length ? `${up[0].name} is aboard.\n\n[[${up[0].id}]] ` + (up[0].seat === 'command' ? '"I can boost her by hand. Or you can send me fuel. Decide."' : up[0].seat === 'security' ? '"Lovely. Now the ship\'s trying to kill us as well, and I\'m the one stuck up in her. What is it you want me to do about it?"' : up[0].seat === 'engineer' ? '"She\'ll take a hand burn, maybe. The thrusters haven\'t fired in forty years, so I wouldn\'t promise a second."' : up[0].seat === 'doctor' ? '"There are a hundred people asleep in here. Whatever you decide, decide it for them."' : up[0].seat === 'scientist' ? '"The drag figures are, no, sorry, they\'re fascinating, actually, but we need to burn, we do need to burn, I\'m just going to look at them for one more minute first."' : '"I\'ll do the work. Tell me which work."') : 'There is nobody aboard but the ship\'s own systems.'}`; },
@@ -101,7 +101,7 @@ add({ id: 'ship.cabin', view: SHIPV, arc: 'sleepers', tone: 'pressure', title: '
         fx: (s, c) => ({ stain: ['locked_aboard', 1], do: s2 => { const p = h.byPid(s2, c.pid); if (p) p.mind = Math.max(1, p.mind - 35); } }) } },
   ] });
 
-add({ id: 'ship.pods', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Amber Lights', aboard: true, repeat: 9999, w: 1.2,
+add({ id: 'ship.pods', view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Amber Lights', aboard: true, two: true, repeat: 9999, w: 1.2,
   when: s => s.day >= 240 && s.sleepers >= 30,
   text: s => { const d = LF.officer(s, 'doctor'), up = d && d.orbit;
     return `Fifteen pods in bank B have gone amber. The cells are failing, and the people in them are warming by a fraction of a degree a day. Thawed slowly like that, they wake with their brains cooked.\n\n${up ? `${d.first} is aboard.\n\n[[${d.id}]] "I can thaw them properly up here, in the infirmary. Some of them. Give me the word."` : d && !d.orbit ? `${d.first} is on the ground, and nobody aboard knows how to do a thaw.\n\n[[${d.id}]] "Get them down here. Now. Or I'm talking someone through it by radio, and I won't promise anything."` : 'There is no doctor to ask.'}`; },

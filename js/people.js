@@ -94,8 +94,11 @@ LF.deed = function (s, who, txt, perk, chips) {
 LF.attach = function (s, pid) {
   const c = s.cur; if (!c || c.phase !== 'choose') return;
   c.attach = c.attach || []; const i = c.attach.indexOf(pid);
-  if (i >= 0) c.attach.splice(i, 1); else if (LF.available(s).some(p => p.id === pid)) c.attach = [pid];   // one at a time: a second name takes the first one's place
+  // one at a time: a second name takes the first one's place; a card with two: true takes two (Lachlan, 2026-11-19: the ship's two hard jobs)
+  const most = LF.sendMost(s);
+  if (i >= 0) c.attach.splice(i, 1); else if (LF.available(s).some(p => p.id === pid)) c.attach = c.attach.concat(pid).slice(-most);
 };
+LF.sendMost = s => (s.cur && !s.cur.gen && LF.byId[s.cur.id] && LF.byId[s.cur.id].two) ? 2 : 1;
 LF.attached = s => ((s.cur && s.cur.attach) || []).map(id => H.byPid(s, id)).filter(p => p && p.alive && (s.cur.aboard ? p.orbit : !p.away));
 /* Who did it, for an outcome's words (Lachlan, 2026-11-19; DESIGN.md "The scale"): the officer sent in person if one was, else whoever
    the department's word names (N: the officer at the post, a stand-in, or the department). sentFirst gives the first name. */
