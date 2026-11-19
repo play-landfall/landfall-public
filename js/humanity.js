@@ -142,7 +142,7 @@ const lim0 = LF.limitSpecs;
 LF.limitSpecs = function (s, f, fr, x) {
   const out = lim0 ? lim0(s, f, fr, x) : [];
   const P0 = PEN[f.kind]; if (!P0 || !(s.flags.pen >= 2) || LF.hum(s) >= 10 || fr.stage < 2 || fr.stage > 4) return out;
-  out.push({ ap: 'exploit', lk: 'pen', dark: true, v: 'severe order', hint: 'unknown', l: P0.l, n: P0.n, b: 78, m: ['security'],
+  out.push({ ap: 'exploit', lk: 'pen', dark: true, v: 'severe order', hint: 'unknown', l: P0.l, n: P0.n, b: 70, m: ['security'],
     ok: [P0.ok, { pen: -2, stain: ['pen_spent', 1], f: P0.f }], bad: [P0.bad, { pen: -2, stain: ['pen_spent', 1] }] });
   return out;
 };
@@ -179,10 +179,10 @@ add({ id: 'hum.tribute', arc: 'hum', view: 'world', tone: 'pressure', title: 'Tr
     { label: 'Take what they bring. The person goes in the pen', dark: true, note: 'It will keep coming, each new moon, for as long as the colony is what it is.', hint: 'unknown', info: [['yield', 'Food and bodies, every month'], ['danger', 'The ones they send']],
       out: { text: (s, c) => `The person is untied and walked to the pen. ${c.fid ? `${cap1(c.n)} stop coming to the river to trade.` : ''} The gifts keep coming, every new moon, and on the third one the person tied to the post is a child.`,
         fx: (s, c) => ({ food: 150, pen: 1, stain: ['tribute', 3], flags: { hum_tribute: 'taken' }, fops: c.fid ? [{ id: c.fid, threat: -20, accord: -30 }] : [], chron: 'The colony began taking tribute, people included, from those who feared it.' }) } },
-    { label: 'Walk the person home, and go in unarmed', note: 'Somebody has to cross the valley without a rifle and say this is not what the colony is. They may not believe it.', hint: 'unknown', test: { base: 40, mods: [R('pilot', 12), R('chaplain', 10)] }, info: [['yield', 'A chance to be believed'], ['danger', 'Whoever walks it']],
+    { label: 'Walk the person home, and go in unarmed', note: 'Somebody has to cross the valley without a rifle and say this is not what the colony is. They may not believe it.', hint: 'unknown', test: { base: 40, mods: [R('pilot', 10), R('chaplain', 5)] }, info: [['yield', 'A chance to be believed'], ['danger', 'Whoever walks it']],
       ok: { text: (s, c) => `They walk the person home across the valley in daylight. They are not believed, quite, but they are let go. The gifts stop.`, fx: (s, c) => ({ hum: 8, flags: { hum_tribute: 'returned' }, fops: c.fid ? [{ id: c.fid, accord: 14 }] : [] }) },
       bad: { text: (s, c) => `They walk the person home and do not come back. A week later their boots are left at the gate, laced, in a row.`, fx: (s, c) => ({ pop: -2, morale: -4, hum: 3, flags: { hum_tribute: 'returned' } }) } },
-    { label: 'Take it as a sign of weakness. Go and take the rest', dark: true, note: (s, c) => `People who pay are people who can be made to pay more. ${N(s, 'security') === LF.seatWord(s, 'security') ? 'The watch' : N(s, 'security')} is ready.`, hint: 'unknown', test: { base: 55, mods: [R('security', 16)] }, info: [['yield', 'All of what they have'], ['danger', 'Everyone across the valley, and the watch']],
+    { label: 'Take it as a sign of weakness. Go and take the rest', dark: true, note: 'People who pay are people who can be made to pay more. The watch is ready.', hint: 'unknown', test: { base: 50, mods: [R('security', 10)] }, info: [['yield', 'All of what they have'], ['danger', 'Everyone across the valley, and the watch']],
       ok: { text: (s, c) => `The watch crosses the river at night. In the morning the colony has their stores, their tools and their young, and there is no smoke across the valley at all.`, fx: (s, c) => ({ food: 400, mat: 60, pen: 6, stain: ['taken_all', 6], flags: { hum_tribute: 'took' }, fops: c.fid ? [{ id: c.fid, threat: -40, accord: -60, harm: 60 }] : [], chron: 'The colony crossed the valley and took everything from the people who had paid it tribute.' }) },
       bad: { text: 'They were waiting. They had been waiting since the first gift. Six of the watch come back, carrying three.', fx: (s, c) => ({ pop: -5, morale: -6, stain: ['taken_all', 3], flags: { hum_tribute: 'failed' }, fops: c.fid ? [{ id: c.fid, threat: 25, accord: -40 }] : [] }) } },
   ] });

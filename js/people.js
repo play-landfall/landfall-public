@@ -97,6 +97,10 @@ LF.attach = function (s, pid) {
   if (i >= 0) c.attach.splice(i, 1); else if (LF.available(s).some(p => p.id === pid)) c.attach = [pid];   // one at a time: a second name takes the first one's place
 };
 LF.attached = s => ((s.cur && s.cur.attach) || []).map(id => H.byPid(s, id)).filter(p => p && p.alive && (s.cur.aboard ? p.orbit : !p.away));
+/* Who did it, for an outcome's words (Lachlan, 2026-11-19; DESIGN.md "The scale"): the officer sent in person if one was, else whoever
+   the department's word names (N: the officer at the post, a stand-in, or the department). sentFirst gives the first name. */
+LF.sentName = (s, role) => { const p = LF.attached(s)[0]; return p ? p.name : LF.h.N(s, role); };
+LF.sentFirst = (s, role) => { const p = LF.attached(s)[0]; return p ? p.first : LF.h.F(s, role); };
 /* What the officer sent in person adds (Lachlan, 2026-11-19; DESIGN.md "The odds"). Offices named on a card count only through the
    officer who goes: the card's own figure for that department (two old offices of one seat: the first whole, the rest half), bent
    by how they are (LF.offMods), their strength (LF.EDGE) and how they stand with you. Sent on work the card does not name their
