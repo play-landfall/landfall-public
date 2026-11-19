@@ -59,8 +59,8 @@ function proGo() {
    comes back to the ship. */
 let pre = null;
 const needCrew = () => !!(s && s.adrift && !s.cast && s.pro && !s.pro.done && !s.pro.i && !s.cur);
-const SHIP_FACTS = a => [['Length', '182 metres'], ['Crew', `${a.kit.pop} awake at landfall, ${a.kit.sleepers} in cold sleep`], ['Key crew', 'Six officers, two on watch at a time'],
-  ['Drive', 'Antimatter, one long burn out and one in'], ['Power', 'Fusion plant'], ['Range', 'Ten light years'], ['Lander', 'One, with fuel for two flights down'], ['Built', '2140, Huntsville orbital yards']];
+const SHIP_FACTS = a => [['Length', '182 metres'], ['Crew', '12, minimum 2'], ['Colonists', `Up to ${a.kit.pop + a.kit.sleepers}`],
+  ['Drive', 'Halvorsen-Okafor antimatter drive'], ['Power', 'Fusion plant'], ['Range', 'Ten light years'], ['Lander', 'One, with fuel for two flights down'], ['Built', '2140, Huntsville orbital yards']];
 const SEAT_ASKS = { command: 'One of them thinks first of the mission, the other of the people.', security: 'One of them watches the people inside the wire, the other what is outside it.',
   engineer: 'One of them makes a machine last with what there is, the other wants it done properly.', doctor: 'One of them minds how the patient feels, the other whether they get better and whether it spreads.',
   scientist: 'One of them wants to know what a thing is, the other what use it is.', crew: 'One of them promises only what the ground will give, the other feeds people first and worries after.' };
