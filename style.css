@@ -371,7 +371,7 @@ main { flex:1; padding:6px 12px 40px; }
 .tabs button img { width:22px; height:22px; opacity:.7; }
 .tabs button.on { background:var(--raise); color:var(--ink); box-shadow:var(--lift); } .tabs button.on img { opacity:1; }
 .tabs button:active { transform:scale(.96); }
-.six .row > .face { width:76px; height:76px; border-radius:18px; }
+.six .row > .face { width:92px; height:92px; border-radius:20px; }
 .row.gone { opacity:.5; }
 .six .seat { padding:8px 0 10px; border-bottom:1px solid var(--hair); } .six .seat:last-child { border-bottom:0; } .six .seat > .lbl { color:var(--rust); display:block; margin:0 2px 2px; }
 .six .seat.off .row { opacity:.62; } .six .does { display:block; font-size:13.5px; line-height:1.35; color:var(--dim); margin:4px 2px 0; text-wrap:pretty; } .six .seat.off .does { color:var(--bad); }
@@ -568,4 +568,5 @@ html.grim2 h2 { letter-spacing:.01em; }
 .ccount b { order:2; font:800 18px/1 var(--label); letter-spacing:0; color:var(--ink); font-variant-numeric:tabular-nums; }
 .ccount span.hot b { color:var(--bad); }
 .six .seat > .bk { float:right; margin:0 2px 0 8px; padding:2px 8px; border-radius:999px; font:800 10px/1.4 var(--label); letter-spacing:.05em; text-transform:uppercase; color:var(--good); box-shadow:inset 0 0 0 1.5px var(--good); }
+.six .seat > .who, .six .seat > .row { clear:both; }   /* a flex row beside a float shrinks to dodge it */
 .six .seat > .bk.none { color:var(--bad); box-shadow:inset 0 0 0 1.5px var(--bad); }
