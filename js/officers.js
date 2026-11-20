@@ -111,7 +111,7 @@ LF.says = function (s, k, lines, plain) { const p = LF.officer(s, k), l = p && p
 /* Alternates whose pictures in art/scenes/ still show the people those keys used to be (the old alternates, cut
    2026-11-15). The local art session repaints them; take a key out of this list when its files have landed. Until then
    the UI gives that officer a stand-in face and the plain scene. */
-LF.UNPAINTED = ['achebe', 'zulu', 'halloran', 'brandt', 'iyer', 'waititi'];
+LF.UNPAINTED = [];   // emptied 2026-11-20: all six alternates' scenes (`<scene>@<key>`) have landed
 /* The same for the portraits alone (cast_<key>, _hollow, _old, _old_hollow, _ship): they land hours before the scenes, and
    the player picks the crew from them (Lachlan, 2026-11-18). The local art session takes a key out when all five are in. */
 LF.UNPAINTED_FACES = [];
