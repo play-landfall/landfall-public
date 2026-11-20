@@ -771,12 +771,10 @@ function peopleView() {
   // The Crew view is the key crew and the colonists worth knowing, no more than eight (Lachlan, 2026-11-20); the colony's own
   // business (rations, how it stands, its story) is in the Colony view's folds.
   const key = LF.keySettlers(s).sort((a, b) => (b.deeds.length - a.deeds.length) || (a.known || 0) - (b.known || 0));
-  // Each officer in their own words (Lachlan, 2026-11-20: a little narrative back): the officer's page's line for how they are now
-  // (LF.PROFILE ... now: fine, spent, frayed, failing, hurt), in voice and already read against VOICES.md.
-  const nowOf = p => { try { const pf = p && p.key && LF.profile ? LF.profile(s, p) : null; return pf && pf.now ? pf.now : ''; } catch (e) { return ''; } };
-  const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k), say = nowOf(p);
+  // Under each officer, what the seat does for the colony (LF.SEATS[seat].does; Lachlan, 2026-11-20: put back), or its state when not here.
+  const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k);
     const a = !s.flags['nopromote_' + k] && !s.flags.born_rule && LF.altOf(s, k), bk = a ? `<span class="bk">Backup: ${esc(a.first)}</span>` : `<span class="bk none">No backup</span>`;
-    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}">${bk}<span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}${say ? `<small class="does say">${esc(say)}</small>` : ''}${line ? `<small class="does">${esc(line)}</small>` : ''}</div>`; }).join('');   // the seat's standing blurb (S.does) is left off: only what is wrong now (Lachlan, 2026-11-20)
+    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}">${bk}<span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');   // the seat's standing blurb (S.does) is left off: only what is wrong now (Lachlan, 2026-11-20)
   const known = key.filter(p => !p.seat || !p.role).slice(0, KNOWN_MAX);
   return `${crewCounts()}
     <h3>${ic('notable', 'h3i')}Your officers</h3><div class="box six">${six}</div>

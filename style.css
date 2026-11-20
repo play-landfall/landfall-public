@@ -377,7 +377,7 @@ main { flex:1; padding:6px 12px 40px; }
 .six .row > .face { width:92px; height:92px; border-radius:20px; }
 .row.gone { opacity:.5; }
 .six .seat { padding:8px 0 10px; border-bottom:1px solid var(--hair); } .six .seat:last-child { border-bottom:0; } .six .seat > .lbl { color:var(--rust); display:block; margin:0 2px 2px; }
-.six .does.say, .six .seat.off .does.say { color:var(--ink); opacity:.82; font-style:italic; } .six .seat.off .row { opacity:.62; } .six .does { display:block; font-size:13.5px; line-height:1.35; color:var(--dim); margin:4px 2px 0; text-wrap:pretty; } .six .seat.off .does { color:var(--bad); }
+.six .seat.off .row { opacity:.62; } .six .does { display:block; font-size:13.5px; line-height:1.35; color:var(--dim); margin:4px 2px 0; text-wrap:pretty; } .six .seat.off .does { color:var(--bad); }
 .card > .story { font:600 13px var(--label); color:var(--dim); line-height:1.35; margin:2px 4px 6px; text-wrap:pretty; }
 .opt.on { box-shadow:inset 0 0 0 2px var(--rust), var(--rest); } .opt.full { opacity:.55; } .opt .face { width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none; }
 .row .t small.stats { display:flex; flex-wrap:wrap; gap:2px 12px; font:700 11px var(--label); letter-spacing:.04em; text-transform:uppercase; color:var(--dim); margin-top:4px; } .row .stats .low { color:var(--bad); }
