@@ -496,7 +496,7 @@ function settlerHTML(p) {
   // Who they are: what they hold, what they want, how they stand with you, who they are tied to, and what changed them.
   const bonds = LF.bondLine ? LF.bondLine(s, p) : '';
   const who = p.vals ? `<small>${p.nature ? esc(p.nature) : `${LF.pastOf(p) ? esc(LF.pastOf(p)) + ' ' : ''}${esc(LF.creed(p))} ${esc(LF.want(p))}`}</small><small>${esc(p.first)} ${LF.standing(p)}${p.sore && p.loyal < 45 && s.day - p.sore.d < 240 ? `, and has not forgotten “${esc(p.sore.t)}”` : ''}.${bonds ? ' ' + esc(bonds) : ''}</small>`
-    + (p.arcs || []).map(a => `<small class="deed">${LF.dateStr(a.d)} · ${esc(a.txt)}.</small>`).join('') + (LF.hookOn(s, p) ? `<small class="deed">${esc(p.first)} ${esc(p.hook.txt)}.</small>` : '') : '';
+    + (p.arcs || []).map(a => `<small class="deed">${LF.dateStr(a.d)} · ${esc(a.txt)}.</small>`).join('') + (LF.hookOn(s, p) ? `<small class="deed">${esc(p.first)} ${esc(p.hook.txt)}.</small>` : '') + histHTML(p, 3) : '';
   const last = p.deeds.length ? p.deeds[p.deeds.length - 1].txt : (Object.values(p.marks).find(m => m.txt) || {}).txt;
   return `<div class="row">${faceOf(p) || ic(LF.laidUp(s, p) ? 'hurt' : p.away ? 'away' : p.deeds.length >= 3 ? 'laurel' : p.role ? 'people' : 'notable')}<div class="t"><b>${esc(p.name)}</b><small>${esc(LF.title(p))} · ${st}${(p.role ? p.perks : p.perks.slice(1)).length ? ' · ' + (p.role ? p.perks : p.perks.slice(1)).map(k => LF.PERKS[k].name).join(', ') : ''}</small>` + who
     + (p.seat && p.role && p.body !== undefined && !p.orbit ? `<small class="stats">${Object.keys(LF.STATS).map(k => `<span class="${k !== 'native' && p[k] < 45 ? 'low' : ''}">${LF.STATS[k].name}: ${LF.statWord(p, k)}</span>`).join('')}</small>` : '')
@@ -736,14 +736,23 @@ function historyHTML() {
     + (rest.length ? `<details><summary>${rest.length === 1 ? 'One more' : `${rest.length} more`} from the year</summary>${rest.map(line).join('')}</details>` : '') + `</div>`;
 }
 /* A person in one line: face, name, office and state. A tap opens the full entry (settlerHTML) in place. */
-function whoHTML(p) {
+function whoHTML(p, does, off) {   // does: a line under the name, beside the portrait (the Crew view's seat line)
   if (whoOpen === p.id) return `<div class="who open" data-act="who" data-v="${esc(p.id)}" role="button" tabindex="0" aria-expanded="true">${settlerHTML(p)}</div>`;
   const low = p.seat && p.role && !p.orbit ? ['body', 'mind'].filter(k => p[k] !== undefined && p[k] < 45).map(k => `${LF.STATS[k].name.toLowerCase()} ${LF.statWord(p, k)}`) : [];
   const st = p.seat && p.role ? LF.dutyWord(s, p) : p.away ? 'away with a party' : LF.laidUp(s, p) ? `hurt, back in ${months(p.hurt - s.day)}` : LF.rank(p);
-  return `<div class="who" data-act="who" data-v="${esc(p.id)}" role="button" tabindex="0" aria-expanded="false"><div class="row">${faceOf(p) || ic(LF.laidUp(s, p) ? 'hurt' : p.away ? 'away' : p.role ? 'people' : 'notable')}<div class="t"><b>${esc(p.name)}</b><small>${esc(LF.title(p))} · <span class="${st === 'on duty' ? '' : 'duty'}">${esc(st)}</span>${low.length ? ` · <span class="duty">${esc(low.join(', '))}</span>` : ''}</small></div></div></div>`;
+  return `<div class="who" data-act="who" data-v="${esc(p.id)}" role="button" tabindex="0" aria-expanded="false"><div class="row">${faceOf(p) || ic(LF.laidUp(s, p) ? 'hurt' : p.away ? 'away' : p.role ? 'people' : 'notable')}<div class="t"><b>${esc(p.name)}</b><small>${esc(LF.title(p))} · <span class="${st === 'on duty' ? '' : 'duty'}">${esc(st)}</span>${low.length ? ` · <span class="duty">${esc(low.join(', '))}</span>` : ''}</small>${does ? `<small class="does${off ? ' off' : ''}">${esc(does)}</small>` : ''}</div></div></div>`;
 }
 /* An officer's own page (js/profile.js): who they are, how they are, and what they make of the colony, of you and of the
    others. Opened by a tap on one of the twelve; the People view is this page until it is closed. */
+/* What has happened to someone here, newest first (p.hist, LF.involve in js/decisions.js): the card, what was chosen, how it
+   went, and the first plain line of what came of it. n: how many to show before the rest fold away. */
+function histHTML(p, n) {
+  const h = (p.hist || []).slice().reverse(); if (!h.length) return '';
+  const HOW = { sent: 'Sent. ', died: '' };
+  const row = e => `<div class="entry"><span class="lbl">${LF.dateStr(e.d)}</span><b>${esc(e.t)}</b>${e.l ? `: ${esc(HOW[e.how] || '')}${esc(e.l.replace(/[.!]$/, ''))}.` : ''}${e.hit === false ? ' It went badly.' : e.hit === true ? ' It worked.' : ''}${e.o ? ` <span class="ho">${esc(e.o)}</span>` : ''}</div>`;
+  const rest = h.slice(n);
+  return `<div class="hist">${h.slice(0, n).map(row).join('')}${rest.length ? `<details><summary>${rest.length === 1 ? 'One more' : `${rest.length} more`}</summary>${rest.map(row).join('')}</details>` : ''}</div>`;
+}
 function profileHTML(p, f) {
   const sec = (h, body) => body ? `<div class="psec"><span class="lbl">${esc(h)}</span>${body}</div>` : '';
   const q = (t, seat) => `<p class="say sp sp-${seat || p.seat}">${esc(t)}</p>`;
@@ -753,6 +762,7 @@ function profileHTML(p, f) {
     <div class="phead">${faceOf(p) || ic('people')}<div class="t"><b>${esc(f.name)}</b><span class="lbl sp sp-${p.seat}">${esc(f.title)} · ${esc(f.seat)}</span><small>${f.age ? `Age ${f.age} · ` : ''}${esc(f.from)}</small><small>${esc(LF.dutyWord(s, p))}${(p.perks || []).length ? ' · ' + p.perks.map(k => LF.PERKS[k].name).join(', ') : ''}</small>${p.role ? edgeHTML(p.key) : ''}</div></div>
     ${sec('Their normal', `<p>${esc(f.normal)}</p>${f.record.length ? `<ul class="rec">${f.record.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}`)}
     ${sec('Right now', (f.where ? `<p>${esc(f.where)}</p>` : '') + (f.now ? q(f.now) : '') + stats + (last ? `<small class="deed">${esc(last.charAt(0).toUpperCase() + last.slice(1))}.</small>` : '') + (p.arcs || []).map(a => `<small class="deed">${LF.dateStr(a.d)} · ${esc(a.txt)}.</small>`).join(''))}
+    ${sec('On this world', histHTML(p, 5))}
     ${sec('On the colony', q(f.colony))}
     ${sec('On you', q(f.you) + `<small>${esc(f.standing)}${f.sore ? ` ${esc(p.first)} has not forgotten “${esc(f.sore)}”.` : ''}</small>`)}
     ${sec('On the others', f.others.map(o => `<div class="pon"><b>${esc(o.name)}</b><span class="lbl sp sp-${o.seatKey}">${esc(o.seat)}</span>${o.gone ? `<p>${esc(o.line)}</p>` : q(o.line)}</div>`).join('') + (f.bonds ? `<small>${esc(f.bonds)}</small>` : ''))}
@@ -774,7 +784,7 @@ function peopleView() {
   // Under each officer, what the seat does for the colony (LF.SEATS[seat].does; Lachlan, 2026-11-20: put back), or its state when not here.
   const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k);
     const a = !s.flags['nopromote_' + k] && !s.flags.born_rule && LF.altOf(s, k), bk = a ? `<span class="bk">Backup: ${esc(a.first)}</span>` : `<span class="bk none">No backup</span>`;
-    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}">${bk}<span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');   // the seat's standing blurb (S.does) is left off: only what is wrong now (Lachlan, 2026-11-20)
+    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}">${bk}<span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p, line || S.does, !!line) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}${p ? '' : `<small class="does">${esc(line || S.does)}</small>`}</div>`; }).join('');   // the seat's standing blurb (S.does) is left off: only what is wrong now (Lachlan, 2026-11-20)
   const known = key.filter(p => !p.seat || !p.role).slice(0, KNOWN_MAX);
   return `${crewCounts()}
     <h3>${ic('notable', 'h3i')}Your officers</h3><div class="box six">${six}</div>

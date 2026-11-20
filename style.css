@@ -374,10 +374,10 @@ main { flex:1; padding:6px 12px 40px; }
 /* A morale or humanity change on an outcome: before in blue, a loss in red, a gain in green. */
 .hum.shift { margin:12px 0 4px; } .hum.shift .hl b .up { color:var(--good); } .hum.shift .hl b .dn { color:var(--bad); }
 .sbar i { position:absolute; top:0; border-radius:0; } .sbar i.was { left:0; background:var(--was); } .sbar i.up { background:var(--good); } .sbar i.dn { background:var(--bad); }
-.six .row > .face { width:92px; height:92px; border-radius:20px; }
+.six .row > .face { width:104px; height:104px; border-radius:20px; }
 .row.gone { opacity:.5; }
 .six .seat { padding:8px 0 10px; border-bottom:1px solid var(--hair); } .six .seat:last-child { border-bottom:0; } .six .seat > .lbl { color:var(--rust); display:block; margin:0 2px 2px; }
-.six .seat.off .row { opacity:.62; } .six .does { display:block; font-size:13.5px; line-height:1.35; color:var(--dim); margin:4px 2px 0; text-wrap:pretty; } .six .seat.off .does { color:var(--bad); }
+.six .seat.off .row { opacity:.62; } .six .does { display:block; font-size:13.5px; line-height:1.35; color:var(--dim); margin:4px 2px 0; text-wrap:pretty; } .six .t .does { margin:5px 0 0; } .six .seat.off .does { color:var(--bad); }
 .card > .story { font:600 13px var(--label); color:var(--dim); line-height:1.35; margin:2px 4px 6px; text-wrap:pretty; }
 .opt.on { box-shadow:inset 0 0 0 2px var(--rust), var(--rest); } .opt.full { opacity:.55; } .opt .face { width:44px; height:44px; border-radius:50%; object-fit:cover; flex:none; }
 .row .t small.stats { display:flex; flex-wrap:wrap; gap:2px 12px; font:700 11px var(--label); letter-spacing:.04em; text-transform:uppercase; color:var(--dim); margin-top:4px; } .row .stats .low { color:var(--bad); }
@@ -574,3 +574,6 @@ html.grim2 h2 { letter-spacing:.01em; }
 .six .seat > .bk { float:right; margin:0 2px 0 8px; padding:2px 8px; border-radius:999px; font:800 10px/1.4 var(--label); letter-spacing:.05em; text-transform:uppercase; color:var(--good); box-shadow:inset 0 0 0 1.5px var(--good); }
 .six .seat > .who, .six .seat > .row { clear:both; }   /* a flex row beside a float shrinks to dodge it */
 .six .seat > .bk.none { color:var(--bad); box-shadow:inset 0 0 0 1.5px var(--bad); }
+
+/* A person's record on this world (histHTML): the card and the choice, then what came of it, dimmer. */
+.profile .hist .entry, .who .hist .entry { padding:6px 0; border-bottom:1px solid var(--hair); font-size:14px; line-height:1.4; } .hist .entry:last-child { border-bottom:0; } .hist .ho { color:var(--dim); } .hist details summary { cursor:pointer; color:var(--rust); font:700 12px var(--label); padding:6px 0; }

@@ -78,8 +78,33 @@ LF.picked = function (s, info) {
   for (const k of before.sent) { const p = (s.people || []).find(x => x.key === k); if (p && p.alive && p.away) p.src = { ok, oid: rec.oid, t: rec.t, l: rec.l }; }
   s.ylog = (s.ylog || []).filter(e => e.d > s.day - 2 * LF.YEAR);
   s.ylog.push({ ck, ok, t: rec.t, l: rec.l, d: s.day, died, sent: rec.sent, hit: rec.hit, cid: rec.cid, oid: rec.oid });
+  try { LF.involve(s, cur, rec, info.res); } catch (e) {}
   if (LF.onPick) try { LF.onPick(s, rec); } catch (e) {}
   return rec;
+};
+/* What happened to someone here (Lachlan, 2026-11-20: Samuel was caught eating the dead and freed by the hall, and his
+   page said nothing). Every choice on a card that names a person (an id anywhere in its ctx, or c.pid), sends an officer
+   or kills one goes on that person's own record, p.hist: when, the card, what was chosen, whether it worked, and the
+   outcome's first plain sentence. The officer's page and a colonist's entry read it (js/ui.js, "On this world"). */
+const HIST_MAX = 24;
+const firstLine = text => { const para = String(text || '').split('\n\n').map(x => x.trim()).find(x => x && !/^\[\[/.test(x) && !/^"/.test(x)) || '';
+  const m = para.replace(/\s+/g, ' ').match(/^(.{20,200}?[.!?])(\s|$)/); return m ? m[1] : para.slice(0, 200); };
+LF.involve = function (s, cur, rec, res) {
+  if (!s.people || !cur) return;
+  const ids = new Set(), how = {}, said = `${rec.l || ''} ${(res && res.text) || ''}`;
+  // a single id is the card's subject; a list is candidates (who rides down, who is accused), so only the ones the choice or its outcome names
+  const isId = v => typeof v === 'string' && /^p\d+$/.test(v);
+  const named = id => { const p = s.people.find(x => x.id === id); return p && (said.includes(p.name) || (p.first && new RegExp(`\\b${p.first}\\b`).test(said))); };
+  const scan = v => { if (isId(v)) ids.add(v); else if (Array.isArray(v)) v.forEach(x => { if (isId(x) && named(x)) ids.add(x); }); };
+  scan(cur.pid); if (cur.ctx) for (const k in cur.ctx) scan(cur.ctx[k]);
+  for (const id of ids) how[id] = 'named';
+  for (const k of rec.sent.concat(rec.died)) { const p = s.people.find(x => x.key === k); if (p) { ids.add(p.id); if (!how[p.id]) how[p.id] = rec.died.includes(k) ? 'died' : 'sent'; } }
+  if (!ids.size) return;
+  const line = firstLine(res && res.text);
+  for (const id of ids) { const p = s.people.find(x => x.id === id); if (!p) continue;
+    p.hist = (p.hist || []).filter(e => !(e.d === rec.d && e.t === rec.t));
+    p.hist.push({ d: rec.d, t: rec.t || '', l: rec.l || '', hit: rec.hit, how: how[id], o: line });
+    if (p.hist.length > HIST_MAX) p.hist.splice(0, p.hist.length - HIST_MAX); }
 };
 /* An officer who dies later, with a party sent on some option: the play log hears it against that option. */
 LF.lateDeath = function (s, p) {
