@@ -270,8 +270,6 @@ function cardHTML() {
     else if (r.label) h += `<div class="verdict">${esc(r.label)}</div>`;
     h += talkHTML(r.text) + `<div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
     if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML();
-    // Year 0 (Lachlan, 2026-11-16): at landfall, how other colonies answered the crossing and the descent.
-    if (s.cur.id === 'landfall.site') h += yearHTML((s.ylog || []).filter(e => e.cid).map(e => ({ cid: e.cid, oid: e.oid, ck: e.ck, ok: e.ok, t: e.t, l: e.l, sent: e.sent, died: e.died })));
     h += `<button class="opt go" data-act="dismiss">${r.then ? 'There is more' : 'Go on'}</button>`;
   }
   return h + `</div>`;
@@ -299,15 +297,28 @@ function peersHTML() {
       const el = document.getElementById('peers'); if (el && lines.length) { el.innerHTML = peersInner(lines); el.classList.add('in'); } }); }
   return `<div class="peers${peers.lines && peers.lines.length ? ' in' : ''}" id="peers">${peers.lines && peers.lines.length ? peersInner(peers.lines) : ''}</div>`;
 }
-/* The recap: how other colonies answered this year's cards (js/log.js LFLog.year), fetched once per recap. */
-let yearPeers = { key: '', lines: null };
-function yearHTML(picks) {
+/* The recap: how other colonies answered this year's cards (js/log.js LFLog.year), fetched once per recap. Only at the end
+   of a year, three to five rows as bars, the player's own share in rust (Lachlan, 2026-11-20: concise, and which side they were on). */
+let yearPeers = { key: '', rows: null };
+function yearHTML() {
   const key = s.seed + ':' + s.day + ':' + s.cur.id;
-  if (yearPeers.key !== key) { yearPeers = { key, lines: null };
-    if (window.LFLog && LFLog.year) LFLog.year(s, picks || s.cur.year || [], lines => { if (yearPeers.key !== key) return; yearPeers.lines = lines;
-      const el = document.getElementById('peers'); if (el && lines.length) { el.innerHTML = peersInner(lines); el.classList.add('in'); } }); }
-  return `<div class="peers${yearPeers.lines && yearPeers.lines.length ? ' in' : ''}" id="peers">${yearPeers.lines && yearPeers.lines.length ? peersInner(yearPeers.lines) : ''}</div>`;
+  if (yearPeers.key !== key) { yearPeers = { key, rows: null };
+    if (window.LFLog && LFLog.year) LFLog.year(s, s.cur.year || [], rows => { if (yearPeers.key !== key) return; yearPeers.rows = rows;
+      const el = document.getElementById('peers'); if (el && rows.length) { el.innerHTML = yearInner(rows); el.classList.add('in'); } }); }
+  const r = yearPeers.rows;
+  return `<div class="peers yr${r && r.length ? ' in' : ''}" id="peers">${r && r.length ? yearInner(r) : ''}</div>`;
 }
+const pct = v => Math.round(100 * v) + '%';
+const sideWord = v => v >= 0.6 ? 'With most' : v >= 0.4 ? 'Split down the middle' : v >= 0.2 ? 'With the few' : 'Almost alone';
+function yearRow(r) {
+  const unq = l => String(l || '').replace(/[.!?]$/, '');
+  if (r.kind === 'fate') return `<div class="cmp fate${r.mine ? ' dead' : ''}"><div class="ct"><b>${esc(r.t)}</b><span>${r.mine ? 'died here' : 'came back'}</span></div>
+    <div class="sbar"><i class="d" style="width:${100 * r.v}%"></i></div><small>“${esc(unq(r.l))}” · died in ${pct(r.v)} of ${r.n} colonies</small></div>`;
+  return `<div class="cmp"><div class="ct"><b>${esc(r.t)}</b><span>${esc(sideWord(r.v))}</span></div>
+    <div class="sbar">${r.segs.map(x => `<i class="${x.me ? 'me' : ''}" style="width:${100 * x.v}%"></i>`).join('')}</div>
+    <small><em>You</em> “${esc(unq(r.l))}” · ${pct(r.v)}${r.top ? ` · most chose “${esc(unq(r.top))}”` : ''}</small></div>`;
+}
+const yearInner = rows => `<div class="lbl">The other colonies · this year</div>${rows.map(yearRow).join('')}`;
 const peersInner = lines => `<div class="lbl">The other colonies</div>${lines.map(l => `<p>${esc(l)}</p>`).join('')}`;
 function endHTML() {
   const title = { win: 'The Cord Is Cut', dead: s.over.after ? 'After the Cord' : 'The Last Camp' }[s.over.kind] || 'The Record Stops';
@@ -437,10 +448,12 @@ const DOTS = n => `<span class="dots" aria-label="${esc(LF.poiDanger(n))}">${[1,
 function tileHTML(p) {
   const k = LF.findOf ? LF.findOf(s, p) : null, a = s.away.find(x => x.poi === p.id), P = a && LF.party(s, a), T = !k && !p.been.length && LF.placeThread ? LF.placeThread(s, p) : null;
   const far = `${p.months} month${p.months === 1 ? '' : 's'}`;
+  // One line a place (Lachlan, 2026-11-20: lines, not a grid of boxes): icon, name, state and distance, then its tag and danger.
+  const bear = p.bearing ? ' · ' + p.bearing.replace(/(north|south|east|west)/g, m => m[0].toUpperCase()).replace(/-/g, '') : '';
   return `<button class="tile${p.id === poiOpen ? ' on' : ''}${p.state === 'gone' ? ' gone' : ''}${['visited', 'worked out'].includes(p.state) ? ' done' : ''}${k ? ' want' : ''}" data-act="poi" data-v="${esc(p.id)}">`
-    + `<span class="th">${placeIc(p)}${P ? `<span class="pnum">${P.n}</span>` : ''}${p.state !== 'gone' ? DOTS(p.danger) : ''}</span>`
-    + `<b>${esc(p.name)}</b><small>${esc(TILE_STATE[p.state] || p.state)}</small><small class="far">${esc(far)}${p.bearing ? ' · ' + esc(p.bearing.replace(/(north|south|east|west)/g, m => m[0].toUpperCase()).replace(/-/g, '')) : ''}</small>`
-    + (k ? `<span class="need">${esc(LF.FINDS[k].tag)}</span>` : T ? `<span class="need ev">${esc(T.dread ? 'Evidence' : 'A lead')}</span>` : '') + `</button>`;
+    + `<span class="ti">${placeIc(p)}${P ? `<span class="pnum">${P.n}</span>` : ''}</span>`
+    + `<span class="tt"><b>${esc(p.name)}</b><small>${esc(TILE_STATE[p.state] || p.state)} · <span class="far">${esc(far + bear)}</span></small></span>`
+    + `<span class="tr">${k ? `<span class="need">${esc(LF.FINDS[k].tag)}</span>` : T ? `<span class="need ev">${esc(T.dread ? 'Evidence' : 'A lead')}</span>` : ''}${p.state !== 'gone' ? DOTS(p.danger) : ''}</span></button>`;
 }
 function placesHTML(list) { if (!list.length) return '';
   const ord = { rumoured: 1, located: 0, visited: 2, 'worked out': 3, gone: 4 }, want = p => LF.findOf && LF.findOf(s, p) ? 0 : !p.been.length && LF.placeThread && LF.placeThread(s, p) ? 1 : 2;
@@ -489,11 +502,11 @@ const ORDER_TITLE = { colony: 'Orders for the yard', world: 'Orders past the wir
    (inBox: the send order's party to the nearest place nobody has been, under its boxLabel). */
 const inBox = o => { const O = LF.ORDERS[o.id] || {}; return !O.panel || (O.inBox && O.inBox(s, o.arg)); };
 const saidHTML = v => ordSaid && ordSaid.v === v ? `<div class="chips osaid">${ordSaid.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div><p class="onote">${esc(ordSaid.text)}</p>` : '';
-function ordersHTML(v, title) {
+function ordersHTML(v, title, bare) {
   if (!LF.orders || !s.world || LF.aloft(s) || (s.over && !s.over.cont)) return '';
   const rows = LF.orders(s, v).filter(inBox).map(o => { const O = LF.ORDERS[o.id]; return O.panel && O.boxLabel ? Object.assign({}, o, { label: O.boxLabel(s, o.arg) }) : o; });
   if (!rows.length) return '';
-  return `<h3>${ic('log', 'h3i')}${esc(title || ORDER_TITLE[v] || 'Orders')}</h3><div class="orders">${saidHTML(v) || (v === 'world' && !poiOpen ? saidHTML('place') : '')}${rows.map(ordRowHTML).join('')}</div>`;
+  return `${bare ? '' : `<h3>${ic('log', 'h3i')}${esc(title || ORDER_TITLE[v] || 'Orders')}</h3>`}<div class="orders">${saidHTML(v) || (v === 'world' && !poiOpen ? saidHTML('place') : '')}${rows.map(ordRowHTML).join('')}</div>`;
 }
 function ordRowHTML(o) {
     const open = ordOpen === o.key && !o.lock, busy = ordHold && ordHold.key === o.key;
@@ -581,7 +594,7 @@ function yPick(id, go, qu, head, open, parkedNow, lock, lower) {
 }
 let yWait = false;   // the folded "Not yet" list stays as the player left it across redraws
 document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('ywait')) yWait = e.target.open; }, true);
-function yardHTML() {
+function yardHTML(bare) {
   if (!LF.yardList || !s.world || LF.aloft(s) || (s.over && !s.over.cont)) return '';
   const rows = yardRows(), get = (id, arg) => rows.find(o => o.id === id && (arg === undefined || o.arg === arg));
   const said = ordSaid && ordSaid.v === 'yard' ? `<div class="chips osaid">${ordSaid.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div><p class="onote">${esc(ordSaid.text)}</p>` : '';
@@ -616,16 +629,33 @@ function yardHTML() {
   // standing, folded, with the day each was finished
   const built = Object.keys(s.built).filter(id => LF.PROJECTS[id]).sort((a, b) => s.built[a] - s.built[b]);
   const stand = built.length ? `<details class="standing"><summary>${ic('colony', 'h3i')}Standing · ${built.length}</summary><div class="box">${built.map(id => `<div class="row"><div class="t"><b>${esc(LF.projName(s, id))}</b><small>Finished ${esc(LF.dateStr(s.built[id]).toLowerCase())}. ${esc(LF.yardDesc(s, id))}</small></div></div>`).join('')}</div></details>` : '';
-  return `<h3>${ic('build', 'h3i')}The yard</h3><div class="yardp">${said}${hand}${pk}${q ? `<div class="box yqueue"><div class="lbl">Queued</div>${q}</div>` : ''}</div>
+  return `${bare ? '' : `<h3>${ic('build', 'h3i')}The yard</h3>`}<div class="yardp">${said}${hand}${pk}${q ? `<div class="box yqueue"><div class="lbl">Queued</div>${q}</div>` : ''}</div>
     ${list || wait ? `<h3>${ic('mat', 'h3i')}What could be built</h3>${list ? `<div class="orders ylist">${list}</div>` : ''}${wait}` : ''}${stand}`;
 }
+/* The Colony view in folds (Lachlan, 2026-11-20: the Crew view had grown huge with the colony's business in it, and the
+   Colony view was crowded). Four folds, each remembered on this device: the yard open; rations and hours (its summary says where they stand), how the
+   colony stands and its story so far shut until asked for. The picture, and the machines when a card is about them, stay out. */
+const SECT_OPEN = { yard: true, orders: false, stand: false, story: false };
+let sectOpen = (() => { try { return Object.assign({}, SECT_OPEN, JSON.parse(localStorage.getItem('landfall.sect')) || {}); } catch (e) { return Object.assign({}, SECT_OPEN); } })();
+document.addEventListener('toggle', e => { const d = e.target; if (!d.classList || !d.classList.contains('sect') || sectOpen[d.dataset.k] === d.open) return;
+  sectOpen[d.dataset.k] = d.open; try { localStorage.setItem('landfall.sect', JSON.stringify(sectOpen)); } catch (x) {} }, true);
+const sect = (k, icon, title, hint, body) => body ? `<details class="sect" data-k="${k}"${sectOpen[k] ? ' open' : ''}><summary>${ic(icon, 'h3i')}<span class="sx"><span class="st">${esc(title)}</span>${hint ? `<span class="sh">${esc(hint)}</span>` : ''}</span></summary><div class="sbody">${body}</div></details>` : '';
+const RATION_WORD = { half: 'Half rations', tight: 'Short rations', normal: 'Full rations', generous: 'Generous rations', double: 'Double rations' };
+const HOURS_WORD = { long: 'long hours', normal: 'ordinary hours', short: 'short hours' };
+const storyHint = () => { const n = LF.history ? LF.history(s).length : 0, w = s.people.filter(p => !p.alive && !p.left && (p.known || !p.role)).length;
+  return [n ? `${n} thing${n > 1 ? 's' : ''} this year` : '', w ? `${w} on the wall` : ''].filter(Boolean).join(' · '); };
 function colonyView() {
   const A = LF.ARCHETYPES[s.world.type], pil = LF.pillars(s), d = LF.date(s.day), cut = Object.values(pil).filter(Boolean).length;
+  const cords = `<div class="cords">${Object.keys(PILL).map(k => `<span class="${pil[k] ? 'cut' : k === 'people' && s.built.school ? 'half' : ''}">${PILL[k]}${!pil[k] && k === 'people' ? ` ${LF.heads(s)}/${LF.peopleNeed(s)}` : ''}</span>`).join('')}</div>
+    <div class="note" style="text-align:center">${cut === 5 ? 'All five cords are cut. The colony can outlive the ship.' : !cut ? 'No cord is cut yet. Cut all five and the colony can outlive the ship.' : `${NUMW[cut]} of five cords cut. Cut all five and the colony can outlive the ship.`}${pil.people ? '' : s.built.school ? ` The school is built; the people cord is cut at ${LF.peopleNeed(s)} colonists, and ${LF.heads(s)} live here.` : ` The people cord needs a school and ${LF.peopleNeed(s)} colonists; ${LF.heads(s)} live here.`}</div>`;
+  const stand = `<p class="mood">${esc(LF.mood(s))}</p>${cords}${reputationHTML()}${groupRows('in')}${doctrineHTML()}`;
+  const mw = LF.moraleWord2 ? LF.moraleWord2(Math.round(s.morale)) : '';
   return `<div class="view">${LF.colonyView ? LF.colonyView(s) : LF.scene(s)}<div class="cap"><b>${esc(spot || (s.world.zone || '').replace(/^the /, 'The '))}</b><div class="lbl">${spot ? 'Tap anything in the settlement' : `${A.name} · ${LF.SEASONS[d.season]}, year ${d.year}`}</div></div></div>
-    ${yardHTML()}${ordersHTML('colony')}<p class="mood">${esc(LF.mood(s))}</p>
-    <div class="cords">${Object.keys(PILL).map(k => `<span class="${pil[k] ? 'cut' : k === 'people' && s.built.school ? 'half' : ''}">${PILL[k]}${!pil[k] && k === 'people' ? ` ${LF.heads(s)}/${LF.peopleNeed(s)}` : ''}</span>`).join('')}</div>
-    <div class="note" style="text-align:center">${cut === 5 ? 'All five cords are cut. The colony can outlive the ship.' : !cut ? 'No cord is cut yet. Cut all five and the colony can outlive the ship.' : `${NUMW[cut]} of five cords cut. Cut all five and the colony can outlive the ship.`}${pil.people ? '' : s.built.school ? ` The school is built; the people cord is cut at ${LF.peopleNeed(s)} colonists, and ${LF.heads(s)} live here.` : ` The people cord needs a school and ${LF.peopleNeed(s)} colonists; ${LF.heads(s)} live here.`}</div>
-    ${LF.aboutMachines(s) ? shipTable() : ''}`;
+    ${LF.aboutMachines(s) ? shipTable() : ''}
+    ${sect('yard', 'build', 'The yard', s.project ? LF.projName(s, s.project) : 'Nothing going up', yardHTML(true))}
+    ${sect('orders', 'food', 'Rations and hours', `${RATION_WORD[s.rations || 'normal']}, ${HOURS_WORD[LF.hoursOf ? LF.hoursOf(s) : 'normal']}`, ordersHTML('people', null, true))}
+    ${sect('stand', 'laurel', 'How the colony stands', `${mw ? `Morale: ${mw.toLowerCase()} · ` : ''}${cut} of 5 cords`, stand)}
+    ${sect('story', 'log', 'The story so far', storyHint(), historyHTML() + wallHTML())}`;
 }
 /* The ship's machines: a plain table until they get a view of their own. Shown when a decision is about them. */
 function shipTable() {
@@ -696,22 +726,30 @@ function profileHTML(p, f) {
     ${sec('On the others', f.others.map(o => `<div class="pon"><b>${esc(o.name)}</b><span class="lbl sp sp-${o.seatKey}">${esc(o.seat)}</span>${o.gone ? `<p>${esc(o.line)}</p>` : q(o.line)}</div>`).join('') + (f.bonds ? `<small>${esc(f.bonds)}</small>` : ''))}
     <button class="pbtn back" data-act="who" data-v="${esc(p.id)}">Back to the crew</button></div>`;
 }
+const KNOWN_MAX = 8;
 function peopleView() {
   const op = whoOpen && s.people.find(p => p.id === whoOpen), pf = op && op.alive && op.role && LF.profile ? LF.profile(s, op) : null;
   if (pf) return profileHTML(op, pf);
-  const key = LF.keySettlers(s).sort((a, b) => (b.deeds.length - a.deeds.length) || (a.known || 0) - (b.known || 0)), gone0 = s.people.filter(p => !p.alive && (p.known || !p.role)), dead = gone0.filter(p => !p.left), left = gone0.filter(p => p.left);
+  // The Crew view is the key crew and the colonists worth knowing, no more than eight (Lachlan, 2026-11-20); the colony's own
+  // business (rations, how it stands, its story) is in the Colony view's folds.
+  const key = LF.keySettlers(s).sort((a, b) => (b.deeds.length - a.deeds.length) || (a.known || 0) - (b.known || 0));
   const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k);
     return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}"><span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');
-  const others = key.filter(p => !p.seat || !p.role);
-  return `${reputationHTML()}${ordersHTML('people')}${historyHTML()}
-    <p class="mood">${esc(LF.rosterLine(s))} ${esc(LF.vibes(s)[1].t)}${LF.genLine ? ' ' + esc(LF.genLine(s)) : ''}</p>
+  const known = key.filter(p => !p.seat || !p.role).slice(0, KNOWN_MAX);
+  return `<p class="mood">${esc(LF.rosterLine(s))} ${esc(LF.vibes(s)[1].t)}${LF.genLine ? ' ' + esc(LF.genLine(s)) : ''}</p>
     <h3>${ic('notable', 'h3i')}Your officers</h3><div class="box six">${six}</div>
-    ${groupRows('in')}
-    ${others.length ? `<h3>${ic('notable', 'h3i')}Known by name</h3><div class="box">${others.map(whoHTML).join('')}</div>` : ''}
-    <h3>What the colony has become</h3><div class="box">${Object.keys(LF.DOC).map(ax => { const v = s.val[ax];
-      return `<div class="axis"><span class="${v <= -3 ? 'set' : ''}">${LF.DOC[ax][1]}</span><div class="track"><i style="left:${50 + v * 100 / 12}%"></i></div><span class="${v >= 3 ? 'set' : ''}">${LF.DOC[ax][0]}</span></div>`; }).join('')}</div>
-    ${dead.length ? `<h3>On the wall</h3><div class="box">${dead.slice(-6).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.died || 0)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : ''}
-    ${left.length ? `<h3>Gone from the colony</h3><div class="box">${left.slice(-4).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.left)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : ''}`;
+    ${known.length ? `<h3>${ic('notable', 'h3i')}Known by name</h3><div class="box">${known.map(whoHTML).join('')}</div>` : ''}`;
+}
+/* What the colony has become: its doctrine on each axis. In the Colony view's "How the colony stands". */
+function doctrineHTML() {
+  return `<h3>What the colony has become</h3><div class="box">${Object.keys(LF.DOC).map(ax => { const v = s.val[ax];
+    return `<div class="axis"><span class="${v <= -3 ? 'set' : ''}">${LF.DOC[ax][1]}</span><div class="track"><i style="left:${50 + v * 100 / 12}%"></i></div><span class="${v >= 3 ? 'set' : ''}">${LF.DOC[ax][0]}</span></div>`; }).join('')}</div>`;
+}
+/* The dead and the gone, under the last year in "The story so far". */
+function wallHTML() {
+  const gone0 = s.people.filter(p => !p.alive && (p.known || !p.role)), dead = gone0.filter(p => !p.left), left = gone0.filter(p => p.left);
+  return (dead.length ? `<h3>On the wall</h3><div class="box">${dead.slice(-6).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.died || 0)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : '')
+    + (left.length ? `<h3>Gone from the colony</h3><div class="box">${left.slice(-4).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.left)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : '');
 }
 // Choosing the site (Lachlan, 2026-11-19): the lander has not gone down, so the card shows the world from orbit, not the
 // landing, and the orbit view below drops its own copy of that picture.

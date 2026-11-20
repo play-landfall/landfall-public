@@ -328,7 +328,8 @@ LF.recap = function (s) {
 LF.fireRecap = function (s) {
   const d = LF.date(s.day), r = s.recap, text = LF.recap(s);
   // this year's decisions, so the UI can ask how other colonies answered the same cards (LFLog.year)
-  const year = (s.ylog || []).filter(e => e.d > (r.d || 0) && e.cid).map(e => ({ cid: e.cid, oid: e.oid, ck: e.ck, ok: e.ok, t: e.t, l: e.l, sent: e.sent, died: e.died }));
+  // the first recap also takes the crossing and the descent, which used to be compared on the landing card (Lachlan, 2026-11-20)
+  const year = (s.ylog || []).filter(e => (!r.d || e.d > r.d) && e.cid && !e.order).map(e => ({ cid: e.cid, oid: e.oid, ck: e.ck, ok: e.ok, t: e.t, l: e.l, sent: e.sent, died: e.died }));
   s.cur = { gen: true, side: true, attach: [], fid: null, id: 'recap', view: 'people', title: `The End of Year ${d.year - 1}`, year,
     tone: 'taking stock', text: '', choices: [], phase: 'result', result: { label: '', text, chips: [], remember: false } };
   s.recap = { n: 0, d: s.day, major: false, y: d.year }; LF.genYear(s);

@@ -137,33 +137,44 @@ function fixedPick(p) {
   const m = /#(\d+)$/.exec(p.ok || ''), ch = m && st.choices && st.choices[+m[1]];
   return !!ch && typeof ch.label === 'string';
 }
-/* year(s, picks, done): up to three lines for the recap card from this year's picks (s.cur.year, council.js). */
+/* year(s, picks, done): three to five rows for the recap's bars (Lachlan, 2026-11-20: bars, not sentences; which side the
+   player was on). Each row: { t: the card, l: what this colony chose, v: the share that chose the same, n: colonies on the
+   record, segs: [{ v, me }] every option's share, this colony's first and the rest largest first, for a hand-written card with fixed labels (the others get
+   theirs and "the rest"), top: the label most others chose when it is not this colony's, kind: 'pick' }, and at most one
+   officer row { kind: 'fate', t, l, v: the share in which they died, n, mine: they died here }. */
 function year(s, picks, done) {
   if (!ENDPOINT || !picks || !picks.length) return done([]);
   // A card's title: saves from before the fix in decisions.js carry an empty one, so fall back to the storylet's own, and
-  // leave out a card that still has none rather than print "came to ." (Lachlan, 2026-11-20).
+  // leave out a card that still has none (Lachlan, 2026-11-20).
   picks = picks.map(p => { const st = !p.t && p.ck && LF.byId && LF.byId[p.ck]; return st && typeof st.title === 'string' ? Object.assign({}, p, { t: st.title }) : p; }).filter(p => p.t && fixedPick(p));
   if (!picks.length) return done([]);
   const cids = picks.map(p => p.cid).filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 30);
   decStats(cids).then(st => {
     if (!st || typeof st !== 'object') return done([]);
-    const rows = picks.map(p => { const c = st[p.cid], o = c && c.o && c.o[p.oid]; return c && o && c.n >= 3 ? { p, n: c.n, k: o.n, v: o.n / c.n, o } : null; }).filter(Boolean);
-    const lines = [];
-    const share = rows.filter(r => r.v >= 0.5).sort((a, b) => b.v * Math.min(b.n, 30) - a.v * Math.min(a.n, 30))[0];
-    if (share) lines.push(`${pc(share.k, share.n)} of the colonies that came to ${share.p.t} also chose ${quo(share.p.l)}.`);
-    const rare = rows.filter(r => r.v < 0.34 && r !== share).sort((a, b) => a.v - b.v || b.n - a.n)[0];
-    if (rare) lines.push(`Only ${pc(rare.k, rare.n)} of colonies chose ${quo(rare.p.l)} when it came to ${rare.p.t}.`);
+    const rows = [];
+    for (const p of picks) { const c = st[p.cid], o = c && c.o && c.o[p.oid]; if (!c || !o || c.n < 3 || rows.some(r => r.p.cid === p.cid)) continue;
+      // every option of a hand-written card, by its id (decisions.js keys options by position)
+      const sl = p.ck && LF.byId && LF.byId[p.ck], segs = []; let top = null;
+      if (sl && sl.choices && /#\d+$/.test(p.ok || '')) sl.choices.forEach((ch, i) => { const id = LF.uid('opt:' + p.ck + '#' + i), k = (c.o[id] || {}).n || 0; if (!k) return;
+        segs.push({ v: k / c.n, me: id === p.oid }); if (id !== p.oid && typeof ch.label === 'string' && (!top || k > top.k)) top = { k, l: ch.label }; });
+      if (!segs.some(x => x.me)) { segs.length = 0; segs.push({ v: o.n / c.n, me: true }); }
+      const rest = 1 - segs.reduce((a, x) => a + x.v, 0); if (rest > 0.005) segs.push({ v: rest, me: false });
+      segs.sort((a, b) => (b.me - a.me) || b.v - a.v);   // this colony's own share always at the left, the rest largest first
+      rows.push({ kind: 'pick', p, t: p.t, l: p.l, n: c.n, v: o.n / c.n, segs, o, top: top && top.k > o.n ? top.l : null }); }
+    // the most telling: far from an even split, and on the most colonies; three to five of them
+    const shown = rows.slice().sort((a, b) => Math.abs(b.v - 0.5) * Math.min(b.n, 30) - Math.abs(a.v - 0.5) * Math.min(a.n, 30)).slice(0, 4);
     // an officer: sent on something this year, or killed by it
-    let death = null;
+    let fate = null;
     for (const r of rows) for (const k of (r.p.died || []).concat(r.p.sent || [])) {
-      const sent = (r.o.sent || {})[k] || 0, sd = (r.o.sd || {})[k] || 0, died = (r.o.died || {})[k] || 0, nm = nameOf(k); if (!nm) continue;
-      const mine = (r.p.died || []).includes(k), base = (r.p.sent || []).includes(k) ? sent : r.k, dd = (r.p.sent || []).includes(k) ? sd : died;
+      const nm = nameOf(k); if (!nm) continue;
+      const isSent = (r.p.sent || []).includes(k), mine = (r.p.died || []).includes(k);
+      const base = isSent ? ((r.o.sent || {})[k] || 0) : r.o.n, dd = isSent ? ((r.o.sd || {})[k] || 0) : ((r.o.died || {})[k] || 0);
       if (base < 3) continue;
-      const line = mine ? `${nm} died in ${pc(dd, base)} of attempts at ${quo(r.p.l)}.` : `${nm} came back from ${quo(r.p.l)}. In ${pc(dd, base)} of colonies, they did not.`;
-      const w = (mine ? 2 : 1) + base / 50; if (!death || w > death.w) death = { line, w };
+      const w = (mine ? 2 : 1) + base / 50; if (!fate || w > fate.w) fate = { kind: 'fate', t: nm, l: r.p.l, v: dd / base, n: base, mine, w };
     }
-    if (death) lines.push(death.line);
-    done(lines);
+    const out = shown.map(r => ({ kind: 'pick', t: r.t, l: r.l, n: r.n, v: r.v, segs: r.segs, top: r.top }));
+    if (fate) out.push(fate);
+    done(out.slice(0, 5));
   }).catch(() => done([]));
 }
 if (!off) {

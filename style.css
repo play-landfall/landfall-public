@@ -447,19 +447,23 @@ html.grim2 h2 { letter-spacing:.01em; }
 .prow { cursor:pointer; } .prow.on .t b { color:var(--rust); }
 /* places as tiles under the map (2026-11-18) */
 .h3n { float:right; letter-spacing:.06em; text-transform:none; font-weight:700; font-size:12px; }
-.tiles { display:grid; grid-template-columns:repeat(auto-fill, minmax(148px, 1fr)); grid-auto-flow:dense; gap:10px; margin-bottom:14px; }
-.tile { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:1px; min-width:0; min-height:118px; padding:10px 12px 11px; border-radius:18px; background:var(--card); box-shadow:var(--lift); text-align:left; color:var(--ink); transition:scale 150ms ease-out, box-shadow 150ms ease-out; }
-.tile:active { scale:.97; } .tile:focus-visible { outline:2px solid var(--rust); outline-offset:2px; }
-.tile.on { box-shadow:var(--lift), inset 0 0 0 2px var(--rust); }
-.tile .th { display:flex; align-items:center; gap:6px; width:100%; margin-bottom:6px; } .tile .th > img { width:30px; height:30px; flex:none; }
-.tile .pnum { width:22px; height:22px; border-radius:50%; background:var(--rust); color:var(--paper); font:800 12px var(--label); display:grid; place-items:center; font-variant-numeric:tabular-nums; }
-.tile b { font-size:15px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; text-wrap:balance; overflow-wrap:anywhere; }
-.tile small { font-size:12.5px; line-height:1.3; } .tile small.far { font:700 11px var(--label); letter-spacing:.05em; text-transform:uppercase; font-variant-numeric:tabular-nums; margin-top:auto; padding-top:4px; }
-.tile .need { margin-top:6px; padding:3px 9px; border-radius:999px; background:var(--rust); color:var(--on); font:800 10.5px var(--label); letter-spacing:.05em; text-transform:uppercase; }
+.tiles { display:flex; flex-direction:column; background:var(--card); border-radius:20px; box-shadow:var(--lift); padding:4px 0; margin-bottom:14px; overflow:hidden; }
+.tile { position:relative; display:flex; align-items:center; gap:12px; width:100%; min-width:0; min-height:56px; padding:9px 14px; text-align:left; color:var(--ink); background:none; transition:background-color 150ms ease-out; }
+.tile + .tile { box-shadow:inset 0 1px 0 var(--hair); }
+.tile:active { background:var(--raise); } .tile:focus-visible { outline:2px solid var(--rust); outline-offset:-2px; }
+.tile.on { background:var(--raise); box-shadow:inset 3px 0 0 var(--rust); }
+.tile .ti { position:relative; flex:none; width:32px; height:32px; } .tile .ti > img { width:32px; height:32px; display:block; }
+.tile .pnum { position:absolute; right:-6px; bottom:-4px; width:18px; height:18px; border-radius:50%; background:var(--rust); color:var(--paper); font:800 11px var(--label); display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+.tile .tt { flex:1; min-width:0; display:flex; flex-direction:column; gap:1px; }
+.tile b { font-size:15px; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tile small { font-size:12.5px; line-height:1.3; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tile small .far { font:700 11px var(--label); letter-spacing:.05em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
+.tile .tr { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.tile .need { padding:3px 8px; border-radius:999px; background:var(--rust); color:var(--on); font:800 10px var(--label); letter-spacing:.05em; text-transform:uppercase; }
 .tile .need.ev { background:var(--raise); color:var(--rust); box-shadow:inset 0 0 0 1.5px var(--rust); }
-.tile.done { background:var(--paper); box-shadow:var(--rest); } .tile.done b { color:var(--dim); } .tile.gone { opacity:.5; box-shadow:none; background:var(--paper); }
+.tile.done b { color:var(--dim); } .tile.gone { opacity:.5; }
 .dots { margin-left:auto; display:flex; gap:3px; } .dots i { width:6px; height:6px; border-radius:50%; background:var(--line); } .dots i.on { background:var(--dim); } .dots i.hot { background:var(--bad); }
-.tiles > .place { grid-column:1 / -1; margin:0; }
+.tiles > .place { margin:0; border-radius:0; box-shadow:inset 0 1px 0 var(--hair); }
 .place .pneed { margin:0 0 8px; font-size:14px; line-height:1.4; color:var(--rust); text-wrap:pretty; }
 .tmore { margin:-4px auto 14px; display:block; }
 .box .pbtn.more { margin:8px auto 2px; display:block; }
@@ -524,3 +528,36 @@ html.grim2 h2 { letter-spacing:.01em; }
 .opt.roll:not(:disabled) { box-shadow:inset 0 0 0 1.5px var(--gold), var(--rest); } .opt.roll:not(:disabled) .l { color:var(--gold); }
 .opt .mods span:first-child:not(.up):not(.dn) { color:var(--ink); }
 .opt .mods.send span, .opt .mods.send span:first-child { color:var(--gold); }
+
+/* The Colony view's folds (Lachlan, 2026-11-20): a lifted bar that opens onto what it holds. */
+.sect { margin:12px 0; }
+.sect > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:4px; min-height:56px; padding:10px 16px 10px 14px; border-radius:18px; background:var(--card); box-shadow:var(--rest); -webkit-tap-highlight-color:transparent; transition:transform 120ms ease-out; }
+.sect > summary::-webkit-details-marker { display:none; }
+.sect > summary .h3i { flex:none; margin-right:8px; vertical-align:0; }
+.sect > summary .sx { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.sect > summary .st { font:800 12px/1.2 var(--label); letter-spacing:.1em; text-transform:uppercase; color:var(--ink); }
+.sect > summary .sh { font-size:13.5px; line-height:1.3; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sect > summary::after { content:'+'; flex:none; margin-left:12px; font:800 20px/1 var(--label); color:var(--rust); }
+.sect[open] > summary::after { content:'−'; }
+.sect > summary:active { transform:scale(.99); }
+.sect .sbody { padding:4px 0 2px; }
+.sect[open] .sbody { animation:sectIn 200ms ease-out; } @keyframes sectIn { from { opacity:0; transform:translateY(-4px); } }
+.sect .sbody > h3:first-child { margin-top:12px; }
+@media (prefers-reduced-motion: reduce) { .sect[open] .sbody { animation:none; } .sect > summary { transition:none; } }
+
+/* The recap's comparison with the other colonies: one bar a card, this colony's share in rust (Lachlan, 2026-11-20). */
+.peers.yr { margin:18px 0 8px; } .peers.yr:empty { display:none; }
+.peers.yr.in { animation:peersIn 400ms ease-out both; }
+.peers.yr > .lbl { display:block; margin-bottom:10px; }
+.cmp { padding:10px 0; border-top:1px solid var(--hair); } .peers.yr > .lbl + .cmp { border-top:0; padding-top:2px; }
+.cmp .ct { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.cmp .ct b { font-weight:700; font-size:15px; min-width:0; }
+.cmp .ct span { flex:none; font:800 10.5px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--rust); }
+.sbar { display:flex; gap:2px; height:10px; margin:7px 0 6px; border-radius:999px; overflow:hidden; background:var(--track); }
+.sbar i { display:block; height:100%; background:color-mix(in srgb, var(--ink) 22%, transparent); min-width:3px; }
+.sbar i.me { background:var(--rust); }
+.sbar i.d { background:var(--bad); }
+.cmp small { display:block; font-size:13.5px; color:var(--dim); text-wrap:pretty; font-variant-numeric:tabular-nums; }
+.cmp small em { font-style:normal; font-weight:800; color:var(--rust); }
+.cmp.fate .ct span { color:var(--dim); } .cmp.fate.dead .ct span { color:var(--bad); }
+@media (prefers-reduced-motion: reduce) { .peers.yr.in { animation:none; } }
