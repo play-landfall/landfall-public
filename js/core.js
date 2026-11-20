@@ -313,13 +313,16 @@ LF.mouths = s => LF.hands(s) + LF.KID_EATS * LF.kidCount(s);
    is set on it). It grows with the mouths as far as LF.SCALE of them and then stops: past that the crop already
    grows with the hands that sowed it, and a city's harvest read "104 months of eating". */
 LF.fed = s => Math.max(1, Math.min(LF.mouths(s), LF.SCALE) / 60);
-/* The five ration steps (T2-3, the Crew's rations order, js/orders.js): what each eats, the morale target it sets, what it
-   does to accidents and to the work. 'tight' and 'generous' are as they were; a save with no step plays as normal. */
-LF.RATIONS = { half: { eat: 0.5, morale: -20, att: 1.8, work: 0.85 }, tight: { eat: 0.75, morale: -12, att: 1.3, work: 1 }, normal: { eat: 1, morale: 0, att: 1, work: 1 },
-  generous: { eat: 1.2, morale: 8, att: 1, work: 1 }, double: { eat: 1.5, morale: 14, att: 1, work: 1 } };
-LF.RATION_STEPS = ['half', 'tight', 'normal', 'generous', 'double'];
+/* The three ration steps (Lachlan, 2026-11-20: five were too many; js/orders.js): what each eats, the morale target it
+   sets (morale drifts towards it, so it sinks or rises a little every month) and what it does to accidents. 'tight' is
+   reduced (half the food), the step every card that cuts the ladle sets; 'generous' eats a quarter more. A save from the
+   five steps reads 'half' as reduced and 'double' as generous (LF.migrateOrders puts them right on load). */
+LF.RATIONS = { tight: { eat: 0.5, morale: -20, att: 1.8, work: 0.85 }, normal: { eat: 1, morale: 0, att: 1, work: 1 }, generous: { eat: 1.25, morale: 8, att: 1, work: 1 } };
+LF.RATIONS.half = LF.RATIONS.tight; LF.RATIONS.double = LF.RATIONS.generous;
+LF.RATION_STEPS = ['tight', 'normal', 'generous'];
+LF.RATION_NAME = { tight: 'reduced', half: 'reduced', normal: 'normal', generous: 'generous', double: 'generous' };
 LF.ration = s => LF.RATIONS[s.rations] || LF.RATIONS.normal;
-LF.lean = s => s.rations === 'tight' || s.rations === 'half';   // on short rations of either kind: what the cards that read 'tight' mean
+LF.lean = s => s.rations === 'tight' || s.rations === 'half';   // on reduced rations
 LF.foodCons = s => LF.mouths(s) * LF.ration(s).eat;
 /* Materials: plate, beams and metal for building. They come from three places, in this order, and the colony view
    says which (LF.matSource): the wreck (cargo pods, the lander's fairings and landing gear, cut up by the salvage
@@ -344,7 +347,7 @@ LF.crews = s => Math.min(LF.hands(s), LF.SCALE) / 60;
    back at 12%. The same day the orders landed (js/orders.js: the player wakes sleepers and flies the lander at will, so there are
    forty more hands on the ground in the early years) and the same dials read 41%: 3 puts it at 12% on two samples of 1,200
    games, worlds within six points, and 22 of 57 colonies that win are alive at year 40. */
-const BUILD = (typeof process !== 'undefined' && process.env && +process.env.BUILD_X) || 3.3;   // BUILD_X=3.5 node tools/sim.js: try another figure without editing (Node only)
+const BUILD = (typeof process !== 'undefined' && process.env && +process.env.BUILD_X) || 3.6;   // BUILD_X=3.5 node tools/sim.js: try another figure without editing (Node only)
 LF.cost = function (s, id) {
   const p = LF.PROJECTS[id]; let mat = p.mat, labor = p.labor * (p.repeat ? 1 : BUILD);
   if (id === 'machineshop' && s.flags.toolset) labor *= 0.65;
@@ -494,7 +497,7 @@ LF.tick = function (s) {
     const m = s.machines[id]; if (m.lost) continue;
     // Service life: maintenance restores condition, but only up to a ceiling that never stops falling.
     m.cap = Math.max(0, m.cap - 0.085);
-    m.hp = Math.min(m.cap, m.hp - LF.MACHINES[id].wear * (m.up ? 0.4 : PR.wear * (s.flags.push_on ? 1.1 : 1) * (1.25 - 0.25 * D('engineer')) * LF.edge(s, 'wear')));   // aboard: cold and idle
+    m.hp = Math.min(m.cap, m.hp - LF.MACHINES[id].wear * (m.up ? 0.4 : PR.wear * (s.flags.push_on ? 1.5 : 1) * (1.25 - 0.25 * D('engineer')) * LF.edge(s, 'wear')));   // aboard: cold and idle
     if (m.hp <= 0 || m.cap < 8) loseMachine(s, id);
   }
   // maintenance: worst machine first
@@ -508,7 +511,7 @@ LF.tick = function (s) {
   }
   // construction
   if (s.project) {
-    s.progress += s.jobs.build * lab * (0.8 + 0.2 * D('engineer')) * (0.5 + 0.5 * pf) * (s.flags.safety ? 0.88 : 1) * (s.flags.push_on ? 1.12 : 1);
+    s.progress += s.jobs.build * lab * (0.8 + 0.2 * D('engineer')) * (0.5 + 0.5 * pf) * (s.flags.push_on ? 1.5 : 1);   // double shifts: builds half as fast again (Lachlan, 2026-11-20)
     const c = LF.cost(s, s.project);
     if (s.progress >= c.labor) {
       const id = s.project, p = LF.PROJECTS[id]; s.project = null; s.progress = 0;
@@ -944,7 +947,7 @@ LF.apply = function (s, fx, out, c) {
   if (fx.machine) for (const id in fx.machine) { const lost0 = s.machines[id].lost; if (s.machines[id].up && !fx.aboard) continue;   // a system still aboard is out of reach of what happens down here
     LF.hurt(s, id, fx.machine[id], fx.cap && fx.cap[id]);
     if (!lost0) chip(s.machines[id].lost ? `${LF.MACHINES[id].name} lost` : `${LF.MACHINES[id].name} ${fx.machine[id] > 0 ? 'restored' : 'damaged'}`, fx.machine[id] > 0); }
-  if (fx.rations) { s.rations = fx.rations; chip(`Rations: ${fx.rations}`, fx.rations !== 'tight' && fx.rations !== 'half'); }
+  if (fx.rations) { s.rations = fx.rations; chip(`Rations: ${LF.RATION_NAME[fx.rations] || fx.rations}`, fx.rations !== 'tight' && fx.rations !== 'half'); }
   if (fx.flags) Object.assign(s.flags, fx.flags);
   if (fx.poi && LF.addPoi) { const n = [].concat(fx.poi).filter(p => LF.addPoi(s, p)).length; if (n) chip(n > 1 ? 'Places marked on the map' : 'A place marked on the map', true); }   // a place for the World view (js/places.js)
   if (fx.kill) for (const k of [].concat(fx.kill)) { const p = LF.killPerson(s, k.who || k, k.cause || fx.cause); if (p) chip(`${p.name} dead`, false); }

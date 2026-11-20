@@ -166,6 +166,9 @@ LF.migrateOrders = function (s) {
   if (!s || !s.world) return;
   if (s.project === 'shuttle') { s.project = null; s.progress = 0; if (!LF.launchWhy(s)) LF.flyRun(s, null); }
   if (s.pend === 'shuttle') s.pend = null;
+  // three ration steps and two shifts (2026-11-20): the old extremes fold into their neighbours, and short hours are gone
+  if (s.rations === 'half') s.rations = 'tight'; else if (s.rations === 'double') s.rations = 'generous';
+  if (s.flags) s.flags.safety = false;
 };
 })();
 /* The orders in the catalogue of decision ids (tools/ids.js): a card key order.<id>, and an option for each arg it can
@@ -179,8 +182,8 @@ LF.migrateOrders = function (s) {
 
 /* ================= THE CREW (T2-3) ================= */
 /* The Crew view's rules (NEXT.md T2-3; DESIGN.md "Orders" and "The four views"): what the colony is known as, what last
-   moved each group outside, the last year as a record, an officer's state in a word, and three orders: rations (five
-   steps, LF.RATIONS in core.js), hours (long, normal, short: s.flags.push_on and s.flags.safety, which cards also set),
+   moved each group outside, the last year as a record, an officer's state in a word, and three orders: rations (three
+   steps, LF.RATIONS in core.js), shifts (normal or double: s.flags.push_on, which cards also set),
    and revoking a standing order (s.standing, byRote in core.js). Nothing here touches who holds a seat. */
 (function () {
 'use strict';
@@ -227,20 +230,16 @@ LF.dutyWord = function (s, p) {
 /* ---- rations ---- */
 const STEP = LF.RATION_STEPS, at = s => Math.max(0, STEP.indexOf(s.rations || 'normal'));
 const given = (s, id) => !!s.ordM && s.ordM[id] === LF.monthOf(s);
-const R_LABEL = { half: 'Half rations', tight: 'Short rations', normal: 'Full rations', generous: 'Generous rations', double: 'Double rations' };
+const R_LABEL = { tight: 'Reduced rations', normal: 'Normal rations', generous: 'Generous rations' };
 const R_NOTE = {
-  half: 'Half a ladle for everyone, officers too. The store lasts twice as long. People work slower, more of them fall ill or get hurt, and the clinic carries it.',
-  tight: 'Three-quarters of a ladle. The store stretches, and the mess hall goes quiet.',
+  tight: 'Half a ladle for everyone, officers too. The store lasts twice as long, morale sinks a little every month, and more people get hurt.',
   normal: 'A full ladle, as the stores were planned for.',
-  generous: 'A heavier ladle. People notice, and so does the store.',
-  double: 'Two full ladles a day. People are steadier and stronger at the work, and the store empties half as fast again.' };
+  generous: 'A heavier ladle. Morale climbs a little every month, and the store empties a quarter faster.' };
 const R_TEXT = {
-  half: 'The ladle is cut to half. People take it without a word, which is worse than complaining.',
-  tight: 'The ladle goes to three-quarters. The line at the mess moves faster, and nobody stays to talk.',
+  tight: 'The ladle is cut to half. People take it without a word, which is worse than complaining.',
   normal: 'The full ladle comes back. The mess hall is loud again.',
-  generous: 'The ladle comes up heavier. Somebody cheers in the queue, and everyone laughs at them.',
-  double: 'Two ladles a day, for as long as the store holds. The mess hall is full an hour before it opens.' };
-const R_INFO = { half: [['danger', 'Morale, the sick and the hurt'], ['danger', 'Slower work']], tight: [['danger', 'Morale']], normal: [], generous: [['yield', 'Morale']], double: [['yield', 'Morale, and strength']] };
+  generous: 'The ladle comes up heavier. Somebody cheers in the queue, and everyone laughs at them.' };
+const R_INFO = { tight: [['danger', 'Morale, every month'], ['danger', 'Accidents']], normal: [], generous: [['yield', 'Morale, every month']] };
 const monthsAt = (s, k) => s.res.food / Math.max(1, LF.mouths(s) * LF.RATIONS[k].eat * MONTH);
 LF.rationsDir = 0;   // the last change, for its sound (sounds.js): below zero a cut. Not state.
 LF.addOrder({ id: 'rations', view: 'people', once: 'month', argsAll: STEP.slice(), onceText: 'The rations were changed this month',
@@ -251,34 +250,33 @@ LF.addOrder({ id: 'rations', view: 'people', once: 'month', argsAll: STEP.slice(
   can: (s, k) => {
     if ((s.rations || 'normal') === k) return given(s, 'rations') ? 'Changed this month. It can change again next month' : 'The colony eats this now';
     if (LF.cardTouches(s, fx => !!fx.rations)) return 'The card in front of you is about the rations: answer it first';
-    if (STEP.indexOf(k) > 2 && monthsAt(s, k) < 2) return 'The store could not carry it two months';
+    if (k === 'generous' && monthsAt(s, k) < 2) return 'The store could not carry it two months';
     return ''; },
   act: (s, k, chips) => {
     const d = STEP.indexOf(k) - at(s); LF.rationsDir = d; s.rations = k;
     if (d <= -2) { s.morale = LF.clamp(s.morale - 6, 0, 100); chips.push({ t: 'Morale sinks', good: false }); }
-    chips.push({ t: `Rations: ${k}`, good: d > 0 });
+    chips.push({ t: `Rations: ${LF.RATION_NAME[k]}`, good: d > 0 });
     return R_TEXT[k]; } });
 
-/* ---- hours ---- */
-LF.hoursOf = s => s.flags.push_on ? 'long' : s.flags.safety ? 'short' : 'normal';
-const H_LABEL = { long: 'Long hours', normal: 'Ordinary hours', short: 'Short hours' };
-LF.addOrder({ id: 'hours', view: 'people', once: 'month', argsAll: ['long', 'normal', 'short'], onceText: 'The hours were changed this month',
-  rows: s => given(s, 'hours') ? [LF.hoursOf(s)] : ['long', 'normal', 'short'],
+/* ---- shifts: normal or double (Lachlan, 2026-11-20). Double is s.flags.push_on, which The Scaffold and the foil packs
+   also set: builds go up half as fast again (core.js), the machines wear harder and the Works officer's nerve wears. ---- */
+LF.hoursOf = s => s.flags.push_on ? 'double' : 'normal';
+const H_LABEL = { double: 'Double shifts', normal: 'Normal shifts' };
+LF.addOrder({ id: 'hours', view: 'people', once: 'month', argsAll: ['normal', 'double'], onceText: 'The shifts were changed this month',
+  rows: s => given(s, 'hours') ? [LF.hoursOf(s)] : ['normal', 'double'],
   label: (s, k) => H_LABEL[k],
-  note: (s, k) => k === 'long' ? `Fourteen-hour shifts on every site. Builds go up faster and the machines wear harder, and ${first(s, 'crew', 'whoever runs the works')} carries it every month.`
-    : k === 'short' ? 'Shorter shifts, and nobody on a scaffold after dark. Builds go slower, and people are steadier for it.'
+  note: (s, k) => k === 'double' ? `A second shift on every site, under lamps. Builds go up half as fast again, the machines wear harder, and ${first(s, 'crew', 'whoever runs the works')} carries it every month.`
     : 'The shifts the colony landed with.',
-  info: (s, k) => k === 'long' ? [['yield', 'Builds, sooner'], ['danger', 'Wear, and the Works officer\'s nerve']] : k === 'short' ? [['yield', 'Morale'], ['danger', 'Builds, later']] : [],
+  info: (s, k) => k === 'double' ? [['yield', 'Builds, half as fast again'], ['danger', 'Wear, and the Works officer\'s nerve']] : [],
   can: (s, k) => {
-    if (LF.hoursOf(s) === k) return given(s, 'hours') ? 'Changed this month. It can change again next month' : 'The colony works these hours now';
-    if (LF.cardTouches(s, fx => !!fx.flags && ('push_on' in fx.flags || 'safety' in fx.flags))) return 'The card in front of you is about the pace of work: answer it first';
+    if (LF.hoursOf(s) === k) return given(s, 'hours') ? 'Changed this month. It can change again next month' : 'The colony works these shifts now';
+    if (LF.cardTouches(s, fx => !!fx.flags && 'push_on' in fx.flags)) return 'The card in front of you is about the pace of work: answer it first';
     return ''; },
   act: (s, k, chips) => {
-    s.flags.push_on = k === 'long'; s.flags.safety = k === 'short';
-    chips.push({ t: `Hours: ${k === 'normal' ? 'ordinary' : k}`, good: k !== 'long' });
-    return k === 'long' ? 'The shift bell rings at first light and again after dark. The sites stay lit.'
-      : k === 'short' ? 'The shift bell rings an hour earlier. The scaffolds are empty by dusk.'
-      : 'The shift bell goes back to the hours it rang on the first day.'; } });
+    s.flags.push_on = k === 'double'; s.flags.safety = false;
+    chips.push({ t: `Shifts: ${k}`, good: k !== 'double' });
+    return k === 'double' ? 'The shift bell rings at first light and again after dark. The sites stay lit.'
+      : 'The second shift is stood down. The scaffolds are empty by dusk.'; } });
 
 /* ---- standing orders: revoke one, and the card comes to the player again ---- */
 const stood = s => Object.keys(s.standing || {}).filter(id => s.standing[id] !== undefined && s.standing[id] !== null && LF.byId[id]);
@@ -298,24 +296,12 @@ LF.addOrder({ id: 'revoke', view: 'people',
     chips.push({ t: 'Standing order revoked', good: true });
     return `${titleOf(id)} is struck out of the duty book. The next one comes to you.`; } });
 
-/* Each month: half rations wear on the doctor's nerve, long hours on the Works officer's. */
+/* Each month: double shifts wear on the Works officer's nerve. */
 const tick0 = LF.tick;
 LF.tick = function (s) {
   const d0 = s.day; tick0(s);
   if (s.day === d0 || s.day % MONTH !== 0 || !s.world || LF.aloft(s)) return;
-  if (s.rations === 'half') LF.shift(s, 'doctor', 'mind', -2);
-  if (s.flags.push_on) LF.shift(s, 'crew', 'mind', -1.5);
-};
-/* Double rations: a small lift to the tests that need will or strength (force, labour, command). */
-const WILL = ['security', 'crew', 'quartermaster', 'botanist', 'command', 'pilot'];
-const odds0 = LF.odds;
-LF.odds = function (s, test, c) {
-  const o = odds0(s, test, c);
-  if (s.rations !== 'double' || !s.world || test.aboard || LF.aloft(s)) return o;
-  const k = [].concat(test.kind || []);
-  if (k.includes('fight') || test.ap === 'force' || (test.mods || []).some(m => m.k === 'role' && WILL.includes(m.role))) {
-    o.parts.push({ label: 'Two ladles a day', v: 5 }); o.raw = (o.raw === undefined ? o.p : o.raw) + 5; o.p = LF.clamp(o.raw, 5, 95); }
-  return o;
+  if (s.flags.push_on) LF.shift(s, 'crew', 'mind', -2.5);
 };
 })();
 /* ================= THE COLONY (T2-2) ================= */

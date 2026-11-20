@@ -3,6 +3,7 @@
    one that something else has. LF.mapShown(s) is what the map shows now (the colony at its size, what has been
    found, the leads, the parties away, the ground still unwalked). LF.worldView(s) is the picture: the plate, a
    painted patch in each slot in use, and over them what moves or changes, drawn in code: fog, trails, rings, labels.
+   The fog is the map itself blurred past reading (Lachlan, 2026-11-20), so nothing unwalked can be made out.
    Where a world has no plan or no painted pieces it falls back to the drawn map (LF.worldMap, js/map.js).
    No DOM, no dice, nothing stored: pure functions of s. */
 (function () {
@@ -177,8 +178,9 @@ LF.worldView = function (s) {
   const box = `x="${vx}" y="${vy}" width="${vw}" height="${vh}"`;
   return `<svg class="scene painted country" viewBox="${vx} ${vy} ${vw} ${vh}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The country around the colony">
 <defs><filter id="wv-b" ${box} filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${r1(k * 5)}"/></filter>
+<filter id="wv-fog" ${box} filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${r1(k * 22)}" edgeMode="duplicate"/></filter>
 <pattern id="wv-h" width="${r1(k * 6)}" height="${r1(k * 6)}" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path class="kl" style="stroke-width:${r1(k * 0.7)};opacity:.35" d="M0 0V${r1(k * 6)}"/></pattern>
 <mask id="wv-seen" maskUnits="userSpaceOnUse" ${box}><g filter="url(#wv-b)"><rect ${box} fill="#fff"/>${v.holes.map(h => `<circle cx="${h[0]}" cy="${h[1]}" r="${h[2]}" fill="#000"/>`).join('')}</g></mask></defs>
-<image href="${art.plate}" width="${A.w}" height="${A.h}"/>${things}${site}<g mask="url(#wv-seen)" data-act="spot" data-v="Ground nobody has walked yet"><rect class="p" ${box} opacity=".8"/><rect ${box} fill="url(#wv-h)"/></g>${hits}${c ? tap(siteCap, hit(c.x, c.y, c.size / 2)) : ''}${feats}${over}${lines}${arrows}</svg>`;
+<image href="${art.plate}" width="${A.w}" height="${A.h}"/>${things}${site}<g mask="url(#wv-seen)" data-act="spot" data-v="Ground nobody has walked yet"><image href="${art.plate}" width="${A.w}" height="${A.h}" filter="url(#wv-fog)"/><rect class="p" ${box} opacity=".3"/></g>${hits}${c ? tap(siteCap, hit(c.x, c.y, c.size / 2)) : ''}${feats}${over}${lines}${arrows}</svg>`;
 };
 })();

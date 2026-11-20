@@ -574,11 +574,12 @@ function shipView() {
   const w = s.world, L = s.machines.lander, up = LF.inOrbit(s), aboard = LF.aboard(s), downs = Object.keys(s.machines).filter(id => id !== 'lander' && !aboard.includes(id));
   const sys = id => { const m = s.machines[id], M = LF.MACHINES[id]; return `<div class="row${m.lost ? ' gone' : ''}">${ic(SYS_IC[id] || 'machines')}<div class="t"><b>${esc(M.name)}</b><small>${m.lost ? 'Lost' : LF.machineWord(s, id)} · ${esc(M.role)}</small></div></div>`; };
   const dmg = LF.shipDamage ? LF.shipDamage(s) : [];
-  // The Ariadne in orbit over the planet (Lachlan, 2026-11-16); dimmed while she has gone dark.
+  // The Ariadne in orbit over the planet (Lachlan, 2026-11-16); dimmed while she has gone dark. Aboard: each officer in a line,
+  // name, post and what they are doing up there, no full entry (Lachlan, 2026-11-20).
   return `${landerHTML()}${ordersHTML('ship')}<div class="banner orbit"><img class="scene" src="art/pieces/limb_${w.type}.webp" alt="">${s.flags.ship_down ? '' : `<img class="craft${s.flags.qs_dark ? ' dark' : ''}" src="art/pieces/ship.webp" alt="The ${esc(w.ship)}">`}</div>
     ${LF.shipPlan ? `<div class="plan">${LF.shipPlan(s)}${dmg.length ? `<div class="chips">${dmg.map(d => `<span class="bad">${esc(d)}</span>`).join('')}</div>` : ''}</div>` : ''}
     <p class="mood">${esc(LF.shipLine(s))}</p>
-    <h3>${ic('people', 'h3i')}Aboard</h3>${up.length ? `<div class="box six">${up.map(p => `<div class="seat"><span class="lbl">${esc(LF.SEATS[p.seat].name)}</span>${settlerHTML(p)}<small class="does">${esc(LF.seatLine(s, p.seat))}</small></div>`).join('')}</div>` : `<div class="note">None of your officers is aboard. The ship runs herself.</div>`}
+    <h3>${ic('people', 'h3i')}Aboard</h3>${up.length ? `<div class="box six">${up.map(p => `<div class="seat"><div class="row">${faceOf(p) || ic('people')}<div class="t"><b>${esc(p.name)}</b><small>${esc(LF.title(p))}</small><small class="does">${esc(LF.seatLine(s, p.seat))}</small></div></div></div>`).join('')}</div>` : `<div class="note">None of your officers is aboard. The ship runs herself.</div>`}
     <h3>${ic('ship', 'h3i')}In the hold</h3>${aboard.length ? `<div class="box">${aboard.map(sys).join('')}</div><div class="note">Each launch brings one system down, and one officer.</div>` : `<div class="note">Nothing left in the hold.</div>`}
     <h3>${ic('sleepers', 'h3i')}The cryo banks</h3><div class="box"><div class="row">${ic('sleepers')}<div class="t"><b>${s.sleepers} asleep</b><small>${s.sleepers ? 'Every flight can bring twenty down. Every season a few pods fail.' : s.flags.ship_down ? 'The banks came down with the ship.' : 'The banks are empty.'}</small></div></div></div>
     <h3>${ic('machines', 'h3i')}On the ground</h3><div class="box">${downs.map(sys).join('')}</div>`;
@@ -661,8 +662,8 @@ let sectOpen = (() => { try { return Object.assign({}, SECT_OPEN, JSON.parse(loc
 document.addEventListener('toggle', e => { const d = e.target; if (!d.classList || !d.classList.contains('sect') || sectOpen[d.dataset.k] === d.open) return;
   sectOpen[d.dataset.k] = d.open; try { localStorage.setItem('landfall.sect', JSON.stringify(sectOpen)); } catch (x) {} }, true);
 const sect = (k, icon, title, hint, body) => body ? `<details class="sect" data-k="${k}"${sectOpen[k] ? ' open' : ''}><summary>${ic(icon, 'h3i')}<span class="sx"><span class="st">${esc(title)}</span>${hint ? `<span class="sh">${esc(hint)}</span>` : ''}</span></summary><div class="sbody">${body}</div></details>` : '';
-const RATION_WORD = { half: 'Half rations', tight: 'Short rations', normal: 'Full rations', generous: 'Generous rations', double: 'Double rations' };
-const HOURS_WORD = { long: 'long hours', normal: 'ordinary hours', short: 'short hours' };
+const RATION_WORD = { half: 'Reduced rations', tight: 'Reduced rations', normal: 'Normal rations', generous: 'Generous rations', double: 'Generous rations' };
+const HOURS_WORD = { double: 'double shifts', normal: 'normal shifts' };
 const storyHint = () => { const n = LF.history ? LF.history(s).length : 0, w = s.people.filter(p => !p.alive && !p.left && (p.known || !p.role)).length;
   return [n ? `${n} thing${n > 1 ? 's' : ''} this year` : '', w ? `${w} on the wall` : ''].filter(Boolean).join(' · '); };
 function colonyView() {
@@ -674,7 +675,7 @@ function colonyView() {
   return `<div class="view">${LF.colonyView ? LF.colonyView(s) : LF.scene(s)}<div class="cap"><b>${esc(spot || (s.world.zone || '').replace(/^the /, 'The '))}</b><div class="lbl">${spot ? 'Tap anything in the settlement' : `${A.name} · ${LF.SEASONS[d.season]}, year ${d.year}`}</div></div></div>
     ${LF.aboutMachines(s) ? shipTable() : ''}
     ${sect('yard', 'build', 'The yard', s.project ? LF.projName(s, s.project) : 'Nothing going up', yardHTML(true))}
-    ${sect('orders', 'food', 'Rations and hours', `${RATION_WORD[s.rations || 'normal']}, ${HOURS_WORD[LF.hoursOf ? LF.hoursOf(s) : 'normal']}`, ordersHTML('people', null, true))}
+    ${sect('orders', 'food', 'Rations and shifts', `${RATION_WORD[s.rations || 'normal']}, ${HOURS_WORD[LF.hoursOf ? LF.hoursOf(s) : 'normal']}`, ordersHTML('people', null, true))}
     ${sect('stand', 'laurel', 'How the colony stands', `${mw ? `Morale: ${mw.toLowerCase()} · ` : ''}${cut} of 5 cords`, stand)}
     ${sect('story', 'log', 'The story so far', storyHint(), historyHTML() + wallHTML())}`;
 }

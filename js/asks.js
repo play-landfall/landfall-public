@@ -53,7 +53,7 @@ LF.ASK = {
 'soc.scar': 'Do you ask about the old injury between these two, stand the rest of the watch yourself, or leave them be?',
 'soc.stones': 'Do you sit in on the game of washers, ask what the colony will look like in twenty years, or leave them to it?',
 'soc.cold': 'An officer whose two years are up wants a third year awake: do you hold to the rota, allow the extra year, or ask what is really behind it?',
-'pol.rations': 'Food will run out: do you cut everyone to three-quarter rations, feed people by the work they do, or keep full plates and trust the harvest?',
+'pol.rations': 'Food will run out: do you cut everyone to reduced rations, feed people by the work they do, or keep full plates and trust the harvest?',
 'pol.theft': (s, c) => c.first ? `What is done with ${c.first}, caught with meal from the common store: return it quietly, a public sentence of hard labour, or a harsher punishment?` : 'What is done with the thief caught with meal from the common store: return it quietly, a public sentence of hard labour, or a harsher punishment?',
 'pol.charter': 'A delegation wants a vote: do you call real elections, set up an assembly that only looks elected, or refuse and keep ruling by the charter?',
 'pol.burial': 'What does the colony do with its dead: compost them for the soil, bury them in a cemetery, or leave it to the bereaved each time?',

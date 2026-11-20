@@ -121,7 +121,7 @@ function derive(s) {
   // bodily
   if (s.res.food <= 0) put('hunger', 'stores', 100, 'the stores are empty');
   else if (fd < 60) put('hunger', 'stores', (60 - fd) / 60 * 90, (m => m < 1 ? 'the stores will not last the month' : m === 1 ? 'the stores will last about a month' : `the stores will last about ${LF.th && LF.th.num ? LF.th.num(m) : m} months`)(Math.round(fd / 10)));
-  if (s.rations === 'half') put('hunger', 'rations', 45, 'everyone is on half rations'); else if (s.rations === 'tight') put('hunger', 'rations', 25, 'rations are tight');   // below HOT alone: tight rations are a background fact, not a crisis
+  if (LF.lean(s)) put('hunger', 'rations', 35, 'everyone is on reduced rations');   // below HOT alone: tight rations are a background fact, not a crisis
   if (fl.shared_hunger) put('hunger', 'shared', 15, 'the officers eat what everyone eats');
   if (s.pop > 110 && !roomy) put('confinement', 'crowding', 30 + (s.pop - 110) / 2, 'there are more people than there are pods');
   if (climate === 'winter' && q === 3) put('confinement', 'winter', s.built.shelter ? 30 : 55, 'the cold keeps everyone indoors');
