@@ -176,11 +176,15 @@ LF.worldView = function (s) {
     + `<circle class="${p.silent ? 'p' : 'r'}" cx="${p.px}" cy="${p.py}" r="${r1(k * 5.5)}"/><circle class="kl" style="stroke-width:${r1(k)}" cx="${p.px}" cy="${p.py}" r="${r1(k * 5.5)}"/><text class="pn" x="${p.px}" y="${r1(p.py + k * 2.6)}" style="font-size:${r1(k * 7.5)}px">${p.n}</text>`
     + (v.feats.some(f => f.name === p.to.replace(/^the /, '')) ? '' : `<text class="mt" x="${p.x}" y="${r1(p.y + k * 14)}">${esc(p.to.replace(/^the /, ''))}</text>`))).join('');   // a named place already has its label
   const box = `x="${vx}" y="${vy}" width="${vw}" height="${vh}"`;
+  // the fog: the plate blurred in place, over a copy stretched past the view so the blur reaches every edge evenly
+  const pad = k * 90;
+  // the fog covers the whole plate, not only the view: the picture can show more than the viewBox at the edges (2026-11-20)
+  const fbox = `x="${Math.min(0, vx)}" y="${Math.min(0, vy)}" width="${Math.max(A.w, vx + vw) - Math.min(0, vx)}" height="${Math.max(A.h, vy + vh) - Math.min(0, vy)}"`;
   return `<svg class="scene painted country" viewBox="${vx} ${vy} ${vw} ${vh}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The country around the colony">
-<defs><filter id="wv-b" ${box} filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${r1(k * 5)}"/></filter>
-<filter id="wv-fog" ${box} filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${r1(k * 22)}" edgeMode="duplicate"/></filter>
+<defs><filter id="wv-b" ${fbox} filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="${r1(k * 5)}"/></filter>
+<filter id="wv-fog" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="${r1(k * 22)}"/></filter>
 <pattern id="wv-h" width="${r1(k * 6)}" height="${r1(k * 6)}" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><path class="kl" style="stroke-width:${r1(k * 0.7)};opacity:.35" d="M0 0V${r1(k * 6)}"/></pattern>
-<mask id="wv-seen" maskUnits="userSpaceOnUse" ${box}><g filter="url(#wv-b)"><rect ${box} fill="#fff"/>${v.holes.map(h => `<circle cx="${h[0]}" cy="${h[1]}" r="${h[2]}" fill="#000"/>`).join('')}</g></mask></defs>
-<image href="${art.plate}" width="${A.w}" height="${A.h}"/>${things}${site}<g mask="url(#wv-seen)" data-act="spot" data-v="Ground nobody has walked yet"><image href="${art.plate}" width="${A.w}" height="${A.h}" filter="url(#wv-fog)"/><rect class="p" ${box} opacity=".3"/></g>${hits}${c ? tap(siteCap, hit(c.x, c.y, c.size / 2)) : ''}${feats}${over}${lines}${arrows}</svg>`;
+<mask id="wv-seen" maskUnits="userSpaceOnUse" ${fbox}><rect ${fbox} fill="#fff"/><g filter="url(#wv-b)">${v.holes.map(h => `<circle cx="${h[0]}" cy="${h[1]}" r="${h[2]}" fill="#000"/>`).join('')}</g></mask></defs>
+<image href="${art.plate}" width="${A.w}" height="${A.h}"/>${things}${site}<g mask="url(#wv-seen)" data-act="spot" data-v="Ground nobody has walked yet"><image href="${art.plate}" x="${r1(vx - pad)}" y="${r1(vy - pad)}" width="${r1(vw + 2 * pad)}" height="${r1(vh + 2 * pad)}" preserveAspectRatio="xMidYMid slice" filter="url(#wv-fog)"/><image href="${art.plate}" width="${A.w}" height="${A.h}" filter="url(#wv-fog)"/><rect class="p" ${fbox} opacity=".3"/></g>${hits}${c ? tap(siteCap, hit(c.x, c.y, c.size / 2)) : ''}${feats}${over}${lines}${arrows}</svg>`;
 };
 })();
