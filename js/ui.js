@@ -14,7 +14,9 @@ let hold = null, holdTimer = 0, reveal = false;
 // review: the view is up and the card has not arrived yet. spot: the caption of whatever was last tapped in a view.
 // since: days run before this card. mark: the day of the last decision, so the view can say what happened meanwhile.
 // shown: the view on screen, so a change of view gets its transition and a re-render does not.
-let review = null, reviewTimer = 0, spot = '', since = 0, mark = 0, shown = '', swap = false, stockOpen = '', peek = '';   // peek: a view the player tapped to look at while a card waits
+let review = null, reviewTimer = 0, spot = '', since = 0, mark = 0, shown = '', swap = false, stockOpen = '', peek = '';   // peek: the tab open (one of the four views, or 'decide')
+// The last outcome, as it was drawn, for the Decide tab before the next card is ready (kept on this device).
+let lastCard = (() => { try { return localStorage.getItem('landfall.lastcard') || ''; } catch (e) { return ''; } })();
 // naming: the survey has been read and the card that names the world is up (the arrival screen comes first).
 let naming = false;
 // ordOpen: the order row opened in place (its key); ordHold: an order being confirmed (the same short bar a card uses).
@@ -252,7 +254,9 @@ function cardHTML() {
       // who is worth sending, before anyone is: each department the test names and what its officer would add (DESIGN.md "The odds")
       const roles = o.odds ? (s.cur.gen ? (o.ch.roles || []) : ((o.ch.test && o.ch.test.mods) || []).filter(m => m.k === 'role')) : [], best = {};
       for (const m of roles) { const k = LF.SEAT_OF[m.role] || m.role; best[k] = Math.max(best[k] || 0, m.v); }
-      const sendHint = Object.keys(best).length && !(s.cur.attach || []).length ? `<div class="mods send">${Object.entries(best).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span>Send the ${esc(LF.SEATS[k].lead)} +${v}%</span>`).join('')}</div>` : '';
+      // an officer who cannot be sent (aboard, just back, hurt, or the seat empty) is struck through, with why (Lachlan, 2026-11-20)
+      const sendHint = Object.keys(best).length && !(s.cur.attach || []).length ? `<div class="mods send">${Object.entries(best).sort((a, b) => b[1] - a[1]).map(([k, v]) => { const no = cantSend(k, av, rest);
+        return no ? `<span class="off"><s>Send the ${esc(LF.SEATS[k].lead)} +${v}%</s> · ${esc(no)}</span>` : `<span>Send the ${esc(LF.SEATS[k].lead)} +${v}%</span>`; }).join('')}</div>` : '';
       const mods0 = o.odds && o.odds.parts.length ? `<div class="mods">${o.odds.base !== undefined ? `<span>${o.odds.base}% to start</span>` : ''}${o.odds.parts.map(m => `<span class="${m.v > 0 ? 'up' : 'dn'}">${m.v > 0 ? '+' : '\u2212'}${Math.abs(m.v)}% ${esc(m.label)}</span>`).join('')}</div>` : '';
       const mods = mods0 + sendHint;
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
@@ -269,10 +273,17 @@ function cardHTML() {
     if (r.p !== undefined) h += `<div class="verdict ${r.success ? 'good' : 'bad'}">${esc(r.label)}: ${r.success ? 'it works' : 'it goes wrong'}</div>`;
     else if (r.label) h += `<div class="verdict">${esc(r.label)}</div>`;
     h += talkHTML(r.text) + `<div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
-    if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML();
+    if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML(); else h += shiftHTML(r.was);
     h += `<button class="opt go" data-act="dismiss">${r.then ? 'There is more' : 'Go on'}</button>`;
   }
   return h + `</div>`;
+}
+/* Why the officer of a seat cannot be sent on this card, or '' if they can. */
+function cantSend(k, av, rest) {
+  if (av.some(p => p.seat === k)) return '';
+  if (rest.some(p => p.seat === k)) return 'just back';
+  const p = s.people.find(x => x.seat === k && x.role && !LF.isDead(x) && !x.left);
+  return !p ? 'nobody in the seat' : p.orbit ? 'aboard the ship' : p.away ? 'away' : LF.laidUp(s, p) ? 'hurt' : 'cannot go on this';
 }
 const holdP = () => Math.min(1, (performance.now() - hold.t0) / hold.ms);
 function procHTML() {
@@ -285,7 +296,8 @@ function startHold(i) {
   const ms = o.send ? 4500 : o.odds ? 4000 + Math.round(Math.random() * 1000) : 3000;
   hold = { i, ms, t0: performance.now(), say: o.send ? 'The party sets out' : o.odds ? 'Out of your hands now' : LF.aloft(s) ? 'Word goes round the ship' : 'Word goes round the colony' };
   requestAnimationFrame(fillBar);
-  holdTimer = setTimeout(() => { const card = s.cur.id; LF.choose(s, hold.i);
+  holdTimer = setTimeout(() => { const card = s.cur.id, was = s.world && !LF.aloft(s) && LF.hum ? { morale: s.morale, hum: LF.hum(s) } : null; LF.choose(s, hold.i);
+    if (was && s.cur && s.cur.result) s.cur.result.was = was;   // what morale and humanity stood at before: the outcome draws the change (shiftHTML)
     hold = null; reveal = true; save(); render(); toCard(); }, ms);
 }
 /* How everyone else did (js/log.js): fetched once per ending, then drawn into the end card when it arrives. */
@@ -490,11 +502,20 @@ function settlerHTML(p) {
     + (p.seat && p.role && p.body !== undefined && !p.orbit ? `<small class="stats">${Object.keys(LF.STATS).map(k => `<span class="${k !== 'native' && p[k] < 45 ? 'low' : ''}">${LF.STATS[k].name}: ${LF.statWord(p, k)}</span>`).join('')}</small>` : '')
     + (last ? `<small class="deed">${esc(last.charAt(0).toUpperCase() + last.slice(1))}.</small>` : '') + `</div></div>`;
 }
-const VIEW_NAME = { colony: 'The colony', world: 'The country', people: 'The people', ship: 'The ship' };
-const TABS = [['colony', 'Colony', 'colony'], ['world', 'World', 'world'], ['people', 'Crew', 'people'], ['ship', 'Ship', 'ship']];
-/* The four views as tabs (Lachlan, 2026-11-15: a Ship tab, and the crew page to look at). The game still takes the
-   player to each card's own view; a tab only lets them look at another while the card waits. */
-function tabsHTML(v) { return `<nav class="tabs">${TABS.map(([k, n, i]) => `<button data-act="tab" data-v="${k}" class="${k === v ? 'on' : ''}">${ic(i)}<span>${n}</span></button>`).join('')}</nav>`; }
+const VIEW_NAME = { colony: 'The colony', world: 'The country', people: 'The people', ship: 'The ship', decide: 'The decision' };
+const TABS = [['colony', 'Colony', 'colony'], ['world', 'World', 'world'], ['people', 'Crew', 'people'], ['ship', 'Ship', 'ship'], ['decide', 'Decide', 'log']];
+/* Five tabs (Lachlan, 2026-11-20): the four views, and Decide, where the card lives. The game still takes the player to
+   each card's own view first; Decide fills as the month's card comes up and turns rust when it wants an answer. Before
+   that it holds the last outcome and the year so far. The card never sits over a view. */
+const waiting = () => !!s.cur && (review ? review.ready : true);
+function tabsHTML(v) { return `<nav class="tabs">${TABS.map(([k, n, i]) => k === 'decide'
+  ? `<button data-act="tab" data-v="decide" class="dec${k === v ? ' on' : ''}${waiting() ? ' due' : ''}">${ic(i)}<span>${n}</span>${review && !review.ready ? `<i class="fill" style="transform:scaleX(${reviewP()})"></i>` : ''}</button>`
+  : `<button data-act="tab" data-v="${k}" class="${k === v ? 'on' : ''}">${ic(i)}<span>${n}</span></button>`).join('')}</nav>`; }
+/* The Decide tab before its card is ready: the last outcome, and the year so far. */
+function pastHTML() {
+  return `<p class="mood">${review ? 'The next decision is on its way.' : 'Nothing waits on you.'}</p>`
+    + (lastCard ? `<h3>${ic('log', 'h3i')}The last decision</h3><div class="past">${lastCard}</div>` : '') + historyHTML();
+}
 const SYS_IC = { reactor: 'machines', fabricator: 'parts', reclaimer: 'water', hydroponics: 'food', medbay: 'medbay', lander: 'lander' };
 /* ---------- orders (js/orders.js): a short list on each view, given while the card waits ---------- */
 const ORDER_TITLE = { colony: 'Orders for the yard', world: 'Orders past the wire', people: 'Orders for the colony', ship: 'Orders for the lander' };
@@ -531,7 +552,7 @@ function giveOrder(key) {
     const r = LF.order(s, o.id, o.arg);
     if (r.ok) { ordSaid = { v: (LF.ORDERS[o.id] || {}).panel || o.v, text: r.text, chips: r.chips }; if (window.LFSound && LFSound.order) LFSound.order(o.id, o.arg); }
     save();
-    if (s.cur !== c0) { clearTimeout(reviewTimer); review = null; peek = ''; reveal = true; render(); toCard(); return; }   // a launch: the landing is told at once
+    if (s.cur !== c0) { clearTimeout(reviewTimer); review = null; peek = 'decide'; reveal = true; render(); toCard(); return; }   // a launch: the landing is told at once
     render(); resumeReview(); }, ordHold.ms);
   render();
 }
@@ -681,6 +702,16 @@ function humHTML() {
   const v = LF.hum(s);
   return `<div class="hum${v < 20 ? ' low' : ''}"><div class="hl"><span class="lbl">Humanity</span><b>${esc(LF.humWord(v))}</b></div>${bar(v, 'humbar')}<small>${esc(LF.humLine(s))}</small></div>`;
 }
+/* An outcome that moved morale or humanity shows the bar (Lachlan, 2026-11-20): what stood before in blue, the loss in
+   red, the gain in green, and the change in points beside the word. */
+function shiftHTML(was) {
+  if (!was || !s.world || LF.aloft(s)) return '';
+  const row = (name, a, b, word) => { a = Math.round(a); b = Math.round(b); if (a === b) return '';
+    const lo = Math.max(0, Math.min(a, b)), hi = Math.min(100, Math.max(a, b)), up = b > a;
+    return `<div class="hum shift"><div class="hl"><span class="lbl">${name}</span><b>${esc(word(b))} <span class="${up ? 'up' : 'dn'}">${up ? '+' : '\u2212'}${Math.abs(b - a)}</span></b></div>`
+      + `<div class="bar sbar"><i class="was" style="width:${lo}%"></i><i class="${up ? 'up' : 'dn'}" style="left:${lo}%;width:${hi - lo}%"></i></div></div>`; };
+  return row('Morale', was.morale, s.morale, LF.moraleWord2 || (v => '')) + (LF.hum ? row('Humanity', was.hum, LF.hum(s), LF.humWord) : '');
+}
 /* Morale (js/ebb.js): the same bar, so the player can see the low ebb coming. */
 function moraleHTML() {
   if (!s.world || LF.aloft(s) || !LF.moraleLine) return '';
@@ -785,30 +816,31 @@ function stockHTML() {
     + (stockOpen ? `<p class="hud-note">${esc(LF.stockNote(s, stockOpen))}</p>` : '');
 }
 function playHTML() {
-  const over = s.over && !s.over.cont, aloft = LF.aloft(s) && !over, v = aloft ? 'aloft' : over ? 'colony' : peek || (s.cur && s.cur.view) || 'colony';
+  const over = s.over && !s.over.cont, aloft = LF.aloft(s) && !over, v = aloft ? 'aloft' : over ? 'colony' : peek || (s.cur && !review ? 'decide' : (s.cur && s.cur.view) || 'colony');
   if (v !== shown) { swap = !!shown && !reduced(); shown = v; } else swap = false;
   // Nobody is on the ground yet: there is no colony, country or settled people to show, only the ship.
   if (aloft) return (s.cur ? cardHTML() : '') + `<section class="vw${swap ? ' swap' : ''}">${aloftHTML()}</section>`;
-  const body = { colony: colonyView, world: worldView, people: peopleView, ship: shipView }[v]();
-  // The card sits on top and the view below it: while the view is looked over, a slim bar holds the card's place.
-  let h = over ? endHTML()
-    : review ? `<div class="next"><button class="arrive${review.ready ? ' ready' : ''}" data-act="early"${review.ready ? '' : ' disabled'}><span class="lbl">${review.ready ? 'Decision needed' : since ? esc(daysWord(since)) : 'Now'} · ${esc(s.cur.tone === 'council' || s.cur.plan ? 'the council wants an answer' : 'something needs an answer')}</span><span class="pbar"><i style="transform:scaleX(${reviewP()})"></i></span></button></div>`
-    : s.cur ? cardHTML() : '';
-  return h + (over ? '' : tabsHTML(v)) + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME[v]}</div>${body}${over ? '' : meanwhile()}</section>` + (review && review.ready && !over ? '<div class="decide-gap"></div><button class="decide go" data-act="early">Decision needed</button>' : '');
+  if (over) return endHTML() + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME.colony}</div>${colonyView()}</section>`;
+  // The card has a tab of its own (Decide); a view is never under it.
+  if (v === 'decide' && s.cur && !review) return tabsHTML(v) + `<section class="vw dcd${swap ? ' swap' : ''}">${cardHTML()}</section>`;
+  const body = v === 'decide' ? pastHTML() : { colony: colonyView, world: worldView, people: peopleView, ship: shipView }[v]();
+  return tabsHTML(v) + `<section class="vw${swap ? ' swap' : ''}"><div class="lbl vname">${VIEW_NAME[v]}</div>${body}${meanwhile()}</section>`;
 }
 
 /* ---------- the turn: run the days, go to the view, look it over, then the card ---------- */
 const reviewP = () => !review || review.ready ? 1 : review.left !== undefined ? 1 - review.left / review.ms : Math.min(1, (performance.now() - review.t0) / review.ms);
-function fillReview() { if (!review) return; const i = document.querySelector('.arrive .pbar i'); if (i) i.style.transform = `scaleX(${reviewP()})`; requestAnimationFrame(fillReview); }
-function toCard() { const c = $('card'); if (c) c.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); }
+function fillReview() { if (!review) return; const i = document.querySelector('.tabs .dec .fill'); if (i) i.style.transform = `scaleX(${reviewP()})`; requestAnimationFrame(fillReview); }
+// The card sits right under the tabs (Decide); before landfall there are no tabs and it is the first thing on the page.
+function toCard() { const c = $('card'); if (!c) return; if (document.querySelector('.tabs')) window.scrollTo({ top: 0, behavior: reduced() ? 'auto' : 'smooth' }); else c.scrollIntoView({ behavior: reduced() ? 'auto' : 'smooth', block: 'start' }); }
 /* The bar is full (Lachlan, 2026-11-17): the card does not come by itself. The strip turns into "Decision needed" and a
    button waits at the foot of the screen; until it is tapped the player can still give orders, launch, send a party or look round. */
 function due() { if (!review || review.ready) return; clearTimeout(reviewTimer); review.ready = true; delete review.left; render(); }
-function bringCard() { if (!review) return; if (ordHold) return; ordOpen = ''; poiOpen = ''; ordSaid = null; clearTimeout(reviewTimer); review = null; reveal = true; render(); toCard(); }
+function bringCard() { if (!review) return; if (ordHold) return; ordOpen = ''; poiOpen = ''; ordSaid = null; clearTimeout(reviewTimer); review = null; peek = 'decide'; reveal = true; render(); window.scrollTo(0, 0); }
 /* A decision has arrived: show its view first. quick: it follows straight on from an outcome, so the card comes at once. */
 function arrive(quick) {
   clearTimeout(reviewTimer); spot = ''; peek = ''; ordOpen = ''; ordSaid = null; poiOpen = '';
-  if (quick || LF.aloft(s)) { review = null; reveal = true; render(); if (!surveying()) toCard(); else window.scrollTo(0, 0); return; }
+  if (quick || LF.aloft(s)) { review = null; peek = 'decide'; reveal = true; render(); if (!surveying()) toCard(); else window.scrollTo(0, 0); return; }
+  peek = (s.cur && s.cur.view) || 'colony';
   review = { t0: performance.now(), ms: REVIEW_MS }; window.scrollTo(0, 0); render(); requestAnimationFrame(fillReview);
   if (window.LFBoot) LFBoot.prefetch(LFBoot.scene(sceneOf(s.cur)));   // the card's picture, while the view is looked over
   reviewTimer = setTimeout(due, REVIEW_MS);
@@ -871,7 +903,9 @@ function act(a, v, el) {
   else if (a === 'ordgo') return giveOrder(v);
   else if (a === 'stock') stockOpen = stockOpen === v ? '' : v;
   else if (a === 'who') { whoOpen = whoOpen === v ? '' : v; const wp = whoOpen && s.people.find(p => p.id === whoOpen); if (wp && wp.key && wp.role) setTimeout(() => { const e = document.querySelector('.profile'); if (e) e.scrollIntoView({ block: 'start' }); }, 0); }
-  else if (a === 'tab') { if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } if (ordOpen && !ordHold) { ordOpen = ''; resumeReview(); } ordSaid = null; peek = v === ((s.cur && s.cur.view) || 'colony') ? '' : v; spot = ''; }
+  else if (a === 'tab') { if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } if (ordOpen && !ordHold) { ordOpen = ''; resumeReview(); } ordSaid = null; spot = '';
+    if (v === 'decide' && review && review.ready) return bringCard();   // the rust tab: the card comes up
+    peek = v; window.scrollTo(0, 0); }
   else if (a === 'menu') return menu($('sheet').hidden);
   else if (a === 'theme') { LFTheme.set(v); menu(true); }
   else if (a === 'music') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); menu(true); }
@@ -884,7 +918,9 @@ function act(a, v, el) {
     // the landing site is chosen: the lander goes down while the choice resolves underneath
     if (s.cur.id === 'landfall.site' && window.LFIntro && LF.zone) cutscene(LFIntro.descent(s, (LF.zone(s, +v) || {}).name));
     startHold(+v); }
-  else if (a === 'dismiss' && s.cur && s.cur.phase === 'result') { mark = s.day; LF.dismiss(s); since = 0; save();
+  else if (a === 'dismiss' && s.cur && s.cur.phase === 'result') {
+    if (!s.adrift && !LF.aloft(s)) { lastCard = cardHTML().replace(/<button class="opt go" data-act="dismiss">[\s\S]*?<\/button>/, '').replace(' id="card"', '').replace(' enter', ''); try { localStorage.setItem('landfall.lastcard', lastCard); } catch (e) {} }
+    mark = s.day; LF.dismiss(s); since = 0; save();
     if (s.adrift) return proGo();   // the voyage out: the next card, or the long sleep
     // the crossing is over: the ship makes orbit, and the survey is read before the world is named
     if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }

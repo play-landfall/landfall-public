@@ -9,9 +9,9 @@ const KEY = 'landfall.theme', DEFAULT = 'frontier';
 // Three since 2026-11-18 (Lachlan): Ariadne (the default), Dark and Light. Keys kept so saved choices survive; any other saved key falls back to Ariadne.
 const THEMES = {
   // Taken from the scene art's own colours (its dominant navy, rust, cream, ochre and teal), so pictures and page match.
-  frontier: { name: 'Ariadne', bg: '#09182d', paper: '#0e1f37', card: '#12233c', raise: '#1c304e', ink: '#e1d6b4', rust: '#d26a36', dim: '#8f8a76', line: '#2a3b55', good: '#7fb3a3', bad: '#e0704e', plate: '#1c304e' },
-  lamp: { name: 'Dark', bg: '#000000', paper: '#0a0a0a', card: '#141414', raise: '#202020', ink: '#f2ede2', rust: '#ef4f2f', dim: '#99948a', line: '#333333', good: '#7cc7a0', bad: '#ff8f7a', plate: '#202020' },
-  light: { name: 'Light', light: true, bg: '#d9cfb8', paper: '#ece3d0', card: '#f7f0e1', raise: '#fffaf0', ink: '#1c2730', rust: '#c2552d', dim: '#6f6859', line: '#cfc3a8', good: '#2f6f5e', bad: '#a5371f', on: '#fff8ec',
+  frontier: { name: 'Ariadne', bg: '#09182d', paper: '#0e1f37', card: '#12233c', raise: '#1c304e', ink: '#e1d6b4', rust: '#d26a36', dim: '#8f8a76', line: '#2a3b55', good: '#7fb3a3', bad: '#e0704e', was: '#6f9be0', plate: '#1c304e' },
+  lamp: { name: 'Dark', bg: '#000000', paper: '#0a0a0a', card: '#141414', raise: '#202020', ink: '#f2ede2', rust: '#ef4f2f', dim: '#99948a', line: '#333333', good: '#7cc7a0', bad: '#ff8f7a', was: '#78a8f0', plate: '#202020' },
+  light: { name: 'Light', light: true, bg: '#d9cfb8', paper: '#ece3d0', card: '#f7f0e1', raise: '#fffaf0', ink: '#1c2730', rust: '#c2552d', dim: '#6f6859', line: '#cfc3a8', good: '#2f6f5e', bad: '#a5371f', was: '#2f5f9e', on: '#fff8ec',
     shade: 'rgba(70,52,20,.16)', glint: 'rgba(255,255,255,.7)' },
 };
 const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
@@ -32,13 +32,13 @@ let current = DEFAULT, grimV = 0;
    ash, by up to 70% at nothing. The page eases into it (style.css transitions the surfaces), and the card art is
    desaturated in CSS through --grim. The light theme darkens with the rest. */
 const SPEAK = { command: '#e9b93c', security: '#e2553f', engineer: '#f08a2e', doctor: '#39c2a0', scientist: '#5aa2f2', crew: '#93cf4a' };
-const GRIM = { bg: '#0b0505', paper: '#130908', card: '#1a0d0b', raise: '#261310', ink: '#d6c3b0', rust: '#9e2a1e', dim: '#86695d', line: '#36201b', good: '#7f8f78', bad: '#c9442f', plate: '#261310' };
+const GRIM = { bg: '#0b0505', paper: '#130908', card: '#1a0d0b', raise: '#261310', ink: '#d6c3b0', rust: '#9e2a1e', dim: '#86695d', line: '#36201b', good: '#7f8f78', bad: '#c9442f', was: '#5d6f8c', plate: '#261310' };
 const mix = (a, b, k) => { const A = rgb(a), B = rgb(b); return '#' + A.map((v, i) => Math.round(255 * (v + (B[i] - v) * k)).toString(16).padStart(2, '0')).join(''); };
 function set(key, keep) {
   const t0 = THEMES[key] || THEMES[DEFAULT], root = document.documentElement; current = THEMES[key] ? key : DEFAULT;
   const k0 = 0.7 * grimV, t = grimV ? Object.assign({}, t0, ...Object.keys(GRIM).map(k => ({ [k]: mix(t0[k] || t0.card, GRIM[k], k0) })), grimV > 0.5 ? { light: false, on: null, shade: null, glint: null } : {}) : t0;
   root.style.setProperty('--grim', grimV.toFixed(3)); root.classList.toggle('grim', grimV > 0); root.classList.toggle('grim2', grimV > 0.5);
-  for (const k of ['bg', 'paper', 'card', 'raise', 'ink', 'rust', 'dim', 'line', 'good', 'bad']) root.style.setProperty('--' + k, t[k]);
+  for (const k of ['bg', 'paper', 'card', 'raise', 'ink', 'rust', 'dim', 'line', 'good', 'bad', 'was']) root.style.setProperty('--' + k, t[k]);
   // Whose line it is (js/speak.js): one colour a seat, fixed whoever holds it, mixed toward the theme's ink so it reads on every palette.
   for (const k in SPEAK) root.style.setProperty('--sp-' + k, `color-mix(in oklab, ${SPEAK[k]} ${t.light ? 62 : 58}%, ${t.ink})`);
   // Anyone who is not one of the twelve (a colonist, a child, a stranger): a light grey, set apart from the narration (Lachlan, 2026-11-18).

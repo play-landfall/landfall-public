@@ -19,7 +19,9 @@ LF.ORDERS = {};
 LF.ORDER_IDS = [];
 LF.addOrder = o => { LF.ORDERS[o.id] = o; LF.ORDER_IDS.push(o.id); };
 LF.monthOf = s => Math.floor(s.day / MONTH);
-const usedThisMonth = (s, id) => !!s.ordM && s.ordM[id] === LF.monthOf(s);
+/* onceKey: orders that share one go a month (send and survey: one party out a month, Lachlan, 2026-11-20). */
+const onceKey = id => (LF.ORDERS[id] && LF.ORDERS[id].onceKey) || id;
+const usedThisMonth = (s, id) => !!s.ordM && s.ordM[onceKey(id)] === LF.monthOf(s);
 
 LF.orderLock = function (s, id, arg) {
   const o = LF.ORDERS[id]; if (!o) return 'No such order';
@@ -51,7 +53,7 @@ LF.order = function (s, id, arg) {
   if (why) return { ok: false, why };
   const chips = [], c = o.cost ? o.cost(s, arg) : null, label = fn(o.label, s, arg);
   if (c) for (const k in c) if (c[k]) { const b = s.res[k]; s.res[k] = Math.max(0, s.res[k] - c[k]); chips.push({ t: LF.amount(s, k, -c[k], b), good: false }); }
-  if (o.once === 'month') { s.ordM = s.ordM || {}; s.ordM[id] = LF.monthOf(s); }
+  if (o.once === 'month') { s.ordM = s.ordM || {}; s.ordM[onceKey(id)] = LF.monthOf(s); }
   const text = o.act(s, arg, chips) || label;
   LF.log(s, text + (chips.length ? ' (' + chips.map(x => x.t).join(', ') + ')' : ''), 'order');
   s.ordN = s.ordN || {}; s.ordN[id] = (s.ordN[id] || 0) + 1;
@@ -559,7 +561,7 @@ function leaderWhy(s, L) {
   if (L.role && !LF.canDo(L, ['explore'])) return `${LF.title(L)} is not work for exploring`;
   return ''; }
 
-LF.addOrder({ id: 'send', view: 'world', panel: 'place', hold: 2200,
+LF.addOrder({ id: 'send', view: 'world', panel: 'place', hold: 2200, once: 'month', onceKey: 'party', onceText: 'A party has gone out this month',
   shown: s => !!LF.pois,
   // every place a party could go: a small party, and a large one under each who could lead it (or one, locked, with nobody)
   rows: s => { const out = [], Ls = LF.partyLeaders(s);
@@ -593,7 +595,7 @@ LF.addOrder({ id: 'send', view: 'world', panel: 'place', hold: 2200,
 /* A survey party: three to five with stakes and a chain, two months, no place to reach. Each goes out on the next
    bearing round the compass from the seed's own, so the fog goes back all the way round over a run. */
 const bearOf = s => (hash('svy:' + s.seed) % 8 + 3 * (s.surveyN || 0)) % 8;
-LF.addOrder({ id: 'survey', view: 'world', hold: 1800,
+LF.addOrder({ id: 'survey', view: 'world', hold: 1800, once: 'month', onceKey: 'party', onceText: 'A party has gone out this month',
   shown: s => !!LF.surveyFind,
   label: s => `Send a survey party ${LF.surveyBearing(s, bearOf(s))}`,
   note: s => { const n = LF.partyN(s, 'survey'); return `${cap(num(n))} with stakes and a chain walk the country for two months, with no place to reach and ${eats(s, n, 2)} food on their backs. The fog goes back a ring that way, and they mark what they see.${dim(s) ? ' It is the Dim, and the going is worse.' : ''}`; },
