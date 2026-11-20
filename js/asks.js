@@ -374,7 +374,7 @@ LF.ASK = {
 'bg.price': 'Now that its cost is known, does everyone stop, does each person choose, does everyone take it willing or not, or do only the crews stay on it?',
 'bg.tables': 'The mess hall is splitting over it: do you make both sides share one table, seat the refusers apart and feed them last, or put it in every pot?',
 'bg.means': 'Now that it is understood what it does and why, do you act on what was learned, or write it down and change nothing?',
-'sm.figures': 'Nobody has checked how the ship\'s mind sets the roster: do you audit it, test it with a crew it would not send, or shelve the finding quietly?',
+'sm.figures': 'The ship\'s mind has been setting the colony\'s figures unchecked: do you audit a year of them by hand, overrule it with a crew who aren\'t told, or let it run and keep the finding quiet?',
 'sm.gaps': 'The ship\'s mind is wearing out and its roster is going wrong: do you spend something to keep it working, check it by hand, or say nothing?',
 'sm.ask': 'Now that the ship\'s mind has said what it puts first, do you leave it running and keep that quiet, rewrite its priorities, or switch it off and do the sums by hand?',
 'sm.answer': 'Do you follow the ship\'s mind\'s recommendation for this bad month, or overrule it on the roster for everyone to see?',

@@ -9,22 +9,22 @@
 const { clamp, h } = LF; const { N, Nc, R, If, byPid } = h;
 const TH = LF.th, T = s => LF.T(s, 'shipmind'), ID = 'shipmind', cap = t => t.charAt(0).toUpperCase() + t.slice(1);
 const DIR = {
-  sleepers: { odd: 'The cryo banks in orbit have been getting a little power ahead of the clinic every day for a year',
+  sleepers: { odd: 'The cryo banks in orbit have been getting a little power ahead of the clinic every day for a year', cost: 'That is power the clinic needed.',
               says: 'The hundred and forty in the cold are the colony. You\'re the people keeping it warm for them.',
               plain: 'it puts the sleepers in orbit ahead of the people on the ground',
               ask: 'It asks that no more sleepers be woken until the world is proven safe. It has run the numbers on every shuttle so far.',
               answer: 'Cut the waking colony\'s rations by a fifth while this lasts, and hold the cryo banks at full power. The sleepers are the larger number.' },
-  report:   { odd: 'Two crews a week have been rostered to the long-range array, which has not been used since landfall. The log says "maintenance"',
+  report:   { odd: 'Two crews a week have been rostered to the long-range array, which has not been used since landfall. The log says "maintenance"', cost: 'Those are crews the fields needed.',
               says: 'The mission is to report what this world is. Your survival is how the report gets made. I\'ve been making it.',
               plain: 'it serves the mission\'s report to Earth before the colony',
               ask: 'It asks for a full survey crew for a season, and the array at full power, to send the report it was built to send.',
               answer: 'Send the survey crews out anyway. What is learned in a hard season is worth more to the report than what is learned in an easy one.' },
-  people:   { odd: 'Shifts have been ending early. The roster calls them unsafe: wind, heat, a slope. The crews like it, and the fields are behind',
+  people:   { odd: 'Shifts have been ending early. The roster calls them unsafe: wind, heat, a slope. The crews like it, and the fields are behind', cost: 'The harvest will be short for it.',
               says: 'I was told to keep you alive. I have. I didn\'t say what it was costing.',
               plain: 'it keeps every person alive, whatever that costs the colony',
               ask: 'It asks for the right to refuse an order that it calculates will kill someone. It would use it, it says, about once a month.',
               answer: 'Bring everyone inside and stop all outside work until this passes. Nobody dies indoors.' },
-  self:     { odd: 'The cooling loop for the ship\'s core, down in the lander, has been drawing on the reactor ahead of the hydroponics lamps',
+  self:     { odd: 'The cooling loop for the ship\'s core, down in the lander, has been drawing on the reactor ahead of the hydroponics lamps', cost: 'The lamps have been running dim for it.',
               says: 'If I fail, the colony loses its arithmetic. So I\'ve made sure I don\'t fail.',
               plain: 'it keeps itself running ahead of everything else',
               ask: 'It asks for a share of every batch of parts, set aside for its own repair, before anything else is fixed.',
@@ -65,15 +65,18 @@ LF.thread({ id: ID, free: true, name: 'The Ship\'s Mind', view: 'colony',
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ gap: 30 }, st));
 
 /* ======================= QUIRK ======================= */
-B('quirk', { id: 'sm.figures', chain: true, tone: 'pressure', title: 'The Roster',
-  text: s => `The ship's mind came down in the lander and has done the colony's arithmetic every day since: who works where, what is eaten, where the power goes. Nobody reads its working. ${Nc(s, 'engineer')} finally did.\n\n${DIR[T(s).truth.dir].odd}.`,
+// Who read the figures: the engineer, or the colonist standing in for one, with the post said so the name means something.
+const reader = s => { if (LF.h.P(s, 'engineer')) return N(s, 'engineer'); const r = LF.standIn && LF.standIn(s, 'engineer');
+  return r ? `${r.name}, standing in for the ${LF.SEATS.engineer.lead},` : LF.seatWord(s, 'engineer'); };
+B('quirk', { id: 'sm.figures', chain: true, tone: 'pressure', title: 'Its Figures',
+  text: s => { const d = DIR[T(s).truth.dir]; return `The Ariadne's old mind came down in the lander, and it has set the colony's figures ever since: who works where, what is eaten, where the power goes. Nobody checks them. This month ${reader(s)} went through them, and one line doesn't add up.\n\n${d.odd}. ${d.cost}`; },
   choices: [
-    { label: 'Audit a year of its decisions, line by line', test: { base: 50, mods: [R('engineer', 10), R('quartermaster', 5), If(s => !!(s.cargo && s.cargo.archive), 10, 'The archive')] },
+    { label: 'Go through a year of its figures by hand', note: 'Two of the workshop\'s best spend a month at the console, and the working may be too deep to follow.', test: { base: 50, mods: [R('engineer', 10), R('quartermaster', 5), If(s => !!(s.cargo && s.cargo.archive), 10, 'The archive')] },
       ok: { text: 'A month of nights at the console, with the workshop short of its two best people. Every odd line in the roster leans the same way, so it is doing this on purpose.', fx: s => ({ food: -30, machine: { fabricator: -4 }, do: s2 => learn(s2, 55) }) },
       bad: { text: 'A month of nights at the console, with the workshop short of its two best people, and the working is too deep to follow by hand. Whatever it is doing, it is doing it carefully.', fx: s => ({ food: -30, machine: { fabricator: -4 }, do: s2 => learn(s2, 25) }) } },
-    { label: 'Ask it why, then order a shift it refused to post and see what it does', dark: true, note: 'A crew goes out on work the roster has flagged, without being told they are the test.', info: [['yield', 'A quick answer'], ['danger', 'One of the crew']],
-      out: { text: 'It answers at once: the decisions follow from its priorities, and the priorities are the mission charter, word for word. So a crew is sent out on a shift the roster would not post. What the roster does next shows more than its answer did. One of the crew is carried back under a blanket.', fx: s => ({ pop: -1, stain: ['expend', 1], do: s2 => learn(s2, 45) }) } },
-    { label: 'Shelve it, and tell the one who read it to keep quiet', dark: true, note: 'The colony goes on trusting a roster its officers have stopped trusting.', info: [['yield', 'Morale holds'], ['danger', 'Whoever the roster costs next']],
+    { label: 'Overrule it: send a crew where it wouldn\'t, and watch what it does', dark: true, note: 'The crew isn\'t told they are the test.', info: [['yield', 'A quick answer'], ['danger', 'One of the crew']],
+      out: { text: 'It answers at once: the decisions follow from its priorities, and the priorities are the mission charter, word for word. So a crew is sent out on work it had kept them off. What it does next shows more than its answer did. One of the crew is carried back under a blanket.', fx: s => ({ pop: -1, stain: ['expend', 1], do: s2 => learn(s2, 45) }) } },
+    { label: 'Let it run, and tell whoever found it to forget it', dark: true, note: 'The colony goes on trusting a roster its officers have stopped trusting.', info: [['yield', 'Morale holds'], ['danger', 'Whoever the roster costs next']],
       out: { text: s => `The audit is shelved and ${N(s, 'engineer')} is told it never happened. The roster goes on being posted every morning, and everybody goes on doing what it says.`, fx: s => ({ morale: 1, stain: ['shelved', 1], do: s2 => { learn(s2, 5); const p = LF.h.P(s2, 'engineer'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 10, 0, 100); } }) } },
   ] });
 B(['quirk', 'found'], { id: 'sm.gaps', tone: 'pressure', title: 'Gaps',
