@@ -129,9 +129,21 @@ function decStats(cids) {
 }
 const nameOf = k => { for (const seat in LF.CAST || {}) for (const c of LF.CAST[seat]) if (c.key === k) return `${c.first} ${c.last}`; return null; };
 const quo = l => `“${String(l).replace(/[.!?]$/, '')}”`;
+/* As on the end screen (labelOf): a hand-written card's option counts are by position, so only an option with fixed text
+   can be compared. One written from the game (the world's name, the landing sites, who gets the chair) offered something
+   else under the same id in other colonies. Generated and council cards are not in LF.byId and keep their lines. */
+function fixedPick(p) {
+  const st = p.ck && LF.byId && LF.byId[p.ck]; if (!st) return true;
+  const m = /#(\d+)$/.exec(p.ok || ''), ch = m && st.choices && st.choices[+m[1]];
+  return !!ch && typeof ch.label === 'string';
+}
 /* year(s, picks, done): up to three lines for the recap card from this year's picks (s.cur.year, council.js). */
 function year(s, picks, done) {
   if (!ENDPOINT || !picks || !picks.length) return done([]);
+  // A card's title: saves from before the fix in decisions.js carry an empty one, so fall back to the storylet's own, and
+  // leave out a card that still has none rather than print "came to ." (Lachlan, 2026-11-20).
+  picks = picks.map(p => { const st = !p.t && p.ck && LF.byId && LF.byId[p.ck]; return st && typeof st.title === 'string' ? Object.assign({}, p, { t: st.title }) : p; }).filter(p => p.t && fixedPick(p));
+  if (!picks.length) return done([]);
   const cids = picks.map(p => p.cid).filter((x, i, a) => x && a.indexOf(x) === i).slice(0, 30);
   decStats(cids).then(st => {
     if (!st || typeof st !== 'object') return done([]);

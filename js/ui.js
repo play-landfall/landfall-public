@@ -271,7 +271,7 @@ function cardHTML() {
     h += talkHTML(r.text) + `<div class="chips">${r.chips.map(c => `<span class="${c.good ? 'good' : 'bad'}">${esc(c.t)}</span>`).join('')}</div>`;
     if (s.cur.id === 'recap') h += moraleHTML() + humHTML() + yearHTML();
     // Year 0 (Lachlan, 2026-11-16): at landfall, how other colonies answered the crossing and the descent.
-    if (s.cur.id === 'landfall.site') h += yearHTML((s.ylog || []).filter(e => e.cid).map(e => ({ cid: e.cid, oid: e.oid, t: e.t, l: e.l, sent: e.sent, died: e.died })));
+    if (s.cur.id === 'landfall.site') h += yearHTML((s.ylog || []).filter(e => e.cid).map(e => ({ cid: e.cid, oid: e.oid, ck: e.ck, ok: e.ok, t: e.t, l: e.l, sent: e.sent, died: e.died })));
     h += `<button class="opt go" data-act="dismiss">${r.then ? 'There is more' : 'Go on'}</button>`;
   }
   return h + `</div>`;

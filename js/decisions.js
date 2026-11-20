@@ -51,11 +51,19 @@ LF.optKey = function (s, cur, i, ch, picked) {
 LF.outKey = (optKey, res) => `${optKey}:${res && res.success === true ? 'ok' : res && res.success === false ? 'bad' : 'out'}`;
 LF.ids = (cardKey, optKey, outKey) => ({ cid: LF.uid('card:' + cardKey), oid: LF.uid('opt:' + optKey), rid: LF.uid('out:' + outKey) });
 
+/* The card's title as the player sees it. A hand-written card keeps its title on the storylet (title or titleOf), not on
+   s.cur, which only a generated card fills: without this the recap's "the other colonies" lines named no card. */
+LF.titleOf = function (s) {
+  const cur = s.cur; if (!cur) return '';
+  if (cur.title) return cur.title;
+  const st = !cur.gen && LF.byId && LF.byId[cur.id]; if (!st) return '';
+  try { return (st.titleOf ? st.titleOf(s, cur.ctx) : st.title) || ''; } catch (e) { return ''; }
+};
 /* Who is on the card before it is answered: the officers alive (by cast key), and the ones sent in person. */
 LF.beforePick = function (s) {
   const alive = {}; for (const p of s.people || []) if (p.key && p.alive) alive[p.key] = p.id;
   const sent = ((s.cur && s.cur.attach) || []).map(id => (s.people || []).find(p => p.id === id)).filter(p => p && p.key).map(p => p.key);
-  return { alive, sent, title: s.cur && s.cur.title };
+  return { alive, sent, title: LF.titleOf(s) };
 };
 
 /* After a choice. info: { id, i, res, ch, before, picked } */
@@ -64,7 +72,7 @@ LF.picked = function (s, info) {
   const before = info.before || { alive: {}, sent: [] };
   const ck = LF.cardKey(s, cur), ok = LF.optKey(s, cur, info.i, info.ch, info.picked), rk = LF.outKey(ok, info.res);
   const died = Object.keys(before.alive).filter(k => { const p = (s.people || []).find(x => x.key === k); return p && LF.isDead(p); });
-  const rec = Object.assign({ ck, ok, rk, d: s.day, t: before.title || cur.title || '', l: (info.res && info.res.label) || '',
+  const rec = Object.assign({ ck, ok, rk, d: s.day, t: before.title || LF.titleOf(s), l: (info.res && info.res.label) || '',
     hit: info.res && info.res.success !== undefined ? !!info.res.success : null, died, sent: before.sent.slice() }, LF.ids(ck, ok, rk));
   // a party sent on this option: anyone who dies with it later is put down to this option (gen.js casualties)
   for (const k of before.sent) { const p = (s.people || []).find(x => x.key === k); if (p && p.alive && p.away) p.src = { ok, oid: rec.oid, t: rec.t, l: rec.l }; }
