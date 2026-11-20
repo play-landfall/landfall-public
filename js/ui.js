@@ -648,7 +648,7 @@ function colonyView() {
   const A = LF.ARCHETYPES[s.world.type], pil = LF.pillars(s), d = LF.date(s.day), cut = Object.values(pil).filter(Boolean).length;
   const cords = `<div class="cords">${Object.keys(PILL).map(k => `<span class="${pil[k] ? 'cut' : k === 'people' && s.built.school ? 'half' : ''}">${PILL[k]}${!pil[k] && k === 'people' ? ` ${LF.heads(s)}/${LF.peopleNeed(s)}` : ''}</span>`).join('')}</div>
     <div class="note" style="text-align:center">${cut === 5 ? 'All five cords are cut. The colony can outlive the ship.' : !cut ? 'No cord is cut yet. Cut all five and the colony can outlive the ship.' : `${NUMW[cut]} of five cords cut. Cut all five and the colony can outlive the ship.`}${pil.people ? '' : s.built.school ? ` The school is built; the people cord is cut at ${LF.peopleNeed(s)} colonists, and ${LF.heads(s)} live here.` : ` The people cord needs a school and ${LF.peopleNeed(s)} colonists; ${LF.heads(s)} live here.`}</div>`;
-  const stand = `<p class="mood">${esc(LF.mood(s))}</p>${cords}${reputationHTML()}${groupRows('in')}${doctrineHTML()}`;
+  const stand = `<p class="mood">${esc(LF.mood(s))}${LF.genLine ? ' ' + esc(LF.genLine(s)) : ''}</p>${cords}${reputationHTML()}${groupRows('in')}${doctrineHTML()}`;
   const mw = LF.moraleWord2 ? LF.moraleWord2(Math.round(s.morale)) : '';
   return `<div class="view">${LF.colonyView ? LF.colonyView(s) : LF.scene(s)}<div class="cap"><b>${esc(spot || (s.world.zone || '').replace(/^the /, 'The '))}</b><div class="lbl">${spot ? 'Tap anything in the settlement' : `${A.name} · ${LF.SEASONS[d.season]}, year ${d.year}`}</div></div></div>
     ${LF.aboutMachines(s) ? shipTable() : ''}
@@ -727,6 +727,12 @@ function profileHTML(p, f) {
     <button class="pbtn back" data-act="who" data-v="${esc(p.id)}">Back to the crew</button></div>`;
 }
 const KNOWN_MAX = 8;
+/* Where the six are, as counts (Lachlan, 2026-11-20: "Planetside: 3, In orbit: 3", not a paragraph). Empty states are left out. */
+function crewCounts() {
+  const n = { here: 0, hurt: 0, away: 0, orbit: 0, empty: 0 }; for (const k of LF.SEAT_ORDER) n[LF.seatState(s, k)]++;
+  const c = [['Planetside', n.here + n.hurt + n.away], ['In orbit', n.orbit], ['Away', n.away], ['Laid up', n.hurt], ['Empty', n.empty]].filter(([l, v], i) => i < 2 || v);
+  return `<div class="ccount">${c.map(([l, v]) => `<span${l === 'Empty' || l === 'Laid up' ? ' class="hot"' : ''}><b>${v}</b>${l}</span>`).join('')}</div>`;
+}
 function peopleView() {
   const op = whoOpen && s.people.find(p => p.id === whoOpen), pf = op && op.alive && op.role && LF.profile ? LF.profile(s, op) : null;
   if (pf) return profileHTML(op, pf);
@@ -734,9 +740,10 @@ function peopleView() {
   // business (rations, how it stands, its story) is in the Colony view's folds.
   const key = LF.keySettlers(s).sort((a, b) => (b.deeds.length - a.deeds.length) || (a.known || 0) - (b.known || 0));
   const six = LF.SEAT_ORDER.map(k => { const p = LF.officer(s, k), S = LF.SEATS[k], line = LF.seatLine(s, k);
-    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}"><span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');
+    const a = !s.flags['nopromote_' + k] && !s.flags.born_rule && LF.altOf(s, k), bk = a ? `<span class="bk">Backup: ${esc(a.first)}</span>` : `<span class="bk none">No backup</span>`;
+    return `<div class="seat${p && LF.seatState(s, k) === 'here' ? '' : ' off'}">${bk}<span class="lbl sp sp-${k}">${esc(S.name)}</span>${p ? whoHTML(p) : `<div class="row">${ic('people')}<div class="t"><b>Nobody</b><small>${LF.seatGone(s, k) ? 'Gone, and nobody to replace them' : 'Vacant'}</small></div></div>`}<small class="does">${esc(line || S.does)}</small></div>`; }).join('');
   const known = key.filter(p => !p.seat || !p.role).slice(0, KNOWN_MAX);
-  return `<p class="mood">${esc(LF.rosterLine(s))} ${esc(LF.vibes(s)[1].t)}${LF.genLine ? ' ' + esc(LF.genLine(s)) : ''}</p>
+  return `${crewCounts()}
     <h3>${ic('notable', 'h3i')}Your officers</h3><div class="box six">${six}</div>
     ${known.length ? `<h3>${ic('notable', 'h3i')}Known by name</h3><div class="box">${known.map(whoHTML).join('')}</div>` : ''}`;
 }
