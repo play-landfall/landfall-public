@@ -167,6 +167,10 @@ const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
 LF.h = {
   P, N, byPid,
   Nc: (s, role) => cap1(N(s, role)),
+  // N for a first mention: a stand-in comes with the department they stand in for ("Marco Bellini of the engineering crew"),
+  // so a name the player has never met means something. An officer in the seat is just their name.
+  Nw: (s, role) => { if (P(s, role)) return N(s, role); const r = LF.standIn && LF.standIn(s, role); return r ? `${r.name} of ${LF.seatWord(s, role)}` : LF.seatWord(s, role); },
+  Nwc: (s, role) => cap1(LF.h.Nw(s, role)),
   F: (s, role) => { const p = P(s, role); if (p) return p.first; const r = LF.standIn && LF.standIn(s, role); return r ? r.first : LF.seatWord(s, role); },
   title: role => LF.ROLES[role].title,
   anyNamed: (s, exclude) => { const ex = (exclude || []).map(k => LF.SEAT_OF[k] || k), a = s.people.filter(p => p.alive && !p.away && !(p.seat && p.role && ex.includes(p.seat)) && !ex.includes(p.id));

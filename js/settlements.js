@@ -184,7 +184,7 @@ add({ id: 'stl.found', arc: 'stl', tone: 'opportunity', title: 'A Second Wire', 
     A.name = LF.stlName(s, a, A.kind); A.word = A.kind === 'town' ? 'township' : LF.lex(s, A.kind);
     if (B) { B.name = LF.stlName(s, b, B.kind); B.word = B.kind === 'town' ? 'township' : LF.lex(s, B.kind); }
     return { A, B: B || A, two: !!B, hd, home: hd - outN, outN, k: LF.settlements(s).length, tight: hd > cp.n * 0.72 && !cp.full ? LF.LIMITS[cp.by].why(s) : '', road: LF.lex(s, 'road'), out: LF.lex(s, 'out'), sv: nm(s, 'geologist'), q: nm(s, 'quartermaster') }; },
-  text: (s, c) => `${LF.num(c.home)} people live inside ${c.outN ? 'the wire' : 'one wire'}${c.tight ? `, and what holds the number there is ${c.tight}` : ', and the bunk rows are let by the shift'}. ${c.k ? 'The council wants another settlement' : 'The council wants a settlement of its own people past the wire, the first'}, and ${c.sv} has ${c.two ? 'two places' : 'one place'} pegged out.\n\n`
+  text: (s, c) => `${LF.num(c.home)} people live inside ${c.outN ? 'the wire' : 'one wire'}${c.tight ? `, and what holds the number there is ${c.tight}` : ', and people sleep in the bunk rows by turns'}. ${c.k ? 'The council wants another settlement' : 'The council wants a settlement of its own people past the wire, the first'}, and ${c.sv} has ${c.two ? 'two places' : 'one place'} pegged out.\n\n`
     + `${c.A.name} would be ${an(c.A.word)} a morning's walk along ${c.road}, on ground the colony's own crews already work${c.A.old ? `, where ${c.A.old} stood` : ''}.${c.two ? ` ${c.B.name} would be ${an(c.B.word)} far ${c.out}, past the last marker, ${c.B.old ? `on the ground plates of ${c.B.old}, ` : ''}with room to grow for a generation.` : ''} ${cap(c.q)} has the plate for one of them.`,
   choices: [
     { label: (s, c) => `Raise ${c.A.name}, the near one`, cost: { mat: 60 }, note: 'It is in reach of the watch and the clinic. It takes the outer field for its ground and will never hold many.',
@@ -197,7 +197,7 @@ add({ id: 'stl.found', arc: 'stl', tone: 'opportunity', title: 'A Second Wire', 
         fx: (s, c) => ({ do: s2 => { const t = LF.stlFound(s2, c.B.slot, c.B.name, true); s2.flags.stl_new = t.id; } }), then: 'stl.who' } },
     { label: 'Not yet: everyone stays inside one wire', note: 'The crowding goes on, and the households that asked for ground of their own are told to wait another year.',
       info: [['danger', 'Morale']],
-      out: { text: 'The pegs are pulled and the plate goes back on the rack. The bunk rows stay let by the shift. The list of households asking for ground is kept, and it is longer by the end of the month.',
+      out: { text: 'The pegs are pulled and the plate goes back on the rack. People go on sleeping in the bunk rows by turns. The list of households asking for ground is kept, and it is longer by the end of the month.',
         fx: s => ({ morale: -3, tension: 4, do: s2 => { LF.stl(s2).ask = s2.day + 4 * MONTH; } }) } },
   ] });
 
@@ -205,7 +205,7 @@ add({ id: 'stl.found', arc: 'stl', tone: 'opportunity', title: 'A Second Wire', 
 add({ id: 'stl.who', arc: 'stl', tone: 'pressure', title: 'Who Goes', chain: true, repeat: 1, gap: 0, city: true, view: 'people',
   setup: s => { const t = LF.stlById(s, s.flags.stl_new) || LF.settlements(s).slice(-1)[0], C = LF.children(s);
     return Object.assign(t ? ctxOf(s, t) : { name: 'the new settlement', n: 40, kind: 'township' }, { young: C.born >= 20 && C.eldest >= 9, lock: Math.max(4, Math.round(LF.sized(s) * 0.05)) }); },
-  text: (s, c) => `${c.name} needs about ${num(round(c.n))} people to hold it through its first year. More names are down for it than there are places, and nearly all of them are young and were born here. The founding households have put down almost none.\n\nWhoever goes will live out of sight of the wall. The list is yours to settle.`,
+  text: (s, c) => `${c.name} needs about ${num(round(c.n))} people to hold it through its first year. More names are down for it than there are places, and nearly all of them are young${LF.children(s).eldest >= LF.AGE ? ', many of them born here' : ''}. The founding households have put down almost none.\n\nWhoever goes will live out of sight of the wall. The list is yours to settle.`,
   choices: [
     { label: 'Let the ones who asked go', note: 'The young and the able leave the yard and the field crews, which are short of exactly them.',
       info: [['yield', 'A settlement that wants to be there'], ['danger', 'Hands, for a year']],
@@ -220,7 +220,7 @@ add({ id: 'stl.who', arc: 'stl', tone: 'pressure', title: 'Who Goes', chain: tru
       out: { text: (s, c) => `The watch reads the list at the gate, and it is the list everybody expected. They go out under escort with their households and what they can carry. The escort comes back the same month. The lock-up is empty and the mess is calmer.`,
         fx: s => ({ morale: 1, tension: -10, stain: ['stl_exiled', 2], do: s2 => { const t = LF.stlById(s2, s2.flags.stl_new); if (t) { t.who = 'out'; t.sour = 3; } },
           chron: (s2, c) => `${c.name} was settled with the people the colony wanted rid of.` }) } },
-    { label: 'Send the eldest children, with a few of the grown to mind them', dark: true, show: (s, c) => c.young, note: 'Every working adult stays at a crew. Children of twelve and thirteen raise a settlement.',
+    { label: 'Send the eldest children, with a few of the grown to mind them', dark: true, show: (s, c) => c.young, note: 'Every working adult stays at a crew, and children too young for the work roster raise a settlement.',
       info: [['yield', 'No hands lost'], ['danger', 'The children sent']],
       out: { text: (s, c) => `The eldest classes are marched out behind two carts, with a teacher and a few of the grown. They raise the frames in the first month, badly, and raise them again. One child is under a frame when it goes over.`,
         fx: s => ({ pop: -1, morale: -2, stain: ['stl_children', 2], do: s2 => { const t = LF.stlById(s2, s2.flags.stl_new); if (t) t.who = 'young'; } }) } },
@@ -230,7 +230,7 @@ add({ id: 'stl.who', arc: 'stl', tone: 'pressure', title: 'Who Goes', chain: tru
 add({ id: 'stl.council', arc: 'stl', tone: 'pressure', title: 'A Table of Their Own', chain: true, repeat: 1, gap: 0, city: true, view: 'people',
   fits: s => !!pickStl(s, t => !t.council && !t.ruled && t.n >= 15, t => t.sour), when: s => LF.byId['stl.council'].fits(s),
   setup: s => { const t = pickStl(s, x => !x.council && !x.ruled && x.n >= 15, x => x.sour) || LF.settled(s)[0]; return Object.assign(ctxOf(s, t), { others: LF.settled(s).length - 1, dead: Math.max(2, Math.round(t.n * 0.06)) }); },
-  text: (s, c) => `${c.name} has elected three people to a table of its own and sent the minutes in by cart. They mean to hear their own disputes, keep their own lock-up and set their own rations, and they ask for one voice on your council.${c.who === 'out' ? ' Two of the three were on the watch\'s list the year they were sent out.' : c.who === 'young' ? ' The eldest of the three is sixteen.' : ''}\n\nNothing in the charter says that a settlement may do this, and nothing says it may not.`,
+  text: (s, c) => `${c.name} has elected three people to a table of its own and sent the minutes in by cart. They mean to hear their own disputes, keep their own lock-up and set their own rations, and they ask for one voice on your council.${c.who === 'out' ? ' Two of the three were on the watch\'s list the year they were sent out.' : c.who === 'young' ? ' All three were sent out as children to raise the place.' : ''}\n\nNothing in the charter says that a settlement may do this, and nothing says it may not.`,
   choices: [
     { label: 'Grant it, and seat their voice', note: (s, c) => `The colony stops being one place under one table${c.others > 0 ? ', and the other settlements will ask for the same' : ''}.`,
       out: { text: (s, c) => `The three are entered in the record and one more chair is put at the council table for ${c.name}. Their voice votes against the first levy that comes up, and loses, and stays in the chair.`,

@@ -18,7 +18,7 @@
    Children lost on a card are a share of the cohorts worked out at setup and taken exactly (young). */
 (function () {
 'use strict';
-const { add, h, clamp } = LF; const { N, Nc, R, M, byPid, foodDays } = h;
+const { add, h, clamp } = LF; const { N, Nc, Nwc, R, M, byPid, foodDays } = h;
 const { X, yr, num, Num, voiceCtx, young, kidChip, share, founders, rosterOn, grudge, risk, regard, allRegard } = LF.gn;
 const YEAR = LF.YEAR, MONTH = LF.MONTH;
 const G = s => LF.gen(s), kids = s => LF.kidCount(s), eldest = s => LF.children(s).eldest, AGE = LF.ageWord;
@@ -57,7 +57,7 @@ const here = s => HERE[s.world.type] || HERE.garden;
 B({ id: 'gen.grave', aside: true, tone: 'pressure', title: 'A Small Box', w: 7,
   when: s => { const x = X(s); return !!x.lostDay && s.day - x.lostDay < 2 * YEAR && !s.flags.gn_grave && s.pop >= 20 && mile(s); },
   setup: s => ({ cause: s.res.food <= 0 ? 'hunger' : !s.built.school ? 'a fever, in a colony with no clinic bed small enough' : 'a fever the clinic could not name' }),
-  text: (s, c) => `The first of the children born on ${s.world.planet} to die here died in the night, of ${c.cause}. The parents carried the box to the burial ground themselves, and found no small plot there, because nobody had planned one.\n\n${Nc(s, 'physician')} wants the body for a day first.\n\n[[physician]] "I don't know what kills them here, and I won't unless I look. Give me till tomorrow night, and the next one might not have to die of it. They've said no twice, and I'd say no too, so you go and ask them again."`,
+  text: (s, c) => `The first of the children born on ${s.world.planet} to die here died in the night, of ${c.cause}. The parents carried the box to the burial ground themselves, and found no small plot there, because nobody had planned one.\n\n${Nwc(s, 'physician')} wants the body for a day first.\n\n[[physician]] "I don't know what kills them here, and I won't unless I look, so give me till tomorrow night and maybe the next little one won't have to die of it. The parents have told me no twice, and if it were mine in that box I'd tell you no as well, so you go and ask them, and you look at their faces while they answer."`,
   choices: [
     { label: 'Give the clinic its day, over the parents\' refusal', dark: true, info: [['yield', 'Fewer of the children lost, from now on'], ['danger', 'The parents']],
       out: { text: s => `${Nc(s, 'physician')} does it alone with the door locked, and is finished before the light goes. The findings fill two pages and change what the clinic does for every child after this one. The parents get the box back sealed. They bury it without the colony, and do not come to the hall again.`,
@@ -104,7 +104,7 @@ B({ id: 'gen.strange', aside: true, tone: 'quiet', title: 'Their Own Words',
 B({ id: 'gen.adapt', tone: 'opportunity', title: 'What the Clinic Found',
   when: s => eldest(s) >= 8 && kids(s) >= 10 && !s.flags.gn_adapt,
   setup: s => ({ kd: share(s, 0.02, 1, 40), kd2: share(s, 0.03, 1, 60) }),
-  text: s => `The children born here are not built quite as their parents are, and the clinic can now say how. ${here(s).adapt}\n\n${Nc(s, 'physician')} has it written up and cannot explain it.\n\n[[physician]] "It's not in any genome I've got on file for them. It's this place, doing it to them while they grow, and I won't pretend that doesn't frighten me. I'd like to know what else it's doing."\n\n${Nc(s, 'quartermaster')} has read the same report, and thought of ${here(s).use}.`,
+  text: s => `The children born here are not built quite as their parents are, and the clinic can now say how. ${here(s).adapt}\n\n${Nwc(s, 'physician')} has it written up and cannot explain it.\n\n[[physician]] "It's not in any genome I've got on file for them, it's this place doing it to them while they grow, and I won't pretend that doesn't frighten me. The eldest sat on my bench while I read it out and asked me whether it meant something was wrong with them, and I'd like to know what else it's doing before I have to answer that."\n\n${Nwc(s, 'quartermaster')} has read the same report, and thought of ${here(s).use}.`,
   choices: [
     { label: s => `Use it. The children do ${here(s).use}`, dark: true, info: [['yield', 'Food, materials and the map'], ['danger', 'The children sent']],
       out: { text: (s, c) => `The eldest are put on it under a founder, who stands where a founder can stand and watches. They do in a morning what a grown crew did in a month. ${Num(c.kd)} of them ${c.kd === 1 ? 'is' : 'are'} lost at it in the first year, to things the report had not thought to test for.`,
@@ -156,7 +156,7 @@ B({ id: 'gen.outside', far: true, view: 'world', tone: 'opportunity', title: 'Th
 B({ id: 'gen.ofage', aside: true, far: true, chain: true, tone: 'pressure', title: AGE.charAt(0).toUpperCase() + AGE.slice(1),
   when: s => !!X(s).ofAge && !s.flags.gn_ofage,
   setup: s => ({ n: Math.max(1, X(s).firstAged || 1) }),
-  text: (s, c) => `${Num(c.n)} of the children born here turned ${AGE} at the turn of the year and ${c.n === 1 ? 'is' : 'are'} on the work roster this morning, as the rule says. ${c.n === 1 ? 'The coverall was' : 'Their coveralls were'} cut down from a parent's. ${c.n === 1 ? 'This is the first hand' : 'They are the first hands'} the colony has raised for itself.\n\n${Nc(s, 'quartermaster')} has three crews short of hands.\n\n[[quartermaster]] "Same ladle as anyone, if they work. That's fair. Where they work is yours to say."`,
+  text: (s, c) => `${Num(c.n)} of the children born here turned ${AGE} at the turn of the year and ${c.n === 1 ? 'is' : 'are'} on the work roster this morning, as the rule says. ${c.n === 1 ? 'The coverall was' : 'Their coveralls were'} cut down from a parent's. ${c.n === 1 ? 'This is the first hand' : 'They are the first hands'} the colony has raised for itself.\n\n${Nwc(s, 'quartermaster')} has three crews short of hands.\n\n[[quartermaster]] "If they work, they eat from the same ladle as the rest of us, and that's only fair. Where they go is yours to say, and I'd say it slow, because they're green yet."`,
   choices: [
     { label: 'The haul crew is shortest. That is where a new hand goes', dark: true, info: [['yield', 'Materials'], ['danger', 'One of the new hands, on the incline']],
       out: { text: 'A new hand goes on the haul line between two grown ones, and keeps the pace for a month. Then a load shifts on the incline, and the youngest hand on the line does not get clear. The crew carries the body down with the stone.',
@@ -401,7 +401,7 @@ CI({ id: 'gen.packs', far: true, tone: 'crisis', title: 'The Law of the Rows', r
 CI({ id: 'gen.mouths', tone: 'crisis', title: 'Small Bowls', w: 3, repeat: 3 * YEAR, max: 3,
   when: s => foodDays(s) < 22 && kids(s) >= 12 && s.pop >= 20,
   setup: s => ({ kids: kids(s), fd: Math.max(1, Math.round(foodDays(s))), kd: share(s, 0.05, 2, 400), kd2: share(s, 0.03, 1, 250), old: eldest(s) >= 7 }),
-  text: (s, c) => `There are ${num(c.fd)} days in the bins and ${LF.num(c.kids)} children at the long tables. A child eats a fifth of what a field hand eats, and does none of the work that fills the bins.\n\n${Nc(s, 'quartermaster')} has worked it more than one way and brought you all of them, face down.`,
+  text: (s, c) => `There are ${num(c.fd)} days in the bins and ${LF.num(c.kids)} children at the long tables. A child eats a fifth of what a field hand eats, and does none of the work that fills the bins.\n\n${Nwc(s, 'quartermaster')} has worked it more than one way and brought you all of them, face down.`,
   choices: [
     { label: 'The crews eat first. The children\'s bowls go to a third', dark: true, info: [['yield', 'Food, and crews who can work'], ['danger', 'The smallest']],
       out: { text: (s, c) => `The field crews get the full ladle and bring the harvest in on it. The children's tables get what is left. The clinic buries ${num(c.kd)} of the smallest before the bins turn, and the ones who lived through it will always be short for their age.`,
@@ -417,7 +417,7 @@ CI({ id: 'gen.mouths', tone: 'crisis', title: 'Small Bowls', w: 3, repeat: 3 * Y
 CI({ id: 'gen.fever', view: 'people', tone: 'crisis', title: 'Going Through the School', w: s => (LF.date(s.day).year > 15 ? 4 : 1.6), repeat: 6 * YEAR, max: 3,
   when: s => kids(s) >= 20 && yr(s) >= 5 && !!s.built.school && !s.flags.gn_fever_run,   // let run once, it finds nobody to take: it does not come back
   setup: s => ({ again: (s.nfired || {})['gen.fever'] > 0, sick: share(s, 0.3, 6), a: share(s, 0.015, 1, 150), b: share(s, 0.04, 2, 500), c2: share(s, 0.07, 3, 800) }),
-  text: (s, c) => `${c.again ? 'The school fever is back, among the ones too young to have had it the last time. It is taking them by year again' : 'A fever is going through the school by year'}: the fives first, and now the sevens. There are ${num(c.sick)} children down with it, and the clinic has cots for a tenth of them. It has not touched one grown person.\n\n${Nc(s, 'physician')} has a serum that works in the dish and has never been in a child.\n\n[[physician]] "Don't look at me like that. I told you what it is, I didn't say use it. If you order it, you stand at the cot while I do."`,
+  text: (s, c) => `${c.again ? 'The school fever is back, among the ones too young to have had it the last time. It is taking them by year again' : 'A fever is going through the school by year'}: the fives first, and now the sevens. There are ${num(c.sick)} children down with it, and the clinic has cots for a tenth of them. It has not touched one grown person.\n\n${Nwc(s, 'physician')} has a serum that works in the dish and has never been in a child.\n\n[[physician]] "Don't look at me like that, I told you what it is and I never once said use it. If you order it, you come and stand at the cot and hold the hand of whichever child gets it first, because I won't have them looking up at nobody but me."`,
   choices: [
     { label: 'Shut the school and the rows. Every parent home with their own for a month', info: [['danger', 'A month of the fields'], ['danger', 'A few of the children']],
       out: { text: (s, c) => `The school is shut and the rows are chalked. The fields go untended for a month, and the fever runs out of houses to move to. ${Num(c.a)} of the children ${c.a === 1 ? 'dies' : 'die'} of it, at home.`,
@@ -468,7 +468,7 @@ CI({ id: 'gen.elders', far: true, view: 'people', tone: 'pressure', title: 'Past
 CI({ id: 'gen.last', far: true, view: 'people', tone: 'quiet', title: 'The Last of the Woken', w: 4,
   when: s => yr(s) >= 33 && G(s).born >= s.pop * 0.9 && !s.flags.gn_last,
   setup: s => Object.assign(voiceCtx(s), { n: clamp(founders(s), 3, 9) }),
-  text: (s, c) => `There are ${num(c.n)} people left who slept on the ship, and the youngest of them is past seventy. When they are gone, nobody alive will have seen another sky.\n\n${c.name} has come from the hall to ask what the colony should keep of them, and has brought the answer the east rows favour.\n\n[[${c.pid}]] "Let it end with them. We'll bury them well. But the Earth year in school, the hour at noon, the archive: that's theirs. It was never ours."`,
+  text: (s, c) => `There are ${num(c.n)} people left who slept on the ship, and the youngest of them has gone grey. When they are gone, nobody alive will have seen another sky.\n\n${c.name} has come from the hall to ask what the colony should keep of them, and has brought the answer the east rows favour.\n\n[[${c.pid}]] "Let it end with them. We'll bury them well. But the Earth year in school, the hour at noon, the archive: that's theirs. It was never ours."`,
   choices: [
     { label: 'Sit a clerk with each of them, and write down all of it', cost: { food: 80 }, info: [['danger', 'A season of clerks, for books few will open']],
       out: { text: 'A clerk sits with each founder through the dark months and writes until the founder is tired. It comes to forty books. Most of the born will never open one. The founders die knowing which shelf the books are on.',

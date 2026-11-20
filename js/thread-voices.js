@@ -197,7 +197,7 @@ B('near', { id: 'vo.names', tone: 'pressure', w: 5, title: 'Somebody\'s Laugh',
 B(['near', 'night', 'bill'], { id: 'vo.gone', chain: true, tone: 'crisis', title: 'The Lamp-Line',
   when: (s, t) => !!t.gone,
   setup: s => { const t = T(s); return Object.assign(crew(s), { back: t.gone.back, ev: pickK(s, t), ev2: pickK(s, t) }); },
-  text: (s, c) => `One of the night riggers walked out through the gate last night, toward a voice. The gate watch says the rigger answered it by name, the name of somebody who died on the crossing, and could not be turned back.\n\n${c.back
+  text: (s, c) => `One of the night riggers walked out through the gate last night, toward a voice. The gate watch says the rigger answered it by a name from home, and could not be turned back.\n\n${c.back
     ? 'At first light the rigger was standing at the wire asking to be let in, wet to the knees, with no memory of anything past the lamp-line. The bunkhouse does not want the rigger back in it.'
     : 'The search at first light found a hand lamp past the lamp-line, set down upright and still burning. One set of tracks goes on from it, at a walk.'}`,
   choices: [
@@ -221,7 +221,7 @@ B(['near', 'night', 'bill'], { id: 'vo.gone', chain: true, tone: 'crisis', title
 B(['near', 'night'], { id: 'vo.tape', tone: 'pressure', w: 4, title: 'Played Slow',
   when: (s, t) => !!t.taped,
   setup: s => { const t = T(s); return Object.assign(crew(s), { tape: pickK(s, t), tracks: pickK(s, t), blood: pickK(s, t) }); },
-  text: (s, c) => `${c.S} has the wire recordings on the bench, slowed eight times.\n\n[[xenobio]] "There's structure in it. There, see? And there again. That much I'll swear to. Past that I'm guessing, and I'd love to guess."\n\nHalf the colony has a theory by now, and each theory wants something different done. No crew will take a job that ends near the wire after mid-afternoon.`,
+  text: (s, c) => `${c.S} has had a recorder on the wire through the night, and has the tape on the bench, slowed eight times.\n\n[[xenobio]] "There's structure in it, there, see, and there again, the same shape at a lower pitch, and that much I'll swear to, but past that I'm guessing, and I'd love to guess out loud if you'll let me."\n\nHalf the colony has a theory by now, and each theory wants something different done. No crew will take a job that ends near the wire after mid-afternoon.`,
   choices: [
     { label: 'Give it the bench and a month', note: 'A month of the survey team on something that cannot be eaten.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5), If(s => !!(s.cargo && s.cargo.lab), 10, 'The field laboratory')] },
       ok: { text: (s, c) => `${EV.bench[c.tape]} It is one reading of one tape, and the people who made the tape were frightened.`, fx: (s, c) => ({ food: -40, do: s2 => learn(s2, T(s2), 26, c.tape) }) },
@@ -354,7 +354,7 @@ B(['near', 'night', 'bill'], { id: 'vo.back', chain: true, view: 'world', tone: 
   text: (s, c) => `${c.lead ? `${c.lead} is back with the party sent after the voices, ${c.k ? `${num(c.k)} short` : 'all of them walking'}.` : `The party sent after the voices is back, ${c.k ? `${num(c.k)} short` : 'all of them walking'}.${c.dead ? ` ${c.dead} is not with them.` : ''}`} They followed it to where it lies up by day.\n\n${FOUND[c.found]} They do not all tell it the same way${c.k ? ', and the ones who might have settled it did not come home' : ''}.`,
   choices: [
     { label: 'Go back in strength and burn it', dark: true, note: 'It ends there if that is all of it, and nobody has seen clearly what is being burned.', test: { base: 50, mods: [R('security', 10), If(s => !!(s.cargo && s.cargo.arms), 10, 'The arms locker')] },
-      ok: { text: (s, c) => 'Twenty go out with fuel and are back before dark. ' + (is(s, 'mimic') ? 'It was home this time. They burned it in the scrape, and stood round until it stopped using other people\'s voices.'
+      ok: { text: (s, c) => 'Twenty go out with fuel and are back before dark. ' + (is(s, 'mimic') ? 'It was there this time. They burned it in the scrape, and stood round until it stopped using other people\'s voices.'
           : is(s, 'copy') ? 'They burned the hollow and what lay in it. Some of the party say the sleepers woke at the end and called out, by name, to people who were standing there holding the cans.'
           : 'They fired the windbreak with the wind behind them. People came out of it. The party shot at what ran, as ordered, and then went and looked at what they had shot.'),
         fx: s => ({ stain: ['vo_burn', 2], morale: is(s, 'mimic') ? 2 : -4, do: s2 => { const t = T(s2), k = t.truth.is; t.did.burn = true;

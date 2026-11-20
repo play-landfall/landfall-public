@@ -44,14 +44,14 @@ const PITCH = {
   soillab: { by: 'botanist', yields: 'Answers about the soil', base: 85,
     say: s => s.flags.soil_clues ? 'The notebooks are full. Give me a bench and a microscope and they turn into answers.' : (LF.need ? LF.need(s) : 'soil') === 'soil' ? 'Nobody knows why the wheat sickens here, so every planting is a guess. I\'d like to stop guessing.' : 'Nobody\'s measured what this ground will grow and what it won\'t. Till somebody does, every planting is a guess.',
     go: 'A cargo pod is gutted and fitted with benches.',
-    done: s => 'A cargo pod with benches, a centrifuge and a hand-lettered sign. The agronomists log every sample that comes in.' },
+    done: s => 'A cargo pod with benches, a centrifuge and a hand-lettered sign. Every sample the field crews bring in is logged on the wall.' },
   housing: { by: 'quartermaster', yields: 'Steadier morale', base: 45, need: s => (LF.harsh(s) ? 15 : 0) + (s.morale < 40 ? 20 : 0) + (s.pop > 95 ? 15 : 0),
     say: s => LF.harsh(s) ? 'The pods weren\'t built for this weather. Folk sleep in their work clothes.' : s.pop > 95 ? `${s.pop} of us in pods meant for sixty.` : 'Folk need proper walls. They work easier once they\'ve got a door of their own.',
     go: 'The first street is pegged out with string, and argued over at once.',
     done: s => 'A street of doors, each a different colour because the paint ran short. Somebody has planted a seedling by one of the steps.' },
   wells: { by: 'engineer', yields: 'Water of your own', base: 75, need: s => s.machines.reclaimer.lost ? 45 : (100 - hp(s, 'reclaimer')) * 0.4,
     say: s => s.machines.reclaimer.lost ? 'The reclaimer\'s gone and I can\'t build another. We have to dig.' : `The reclaimer ${wornWord(s, 'reclaimer')}, and I'm not promising her another year. Dig while there's still something to drink.`,
-    go: 'The first shaft is started where the geologist drove a stake.',
+    go: 'The first shaft is started where the survey party drove a stake.',
     done: s => 'The water comes up cold and tastes of stone. Nobody has drunk water that was not recycled in their adult lives.' },
   fields: { by: 'botanist', yields: 'Food without the ship', base: 82,
     say: s => 'The new wheat wants open ground, and plenty of it.',
@@ -175,11 +175,11 @@ LF.firePlan = function (s) {
       note: `${who ? who.name : cap1(LF.seatWord(s, T.by))}: "${T.say(s)}"${asked >= 2 ? ' Asked for ' + (asked === 2 ? 'twice' : 'three times and more') + ' already.' : asked === 1 ? ' Asked for once before.' : ''}`,
       out: { text: pk ? `The crews go back to the ${LF.projName(s, o.id).toLowerCase()} where they left it.` : T.go, fx: { start: o.id } } }; });
   // Always on offer (Lachlan, 2026-11-15): the crews can be put on salvage instead, so a thin yard is never forced into spares.
-  choices.push({ ap: null, v: [], label: 'Build nothing yet. Put the crews on salvage', hint: 'unknown', lock: '', cost: null, info: [['time', 'A month'], ['yield', 'Materials']], proj: null, rank: 9,
+  choices.push({ ap: null, v: [], label: 'Build nothing yet. Put the crews on salvage', hint: 'unknown', lock: '', cost: null, info: [['time', 'Two months'], ['yield', 'Materials']], proj: null, rank: 9,
     note: 'Two months of the build crews filling the yard. Nothing goes up, and whatever is wearing out goes on wearing.', out: { text: 'The build crews go out with the salvage sledges instead. The yard begins to fill.', fx: { plan: 20, mat: 14 } } });
   const first = !Object.keys(s.built).length && !s.memo._plan;
   sideCard(s, { id: 'plan', plan: true, title: first ? 'First Things' : 'What Gets Built', tone: 'council',
-    text: (first ? `The pods are down and the reactor is running. The build crews are standing in the mud with their tools, waiting to be told where to start.`
+    text: (first ? `The pods are down and the reactor is running. The build crews are standing in the yard with their tools, waiting to be told where to start.`
       : s.lastBuilt && s.day - s.lastBuilt.d < 3 ? `The build crews are free again, and the officers have been waiting for it.` : waited ? `The salvage sledges have filled the yard far enough to build again.` : `The build crews have nothing in hand, and every officer has an opinion about that.`),
     ask: first ? 'What do the build crews put up first, or do they spend the time on salvage?' : 'What goes up next, or do the crews go out on salvage instead?',
     choices });

@@ -7,37 +7,37 @@ const grav = s => s.world.grav >= 1.12 ? 'heavy' : s.world.grav < 0.85 ? 'light'
 const low = (s, id, v) => ok(s, id) && s.machines[id].hp < v;
 
 /* ---- warnings: the colony's actual condition, said by the people watching it ---- */
-rep('w.food', { urgent: true, repeat: 40, k: 'bad', when: s => foodDays(s) < 45, text: s => `${Nc(s, 'quartermaster')}: "Stores'll last ${foodDays(s) < LF.MONTH ? 'less than a month' : LF.monthsWord(foodDays(s) / LF.MONTH)} at this rate."` });
-rep('w.parts', { urgent: true, repeat: 60, k: 'bad', when: s => s.res.parts < 6, text: s => `Spare parts are nearly gone. ${Nc(s, 'engineer')} has started keeping fasteners in a locked drawer.` });
+rep('w.food', { urgent: true, repeat: 40, k: 'bad', when: s => foodDays(s) < 45, text: s => `${h.Nwc(s, 'quartermaster')}: "Stores'll last ${foodDays(s) < LF.MONTH ? 'less than a month' : LF.monthsWord(foodDays(s) / LF.MONTH)} at this rate."` });
+rep('w.parts', { urgent: true, repeat: 60, k: 'bad', when: s => s.res.parts < 6, text: s => `Spare parts are nearly gone. ${h.Nwc(s, 'engineer')} has started keeping fasteners in a locked drawer.` });
 rep('w.reactor', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'reactor', 40), text: s => `The reactor is running rough. The lights dip whenever the fabricator starts.` });
 rep('w.reclaimer', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'reclaimer', 40), text: s => `The water has a taste again. The reclaimer needs attention it is not getting.` });
-rep('w.hydro', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'hydroponics', 40), text: s => `A third of the hydroponic lamps are dark. ${Nc(s, 'botanist')} is rotating trays by hand.` });
-rep('w.medbay', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'medbay', 40), text: s => `The autodoc refused a routine procedure today, citing its own calibration. ${Nc(s, 'physician')} did it by hand.` });
+rep('w.hydro', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'hydroponics', 40), text: s => `A third of the hydroponic lamps are dark. ${h.Nwc(s, 'botanist')} is rotating trays by hand.` });
+rep('w.medbay', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'medbay', 40), text: s => `The autodoc refused a routine procedure today, citing its own calibration. ${h.Nwc(s, 'physician')} did it by hand.` });
 rep('w.fab', { urgent: true, repeat: 70, k: 'bad', when: s => low(s, 'fabricator', 40), text: s => `The fabricator's reject bin is filling faster than its output tray.` });
-rep('w.morale', { urgent: true, repeat: 45, k: 'bad', when: s => s.morale < 32, text: s => `${Nc(s, 'chaplain')}: "Nobody's come in to complain all month. Nobody. You want something to worry about, worry about that."` });
+rep('w.morale', { urgent: true, repeat: 45, k: 'bad', when: s => s.morale < 32, text: s => `${h.Nwc(s, 'chaplain')}: "Nobody's come in to complain all month. Nobody. You want something to worry about, worry about that."` });
 
 /* ---- texture: small things that happen in a place where people live ---- */
 rep('t.cat', { when: s => s.day > 20, text: s => `The ship's cat, smuggled down in a tool bag, has had kittens under the reactor hall. Nobody will admit to the smuggling.` });
 rep('t.stars', { when: s => s.day > 10, text: s => `Someone has started naming the constellations. The Ladle. The Broken Strut. The Administrator's Eyebrow.` });
 rep('t.yield', { repeat: 150, k: 'good', when: s => ok(s, 'hydroponics'), text: s => `A new lamp schedule in hydroponics has paid off.`, fx: { food: 60 } });
 rep('t.salvage', { repeat: 160, k: 'good', text: s => `A descent-stage fuel tank is found intact a kilometre from the landing site and cut up for plate.`, fx: { mat: 12 } });
-rep('t.still', { when: s => s.day > 80, text: s => `There is a still, and everyone knows where it is. ${Nc(s, 'security')} has decided not to.` });
+rep('t.still', { when: s => s.day > 80, text: s => `There is a still, and everyone knows where it is. ${h.Nwc(s, 'security')} has decided not to.` });
 rep('t.game', { when: s => s.day > 50, k: 'good', fx: { morale: 1 }, text: s => ({
   heavy: `The evening football match is played at a walk here. A ball of wound cable insulation comes down in this gravity like a dropped wrench, and so do the players. It ended one all.`,
   light: `The evening football match, played with a ball of wound cable insulation that spends most of its time in the air in this gravity, ended nine all.`,
   even: `The evening football match, played with a ball of wound cable insulation on ground nobody has levelled, ended four all.` })[grav(s)] });
-rep('t.bird', { when: s => s.survey > 20 && s.world.truth.bio >= 35, text: s => `${Nc(s, 'xenobio')} has catalogued the four-winged glider that nests on the comms mast. The crews had already named it the mast-rat.` });
+rep('t.bird', { when: s => s.survey > 20 && s.world.truth.bio >= 35, text: s => `${h.Nwc(s, 'xenobio')} has catalogued the four-winged glider that nests in the eaves of the pods. The crews had already named it the mast-rat.` });
 rep('t.smell', { when: s => s.day > 30, text: s => `${({ barren: 'When the wind drops the air smells of struck flint', ruin: 'After rain the rubble smells of wet iron and old paper', ice: 'On still days the cold has a smell, like the inside of a tin',
   drowned: 'At low water the whole shore smells of salt, with something sweeter under it', jungle: 'After rain the ground smells of cloves and rot', garden: 'After rain the ground smells of cloves and cut grass' })[s.world.type]}. The newly woken remark on it. The first sixty stopped noticing long ago.` });
-rep('t.teach', { when: s => s.flags.children, text: s => `${Nc(s, 'teacher')} is teaching the children long division in the dirt with a stick. Two of the engineers have started sitting in.` });
+rep('t.teach', { when: s => s.flags.children, text: s => `${h.Nwc(s, 'teacher')} is teaching the children long division in the dirt with a stick. Two of the engineers have started sitting in.` });
 rep('t.grave', { when: s => s.flags.cemetery && s.deaths > 2, text: s => `The cemetery path is swept every week, and it is on nobody's rota.` });
 rep('t.blind', { when: s => s.flags.blind_colonists, text: s => `The blind have taken over the rope walk and the looms. Their cordage is the best in the colony.` });
 rep('t.council', { repeat: 200, when: s => s.flags.council, text: s => `The Council sat for six hours on the question of latrine siting and adjourned without a vote.` });
 rep('t.convict', { when: s => s.people.some(p => p.alive && p.marks.convict), text: s => `${s.people.find(p => p.alive && p.marks.convict).name} finished the last day of hard labour and went back to work without ceremony. People made room at the table.` });
 rep('t.hero', { when: s => s.people.some(p => p.alive && p.marks.hero), text: s => `The reactor crew have painted ${s.people.find(p => p.alive && p.marks.hero).first}'s handprint on the loop housing, at the weld.` });
 rep('t.touched', { when: s => s.people.some(p => p.alive && p.marks.touched) && !s.flags.bld_sealed, text: s => `${s.people.find(p => p.alive && p.marks.touched).name} was found standing in the rain at 0400, facing the spire. "Just listening."` });
-rep('t.rings', { when: s => s.flags.und_pact, text: s => `A ring has come up around the school plot. The children step over it carefully and say good morning.` });
-rep('t.drum', { when: s => s.flags.hive_talk && !s.flags.hive_destroyed, text: s => `The evening drumming has acquired a new phrase. ${Nc(s, 'xenobio')} says it's their word for the colony, and has told everyone at supper. It is nine beats long, and ends on a question.` });
+rep('t.rings', { when: s => s.flags.und_pact, text: s => `A ring has come up around the plot behind the stores. The field crews step over it carefully and say good morning.` });
+rep('t.drum', { when: s => s.flags.hive_talk && !s.flags.hive_destroyed, text: s => `The evening drumming has acquired a new phrase. ${h.Nwc(s, 'xenobio')} says it's their word for the colony, and has told everyone at supper. It is nine beats long, and ends on a question.` });
 rep('t.quiet', { when: s => s.flags.hive_destroyed, text: s => `There is no drumming at dusk now. A few people still go to the fence to listen for it.` });
 rep('t.reach', { when: s => s.flags.oth_trade || s.flags.oth_merged, text: s => `Reach words are creeping into the colony's speech. "Thawside." "Hull-rich." "Sleeper's luck," for anything unearned.` });
 rep('t.earth', { when: s => s.flags.earth_truth, text: s => `The big archive screen in the mess hall, which used to show Earth landscapes, has been showing ${s.world.planet}'s for a month, and nobody remembers changing it.` });
@@ -64,47 +64,47 @@ const built = (s, id, n) => s.built[id] !== undefined && s.day - s.built[id] > (
 const type = (s, k) => s.world.type === k;
 
 /* ---- this world ---- */
-rep('m.heavy', { k: 'bad', when: s => s.day > 60 && grav(s) === 'heavy', fx: { morale: -1 }, text: s => `${Nc(s, 'physician')} has strapped the fourth turned ankle of the month. A missed step here comes down harder than the legs expect.` });
+rep('m.heavy', { k: 'bad', when: s => s.day > 60 && grav(s) === 'heavy', fx: { morale: -1 }, text: s => `${h.Nwc(s, 'physician')} has strapped the fourth turned ankle of the month. A missed step here comes down harder than the legs expect.` });
 rep('m.heavy2', { k: 'bad', when: s => s.day > 240 && grav(s) === 'heavy', fx: { food: -20 }, text: s => `The people who came down stooped have stopped noticing the weight, but they eat more than they did. The cooks say a pot that fed sixty on the ship feeds fifty here.` });
 rep('m.light', { k: 'good', when: s => s.day > 40 && grav(s) === 'light', fx: { mat: 4 }, text: s => `One person carries a sheet of plate here that took two on the ship's training deck. The plate yard is ahead of its tally.` });
-rep('m.light2', { k: 'bad', when: s => s.day > 200 && grav(s) === 'light', fx: { morale: -1 }, text: s => `${Nc(s, 'physician')} has started weighted drill at dawn. Bones thin in gravity this light unless they are made to work, and the drill is not popular.` });
+rep('m.light2', { k: 'bad', when: s => s.day > 200 && grav(s) === 'light', fx: { morale: -1 }, text: s => `${h.Nwc(s, 'physician')} has started weighted drill at dawn. Bones thin in gravity this light unless they are made to work, and the drill is not popular.` });
 rep('m.thaw', { repeat: 300, k: 'good', when: s => LF.date(s.day).year >= 2 && LF.date(s.day).season === 0 && LF.date(s.day).dos <= 30, fx: { morale: 1 },
   text: s => `Thaw has come round again, the colony's ${ORD[LF.date(s.day).year] || 'latest'} on ${s.world.planet}. The cooks made a stew of the last of the Dim's stores and called it a feast.` });
-rep('m.lichen', { k: 'good', when: s => type(s, 'barren') && s.survey > 20, fx: { survey: 2 }, text: s => `${Nc(s, 'xenobio')} has spent a month on the grey crust that grows on the lee side of the stones. It gains a finger's width in a year. The patch behind the stores is older than the mission.` });
+rep('m.lichen', { k: 'good', when: s => type(s, 'barren') && s.survey > 20, fx: { survey: 2 }, text: s => `${h.Nwc(s, 'xenobio')} has spent a month on the grey crust that grows on the lee side of the stones. It gains a finger's width in a year. The patch behind the stores is older than the mission.` });
 rep('m.barren', { k: 'bad', when: s => type(s, 'barren') && s.day > 70, fx: { food: -20 }, text: s => `The wind found a seam in the stores tent overnight and put dust in every open sack. A day went to sieving flour.` });
 rep('m.barren2', { k: 'good', when: s => type(s, 'barren') && s.day > 160, fx: { mat: 4 }, text: s => `Wind stripped the bank behind the plate yard to bedrock overnight and left a drift of clean gravel at the foot of it. The builders have been shovelling it into sacks.` });
 rep('m.ice', { k: 'bad', when: s => type(s, 'ice') && s.day > 70, fx: { mat: -3 }, text: s => `Frost got into a crate of sealant and split every tube in it.` });
 rep('m.ice2', { k: 'good', when: s => type(s, 'ice') && s.day > 160, fx: { morale: 1 }, text: s => `One of the roofing crew cut blocks of ice and stacked a windbreak along the weather side of the pods. It is the first night in a month that the door seals have not whistled.` });
-rep('m.drowned', { k: 'good', when: s => type(s, 'drowned') && s.day > 70 && s.flags.sprouted, fx: { food: 20 }, text: s => `The tide left a bank of weed along the shore. ${Nc(s, 'botanist')} had it on the plots as mulch before it dried.` });
-rep('m.drowned2', { k: 'bad', when: s => type(s, 'drowned') && s.day > 160, fx: { parts: -1 }, text: s => `Salt is in everything. ${Nc(s, 'engineer')} pulled a connector block from the mast this month that came out green and in two pieces.` });
+rep('m.drowned', { k: 'good', when: s => type(s, 'drowned') && s.day > 70 && s.flags.sprouted, fx: { food: 20 }, text: s => `The tide left a bank of weed along the shore. ${h.Nwc(s, 'botanist')} had it on the plots as mulch before it dried.` });
+rep('m.drowned2', { k: 'bad', when: s => type(s, 'drowned') && s.day > 160, fx: { parts: -1 }, text: s => `Salt is in everything. ${h.Nwc(s, 'engineer')} pulled a connector block from the radio this month that came out green and in two pieces.` });
 rep('m.jungle', { k: 'bad', when: s => type(s, 'jungle') && s.day > 70, fx: { food: -20 }, text: s => `Something ate through a sack in the stores overnight. It was nothing on the ship's manifest.` });
 rep('m.jungle2', { k: 'good', when: s => type(s, 'jungle') && s.day > 160, fx: { mat: 4 }, text: s => `The poles the path crew left lying took root and are in leaf. The builders have started planting their fence posts instead of setting them.` });
 rep('m.garden', { k: 'good', when: s => type(s, 'garden') && s.day > 70 && LF.cv(s, 'cold') < 20, fx: { morale: 1 }, text: s => `On warm nights half the colony sleeps outside the pods, on the grass. The watch has stopped waking them.` });
 rep('m.garden2', { k: 'bad', when: s => type(s, 'garden') && s.day > 160, fx: { food: -20 }, text: s => `Something small and local has found the grain store, and likes it.` });
-rep('m.ruin', { k: 'good', when: s => type(s, 'ruin') && s.day > 70, fx: { parts: 1 }, text: s => `A crew clearing rubble for the next plot pulled out forty metres of something like cable, still bright. ${Nc(s, 'engineer')} has it in the workshop and has found two uses for it.` });
+rep('m.ruin', { k: 'good', when: s => type(s, 'ruin') && s.day > 70, fx: { parts: 1 }, text: s => `A crew clearing rubble for the next plot pulled out forty metres of something like cable, still bright. ${h.Nwc(s, 'engineer')} has it in the workshop and has found two uses for it.` });
 rep('m.ruin2', { k: 'bad', when: s => type(s, 'ruin') && s.day > 160, fx: { morale: -1 }, text: s => `A wall that had stood since before anyone came here fell across the east path in the night. Nobody was under it. People walk the path faster now.` });
 
 /* ---- what the colony did, remembered ---- */
 rep('m.site', { k: 'good', when: s => s.day > 150 && s.world.zone, fx: { morale: 1 }, text: s => `The stones of the first cook-fire are still in their ring at ${s.world.zone}, where the lander came down. The paths bend round them.` });
 rep('m.sow', { k: 'good', when: s => s.flags.sprouted && s.memo['plan.seeds'] && s.day - s.memo['plan.seeds'].d > 120, fx: s => s.flags.first_sow === 'trial' ? { survey: 2 } : { morale: 1 },
-  text: s => s.flags.first_sow === 'all' ? `The seed lockers that were swept out for the first sowing hold hand tools now. ${Nc(s, 'botanist')} still runs a finger along the seams for stray grains, and this month found eleven.`
+  text: s => s.flags.first_sow === 'all' ? `The seed lockers that were swept out for the first sowing hold hand tools now. ${h.Nwc(s, 'botanist')} still runs a finger along the seams for stray grains, and this month found eleven.`
     : s.flags.first_sow === 'half' ? `The lead tag that sealed half the seed in the first season hangs on a nail in the stores office. Anyone new to the stores is shown it on the first day.`
     : `The numbered stakes from the trial plots are still in the ground, and the notebook from that season is the most borrowed thing in the colony.` });
 rep('m.burn', { k: 'good', when: s => s.day > 200 && s.world.transit && s.world.transit.lostS > 0, fx: { morale: 1 },
   text: s => `Someone has cut the names of the ${s.world.transit.lostS === 1 ? 'sleeper' : s.world.transit.lostS + ' sleepers'} lost on the burn to ${s.world.planet} into a sheet of plate and fixed it ${ok(s, 'lander') ? 'beside the lander ramp' : 'to the mess hall wall'}.` });
 rep('m.wound', { k: 'bad', when: s => s.day > 180 && s.world.landingDamage && s.world.landingDamage !== 'lander' && ok(s, s.world.landingDamage), fx: { parts: -1 },
-  text: s => `The ${LF.MACHINES[s.world.landingDamage].name} has never run true since the descent. It needed spares again this month, and ${N(s, 'engineer')} had them cut before anyone asked.` });
+  text: s => `The ${LF.MACHINES[s.world.landingDamage].name} has never run true since the descent. It needed spares again this month, and ${h.Nw(s, 'engineer')} had them cut before anyone asked.` });
 rep('m.woken', { k: 'good', when: s => s.flags.woken >= 1 && s.day > 120, fx: { morale: 1 }, text: s => `The sleepers brought down since landing still stack their boots the ship's way, toes to the wall. The first sixty stopped long ago, and a few have started again.` });
 rep('m.walked', { k: 'bad', when: s => s.deserted >= 2, fx: { food: -20 }, text: s => `Smoke from the camp of the ones who walked out shows on still mornings. Somebody leaves a sack at the wire now and then, and by first light it is gone.` });
 rep('m.home', { k: 'good', when: s => s.flags.wrote_home && s.day > 200, fx: { morale: 1 }, text: s => `The radio operator has worked out how far the colony's message to Earth has travelled, and has chalked the figure on the radio room door. It is to be corrected monthly.` });
 rep('m.wort', { k: 'good', when: s => s.flags.native_food && !s.flags.native_food_cost && s.day > 220, fx: { food: 20 }, text: s => `Knucklewort turned up in three dishes this month and was recognised in all of them. The cooks have been asked to keep trying.` });
 rep('m.wells', { k: 'good', when: s => built(s, 'wells'), fx: { morale: 1 }, text: s => `Since the wells went in, nobody tastes the water before drinking it.` });
-rep('m.domes', { k: 'good', when: s => built(s, 'greenhouse'), fx: { food: 20 }, text: s => `The domes are the warmest place in the colony, and ${N(s, 'botanist')} keeps finding people asleep between the trays. Two of them have been put to work there.` });
+rep('m.domes', { k: 'good', when: s => built(s, 'greenhouse'), fx: { food: 20 }, text: s => `The domes are the warmest place in the colony, and ${h.Nw(s, 'botanist')} keeps finding people asleep between the trays. Two of them have been put to work there.` });
 rep('m.soil', { k: 'good', when: s => built(s, 'soillab'), fx: { food: 20 }, text: s => `The soil laboratory keeps a jar from every plot on one shelf, labelled by hand. On the strength of the shelf, two plots were resown with something else.` });
 rep('m.lathe', { k: 'good', when: s => built(s, 'machineshop'), fx: { parts: 1 }, text: s => `The first thing off the machine shop lathe that was not a repair was a pair of door hinges. Every pod wants a pair.` });
 rep('m.reader', { k: 'good', when: s => built(s, 'school') && s.flags.children, fx: { morale: 1 }, text: s => `The school's first reader was written by a committee of six and reads like it. The children have it by heart anyway.` });
 rep('m.bunks', { k: 'good', when: s => built(s, 'housing'), fx: { mat: 4 }, text: s => `With the permanent housing up, the pods everyone slept in at first are stores. The bunk frames went to the plate yard. Most people still know which one was theirs.` });
-rep('m.blade', { k: 'bad', when: s => built(s, 'turbines', 90), fx: { parts: -1 }, text: s => `One of the turbines threw a blade in the night and took a second with it. ${Nc(s, 'engineer')} has the pieces laid out on the workshop floor.` });
+rep('m.blade', { k: 'bad', when: s => built(s, 'turbines', 90), fx: { parts: -1 }, text: s => `One of the turbines threw a blade in the night and took a second with it. ${h.Nwc(s, 'engineer')} has the pieces laid out on the workshop floor.` });
 rep('m.noon', { k: 'good', when: s => built(s, 'fields'), fx: { food: 20 }, text: s => `The open fields are wide enough now that the far crew eats where it works. The cooks carry the pot out at noon.` });
 
 /* The dead: one of the named, a season or more gone. */
@@ -142,7 +142,7 @@ rep('m.test', { repeat: 110, when: s => !!testOne(s), make: s => { const e = tes
 
 /* What the colony did about something the world holds: the approach is in the ledger, and it has left a habit behind. */
 const HABIT = {
-  'fauna.force':   [(s, n) => `The crew who went out against ${n} keep the spent casings in a jar in the mess hall. ${Nc(s, 'security')} has put in for springs and firing pins to replace what that month wore out.`, { parts: -1 }, 'bad'],
+  'fauna.force':   [(s, n) => `The crew who went out against ${n} keep the spent casings in a jar in the mess hall. ${h.Nwc(s, 'security')} has put in for springs and firing pins to replace what that month wore out.`, { parts: -1 }, 'bad'],
   'natives.force': [(s, n) => `There has been no sign of ${n} near the wire since the rifles came out. The watch that used to be one pair is two pairs now, and the plots are short the hands.`, { food: -20 }, 'bad'],
   'humans.force':  [(s, n) => `Since the guns were turned on ${n}, the watch that used to be one pair is two pairs. The plots are short the hands.`, { food: -20 }, 'bad'],
   'flora.force':   [(s, n) => `The ground where ${n} was burned back is still black. The field crews walk round it and lose a quarter of an hour each way.`, { food: -20 }, 'bad'],
@@ -202,10 +202,10 @@ LF.epilogue = function (s) {
   else if (s.over.kind === 'dead') out.push(`The colony on ${s.world.planet} lasted ${yrs} years. At the end there were too few left to keep the lights on.`);
   else out.push(`The record of the colony on ${s.world.planet} stops in year ${yrs}.`);
 
-  if (f.committee) out.push(f.blood_spilled ? 'It was run by the committee that had taken it over the Warden\'s body, and the committee never once mentioned the Warden.' : 'It was run by a committee of shift foremen who had thrown the officers out, and who found out, slowly, why the officers had been tired.');
+  if (f.committee) out.push(f.blood_spilled ? 'It was run by the committee that had taken it over with blood on the floor, and the committee never once spoke of that night.' : 'It was run by a committee of shift foremen who had thrown the officers out, and who found out, slowly, why the officers had been tired.');
   else if (f.council) out.push('It governed itself by elected Council, argued constantly, and was proud of that.');
   else if (f.command_rule) out.push(f.crackdown ? 'It was ruled by charter and by the watch, and people learned to keep their voices down.' : 'It was ruled by charter until the end, and the charter was never put to a vote.');
-  if (f.scapegoat) out.push('A Quartermaster had once been sent out past the wire to buy the officers a quiet night. Nobody kept the stores keys for long after that.');
+  if (f.scapegoat) out.push('A Chief Agronomist had once been sent out past the wire to buy the officers a quiet night. Nobody kept the stores keys for long after that.');
   if (s.deserted >= 6) out.push(`${s.deserted} people had walked out over the years to make their own camps. Some of the camps lasted.`);
   if (f.blood_spilled) out.push('Colonists had killed colonists. The mess hall floor was replaced, eventually, and people still stepped around the place.');
 

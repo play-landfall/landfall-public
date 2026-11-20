@@ -73,7 +73,9 @@ const suspect = (s, t) => { if (!(t.ev.one > 0)) return null; const e = Object.k
 
 /* ---------- who is next, and losing them ---------- */
 const nm = (s, role) => { const p = P(s, role); return p ? p.name : LF.seatWord(s, role); };
-const crew = s => { const o = { road: LF.lex(s, 'road'), out: LF.lex(s, 'out') }; for (const [k, role] of [['w', 'security'], ['d', 'physician'], ['e', 'engineer'], ['q', 'quartermaster'], ['sv', 'geologist']]) { o[k] = nm(s, role); o[k.toUpperCase()] = cap(o[k]); } return o; };
+// Capitalised, these open a sentence and are the first mention on a card: a stand-in comes with the post they stand in for.
+const nmW = (s, role) => P(s, role) ? nm(s, role) : cap(LF.h.Nw(s, role));
+const crew = s => { const o = { road: LF.lex(s, 'road'), out: LF.lex(s, 'out') }; for (const [k, role] of [['w', 'security'], ['d', 'physician'], ['e', 'engineer'], ['q', 'quartermaster'], ['sv', 'geologist']]) { o[k] = nm(s, role); o[k.toUpperCase()] = nmW(s, role); } return o; };
 const victims = (s, t) => t.order.filter(id => stands(s, id) && id !== t.culprit).map(id => by(s, id));
 const next = (s, t) => victims(s, t)[0] || null;
 const others = (s, t) => LF.settlements(s).filter(x => x.id !== t.culprit);
@@ -194,7 +196,7 @@ B('first', { id: 'hsh.first', tone: 'pressure', title: 'The Missed Call',
       out: { text: (s, c) => `The cart for ${c.name} goes out on its usual morning with its usual load. The carter is told to look and come back, and not to stay the night.`, fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.sent = 'cart'; learn(s2, t, 4); } }) } },
     { label: 'Tell the mess their mast is down, and send nobody', dark: true, note: 'The colony sleeps. The other settlements are told nothing, and go on as they were.',
       info: [['yield', 'Morale'], ['danger', 'Every other settlement']],
-      out: { text: (s, c) => `The notice says a guy wire parted in the wind at ${c.name} and that a rigger will go up in due course. The page headed Unaccounted stays in ${c.q}'s drawer. In the mess they talk about other things.`,
+      out: { text: (s, c) => `The notice says a guy wire parted in the wind at ${c.name} and that a rigger will go up in due course. The page headed Unaccounted stays in a drawer in the stores office. In the mess they talk about other things.`,
         fx: s => ({ morale: 2, stain: ['hsh_lied', 1], do: s2 => { const t = T(s2); t.sent = 'cart'; t.did.lied = true; LF.ease(s2, 'fear', 'hsh.lied', 15, 60); } }) } },
     { label: 'Warn every settlement, and have them call in at dusk, midnight and dawn', note: 'The relay crew is doubled, and every settlement learns that one of them has stopped answering.',
       info: [['danger', 'Morale']],
@@ -233,7 +235,7 @@ B('calling', { id: 'hsh.calling', tone: 'crisis', title: 'Still Calling',
       ok: { text: (s, c) => ({ route: `The section reaches ${c.name} by forced march and finds the lamps lit and nobody under them. The doors on the road side are barred from inside. The section does not stay the night, and comes home whole.`,
           join: `The section reaches ${c.name} and finds most of it on the road, sitting, with bundles. The sergeant argues until dark. About a third get up and walk back with the section. The rest are gone in the morning, and the houses are swept.`,
           one: `The section is in ${c.name} before dark and stands to along its fence. Lamps come down the road after midnight and stop short. There is firing, briefly, from both sides, and the lamps go back the way they came. ${c.name} makes its dawn call.`,
-          relay: `The section reaches ${c.name} and finds no enemy and a fever in every second house. The sergeant sends a rider back for the doctor, at a gallop. The round gets there in time for most of them.` })[T(s).truth.is],
+          relay: `The section reaches ${c.name} and finds no enemy and a fever in every second house. The sergeant sends a rider back for the doctor, at a gallop. The doctor gets there in time for most of them.` })[T(s).truth.is],
         fx: (s, c) => ({ do: s2 => { const t = T(s2), k = t.truth.is, V = by(s2, c.sid); t.did.section = true;
           if (k === 'route') lose(s2, t, V, 'dark', undefined, true); else if (k === 'join') { t.toll += LF.stlHurt(s2, V, Math.round(V.n * 0.65)); giveUp(s2, t, V); }
           else if (k === 'one') { t.saved = (t.saved || 0) + 1; V.watch = s2.day; learn(s2, t, 20, 'one', t.culprit); } else { t.toll += LF.stlHurt(s2, V, Math.round(V.n * 0.2), true); t.saved = (t.saved || 0) + 1; learn(s2, t, 20, 'relay'); }
@@ -241,7 +243,7 @@ B('calling', { id: 'hsh.calling', tone: 'crisis', title: 'Still Calling',
       bad: { text: (s, c) => ({ route: `The section calls in from the last marker before ${c.name}, and not again. A cart goes after them and finds ten rifles stacked in the street, as for a meal halt, and no meal.`,
           join: `The section reaches ${c.name} and finds it on the road with bundles. The sergeant argues until dark. In the morning the settlement is gone, and so are three of the section, who left their rifles stacked and a note for their families.`,
           one: `The section is fired on at the last marker, in the dark, by people who knew which bend it would come round. It gets home with four dead. ${c.name} does not make its dawn call.`,
-          relay: `The section loses the road in the dark and reaches ${c.name} late, to find no enemy and a fever in every house. The doctor is sent for. For a good half of them the round arrives too late.` })[T(s).truth.is],
+          relay: `The section loses the road in the dark and reaches ${c.name} late, to find no enemy and a fever in every house. The doctor is sent for. For a good half of them the doctor arrives too late.` })[T(s).truth.is],
         fx: (s, c) => ({ morale: -3, do: s2 => { const t = T(s2), k = t.truth.is, V = by(s2, c.sid); t.did.section = true;
           if (k === 'route') { lose(s2, t, V, 'dark', undefined, true); LF.leave(s2, 10, true); t.toll += 10; } else if (k === 'join') { lose(s2, t, V, 'left', undefined, true); LF.leave(s2, 3, true); t.toll += 3; }
           else if (k === 'one') { lose(s2, t, V, 'dark', undefined, true); LF.deaths(s2, 4, true); t.toll += 4; learn(s2, t, 10, 'one', point(s2, t, 'one')); } else { t.toll += LF.stlHurt(s2, V, Math.round(V.n * 0.5), true); t.saved = (t.saved || 0) + 1; learn(s2, t, 20, 'relay'); }
@@ -250,12 +252,12 @@ B('calling', { id: 'hsh.calling', tone: 'crisis', title: 'Still Calling',
       info: [['people', 'The settlement\'s people'], ['danger', 'The settlement']],
       out: { text: (s, c) => `The order goes out and ${c.name} loads its carts the same night. They come in along ${c.road} in one column, with the stock driven behind, and are put in the cart sheds and the school. Behind them the lamps of ${c.name} burn until the oil is gone.`,
         fx: (s, c) => ({ morale: -2, chips: [[`${c.name} given up`, false]], do: s2 => { const t = T(s2); t.did.broughtin = true; giveUp(s2, t, by(s2, c.sid)); if (t.truth.is === 'join') t.carried = s2.day; learn(s2, t, 6); } }) } },
-    { label: 'Send the doctor and a clerk, unarmed, to see for themselves', note: 'Three people go where thirty rifles might not be enough, because three can be spared.',
+    { label: 'Send the doctor and a clerk, unarmed, to see for themselves', note: 'Three people go where ten rifles might not be enough, because three can be spared.',
       info: [['yield', 'An account'], ['danger', 'The three']],
-      out: { text: (s, c) => ({ route: `The doctor, a clerk and a driver go out in the round's own cart. The hut logs their call from the last marker. The cart is found on the road a month later with the mule still in the shafts, alive, and the doctor's bag on the seat. ${c.name} is empty.`,
-          join: `The doctor, a clerk and a driver go out in the round's own cart. They are back within the month with a clear account: nobody at ${c.name} was sick, or afraid, or made to go. They went while the doctor was still asking questions. The driver went with them.`,
-          one: `The doctor, a clerk and a driver go out in the round's own cart, and are stopped on the road at night by people with lamps who know the doctor by name. They are sent back on foot. ${c.name} does not make its next call.`,
-          relay: `The doctor, a clerk and a driver go out in the round's own cart, and find a fever in ${c.name} that the round has cured a dozen times. The doctor stays a month. Most of the settlement is on its feet at the end of it, and asking why nobody answered.` })[T(s).truth.is],
+      out: { text: (s, c) => ({ route: `The doctor, a clerk and a driver go out in the clinic's own cart. The hut logs their call from the last marker. The cart is found on the road a month later with the mule still in the shafts, alive, and the doctor's bag on the seat. ${c.name} is empty.`,
+          join: `The doctor, a clerk and a driver go out in the clinic's own cart. They are back within the month with a clear account: nobody at ${c.name} was sick, or afraid, or made to go. They went while the doctor was still asking questions. The driver went with them.`,
+          one: `The doctor, a clerk and a driver go out in the clinic's own cart, and are stopped on the road at night by people with lamps who know the doctor by name. They are sent back on foot. ${c.name} does not make its next call.`,
+          relay: `The doctor, a clerk and a driver go out in the clinic's own cart, and find a fever in ${c.name} that the clinic has cured a dozen times. The doctor stays a month. Most of the settlement is on its feet at the end of it, and asking why nobody answered.` })[T(s).truth.is],
         fx: (s, c) => ({ do: s2 => { const t = T(s2), k = t.truth.is, V = by(s2, c.sid); t.did.doctor = true;
           if (k === 'relay') { t.toll += LF.stlHurt(s2, V, Math.round(V.n * 0.12), true); t.saved = (t.saved || 0) + 1; learn(s2, t, 24, 'relay'); return; }
           lose(s2, t, V, k === 'join' ? 'left' : 'dark', undefined, true);
@@ -297,7 +299,7 @@ B(LIVE, { id: 'hsh.walker', tone: 'pressure', title: 'The One Who Walked In',
         fx: (s, c) => ({ morale: -3, do: s2 => { const t = T(s2); learn(s2, t, 16, c.ev, c.at); LF.emit(s2, 'fear', 'hsh.told', 30, 90, 'the carter told the whole mess what happened out there'); } }) } },
     { label: 'Keep the carter in the long store, and the account inside the council', dark: true, note: 'One witness is locked up for having seen it, so that the rows stay quiet.',
       info: [['yield', 'A quiet colony'], ['danger', 'The carter']],
-      out: { text: (s, c) => `The carter is moved to the long store at night, with a cot and a guard. The account is written down by ${c.q} and read by six people. The rows hear that somebody came in, and are told it was a herder with a fever.`,
+      out: { text: (s, c) => `The carter is moved to the long store at night, with a cot and a guard. The account is written down by ${LF.h.Nw(s, 'quartermaster')} and read by six people. The rows hear that somebody came in, and are told it was a herder with a fever.`,
         fx: (s, c) => ({ stain: ['hsh_kept', 1], do: s2 => { const t = T(s2); t.did.kept = true; learn(s2, t, 16, c.ev, c.at); } }) } },
     { label: 'Send the carter back up the road as a guide, with rifles behind', dark: true, note: 'The carter got out of there once, alone, and is made to go back.',
       info: [['yield', 'A closer look'], ['danger', 'The carter']],
@@ -311,7 +313,7 @@ B(LIVE, { id: 'hsh.walker', tone: 'pressure', title: 'The One Who Walked In',
 /* A second settlement has gone: what the ones still standing are told, and allowed. */
 B(LIVE, { id: 'hsh.second', tone: 'crisis', title: 'A Second Page',
   setup: s => { const t = T(s), st = others(s, t); return Object.assign(crew(s), { gone: t.lost.map(id => nameOf(s, id)), left: st.map(x => x.name), n: st.reduce((a, x) => a + x.n, 0), k: st.length }); },
-  text: (s, c) => `${and(c.gone.slice(0, 3))} are on ${c.q}'s pages headed Unaccounted. ${c.k === 1 ? `${c.left[0]} is the one settlement still standing` : `${and(c.left)} still stand`}, with ${LF.num(c.n)} people, and ${c.k === 1 ? 'it knows' : 'they know'} what the colony knows. Households there have begun loading carts without leave.\n\n${c.W} wants to know what the gate is to do when they arrive.`,
+  text: (s, c) => `${and(c.gone.slice(0, 3))} are on the pages headed Unaccounted that ${LF.h.Nw(s, 'quartermaster')} keeps. ${c.k === 1 ? `${c.left[0]} is the one settlement still standing` : `${and(c.left)} still stand`}, with ${LF.num(c.n)} people, and ${c.k === 1 ? 'it knows' : 'they know'} what the colony knows. Households there have begun loading carts without leave.\n\n${c.W} wants to know what the gate is to do when they arrive.`,
   choices: [
     { label: 'Let any household that wants to come in, come in', note: 'The settlements are left half manned, and the rows take in whoever arrives.',
       out: { text: (s, c) => `They come in by the cartload for a month, the families with small children first. They are found corners. Those who stay out are the ones with the most ground, or the least to come back to.`,
@@ -334,7 +336,7 @@ B('choice', { id: 'hsh.choice', tone: 'crisis', title: 'The Road Home',
   setup: s => { const t = T(s), st = others(s, t), nx = next(s, t) || st[0], sp = suspect(s, t);
     return Object.assign(crew(s), { gone: t.lost.length, left: st.map(x => x.name), k: st.length, n: st.reduce((a, x) => a + x.n, 0), nx: nx ? nx.id : null, nxName: nx ? nx.name : '', nxN: nx ? nx.n : 0, burnt: nx ? Math.max(1, Math.round(nx.n * 0.05)) : 0,
       sp: sp ? sp.id : null, spName: sp ? sp.name : '', spN: sp ? sp.n : 0, spDead: sp ? Math.max(3, Math.round(sp.n * 0.12)) : 0, lean: lean(t), last: st.length <= 1 }); },
-  text: (s, c) => `${Num(c.gone)} of the colony's settlements ${c.gone === 1 ? 'stands' : 'stand'} empty, each nearer than the one before. ${c.nxName ? `${c.nxName} is next along ${c.road}, and after it ${c.last ? 'there is only the colony' : 'the rest, and then the colony'}.` : `There is nothing left along ${c.road} but the colony.`} ${c.lean}\n\nThe council has stopped arguing about what it is. The proposals are on the table, and ${c.w} has asked that one of them be an order by morning.`,
+  text: (s, c) => `${Num(c.gone)} of the colony's settlements ${c.gone === 1 ? 'stands' : 'stand'} empty, each nearer than the one before. ${c.nxName ? `${c.nxName} is next along ${c.road}, and after it ${c.last ? 'there is only the colony' : 'the rest, and then the colony'}.` : `There is nothing left along ${c.road} but the colony.`} ${c.lean}\n\nThe council has stopped arguing about what it is. The proposals are on the table, and ${LF.h.Nw(s, 'security')} has asked that one of them be an order by morning.`,
   choices: [
     { label: (s, c) => `Give up every settlement, and bring all ${LF.num(c.n)} inside one wire`, note: 'Nobody is left out there for anything to take. Every roof and field past the wall is abandoned, and the rows take in every one of them.',
       info: [['people', 'Everyone inside'], ['danger', 'Every settlement'], ['danger', 'Room']],
@@ -354,7 +356,7 @@ B('choice', { id: 'hsh.choice', tone: 'crisis', title: 'The Road Home',
           chron: 'The relay crew were hanged from the stays of their own mast.' }) } },
     { label: (s, c) => `Strike first, at ${c.spName}`, dark: true, show: (s, c) => !!c.sp, note: (s, c) => `The watch goes at night against ${num(c.spN)} of the colony's own people, on what the evidence says.`, test: { base: 50, mods: [R('security', 10)] },
       info: (s, c) => [['yield', 'An end to it, if it is them'], ['danger', `Everyone at ${c.spName}`], ['danger', 'The watch']],
-      ok: { text: (s, c) => `The watch is over the fence at ${c.spName} before the dogs are awake. The council table there is shot against its own cart shed, and ${num(c.spDead)} more die in the houses. The rest are walked in under guard. ${T(s).culprit === c.sp ? `In the long barn there are carts with other settlements' marks on them, and behind a barred door people who are on ${c.q}'s pages.` : 'The search of the place takes a month, and turns up nothing that was not on its own tally.'}`,
+      ok: { text: (s, c) => `The watch is over the fence at ${c.spName} before the dogs are awake. The council table there is shot against its own cart shed, and ${num(c.spDead)} more die in the houses. The rest are walked in under guard. ${T(s).culprit === c.sp ? `In the long barn there are carts with other settlements' marks on them, and behind a barred door people who are on the pages headed Unaccounted.` : 'The search of the place takes a month, and turns up nothing that was not on its own tally.'}`,
         fx: (s, c) => ({ dead: c.spDead, stain: ['hsh_struck', 5], do: s2 => { const t = T(s2), V = by(s2, c.sp); t.did.struck = true; t.toll += c.spDead; t.struck = t.culprit === c.sp ? 'right' : 'wrong'; t.struckName = c.spName;
           if (V) { V.n = Math.max(0, V.n - c.spDead); giveUp(s2, t, V); } },
           chron: `The watch took ${c.spName} by night, on the colony's order.` }) },

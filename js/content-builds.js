@@ -45,13 +45,13 @@ const nolabF = s => s.factors.filter(f => f.stage >= 1 && !f.res && !f.dormant &
 add({ id: 'bu.nolab', arc: 'bu_lab', view: 'colony', tone: 'pressure', title: 'Nowhere to Put It', gap: 40, repeat: 300, w: 1.6,
   when: s => landed(s) && s.day >= 120 && !has(s, 'lab') && !!nolabF(s) && !!P(s, 'xenobio'),
   setup: s => { const f = nolabF(s); return { fid: f.id, name: f.name, Name: f.Name, med: s.machines.medbay.up ? 'up' : s.machines.medbay.lost ? 'lost' : 'here' }; },
-  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. The soil laboratory is all seed trays and wheat, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'and the autodoc is kept for the living'}, and the colony has no laboratory.\n\n[[xenobio]] "I can do it on the seed bench, or I can't do it at all, and I know those are the only two choices, but look at it, you haven't even looked, just look!"`,
+  text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. ${s.built.soillab ? 'The soil laboratory is full of seed trays' : 'The only clean bench is the seed bench in the stores'}, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'the autodoc is kept for the living'}, and the colony has no laboratory of its own.\n\n[[xenobio]] "It's the seed bench or nothing, I know that, I know there's wheat a hand's width away, but you haven't even held the jar up to the light yet, and once you have you'll stop asking me where."`,
   choices: [
     { label: 'Work it on the seed bench, among next season\'s stock', note: 'It gets done this month, on the only clean bench there is, next to the seed for the next sowing.', info: [['yield', (s, c) => `What ${c.name} is`], ['danger', 'The seed stock']],
       test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: (s, c) => `Three weeks of cultures between the seed trays, and nothing gets loose. The notes on ${c.name} fill a slate, and the seed is moved back onto its bench with nobody the worse.`, fx: (s, c) => ({ fops: [{ id: c.fid, insight: 22 }] }) },
       bad: { text: (s, c) => `Something from the jar gets into the seed trays. A third of next season's stock goes grey and has to be burned. The notes on ${c.name} are good, for what they cost.`, fx: (s, c) => ({ fops: [{ id: c.fid, insight: 12 }], yield: -0.05, morale: -2 }) } },
-    { label: 'Give the jar to the lock-up to handle bare-handed, and watch what it does to them', dark: true, note: 'Nobody needs a bench to see what a thing does to skin. The three in the lock-up are not asked.', info: [['yield', (s, c) => `What ${c.name} does to people`], ['danger', 'The three in the lock-up']],
+    { label: 'Give the jar to the three in the lock-up to handle bare-handed, and watch what it does to them', dark: true, note: 'Nobody needs a bench to see what a thing does to skin. The three in the lock-up are not asked.', info: [['yield', (s, c) => `What ${c.name} does to people`], ['danger', 'The three in the lock-up']],
       out: { text: (s, c) => `The three are given the jar and told to sort what's in it by hand. By the end of the week two have a rash to the elbow and one can't close a hand. ${Nc(s, 'xenobio')} has a page on ${c.name} nobody could have got any other way, and doesn't show it round.`,
         fx: (s, c) => ({ fops: [{ id: c.fid, insight: 32 }], pop: -1, stain: ['bu_bare', 1] }) } },
     { label: 'Burn the jar. Put a laboratory on the build list', note: 'Nobody touches what nobody understands, and whoever meets it out there next meets it knowing nothing.', info: [['yield', 'A laboratory, sooner'], ['danger', (s, c) => `Whoever meets ${c.name} next`]],
@@ -62,7 +62,7 @@ LF.TAGS['bu.nolab'] = ['bold open', 'severe', 'cautious'];
 add({ id: 'bu.lab', arc: 'bu_lab', view: 'colony', tone: 'opportunity', title: 'The Bench at Night', gap: 40, repeat: 400, w: 1.8,
   when: s => landed(s) && has(s, 'lab') && since(s, 'lab') >= 50 && !!P(s, 'xenobio'),
   setup: s => ({ wild: LF.lex(s, 'wild1') }),
-  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n[[xenobio]] "It could feed the north field, or it could get loose and feed everything else, probably both, honestly probably both, and I need to grow it on to know, which is the whole problem and the whole joy of it!"`,
+  text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n[[xenobio]] "It could feed the north field, or it could get loose and feed everything else, probably both, and the only way to find out which is to grow it on, which is the one thing you'd least like me to do, I know, I've been sleeping next to it, I know."`,
   choices: [
     { label: 'Grow it on, in the cold room, under lock', note: 'A season of work for the laboratory, and one technician who handles it every day.', info: [['yield', 'Better harvests, if it holds'], ['danger', 'The technician who tends it']],
       test: { base: 50, mods: [R('xenobio', 10)] },
@@ -81,7 +81,7 @@ const worst = s => Object.keys(s.machines).filter(id => ok(s, id) && id !== 'lan
 add({ id: 'bu.nocomms', arc: 'bu_comms', view: 'ship', tone: 'pressure', title: 'Eleven Minutes', gap: 40, repeat: 240, w: 1.6,
   when: s => landed(s) && s.day >= 30 && !has(s, 'comms') && !!upOne(s) && !!worst(s) && !s.flags.qs_dark,
   setup: s => { const p = upOne(s), S = LF.SEATS[p.seat], id = worst(s); return { pid: p.id, name: p.name, first: p.first, dept: S.name, crew: S.crew, id, mach: LF.MACHINES[id].name }; },
-  text: (s, c) => `${c.name} is still aboard, and ${c.dept} gets its orders from orbit, eleven minutes a pass, on the lander's set. Last night's came down garbled: half a pressure figure and a valve number with a digit gone. ${cap1(c.crew)} are standing at the ${c.mach} waiting to be told which valve.\n\nThe colony has no signals room. The next pass is in nine hours.`,
+  text: (s, c) => `${c.name}, your ${LF.title(byPid(s, c.pid))}, is still aboard, and ${c.dept} gets its orders from orbit, eleven minutes a pass, on the lander's set. Last night's came down garbled: half a pressure figure and a valve number with a digit gone. ${cap1(c.crew)} are standing at the ${c.mach} waiting to be told which valve.\n\nThe colony has no signals room. The next pass is in nine hours.`,
   choices: [
     { label: 'Wait for the next pass', note: (s, c) => `Nobody touches the ${c.mach} until ${c.first} can say it again, and it runs badly till then.`, info: (s, c) => [['danger', `The ${c.mach}`]],
       out: { text: (s, c) => `Nine hours with the ${c.mach} running rough. The next pass comes in clean and the figure is the one everyone feared. The fitting is done by dark.`, fx: (s, c) => ({ machine: { [c.id]: -6 }, morale: -1 }) } },
@@ -96,7 +96,7 @@ LF.TAGS['bu.nocomms'] = ['cautious', 'bold', 'open'];
 
 add({ id: 'bu.comms', arc: 'bu_comms', view: 'people', tone: 'pressure', title: 'On the Work Channel', gap: 40, repeat: 500, w: 1.6,
   when: s => landed(s) && has(s, 'comms') && since(s, 'comms') >= 40 && s.pop >= 30,
-  text: s => `The night operator in the signals room logs the work channels to stay awake. One page of the log is on your desk: two of the store crew, at three in the morning, working out how much meal can go missing before ${N(s, 'quartermaster')}'s count notices.\n\nNeither of them knew the room logged the channels.`,
+  text: s => `The night operator in the signals room logs the work channels to stay awake. One page of the log is on your desk: two of the store crew, at three in the morning, working out how much meal can go missing before the stores count notices.\n\nNeither of them knew the room logged the channels.`,
   choices: [
     { label: 'Have the two arrested on the strength of the log', note: 'The meal stops going. By morning every crew knows the channels are heard.', info: [['yield', 'The store'], ['danger', 'The two, and every crew that talks on a channel']],
       test: { base: 60, mods: [R('security', 10)] },
@@ -113,7 +113,7 @@ LF.TAGS['bu.comms'] = ['order', 'severe closed', 'free'];
 add({ id: 'bu.nocan', arc: 'bu_can', view: 'colony', tone: 'pressure', title: 'Soft in the Bins', gap: 40, repeat: 360, w: 2,
   when: s => landed(s) && !has(s, 'cannery') && (s.flags.harvests || 0) >= 1 && s.day % LF.SEASON < 20 && s.day >= 100 && foodDays(s) > 30,
   setup: s => ({ a: share(s, 0.12), b: share(s, 0.05) }),
-  text: s => `${Nc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n[[quartermaster]] "Four's gone and five's going. No cold room, no jars, so it rots faster than we can eat it. We eat the soft first, or nobody eats it."`,
+  text: s => `${h.Nwc(s, 'quartermaster')} brings you a handful from the bottom of bin four. It's grey and warm and smells sweet.\n\n[[quartermaster]] "Four's gone and five's on the turn, and with no cold room and no jars it'll rot faster than we can eat it. We eat the soft grain first, all of us, or it goes back to the ground and does nobody any good."`,
   choices: [
     { label: 'Everyone eats the soft grain first, the officers too', note: 'Nothing is thrown away. A month of sour bread, and the weakest stomachs feel it.', info: [['danger', 'The old and the sick']],
       out: { text: 'The soft grain goes into everything for a month. Nobody likes it. The clinic fills with stomachs, and one of the oldest doesn\'t get up.', fx: (s, c) => ({ food: c.b, morale: -3, pop: -1 }) } },
@@ -146,7 +146,7 @@ Object.assign(LF.DEEDS || {}, { bu_strip: 'the slope stripped to the roots and b
 add({ id: 'bu.nowatch', arc: 'bu_watch', view: 'world', tone: 'pressure', title: 'As Far as the Lamp', gap: 40, repeat: 260, w: 2.6,
   when: s => landed(s) && s.day >= 60 && !has(s, 'watch') && !!out(s) && out(s).threat >= 25,
   setup: s => { const f = out(s); return { fid: f.id, name: f.name, Name: f.Name, are: are(f) }; },
-  text: (s, c) => `${c.Name} came to the wire last night and went along it, post by post, the whole way round. Nobody saw. The tracks were found at first light, and the dogs had been quiet.\n\n[[security]] "We walk the inside of the fence with a lamp. We see as far as the lamp. Whatever's out there knows exactly how far that is."`,
+  text: (s, c) => `${c.Name} came to the wire last night and went along it, post by post, the whole way round. Nobody saw. The tracks were found at first light, and nobody on the fence had heard a thing.\n\n[[security]] "We walk the inside of the wire with a lamp and we see as far as the lamp, and whatever went round it post by post knows exactly how far that is. What I want to know is who had the dogs last night, and why not one of them made a sound."`,
   choices: [
     { label: 'Double the night watch, on foot', note: 'Twelve more people up all night, and the day crews go short of them.', info: [['danger', 'The watch, and the day\'s work']],
       out: { text: 'Twice the lamps on the fence, and twice the people asleep on their feet by morning. The tracks stop coming as close.', fx: (s, c) => ({ fops: [{ id: c.fid, threat: -6 }], food: -60, morale: -1, flags: { watch_wanted: s.day } }) } },
@@ -161,7 +161,7 @@ LF.TAGS['bu.nowatch'] = ['cautious', 'bold', 'severe'];
 add({ id: 'bu.watch', arc: 'bu_watch', view: 'world', tone: 'pressure', title: 'From the East Tower', gap: 40, repeat: 300, w: 1.8,
   when: s => landed(s) && has(s, 'watch') && since(s, 'watch') >= 30 && !!out(s),
   setup: s => { const f = out(s); return { fid: f.id, name: f.name, Name: f.Name, are: are(f), folk: f.kind === 'natives' || f.kind === 'humans' }; },
-  text: (s, c) => `At first light the east tower rings down. Out past the wire, at the edge of rifle range, ${c.folk ? `three of ${c.name} are sitting in the grass` : `one of ${c.name} is standing still`}, watching the colony wake. They've been there since before dawn.\n\nThe tower has a clean shot, and wants to know.`,
+  text: (s, c) => `At first light the east tower rings down. Out past the wire, at the edge of rifle range, ${c.folk ? `three of ${c.name} are sitting in the grass` : `one of ${c.name} is standing still`}, watching the colony wake. ${c.folk ? 'They\'ve' : 'It\'s'} been there since before dawn.\n\nThe tower has a clean shot, and wants to know whether to take it.`,
   choices: [
     { label: 'Take the shot', dark: true, note: (s, c) => c.folk ? 'They have done nothing but watch. Whoever is on the far field when the rest answer will know why.' : 'It has done nothing but watch. The rest of them will learn what the towers are.', info: (s, c) => [['yield', 'It stops watching'], ['danger', c.folk ? 'Whoever is on the far field' : 'The far field crew']],
       test: { base: 60, mods: [R('security', 10)] },
@@ -180,13 +180,13 @@ LF.TAGS['bu.watch'] = ['severe', 'cautious', 'bold open'];
 add({ id: 'bu.nohall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 'Standing Room', gap: 40, repeat: 320, w: 1.6,
   when: s => landed(s) && s.day >= 120 && !has(s, 'hall') && LF.heads(s) >= 40 && (s.morale < 50 || s.flags.council || s.flags.committee),
   setup: s => ({ n: LF.heads(s), harsh: LF.harsh(s) }),
-  text: (s, c) => `The meeting about the work rota is in the mess hall again, because there's nowhere else. ${cap1(LF.num(c.n))} people and seats for forty. The ones at the back can't hear and are shouting, the cooks want the tables for supper, and ${N(s, 'quartermaster')} has the rota on a slate nobody past the third row can read.\n\nThe colony has no hall. It's been an hour and nobody has voted on anything.`,
+  text: (s, c) => `The meeting about the work rota is in the mess hall again, because there's nowhere else. ${cap1(LF.num(c.n))} people and seats for forty. The ones at the back can't hear and are shouting, the cooks want the tables for supper, and ${h.Nw(s, 'quartermaster')} has the rota on a slate nobody past the third row can read.\n\nThe colony has no hall. It's been an hour and nobody has voted on anything.`,
   choices: [
     { label: 'Call it off. The officers will set the rota', note: 'It\'s done by morning. Everyone who came to be heard wasn\'t.', info: [['danger', 'Everyone who came to be heard']],
       out: { text: 'The meeting is called off and the rota goes up on the door at breakfast. It isn\'t a bad rota. People read it with their arms folded.', fx: { morale: -3, tension: 3, flags: { hall_wanted: 1 } } } },
     { label: 'Hold it in the yard tonight, all of it, for as long as it takes', note: (s, c) => c.harsh ? 'Everyone is heard, in weather the pods were never built for. The old and the small stand in it too.' : 'Everyone is heard, standing, after a full shift. Supper is late and cold.', info: (s, c) => [['yield', 'A rota people agreed to'], ['danger', c.harsh ? 'The old and the small, in the cold' : 'Supper']],
       out: { text: (s, c) => `The whole colony stands in the yard with lamps until the rota is agreed, a line at a time.${c.harsh ? ' One of the oldest took a chill out there and didn\'t shake it.' : ' Supper is eaten cold at midnight.'}`, fx: (s, c) => c.harsh ? { morale: 3, pop: -1 } : { morale: 3, food: -30 } } },
-    { label: 'Crew heads vote. Everyone else hears the result', dark: true, note: 'Twelve people in a pod with a door, and it\'s done in twenty minutes. The other few hundred are told.', info: [['yield', 'Quick, and quiet'], ['danger', 'Everyone who isn\'t a crew head']],
+    { label: 'Crew heads vote. Everyone else hears the result', dark: true, note: 'Twelve people in a pod with a door, and it\'s done in twenty minutes. Everyone else is told.', info: [['yield', 'Quick, and quiet'], ['danger', 'Everyone who isn\'t a crew head']],
       out: { text: 'Twelve crew heads, one pod, twenty minutes. The rota goes up that night with twelve names under it. It works, and the next meeting is called the same way, and the one after.', fx: { tension: -8, morale: -1, flags: { rota_heads: true }, stain: ['bu_heads', 1] } } },
   ] });
 LF.TAGS['bu.nohall'] = ['order', 'free', 'severe order'];
@@ -195,7 +195,7 @@ const motion = s => LF.lean(s) ? 'ladle' : 'mess';
 add({ id: 'bu.hall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 'A Motion from the Floor', gap: 40, repeat: 400, w: 1.6,
   when: s => landed(s) && has(s, 'hall') && since(s, 'hall') >= 40 && s.pop >= 20,
   setup: s => ({ m: motion(s) }),
-  text: (s, c) => `The hall meets every rest-day now, and this week it voted, two hands to one: ${c.m === 'ladle' ? 'full rations for a month, whatever the store says' : 'the officers eat what everyone eats, in the mess, at the same tables'}.\n\n[[command]] "It's not binding. Yet. Say no and it will be."`,
+  text: (s, c) => `The hall meets every rest-day now, and this week it voted, two hands to one: ${c.m === 'ladle' ? 'full rations for a month, whatever the store says' : 'the officers eat what everyone eats, in the mess, at the same tables'}.\n\n[[command]] "It doesn't bind anyone yet, and the day you turn it down the hall will vote again to make it bind, so I want your answer before the next rest-day."`,
   choices: [
     { label: 'Accept it', note: (s, c) => c.m === 'ladle' ? 'A month of full ladles, out of a store that can\'t spare it.' : 'The officers eat in the mess, and every complaint in the colony knows where to find them at supper.', info: (s, c) => [['yield', 'Morale'], ['danger', c.m === 'ladle' ? 'The store' : 'The officers\' nerve']],
       out: { text: (s, c) => c.m === 'ladle' ? 'Full ladles for a month. The hall cheers the first one. The store ledger takes it hard.' : 'The officers carry their trays to the long tables. The first week they hardly eat for being talked to.', fx: (s, c) => c.m === 'ladle' ? { morale: 5, food: -120, lift: 4 } : { morale: 4, off: [['command', 'mind', -4], ['crew', 'mind', -3]] } } },

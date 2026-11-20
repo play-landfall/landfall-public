@@ -4,14 +4,14 @@
    and says so. Then the aftermaths: short decisions that some outcomes force at once (see LF.aftermath). */
 (function () {
 'use strict';
-const { add, h } = LF; const { P, N, Nc, F, R, M, Fl, If, foodDays, did } = h;
+const { add, h } = LF; const { P, N, Nc, Nw, Nwc, F, R, M, Fl, If, foodDays, did } = h;
 const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
 const frac = t => t < 0.2 ? 'One plot in six' : t < 0.3 ? 'One plot in four' : t < 0.42 ? 'One plot in three' : t < 0.55 ? 'Half the plots' : 'Two plots in three';
 
 /* ================= THE SEED ================= */
 add({ id: 'plan.seeds', arc: 'crops', tone: 'council', title: 'The Seed Stock', w: 9, gap: 0,
   when: s => LF.need(s) === 'soil' && s.day >= 6 && !s.flags.first_sow,
-  text: s => `${Nc(s, 'botanist')} has the seed lockers open on the ramp: wheat, barley, beans. Enough to sow every cleared plot once.\n\n[[botanist]] "Sow it all, and we're eating our own bread in a season. If the ground won't take it, that's the seed gone. There isn't any more."\n\n${LF.down(s, 'hydroponics') ? 'The hydroponics bay feeds twenty-four' : 'The hydroponics bay is still up on the ship'}. There are ${s.pop} of you.`,
+  text: s => `${Nwc(s, 'botanist')} has the seed lockers open on the ramp: wheat, barley, beans. Enough to sow every cleared plot once.\n\n[[botanist]] "Sow it all and we're eating our own bread in a season, if the ground will take it. If it won't, that's the seed gone, and there isn't any more of it anywhere."\n\n${LF.down(s, 'hydroponics') ? 'The hydroponics bay feeds twenty-four' : 'The hydroponics bay is still up on the ship'}. There are ${LF.num(LF.heads(s))} of you.`,
   choices: [
     { label: 'Plant all of it now', note: 'The biggest harvest this ground can give, and no seed left if the soil is wrong.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A full harvest'], ['danger', 'Nothing held back']],
       out: { text: 'Every plot is sown by the end of the month. The lockers are swept out, and the sweepings are sown too.', fx: { flags: { first_sow: 'all' }, sched: [['plan.sprout', 24, 34]], chron: 'In the first season the colony put all its seed in the ground.' } } },
@@ -20,7 +20,7 @@ add({ id: 'plan.seeds', arc: 'crops', tone: 'council', title: 'The Seed Stock', 
     { label: 'Trial plots only. Learn the soil first', note: 'You risk almost no seed and you get almost no food, and the hold has to carry everyone for the season you spend learning.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'Notes on the soil'], ['danger', 'A season with no harvest']],
       out: { text: s => `Twelve small squares, each sown differently, each with a numbered stake. ${Nc(s, 'botanist')} walks them every morning with a notebook.`, fx: { flags: { first_sow: 'trial', seed_grain: true, soil_clues: true }, survey: 6, sched: [['plan.sprout', 24, 34]] } } },
     { label: 'Plant all of it, with every hand that can hold a hoe', dark: true, note: 'The clinic, the children and the night watch go into the furrows for a week, so that the seed is in before the weather turns.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A full harvest, sown in time'], ['danger', 'Nothing held back'], ['danger', 'The ones who should be in bed']],
-      out: { text: s => `Every plot is sown in six days, by lamp at the end. ${Nc(s, 'physician')} said two of the clinic's patients should not be in a field. One of them dies in the furrows on the fifth day and is buried at the head of his row.`,
+      out: { text: s => `Every plot is sown in six days, by lamp at the end. ${Nwc(s, 'physician')} said two of the clinic's patients should not be in a field. One of them dies in the furrows on the fifth day and is buried at the head of the row.`,
         fx: { pop: -1, morale: -2, yield: 0.05, flags: { first_sow: 'all' }, sched: [['plan.sprout', 24, 34]], stain: ['furrows', 1], chron: 'In the first season the colony put all its seed in the ground, and everyone who could stand sowed it.' } } },
   ] });
 
@@ -29,7 +29,7 @@ add({ id: 'plan.sprout', arc: 'crops', tone: 'council', chain: true, title: 'Wha
   text: (s, c) => { const sow = s.flags.first_sow, bad = c.took < 0.3;
     return (sow === 'all' ? `Every plot was sown. ${frac(c.took)} came up green. The rest are the colour of old paper, with bare roots.` + (bad ? ' There is no seed left to try again with.' : '')
       : sow === 'half' ? `Of the half you sowed, ${frac(c.took).toLowerCase()} came up green. The rest are the colour of old paper. The sealed lockers are still sealed.`
-      : `Twelve trial squares. ${c.took < 0.3 ? 'Two' : c.took < 0.5 ? 'Four' : 'Seven'} are green, and ${N(s, 'botanist')} can tell you what was done differently in each. There is not a meal in the lot of them.`)
+      : `Twelve trial squares. ${c.took < 0.3 ? 'Two' : c.took < 0.5 ? 'Four' : 'Seven'} are green, and ${Nw(s, 'botanist')} can tell you what was done differently in each. There is not a meal in the lot of them.`)
       + `\n\nWhat is standing is ready to cut.`; },
   choices: [
     { label: 'Bring it all in for the stores', hint: 'good', info: [['yield', 'Food now']],
@@ -56,7 +56,7 @@ const yearOpt = (key, label, note, yields, tags) => ({ key, label, note: s => (s
     fx: s => ({ focus: key, survey: key === 'frontier' ? 36 : 0, sched: key === 'frontier' && !s.flags.ore_found ? [['plan.prospect', 10, 25]] : null, do: s2 => { s2.yearMark = { d: s2.day, focus: key, fd: foodDays(s2), lost: Object.values(s2.machines).filter(m => m.lost).length, survey: s2.survey, pop: s2.pop }; } }) } });
 add({ id: 'plan.year', arc: 'plan', max: 2, tone: 'council', title: 'The Year\'s Work', w: 5, repeat: 95,
   when: s => s.day >= 100 && LF.date(s.day).season === 0,
-  text: s => `Thaw, and the mud is back. So is the argument about where the year's labour should go. There are only so many hands, and ${N(s, 'quartermaster')} wants an answer before the rosters are written.${yearNote(s)}`,
+  text: s => `Thaw, and the mud is back. So is the argument about where the year's labour should go. There are only so many hands, and ${Nw(s, 'quartermaster')} wants an answer before the rosters are written.${yearNote(s)}`,
   choices: [
     yearOpt('fields', 'The fields', 'More food, and the machines get whatever hands are left over.', 'Food'),
     yearOpt('works', 'The workshops and the ship', 'The machines last longer and the yard fills up, but the harvests will be thinner.', 'Machines and materials'),
@@ -84,7 +84,7 @@ add({ id: 'plan.sleepers', arc: 'plan', tone: 'council', title: 'The Next Shuttl
     { label: 'Not this season', note: 'Sleepers eat nothing, and every season in the cold takes a few of them.', hint: 'unknown', info: [['yield', 'No new mouths'], ['danger', 'The pods that fail while they wait']],
       out: { text: 'The lander stays under its tarpaulin. Overhead, at dusk, the ship crosses the sky on time. Her cryo report for the season lists three more pods as no longer drawing power, with the names.', fx: { sleepers: -3 } } },
     { label: s => `Bring ${wake(s, 20)} down, and wake only the ones who can dig`, dark: true, req: s => LF.canFly(s), reqText: s => LF.flyWhy(s), note: 'The manifest gives every sleeper an age and a trade, and of the twenty pods the lander carries only the useful ones need be opened.', info: [['people', 'Hands, and fewer mouths'], ['danger', 'The ones left sealed on the pad']],
-      out: { text: s => `${Nc(s, 'quartermaster')} goes down the manifest with a ruler. Twelve pods are opened on the pad. The others are stacked behind the lander on ground power, where their lights can be seen from the mess hall. Three of those lights are out before the season ends, and those pods are opened for their pumps.`,
+      out: { text: s => `${Nwc(s, 'quartermaster')} goes down the manifest with a ruler. Twelve pods are opened on the pad. The others are stacked behind the lander on ground power, where their lights can be seen from the mess hall. Three of those lights are out before the season ends, and those pods are opened for their pumps.`,
         fx: s => { const n = wake(s, 20), up = Math.min(12, n), left = Math.max(0, n - up - 3);
           return { fly: 1, pop: up, sleepers: -n, machine: { lander: -14 }, cap: { lander: -5 }, morale: -2, parts: 3, stain: ['sorted', 1], flags: { woken: (s.flags.woken || 0) + 1 }, do: s2 => { s2.grounded = (s2.grounded || 0) + left; } }; } } },
   ] });
@@ -97,7 +97,7 @@ const oreTo = s => (s.world.report && s.world.report.features[0] && s.world.oreB
 add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: 'Where the Metal Is', w: s => s.day > 90 ? 9 : 4, repeat: 60, gap: 0,
   when: s => !s.flags.ore_found && s.day >= 200 && !s.away.some(a => a.ret === 'ore' || a.ret === 'seam'),   // since 2026-11-18 the ore is a place to send a party to (js/places.js LF.FINDS): this is the council's word if nobody has
   text: s => { const r = s.world.report && s.world.report.ore, d = did(s, 'plan.prospect');
-    return `${Nc(s, 'geologist')} has the orbital report pinned to the mess hall wall, one line circled.\n\n[[note:The orbital report]] "${r ? r.text : 'Metal, somewhere.'}"\n\nUnder it, in pencil: ${r ? r.conf : 50}%.\n\n`
+    return `${Nwc(s, 'geologist')} has the orbital report pinned to the mess hall wall, one line circled.\n\n[[note:The orbital report]] "${r ? r.text : 'Metal, somewhere.'}"\n\nUnder it, in pencil: ${r ? r.conf : 50}%.\n\n`
       + (d && d.k === 'fly' && d.ok === false ? 'The last flight saw nothing worth landing for.' : d && d.k === 'wait' ? 'The smelter drawings have been waiting since the last time this was asked.' : 'Without ore there is no smelter, and without a smelter nothing after it gets built.'); },
   choices: [
     { key: 'send', label: s => `Send prospectors to ${oreTo(s)}`, hint: 'good', info: [['yield', 'An ore body, if it is there']],
@@ -111,7 +111,7 @@ add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: '
       test: { base: 50, mods: [R('geologist', 10), R('pilot', 5), If(s => s.world.oreBody === 'far', -15, 'Far inland'), If(s => s.world.oreBody === 'near', 15, 'Close by')] },
       ok: { text: s => `Three passes, low enough to rattle the pods. On the third the needle swings and stays swung. ${Nc(s, 'geologist')} marks the spot with a smoke flare and is on the ground there within the month.`, fx: { machine: { lander: -8 }, survey: 12, flags: { ore_found: true }, poi: { key: 'plan.ore', kind: 'ore', name: 'Where the needle swung', dist: 'far', state: 'visited', danger: 1, known: 'Marked from the air with a smoke flare: a workable ore body, close to the surface.' }, chron: 'Ore was found from the air, and the colony began to plan a smelter.' } },
       bad: { text: 'The needle wanders and settles nowhere. The lander comes back with a cracked fairing and a better map of where the ore is not.', fx: { machine: { lander: -12 }, survey: 10 } } },
-    { key: 'wait', label: 'Not yet. There is work closer to home', hint: 'unknown', out: { text: s => `The report goes back in the drawer. The smelter drawings go back in the drawer on top of it. ${Nc(s, 'engineer')} takes another part off the spares shelf that only a smelter could ever replace.`, fx: { parts: -2, morale: -1 } } },
+    { key: 'wait', label: 'Not yet. There is work closer to home', hint: 'unknown', out: { text: s => `The report goes back in the drawer. The smelter drawings go back in the drawer on top of it. ${Nwc(s, 'engineer')} takes another part off the spares shelf that only a smelter could ever replace.`, fx: { parts: -2, morale: -1 } } },
     { key: 'lockup', label: 'Send the lock-up, with hammers and a promise', dark: true, show: s => s.day >= 60, note: 'They get a bearing and a clean sheet if they come back with ore, and no crew is taken off the fields.', info: [['yield', 'An ore body, if it is there'], ['danger', 'Four people nobody will ask after']],
       test: { base: 50, mods: [R('geologist', 10), If(s => s.world.oreBody === 'far', -15, 'Far inland'), If(s => s.world.oreBody === 'near', 15, 'Close by')] },
       ok: { text: s => `Four go out with a week of meal between them. Two come back, thin, with a sample bag that ${N(s, 'geologist')} says is good ore. They are given their clean sheets, and are not asked where the other two are.`,
@@ -122,13 +122,13 @@ add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: '
 /* ================= WATER ================= */
 add({ id: 'plan.water', arc: 'plan', tone: 'council', title: 'Every Drop Twice', w: 4, repeat: 140, gap: 0,
   when: s => !s.built.wells && LF.down(s, 'reclaimer') && s.machines.reclaimer.hp < 62 && s.day >= 50,
-  text: s => `The reclaimer ${s.machines.reclaimer.hp < 35 ? 'is failing' : 'is wearing out'}, and ${N(s, 'engineer')} wants to know how hard to run it.\n\n[[engineer]] "Every litre you drink's been through that loop a hundred times. I can run her hard, and she'll go sooner. Ease off, and there's less water. Your call."`
+  text: s => `The reclaimer ${s.machines.reclaimer.hp < 35 ? 'is failing' : 'is wearing out'}, and ${Nw(s, 'engineer')} wants to know how hard to run it.\n\n[[engineer]] "Every litre you drink's been round that loop a hundred times, and she's tired of it. I can run her hard and she'll go sooner, maybe a lot sooner, or I ease her off and there's less in the taps, and I'd rather you picked than me."`
     + (s.project === 'wells' ? `\n\nThe wells are going up, but they will not be ready in time.` : ''),
   choices: [
     { label: 'Ration water. Two litres a head', hint: 'unknown', info: [['yield', 'The reclaimer lasts longer'], ['danger', 'The crews who sweat it out by noon']],
       out: { text: 'The taps are fitted with timers. People wash in turns and drink in sips, and the reclaimer\'s note drops half a tone. Two litres is not enough for someone digging in the open. A field hand goes down in the rows in the second week and does not get up.', fx: { machine: { reclaimer: 8 }, pop: -1, morale: -4, flags: { water_ration: true } } } },
     { label: s => s.world.truth.water > 20 ? 'Haul it from open water, and the lock-up drinks it first' : 'Dig a seep, and the lock-up drinks from it first', dark: true, note: 'Nobody knows what is in the water here, and boiling everything the colony drinks would take more fuel than there is.', hint: 'unknown', info: [['yield', 'The reclaimer rested, and the water known'], ['danger', 'Whoever is in the lock-up']],
-      out: { text: s => (s.world.truth.water > 20 ? 'A line of people with jerrycans, every morning, to the water and back.' : 'Three days of digging finds a seep that gives a few buckets an hour, hauled up by hand all day.') + ' For the first month it goes to the lock-up unboiled and the clinic keeps a chart. One of the four is dead of his gut by the end of it. After that the colony knows how long to boil, and the reclaimer gets a rest.', fx: s => ({ machine: { reclaimer: 9 }, pop: -1, progress: -0.1, survey: s.world.truth.water > 20 ? 0 : 6, stain: ['taster', 1] }) } },
+      out: { text: s => (s.world.truth.water > 20 ? 'A line of people with jerrycans, every morning, to the water and back.' : 'Three days of digging finds a seep that gives a few buckets an hour, hauled up by hand all day.') + ' For the first month it goes to the four in the lock-up unboiled, and the clinic keeps a chart. One of the four is dead of a bad gut by the end of it. After that the colony knows how long to boil, and the reclaimer gets a rest.', fx: s => ({ machine: { reclaimer: 9 }, pop: -1, progress: -0.1, survey: s.world.truth.water > 20 ? 0 : 6, stain: ['taster', 1] }) } },
     { label: 'Run it hard and fix it when it breaks', hint: 'unknown', info: [['yield', 'Nobody goes thirsty'], ['danger', 'The reclaimer, and whoever is alive when it stops']],
       out: { text: s => `${Nc(s, 'engineer')} opens the valves. Nobody goes thirsty this season. ${Nc(s, 'engineer')} writes a date in the service log and underlines it.`, fx: { machine: { reclaimer: -6 }, cap: { reclaimer: -3 }, morale: 2 } } },
     { label: 'Two litres for those who work, one for those who do not', dark: true, hint: 'unknown', info: [['yield', 'The reclaimer lasts longest'], ['danger', 'The old, the sick and the small']],
@@ -139,7 +139,7 @@ add({ id: 'plan.water', arc: 'plan', tone: 'council', title: 'Every Drop Twice',
 /* ================= WHO IS HOUSED FIRST ================= */
 add({ id: 'plan.housed', view: 'people', arc: 'plan', tone: 'council', title: 'Keys', w: 8, gap: 0,
   when: s => !!s.built.housing && s.day - s.built.housing < 60 && s.pop > 50,
-  text: s => `The first street is finished and there are ${Math.min(40, Math.round(s.pop / 3))} doors. There are ${s.pop} people. ${Nc(s, 'quartermaster')} has the keys in a biscuit tin and is not going to hand them out without being told how.`
+  text: s => `The first street is finished and there are ${Math.min(40, Math.round(s.pop / 3))} doors. There are ${LF.num(LF.heads(s))} people. ${Nwc(s, 'quartermaster')} has the keys in a biscuit tin and is not going to hand them out without being told how.`
     + (s.flags.committee ? '\n\nThe committee has several views.' : s.flags.council ? '\n\nThe Council has voted three times and tied three times.' : ''),
   choices: [
     { label: 'Families with children first', hint: 'unknown', info: [['yield', 'Morale'], ['danger', 'The crews stay in the pods']], out: { text: 'The first keys go to the parents of the youngest. Somebody carries a cot down the street at dusk, and people stop to watch. The field crews watch too, from the pod doors, and go back in.', fx: s => { const p = h.anyNamed(s, ['quartermaster']); return { morale: 4, yield: -0.01, flags: { housed: 'families' }, mark: p ? [p.id, 'slighted', 'worked every shift for the first street and was not given a door on it'] : null }; } } },
@@ -157,7 +157,7 @@ add({ id: 'plan.housed', view: 'people', arc: 'plan', tone: 'council', title: 'K
 const friend = s => s.factors.find(f => (f.kind === 'natives' || f.kind === 'humans') && f.stage >= 2 && !f.res && f.accord >= 5);
 add({ id: 'plan.surplus', arc: 'plan', max: 1, tone: 'council', title: 'Full Bins', w: 3, repeat: 220, gap: 0,
   when: s => s.day >= 200 && foodDays(s) > 200 && !LF.lean(s) && LF.foodProd(s) >= LF.foodCons(s),
-  text: s => `For the first time since landfall there is more in the bins than the colony can eat before it spoils. ${Nc(s, 'quartermaster')} has walked the stores twice, counting, and does not quite believe it.\n\n`
+  text: s => `For the first time since landfall there is more in the bins than the colony can eat before it spoils. ${Nwc(s, 'quartermaster')} has walked the stores twice, counting, and does not quite believe it.\n\n`
     + (did(s, 'state.famine') ? 'People still remember the bottom of the bins. ' : '') + 'Everybody has an idea what to do with it.',
   choices: [
     { label: 'A harvest feast. Nobody works for two days', hint: 'unknown', cost: { food: 300 }, info: [['yield', 'Morale'], ['danger', 'A week of food, eaten in two nights']],
@@ -178,7 +178,7 @@ add({ id: 'plan.harvest', arc: 'plan', tone: 'council', chain: true, title: 'The
   setup: s => { const n = Math.round(s.reap || 0); s.reap = 0; s.flags.harvests = (s.flags.harvests || 0) + 1;
     return { n, m: Math.max(1, Math.round(mo(s, n))), q: LF.SEASONS[(LF.date(s.day - 1).season)], fd: Math.round(foodDays(s) / LF.MONTH), tight: LF.lean(s), first: !s.flags.reaped }; },
   text: (s, c) => `${c.first ? LF.firstCrop(s) : `The ${c.q.toLowerCase()} harvest`} is cut and on the threshing floor: ${c.n.toLocaleString('en')}, about ${LF.monthsWord(c.m)} of eating. ${cap1(sizeWord(s, c.n))}. The store held ${c.fd < 1 ? 'almost nothing' : `about ${LF.monthsWord(c.fd)}`} before it.${c.first ? LF.firstCropTail(s) : ''}\n\n`
-    + (c.tight ? `${Nc(s, 'quartermaster')} wants it all locked up. The people who cut it have been on short ladles all season and watched it go past them on the carts.` : `${Nc(s, 'quartermaster')} has the scales out. The cutters are sitting on the sacks, waiting to hear what they get.`),
+    + (c.tight ? `${Nwc(s, 'quartermaster')} wants it all locked up. The people who cut it have been on short ladles all season and watched it go past them on the carts.` : `${Nwc(s, 'quartermaster')} has the scales out. The cutters are sitting on the sacks, waiting to hear what they get.`),
   choices: [
     { label: 'Into the store, all of it', note: 'Every grain is counted and locked away. The crews who cut it get the same ladle as yesterday.', hint: 'unknown', info: [['yield', 'The whole harvest'], ['danger', 'The cutters']],
       out: { text: (s, c) => `It goes in by the sack, and each sack is counted twice. The cutters line up for the same ladle as yesterday.${c.tight ? ' Somebody spits on the store door that night.' : ''}`,
@@ -214,8 +214,8 @@ LF.TAGS['order.standing'] = ['order', 'cautious'];
 add({ id: 'plan.ladle', urgent: true, max: 2, arc: 'state', tone: 'council', title: 'Full Ladles', repeat: 45, w: 0.8,
   when: s => LF.lean(s) && foodDays(s) > 135,
   text: s => { const r = did(s, 'pol.rations'), f = did(s, 'state.famine');
-    return `The bins are filling again. ${Nc(s, 'quartermaster')} thinks the colony could go back to full rations, and says so carefully.\n\n`
-      + (s.flags.ration_by_work ? 'The people who got the thin ladle while the field crews got the heavy one have been counting the days.' : r && r.i === 0 ? 'You have eaten three-quarter rations in the mess hall with everyone else since the day you ordered them.' : f && f.i === 2 ? 'Nobody has forgotten the scales coming out.' : 'People have been hungry for a long time, and patient about it.'); },
+    return `The bins are filling again. ${Nwc(s, 'quartermaster')} thinks the colony could go back to full rations, and says so carefully.\n\n`
+      + (s.flags.ration_by_work ? 'The people who got the thin ladle while the field crews got the heavy one have been counting the days.' : r && r.i === 0 ? 'You have eaten short rations in the mess hall with everyone else since the day you ordered them.' : f && f.i === 2 ? 'Nobody has forgotten the scales coming out.' : 'People have been hungry for a long time, and patient about it.'); },
   choices: [
     { label: 'Back to full rations', hint: 'unknown', info: [['yield', 'Morale'], ['danger', 'The bins, in the next bad season']], out: { text: 'The heavy ladle comes back. The mess hall is loud for the first time in months, and the line on the stores slate turns down again.', fx: { rations: 'normal', morale: 5, flags: { ration_by_work: false } } } },
     { label: 'One feast, then full rations', note: 'Nobody works for a day.', hint: 'good', info: [['yield', 'Morale']], cost: { food: 150 }, out: { text: 'Somebody finds a fiddle that came forty light-years in a sock, and the dancing goes on past midnight.', fx: { rations: 'normal', morale: 10, flags: { ration_by_work: false } } } },
@@ -232,7 +232,7 @@ const lastF = s => { const id = (s.cur && s.cur.ctx && s.cur.ctx.fid) || (s.last
 const pl = f => !(LF.KINDS[f.kind] || {}).mass;
 const living = s => { const f = lastF(s); return !!f && ['fauna', 'natives', 'humans'].includes(f.kind); };   // something with wounded and young
 add({ id: 'aft.blame', arc: 'after', tone: 'pressure', chain: true, repeat: 50, title: 'Whose Order',
-  text: s => `Before the day is out, the order on ${wasT(s)} is being argued over in the mess hall, and the argument has come round to who gave the word.\n\n${Nc(s, 'chaplain')} is at your door.\n\n[[chaplain]] "They're not angry. Not yet. But somebody's got to tell them, and it had better be you."`,
+  text: s => `Before the day is out, the order on ${wasT(s)} is being argued over in the mess hall, and the argument has come round to who gave the word.\n\n${Nwc(s, 'chaplain')} is at your door.\n\n[[chaplain]] "They're not angry yet, they're frightened, and the ones who lost somebody keep asking me whose word it was. Somebody's got to tell them, and it had better be you, standing up in that hall, not me passing it on at a bedside."`,
   choices: [
     { label: 'Stand up in the mess hall. It was your order', hint: 'unknown', info: [['danger', 'They will know whose order it was']], out: { text: 'You say it plainly and do not explain. Nobody answers, though a few people nod. Afterwards one of them stops bringing you anything but what is asked for.', fx: s => { const p = h.anyNamed(s); return { morale: 3, tension: -6, mark: p ? [p.id, 'grudge', `heard you say "${wasT(s)}" was your order, and has not forgiven the order`] : null }; } } },
     { label: 'Say nothing, and have the watch break up the talk', dark: true, note: 'An argument that is not allowed to gather in one room does not become a meeting.', info: [['yield', 'It blows over'], ['danger', 'People learn what may not be said']], test: { base: 60, mods: [If(s => s.morale >= 50, 10, 'A colony in good heart'), R('security', 10)] },
@@ -243,7 +243,7 @@ add({ id: 'aft.blame', arc: 'after', tone: 'pressure', chain: true, repeat: 50, 
   ] });
 add({ id: 'aft.press', view: 'world', arc: 'after', tone: 'pressure', chain: true, repeat: 50, title: 'While They Are Reeling',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${f.Name} ${pl(f) ? 'are' : 'is'} hurt and pulling back. ${Nc(s, 'security')} has people armed and standing at the wire, and wants to follow now.\n\n[[security]] "Hurt things go to ground and mend." "And then they come back, so I'd like to be standing there when ${pl(f) ? 'they do' : 'it does'}."`; },
+  text: s => { const f = lastF(s); return `${f.Name} ${pl(f) ? 'are' : 'is'} hurt and pulling back. ${Nwc(s, 'security')} has people armed and standing at the wire, and wants to follow now.\n\n[[security]] "Everything that's hurt crawls off somewhere quiet and mends, I've watched men do it and I've watched beasts do it." "And then they come back, so I'd like to be standing there when ${pl(f) ? 'they do' : 'it does'}."`; },
   choices: [
     { label: s => living(s) ? 'Follow, and finish it. The wounded and the young as well' : 'Follow, and finish it', dark: true, note: s => living(s) ? 'What is left out there tonight is whatever could not get away fast.' : 'The watch goes out tired, in the dark, onto ground it does not know.', info: [['yield', 'Nothing comes from that way again'], ['danger', 'A fight in the dark']], test: { base: 60, mods: [R('security', 10), If(s => s.morale >= 50, 5, 'People believe in it')] },
       ok: { text: s => `They go out fast and come back at dawn, filthy, all of them.${living(s) ? ' They found what could not run, and left none of it.' : ''} It will be a long time before anything comes from that direction again.`, fx: s => ({ fops: [{ id: s.last.fid, threat: -26, harm: 32, accord: -25, kills: living(s) ? 6 : 0 }], morale: 2, stain: living(s) ? ['finished', 1] : null }) },
@@ -267,19 +267,19 @@ add({ id: 'aft.gift', view: 'world', arc: 'after', tone: 'opportunity', chain: t
     { label: 'Take it in, openly', hint: 'unknown', info: [['yield', 'Goodwill'], ['danger', 'Nobody has looked inside']], test: { base: 70, mods: [R('xenobio', 5)] },
       ok: { text: 'It is carried through the camp in daylight, where anyone watching from outside the wire can see. What is in it is shared out at the evening meal.', fx: s => ({ food: 100, fops: [{ id: s.last.fid, accord: 10 }] }) },
       bad: { text: 'It is carried through the camp in daylight and opened in the mess hall. The two who opened it are in the clinic by night, and one of them does not come out. Nobody can say whether it was meant.', fx: s => ({ pop: -1, morale: -4, fops: [{ id: s.last.fid, accord: 4, insight: 8 }] }) } },
-    { label: 'Leave something of ours in its place', cost: { mat: 10 }, hint: 'unknown', info: [['yield', 'Goodwill'], ['danger', 'Steel, given to something that has fought you']], out: { text: 'A coil of bright ship wire and a steel knife, set down on the same spot. By the next morning they are gone, and the grass is pressed flat where something sat a long while.', fx: s => ({ fops: [{ id: s.last.fid, accord: 17, insight: 4 }] }) } },
-    { label: 'Have someone from the lock-up handle it first, outside the wire', dark: true, note: 'Nobody with a trade goes near it until it is known to be what it looks like.', hint: 'unknown', info: [['yield', 'What it is, safely'], ['danger', 'Whoever opens it, and how it looks from the hills']], out: { text: s => `A prisoner is walked out to it and told to handle all of it, and to taste whatever in it might be food, while ${N(s, 'xenobio')} takes notes from the wire. Nothing is wrong with it. All of that is done in full view of the hills.`, fx: s => ({ food: 60, fops: [{ id: s.last.fid, insight: 16, accord: -8 }], stain: ['expend', 1] }) } },
-    { label: 'Leave it where it is, and put rifles in the grass', dark: true, show: s => { const f = lastF(s); return !!f && (f.kind === 'natives' || f.kind === 'humans'); },
+    { label: 'Leave something of ours in its place', cost: { mat: 10 }, hint: 'unknown', info: [['yield', 'Goodwill'], ['danger', 'Steel, given to something that has fought you']], out: { text: s => `A coil of bright ship wire and a steel knife, set down on the same spot. By the next morning they are gone, and ${LF.lex(s, 'cover')} is pressed flat where something sat a long while.`, fx: s => ({ fops: [{ id: s.last.fid, accord: 17, insight: 4 }] }) } },
+    { label: 'Have someone from the lock-up handle it first, outside the wire', dark: true, note: 'Nobody with a trade goes near it until it is known to be what it looks like.', hint: 'unknown', info: [['yield', 'What it is, safely'], ['danger', 'Whoever opens it, and how it looks from the hills']], out: { text: s => `A prisoner is walked out to it and told to handle all of it, and to taste whatever in it might be food, while ${Nw(s, 'xenobio')} takes notes from the wire. Nothing is wrong with it. All of that is done in full view of the hills.`, fx: s => ({ food: 60, fops: [{ id: s.last.fid, insight: 16, accord: -8 }], stain: ['expend', 1] }) } },
+    { label: 'Leave it where it is, and put rifles in hiding near it', dark: true, show: s => { const f = lastF(s); return !!f && (f.kind === 'natives' || f.kind === 'humans'); },
       note: 'Whoever left it will come back unarmed to see whether it was taken.', info: [['yield', 'One of them, alive, and what they know'], ['danger', 'They came with a gift']],
       test: { base: 70, mods: [R('security', 10)] },
-      ok: { text: s => `Two come back at dusk to look, with empty hands. One runs. The other is in the stores office by dark with a sack over the head, and by the end of the month ${N(s, 'security')} has a map out of them. Nothing is ever left at the wire again.`,
+      ok: { text: s => `Two come back at dusk to look, with empty hands. One runs. The other is in the stores office by dark with a sack over the head, and by the end of the month ${Nw(s, 'security')} has a map out of them. Nothing is ever left at the wire again.`,
         fx: s => ({ stain: ['ambush', 2], fops: [{ id: s.last.fid, insight: 30, accord: -45, threat: -10, kills: 1 }] }) },
-      bad: { text: 'Two come back at dusk to look, with empty hands. Somebody fires early. Both are dead in the grass beside their own gift, in plain view of wherever they came from.',
+      bad: { text: 'Two come back at dusk to look, with empty hands. Somebody fires early. Both are dead on the ground beside their own gift, in plain view of wherever they came from.',
         fx: s => ({ morale: -3, stain: ['ambush', 2], fops: [{ id: s.last.fid, accord: -60, threat: 16, kills: 2 }] }) } },
   ] });
 add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: true, repeat: 50, title: 'The Thing That Does Not Fit',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n[[xenobio]] "I can test it tonight, I can test it right now, but don't ask me how, honestly, don't, you'll say no, and I'd really like not to be told no."`; },
+  text: s => { const f = lastF(s); return `${Nwc(s, 'xenobio')} is back within the hour, still holding the notebook. One observation about ${f.name} does not fit any of the rest. It could be an error. If it is not, half the notebook is wrong.\n\n[[xenobio]] "I can test it tonight, I can test it right now, only don't ask me how, because you'll say no, and I'd really rather not be told no about this one."`; },
   choices: [
     { label: 'Test it tonight', info: [['danger', 'Unknown']], test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: 'It was not an error. By morning there is a new page in the notebook, and three old ones crossed out.', fx: s => ({ fops: [{ id: s.last.fid, insight: 24, threat: -8 }] }) },
@@ -296,9 +296,9 @@ add({ id: 'aft.find', view: 'world', arc: 'after', tone: 'opportunity', chain: t
 
 /* Frame-specific aftermaths (LF.aftermath, AFT_KIND in council.js) */
 add({ id: 'aft.beds', arc: 'after', view: 'colony', tone: 'pressure', chain: true, repeat: 60, title: 'Every Bed Taken',
-  text: s => `The order on ${wasT(s)} went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nc(s, 'physician')} says the Autodoc runs day and night until the corridor is empty, and is not asking.`,
+  text: s => `The order on ${wasT(s)} went wrong. Nobody died of it, but the clinic is full and the overflow is on blankets in the corridor. ${Nwc(s, 'physician')} says the Autodoc runs day and night until the corridor is empty, and is not asking.`,
   choices: [
-    { label: 'Run the Autodoc until they are all on their feet', hint: 'unknown', info: [['yield', 'Everyone walks out'], ['danger', 'The Autodoc, and whoever needs it next year']], out: { text: 'It runs for nine days without stopping. Everyone walks out. The Autodoc makes a new noise when it starts up now, and the physician has started a list of what it should no longer be asked to do.', fx: { machine: { medbay: -9 }, cap: { medbay: -3 }, morale: 3 } } },
+    { label: 'Run the Autodoc until they are all on their feet', hint: 'unknown', info: [['yield', 'Everyone walks out'], ['danger', 'The Autodoc, and whoever needs it next year']], out: { text: 'It runs for nine days without stopping. Everyone walks out. The Autodoc makes a new noise when it starts up now, and the clinic has started a list of what it should no longer be asked to do.', fx: { machine: { medbay: -9 }, cap: { medbay: -3 }, morale: 3 } } },
     { label: 'Stitch them by hand and send the walking ones back to their shifts', dark: true, note: 'The machine is saved and the work is not lost, and people who should be lying down are carrying loads.', hint: 'unknown', info: [['yield', 'The Autodoc spared, the shifts filled'], ['danger', 'The ones who open up again']], test: { base: 60, mods: [R('physician', 10)] },
       ok: { text: s => `${Nc(s, 'physician')} does not sleep for three days. Everyone who can stand is back on a shift by the fourth, stitched and strapped. They mend slowly, and crooked in a place or two.`, fx: { progress: 0.05, stain: ['worked', 1] } },
       bad: { text: 'Two of the ones sent back open up again on shift, a long way from the clinic. A wound that the Autodoc would have caught goes bad in the night, and then another.', fx: { pop: -2, morale: -4, stain: ['worked', 2] } } },
@@ -309,11 +309,11 @@ add({ id: 'aft.beds', arc: 'after', view: 'colony', tone: 'pressure', chain: tru
 add({ id: 'aft.carcass', arc: 'after', view: 'world', tone: 'pressure', chain: true, repeat: 80, title: 'The Carcass',
   when: s => !!lastF(s),
   setup: s => { const p = h.anyNamed(s, ['physician', 'xenobio']); return Object.assign({ fid: (s.last && s.last.fid) || null, was: (s.last && s.last.title) || null, hungry: h.foodDays(s) < 75 }, p ? { pid: p.id, name: p.name, first: p.first } : {}); },
-  text: (s, c) => { const f = lastF(s), d = Math.round(h.foodDays(s)); return `One of ${f.name} is lying dead outside the wire where it fell, bigger close up than anyone expected. It is most of a tonne of meat, and nobody alive can say what is in it.\n\n${c.hungry ? `There ${(m => m < 1 ? 'is less than a month of food' : m === 1 ? 'is about a month of food' : `are about ${NUM[m] || m} months of food`)(Math.round(d / 10))} in the bins. The cooks went out to look at it before the watch did, and a queue has formed behind them.` : `The cooks have already been out to look at it.`} ${Nc(s, 'xenobio')} wants a month with it before anyone puts any of it in their mouth, and keeps going on about how much a carcass this fresh could tell them.`; },
+  text: (s, c) => { const f = lastF(s), d = Math.round(h.foodDays(s)); return `One of ${f.name} is lying dead outside the wire where it fell, bigger close up than anyone expected. It is most of a tonne of meat, and nobody alive can say what is in it.\n\n${c.hungry ? `There ${(m => m < 1 ? 'is less than a month of food' : m === 1 ? 'is about a month of food' : `are about ${NUM[m] || m} months of food`)(Math.round(d / 10))} in the bins. The cooks went out to look at it before the watch did, and a queue has formed behind them.` : `The cooks have already been out to look at it.`} ${Nwc(s, 'xenobio')} wants a month with it before anyone puts any of it in their mouth, and keeps going on about how much a carcass this fresh could tell them.`; },
   choices: [
     { label: 'Butcher it. Everyone eats tonight', hint: 'unknown', info: [['yield', 'Food'], ['danger', 'Whatever it carries, in everyone']], test: { base: 60, mods: [R('physician', 10), R('xenobio', 5)] },
       ok: { text: 'It smokes well and tastes of iron. For the first night since landing nobody leaves the table hungry. The children are told it is beef, and do not believe it.', fx: { food: 460, morale: 4 } },
-      bad: { text: 'It smokes well. Two days later half the colony is doubled over, and the physician is cutting something long and white out of the first of the dead. The rest of the carcass goes on the fire.', fx: { food: 60, morale: -6, pop: -4 } } },
+      bad: { text: 'It smokes well. Two days later half the colony is doubled over, and the clinic is cutting something long and white out of the first of the dead. The rest of the carcass goes on the fire.', fx: { food: 60, morale: -6, pop: -4 } } },
     { label: 'Give it to the lab. Nobody eats until it is cleared', hint: 'unknown', info: [['yield', 'Understanding, and safe meat late'], ['danger', 'A hungry month']],
       out: { text: (s, c) => `${Nc(s, 'xenobio')} takes it apart over a month, wearing a mask, and fills a notebook with where it is soft. A third of it is passed as safe, by which time it is good only for the stockpot. ${c.hungry ? 'Two of the weakest did not last the month.' : 'The kitchen stopped asking after the first week.'}`,
         fx: (s, c) => ({ food: 120, pop: c.hungry ? -2 : 0, morale: c.hungry ? -4 : 0, fops: c.fid ? [{ id: c.fid, insight: 22 }] : [] }) } },
@@ -327,7 +327,7 @@ add({ id: 'aft.carcass', arc: 'after', view: 'world', tone: 'pressure', chain: t
   ] });
 add({ id: 'aft.cutting', arc: 'after', view: 'colony', tone: 'opportunity', chain: true, repeat: 80, title: 'A Cutting in a Jar',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `${Nc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${N(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n[[xenobio]] "It could feed the wheat, or it could eat the wheat, I don't know which yet, and I have to know which, give me one plot and I'll find out, no wait, give me a fence and one plot."`; },
+  text: s => { const f = lastF(s); return `${Nwc(s, 'xenobio')} has come back with a living cutting of ${f.name} in a sealed jar, and has been talking to ${Nw(s, 'botanist')} about it since. Something in its roots fixes nitrogen faster than anything on Earth.\n\n[[xenobio]] "It could feed the wheat, or it could eat the wheat, I don't know which yet, and I have to know which, give me one plot and I'll find out, no wait, give me a fence and one plot."`; },
   choices: [
     { label: 'Trial it in one plot, fenced off', info: [['yield', 'Maybe better harvests']], test: { base: 50, mods: [R('botanist', 10), R('xenobio', 5)] },
       ok: { text: 'The fenced plot comes up thicker and greener than any other. The roots stop at the fence.', fx: s => ({ yield: 0.07, fops: [{ id: s.last.fid, insight: 8 }] }) },
@@ -342,7 +342,7 @@ add({ id: 'aft.cutting', arc: 'after', view: 'colony', tone: 'opportunity', chai
 add({ id: 'aft.warm', arc: 'after', view: 'world', tone: 'opportunity', chain: true, repeat: 80, title: 'It Is Still Warm',
   when: s => !!lastF(s),
   setup: s => { const p = h.anyNamed(s, ['engineer', 'xenobio']); return Object.assign({ fid: (s.last && s.last.fid) || null, was: (s.last && s.last.title) || null }, p ? { pid: p.id, name: p.name, first: p.first } : {}); },
-  text: s => { const f = lastF(s); return `Among what was brought back from ${f.name} is a palm-sized object that is warm to the touch and has not cooled in three days. ${Nc(s, 'engineer')} thinks it is a power source. ${Nc(s, 'xenobio')} thinks it's a heart, and has stopped saying "thinks" about it.`; },
+  text: s => { const f = lastF(s); return `Among what was brought back from ${f.name} is a palm-sized object that is warm to the touch and has not cooled in three days. ${Nwc(s, 'engineer')} thinks it is a power source. ${Nwc(s, 'xenobio')} thinks it's a heart, and has stopped saying "thinks" about it.`; },
   choices: [
     { label: 'Wire it into the grid', info: [['danger', 'The reactor']], test: { base: 50, mods: [R('engineer', 10)] },
       ok: { text: 'It takes a load off the reactor that nobody can account for. The lights are steadier than they have been since landfall.', fx: { machine: { reactor: 10 }, cap: { reactor: 4 } } },
@@ -359,7 +359,7 @@ add({ id: 'aft.warm', arc: 'after', view: 'world', tone: 'opportunity', chain: t
   ] });
 add({ id: 'aft.captive', arc: 'after', view: 'people', tone: 'pressure', chain: true, repeat: 90, title: 'One of Them, Alive',
   when: s => !!lastF(s),
-  text: s => { const f = lastF(s); return `When it was over, one of ${f.name} was still alive on the colony's side of the line: hurt, held, and watching everyone. ${Nc(s, 'security')} has them in the stores office under guard, and would like to know what you plan to do with the only one of them we can ask.`; },
+  text: s => { const f = lastF(s); return `When it was over, one of ${f.name} was still alive on the colony's side of the line: hurt, held, and watching everyone. ${Nwc(s, 'security')} has them in the stores office under guard, and would like to know what you plan to do with the only one of them we can ask.`; },
   choices: [
     { label: 'Let them go, once the ones who buried friends today have had their hour', dark: true, hint: 'unknown', note: 'The fence will not stand for a prisoner walking out untouched, and it will stand for one who can still walk.', info: [['yield', 'Goodwill, maybe, and a quiet fence'], ['danger', 'What the prisoner carries home']], out: { text: s => `${Nc(s, 'security')} unlocks the stores office and goes for a walk. An hour later the prisoner is bandaged, fed, and helped to the wire, and let go. The ones who carried your dead in from that fight stand along the fence and watch it without a word.`, fx: s => ({ fops: [{ id: s.last.fid, accord: 6, threat: -4 }], food: -20, morale: 2, stain: ['gauntlet', 1] }) } },
     { label: 'Question them, and no food or water until there is a map', dark: true, hint: 'unknown', note: 'Pointing and drawing would take a month the colony may not have.', info: [['yield', 'Understanding, quickly'], ['danger', 'A prisoner who may not last it']], test: { base: 60, mods: [R('xenobio', 10), R('chaplain', 5)] },

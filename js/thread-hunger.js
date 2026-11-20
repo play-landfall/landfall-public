@@ -339,7 +339,7 @@ const WONT = {
   table: c => `${Num(c.n)} people will not eat from the pot. Most are parents, and they have seen the children's gums. They take the ship's meal at the hatch, tip the paste into the pail, and go on losing weight.`,
   drench: c => `${Num(c.n)} people did not take the drench. They were out of their bunks on all three nights, and their cups were found poured out behind the wash house.`,
   burn: c => `Not all of the seed was burned. ${Num(c.n)} of the field crew held back a few sacks saved from this ground, and have a plot of it sown behind the far windbreak. They say it is the only seed that has ever come up properly here.`,
-  force: c => `${Num(c.n)} people have stopped coming to the long table. They are fetched every night and fed by tube in the wash house, held by people they have worked beside for years. Three of them have had teeth broken.`,
+  force: c => `${Num(c.n)} people have stopped coming to the long table. They are fetched every night and fed by tube in the wash house, held down by people they work beside. Three of them have had teeth broken.`,
 };
 const MADE = {
   table: c => `The watch stands over the ${num(c.n)} at every meal until the paste is eaten. The children are fed first, with a parent holding each one. It is done in the open mess, and the rest of the hall keeps its eyes on its own bowl.`,

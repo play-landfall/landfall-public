@@ -13,7 +13,7 @@
    The sea's fishery is s.flags.sea_catch: food landed every day (CATCH), not a field crop, so no harvest card. */
 (function () {
 'use strict';
-const { add, clamp, h } = LF; const { P, N, Nc, R, M, If, foodDays } = h;
+const { add, clamp, h } = LF; const { P, N, Nc, Nw, Nwc, R, M, If, foodDays } = h;
 
 /* ---------- the first need ---------- */
 LF.need = s => (s && s.need) || 'soil';
@@ -81,8 +81,8 @@ const took = (s, base) => clamp(base + (LF.rand(s) - 0.5) * 0.3, 0.12, 0.7);
 add({ id: 'ssn.dry', arc: 'crops', tone: 'council', title: 'Dry Ground', w: 9, gap: 0, view: 'colony',
   when: s => NEED('water')(s) && s.day >= 4 && s.day < 200 && !s.flags.first_sow,
   setup: s => ({ rec: LF.down(s, 'reclaimer'), wet: s.world.truth.water, well: canPush(s, 'wells') }),
-  text: (s, c) => `A strip of ${LF.lex(s, 'top')} is cleared and raked, and the seed is out of the lockers. ${Nc(s, 'botanist')} pushed a finger into the strip this morning and it came out dry to the knuckle. The seed will take here if it is watered. ${c.rec ? 'Every litre the colony has goes round the reclaimer' : 'Every litre the colony has is in the lander\'s tanks'}, and there is ${c.wet < 8 ? 'nothing on the ground to add to it' : 'only a little seep in the low ground to add to it'}.\n\n`
-    + voice(s, 'engineer', `[[engineer]] "Water the plots and the taps go short. Water the people and there's no harvest." "That's the sum, and I've done it every way I know. It doesn't come out different."`, 'Water the plots and the taps go short. Water the people and there is no harvest.'),
+  text: (s, c) => `A strip of ${LF.lex(s, 'top')} is cleared and raked, and the seed is out of the lockers. ${Nwc(s, 'botanist')} pushed a finger into the strip this morning and it came out dry to the knuckle. The seed will take here if it is watered. ${c.rec ? 'Every litre the colony has goes round the reclaimer' : 'Every litre the colony has is in the lander\'s tanks'}, and there is ${c.wet < 8 ? 'nothing on the ground to add to it' : 'only a little seep in the low ground to add to it'}.\n\n`
+    + voice(s, 'engineer', `[[engineer]] "If the water goes on the plots the taps go short, and if it goes to the taps there's no harvest to speak of." "That's the sum, and I've done it every way I know. It doesn't come out different."`, 'Water the plots and the taps go short. Water the people and there is no harvest.'),
   choices: [
     { label: 'Water every plot, and the taps go short', note: 'The whole strip is sown and kept wet, and everyone drinks less for a season to do it.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A full sowing, watered'], ['danger', 'Everyone at the tap, and the oldest first']],
       out: { text: (s, c) => `Every plot is sown and watered at dusk, by can. ${c.rec ? 'The reclaimer runs hot all season and the taps are cut to a trickle.' : 'The lander\'s tanks go down a mark a week and the taps are cut to a trickle.'} One of the oldest is found in a bunk in the second month, dry-mouthed and gone.`,
@@ -106,14 +106,14 @@ add({ id: 'ssn.wet', arc: 'crops', tone: 'council', chain: true, title: 'What th
   text: (s, c) => { const sw = s.flags.water_sown || s.flags.first_sow;
     return (sw === 'all' ? `${frac(c.took)} of the watered strip came up green. Where the cans did not reach, the seedlings stood up a hand high and died standing.`
       : sw === 'half' ? `Of the half that was sown, ${frac(c.took).toLowerCase()} came up green. The lockers with the rest of the seed are still wired shut.`
-      : `The dew nets gave about a cup a night each. Under them, ${c.took < 0.3 ? 'three' : c.took < 0.5 ? 'five' : 'eight'} of the twelve squares came up, and ${N(s, 'botanist')} knows to the cup what each one drank. There is not a meal in the lot of them.`)
+      : `The dew nets gave about a cup a night each. Under them, ${c.took < 0.3 ? 'three' : c.took < 0.5 ? 'five' : 'eight'} of the twelve squares came up, and ${Nw(s, 'botanist')} knows to the cup what each one drank. There is not a meal in the lot of them.`)
       + `\n\nWhat is standing is ready to cut.`; },
   choices: [
     { label: 'Cut it all for the stores', note: 'Food now, and the next sowing comes out of lockers that have little left in them.', hint: 'good', info: [['yield', 'Food now'], ['danger', 'The next sowing']],
       out: { text: s => s.flags.first_sow === 'trial' ? 'It fills a sack and a half. People come to look at the sacks.' : 'It is cut in three days and carried in on shoulders.',
         fx: (s, c) => ({ food: sown(s, c), morale: c.took >= 0.3 ? 3 : -2, flags: { sprouted: true } }) } },
     { label: 'Keep back the ears that grew on the least water', note: 'Seed bred here, from the plants that managed on what there was, and it is half the harvest that hungry people watch hung up out of reach.', hint: 'unknown', info: [['yield', 'A wheat for dry ground, in time'], ['danger', 'Half of what there was to eat']],
-      out: { text: s => `${Nc(s, 'botanist')} walks the dry end of the strip and ties a rag round every plant still standing there. Those are cut first and hung in the dark. The rest goes to the stores.`,
+      out: { text: s => `${Nwc(s, 'botanist')} walks the dry end of the strip and ties a rag round every plant still standing there. Those are cut first and hung in the dark. The rest goes to the stores.`,
         fx: (s, c) => ({ food: sown(s, c, 0.55), yield: 0.04 + c.took * 0.1, morale: -2, flags: { sprouted: true, seed_grain: true, seed_local: true, dry_seed: true } }) } },
     { label: 'Water a second sowing from the shaft', show: (s, c) => s.flags.first_sow !== 'all' || s.project === 'wells' || !!s.built.wells, note: 'The reserve goes in where the first sowing took, on water the shaft has not proved it can give.', hint: 'unknown', info: [['time', 'Another season'], ['danger', 'The reserve']],
       test: { base: 40, mods: [If((s, c) => c.took >= 0.42, 15, 'Ground that took'), If(s => s.project === 'wells' || !!s.built.wells, 10, 'The shaft'), If(s => s.flags.first_sow === 'trial', 10, 'The cup measures'), R('botanist', 10), R('engineer', 5)] },
@@ -128,14 +128,14 @@ add({ id: 'ssn.dig', arc: 'crops', tone: 'pressure', title: 'The Dig', w: 3, vie
   when: s => NEED('water')(s) && !s.built.wells && s.day >= 40 && (s.flags.sprouted || s.day >= 90),
   setup: s => ({ deep: s.world.truth.water < 8 ? 'sixty' : 'thirty', well: canPush(s, 'wells'), on: s.project === 'wells', fly: LF.canFly(s), lie: !!s.flags.water_lie }),
   text: (s, c) => `The plots that were watered are holding. The ones that were not are ${LF.lex(s, 'top')} again, with a crust on them you can knock on. ${c.lie ? 'The board in the mess hall still says the water is failing. ' : ''}${c.on ? 'The well shaft is going down a hand a day.' : 'Nobody has started a well.'}\n\n`
-    + voice(s, 'engineer', `[[engineer]] "${c.deep.charAt(0).toUpperCase() + c.deep.slice(1)} metres to anything wet, if the survey's right. A casing, a pump and every pair of hands for a season." "Or the lander fetches ice from the cold end of the world. She'll go. She won't thank you."`, `The survey puts water about ${c.deep} metres down. A well needs a casing, a pump and every pair of hands for a season. There is ice at the cold end of the world, a lander flight away.`),
+    + voice(s, 'engineer', `[[engineer]] "${c.deep.charAt(0).toUpperCase() + c.deep.slice(1)} metres to anything wet, if the survey's right, and surveys mostly aren't. That's a casing, a pump and every pair of hands for a season, longer if she hits rock." "Or the lander fetches ice from the cold end of the world. She'll go. She won't thank you."`, `The survey puts water about ${c.deep} metres down. A well needs a casing, a pump and every pair of hands for a season. There is ice at the cold end of the world, a lander flight away.`),
   choices: [
     { label: 'Sink the shaft, with every hand that can be spared', note: (s, c) => c.well || c.on ? 'The fields and the salvage go short a season, and a shaft this deep is dug by people standing at the bottom of it.' : 'The crews are on another build, and the shaft has to wait for them.', hint: 'unknown', info: [['yield', 'Water of the colony\'s own'], ['danger', 'Whoever is at the bottom']],
       test: { base: 60, mods: [R('engineer', 10), R('geologist', 5), If(s => s.world.truth.water < 8, -10, 'A very dry world')] },
       ok: { text: (s, c) => c.well || c.on ? 'The shaft goes down in shifts round the clock, and the spoil heap grows beside it like a second camp. The cuttings are damp at the bottom of the month.' : 'The shaft is pegged out and the casing is cut, ready for the day the build crews come free. Meanwhile the plots get every can the taps can spare.', fx: { yield: 0.08, morale: 1, mat: -15, do: s2 => push(s2, 'wells', 0.4) } },
       bad: { text: 'The shaft wall comes in at twenty metres with two people under it. One is dug out alive. The shaft is started again a metre to the east.', fx: { pop: -1, morale: -3, mat: -15, do: s2 => push(s2, 'wells', 0.2) } } },
     { label: 'Fly the lander to the ice', req: (s, c) => c.fly, reqText: s => LF.flyWhy(s), note: s => `A flight's fuel, and ${s.sleepers > 0 ? 'the sleepers waiting on that flight wait another season' : 'a lander that was not built to haul ice'}.`, hint: 'unknown', info: [['yield', 'Water for the plots and the taps'], ['danger', 'The lander'], ['danger', 'The sleepers who wait']],
-      out: { text: s => `${voice(s, 'pilot', `${Nc(s, 'pilot')} flies it with the cargo bay open to the cold and the ice chained to the deck.`, 'The lander goes out with the cargo bay open to the cold and comes back with ice chained to the deck.')} It comes down slow and heavy, and the colony drinks its fill for the first time since the landing. The plots are flooded at dusk.`,
+      out: { text: s => `${voice(s, 'pilot', `${Nc(s, 'pilot')} flies it with the cargo bay open to the cold and the ice chained to the deck.`, 'The lander goes out with the cargo bay open to the cold and comes back with ice chained to the deck.')} It comes down slow and heavy, and the colony drinks its fill for the first time since the landing. The plots are flooded at dusk.${s.sleepers > 0 ? ' Up in orbit, the pods that were waiting on that flight wait another season, and not all of them last it.' : ''}`,
         fx: s => ({ fly: 1, machine: { lander: -10, reclaimer: 6 }, yield: 0.08, morale: 3, sleepers: -Math.min(2, s.sleepers), poi: { key: 'ssn.ice', kind: 'spring', name: 'The ice at the cold end of the world', dist: 'long', off: true, state: 'visited', danger: 2, known: 'A lander flight away, and nowhere near on foot. Clean ice to the horizon.' } }) } },
     { label: s => `Turn the dry plots over to ${LF.lex(s, 'wild1')}`, note: s => `It grows on dew, it's nearly food, and the colony will be eating ${LF.lex(s, 'wild1')} on its bread.`, hint: 'unknown', info: [['yield', 'Something that grows without water'], ['danger', 'Everyone who has to eat it']],
       out: { text: s => `The dry plots are dug over and planted with ${LF.lex(s, 'wild1')} lifted from past the wire. It takes in a week. It is boiled and pounded into the meal, and the meal goes grey and bitter. The clinic sees more stomachs than usual and one of them is a child's that does not settle.`,
@@ -153,7 +153,7 @@ add({ id: 'ssn.cold', arc: 'crops', tone: 'council', title: 'Nothing Grows Outsi
   when: s => NEED('warmth')(s) && s.day >= 4 && s.day < 200 && !s.flags.first_sow,
   setup: s => ({ glass: canPush(s, 'greenhouse'), hot: LF.down(s, 'reactor') && !s.machines.reactor.lost }),
   text: (s, c) => `A test row was sown in the lee of the pods on the first clear morning. The seed is still lying in it, frozen into the ${LF.lex(s, 'top')} where it fell. Nothing will grow out of doors here. It will have to be grown in the warm, and the only warm is the pods the colony sleeps in and whatever the reactor can spare.\n\n`
-    + voice(s, 'botanist', `[[botanist]] "Glass, or heat, or both." "We haven't enough of either. Somebody's bunk goes cold whichever way."`, 'Glass, or heat, or both, and there is not enough of either.'),
+    + voice(s, 'botanist', `[[botanist]] "It wants glass, or heat, or both, because nothing comes up out of doors here without them." "We haven't enough of either, so whichever way you do it, somebody's bunk goes cold this winter."`, 'Glass, or heat, or both, and there is not enough of either.'),
   choices: [
     { label: 'Glaze the plots with hull glass', cost: { mat: 30 }, note: (s, c) => `The plate that was going on the pod walls goes over the seed instead, and the pods stay single-skinned for a winter${c.glass ? '' : '. The build crews are busy, so the glazing is done by hand and slowly'}.`, hint: 'unknown', info: [['time', 'One season'], ['yield', 'Half the seed, under glass'], ['danger', 'The pods, single-skinned']],
       out: { text: (s, c) => `Hull glass is cut to size and laid over half the plots on frames. ${c.glass ? 'The ribs of a proper glasshouse go up beside them the same month.' : 'The rest of the seed stays in the lockers.'} The pods are colder for it, and people sleep in their coats.`,
@@ -162,7 +162,7 @@ add({ id: 'ssn.cold', arc: 'crops', tone: 'council', title: 'Nothing Grows Outsi
       out: { text: (s, c) => `Pipe is dug in under the plots in loops and run off the ${c.hot ? 'reactor\'s' : 'stove\'s'} heat exchanger. The ground steams. The pods are given the night setting at dusk instead of at midnight, and the coughs start in the second week.`,
         fx: s => ({ machine: { reactor: -8 }, morale: -1, flags: { first_sow: 'all', warm_sown: 'heat' }, sched: [['ssn.glass', 24, 34]], do: s2 => LF.emit(s2, 'cold', 'ssn.cold', 24, 220, 'the pods give their heat to the plots at night') }) } },
     { label: 'Grow it in trays in the sleeping pods', note: 'Almost no seed is risked and almost no food comes of it, and every pod becomes a nursery that people sleep in.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'What grows in the warm'], ['danger', 'A season with no harvest']],
-      out: { text: s => `Seed trays go under every bunk and along every sill. The pods smell of wet earth. ${Nc(s, 'botanist')} goes round them with a notebook at night, and nobody sleeps through.`,
+      out: { text: s => `Seed trays go under every bunk and along every sill. The pods smell of wet earth. ${Nwc(s, 'botanist')} goes round them with a notebook at night, and nobody sleeps through.`,
         fx: { morale: -1, survey: 3, flags: { first_sow: 'trial', seed_grain: true, warm_sown: 'trays', soil_clues: true }, sched: [['ssn.glass', 24, 34]] } } },
     { label: 'Move the old and the sick into the cold store, and grow in their pod', dark: true, note: 'The warmest pod in the camp is the clinic\'s, and the seed needs warm more than the people in it need warm.', hint: 'unknown', info: [['yield', 'A full sowing, in the warm'], ['danger', 'The old and the sick']],
       out: { text: s => `The clinic's pod is cleared in a morning and filled with trays to the roof. The patients go into the cold store with a stove and every blanket that can be found. ${voice(s, 'physician', `${Nc(s, 'physician')} sleeps in there with them, and buries two of them before the trays are ready to plant out.`, 'Two of them are buried before the trays are ready to plant out.')}`,
@@ -176,6 +176,7 @@ add({ id: 'ssn.glass', arc: 'crops', tone: 'council', chain: true, title: 'Grown
   setup: s => ({ took: took(s, 0.34 + (LF.ARCHETYPES[s.world.type].yield || 0) + (s.flags.warm_sown === 'glass' ? 0.06 : 0) - (s.flags.site_highland ? 0.05 : 0)), glass: !!s.built.greenhouse || s.project === 'greenhouse' }),
   text: (s, c) => { const w = s.flags.warm_sown;
     return (w === 'glass' ? `Under the glass, ${frac(c.took).toLowerCase()} came up green. The frames nearest the pods did best, and the far ones frosted on the inside on the coldest night and never recovered.`
+      : w === 'clinic' ? `The trays from the clinic's pod were planted out in a cold snap. ${frac(c.took)} took, and the rest stood yellow and never recovered.`
       : w === 'trays' ? `The trays in the pods came up thick and pale. ${c.took < 0.3 ? 'A third' : c.took < 0.5 ? 'Half' : 'Most'} of them are worth planting on, and there is not a meal in the lot.`
       : `Over the heat, ${frac(c.took).toLowerCase()} came up green. Where the pipe ran shallow the roots cooked, and where it ran deep the frost got in.`)
       + `\n\nWhat is standing is ready to cut.`; },
@@ -184,7 +185,7 @@ add({ id: 'ssn.glass', arc: 'crops', tone: 'council', chain: true, title: 'Grown
       out: { text: s => s.flags.first_sow === 'trial' ? 'It fills two sacks. People come to look at the sacks.' : 'It is cut in two days and carried in out of the wind.',
         fx: (s, c) => ({ food: sown(s, c), morale: c.took >= 0.3 ? 3 : -2, flags: { sprouted: true } }) } },
     { label: 'Keep back the plants that stood the frost', note: 'Seed from the ones that lived through the coldest night, and it is half the harvest that hungry people watch hung up out of reach.', hint: 'unknown', info: [['yield', 'A wheat for the cold, in time'], ['danger', 'Half of what there was to eat']],
-      out: { text: s => `${Nc(s, 'botanist')} marks every plant that stood up after the frost with a twist of wire. Those are cut first and hung in the warmest pod. The rest goes to the stores.`,
+      out: { text: s => `${Nwc(s, 'botanist')} marks every plant that stood up after the frost with a twist of wire. Those are cut first and hung in the warmest pod. The rest goes to the stores.`,
         fx: (s, c) => ({ food: sown(s, c, 0.55), yield: 0.04 + c.took * 0.1, morale: -2, flags: { sprouted: true, seed_grain: true, seed_local: true, cold_seed: true } }) } },
     { label: 'Heat a second planting through the dark months', show: s => s.flags.first_sow !== 'all', note: 'The reserve goes in under whatever glass and heat there is, through the worst of the cold.', hint: 'unknown', info: [['time', 'Another season'], ['danger', 'The reserve, and the reactor']],
       test: { base: 40, mods: [If((s, c) => c.took >= 0.42, 15, 'Ground that took'), If((s, c) => c.glass, 15, 'The glasshouse'), M('reactor', 10), R('botanist', 10)] },
@@ -199,7 +200,7 @@ add({ id: 'ssn.fuel', arc: 'crops', tone: 'pressure', title: 'Fuel', w: 3, view:
   when: s => NEED('warmth')(s) && s.day >= 40 && (s.flags.sprouted || s.day >= 90),
   setup: s => ({ house: canPush(s, 'housing'), lie: !!s.flags.heat_lie }),
   text: (s, c) => `The cold has come down properly. ${LF.lex(s, 'cover').charAt(0).toUpperCase() + LF.lex(s, 'cover').slice(1)} squeaks underfoot, the glass frosts inside by midnight, and the plots and the pods want the same heat at the same hours. ${c.lie ? 'The notice about the reactor is still on the mess hall door. ' : ''}There is not enough of it, and everything that burns has another use.\n\n`
-    + voice(s, 'engineer', `[[engineer]] "I can give you the plots or the pods. Not both, not on what she's making." "Or you find me something to burn."`, 'The reactor can keep the plots warm or the pods, and not both.'),
+    + voice(s, 'engineer', `[[engineer]] "I can give you the plots or the pods, and not both, not on what the old girl's making in this cold, and I've already got her running harder than I'd like." "Or you find me something to burn."`, 'The reactor can keep the plots warm or the pods, and not both.'),
   choices: [
     { label: 'Burn the wreck\'s foam and plastics', note: 'It burns hot and black. The plate yard loses its insulation for good, and the stokers breathe what comes off it.', hint: 'unknown', info: [['yield', 'The plots and the pods both warm'], ['danger', 'The stokers'], ['danger', 'The wreck']],
       out: { text: 'The wreck is stripped of every panel of foam and every cable sheath and fed into a stove made from a fuel tank. Plots and pods both stay warm through the worst of it. The stokers cough black for a month, and one of them coughs until spring and then stops.',
@@ -215,7 +216,7 @@ add({ id: 'ssn.fuel', arc: 'crops', tone: 'pressure', title: 'Fuel', w: 3, view:
       out: { text: 'The cold store gets a stove, two lamps and everyone the work rosters do not need: the old, the sick, the very young and their mothers. The plots stay green through the dark. Three are carried out of the store before the thaw.',
         fx: { yield: 0.12, pop: -3, morale: -3, stain: ['ssn_coldstore', 1] } } },
     { label: 'Ration the heat, and the lock-up gets none', dark: true, note: 'Every pod gives up an hour of heat a night to the plots, and the lock-up gives up all of it.', hint: 'unknown', info: [['yield', 'The plots warm'], ['danger', 'Whoever is in the lock-up']],
-      out: { text: s => `The night setting comes on an hour earlier everywhere and the lock-up's heater is taken out.${voice(s, 'security', `\n\n[[security]] "Character-building."\n\n${Nc(s, 'security')} puts a second blanket through the bars at midnight anyway.\n\n`, ' The watch put a second blanket through the bars at midnight. ')}It is not enough for two of them.`,
+      out: { text: s => `The night setting comes on an hour earlier everywhere and the lock-up's heater is taken out.${voice(s, 'security', `\n\n[[security]] "Who's in the lock-up? People who earned it, so a cold night'll build some character, and I don't see anyone queuing to lend them a stove."\n\n${Nc(s, 'security')} puts a second blanket through the bars at midnight anyway.\n\n`, ' The watch put a second blanket through the bars at midnight. ')}It is not enough for two of them.`,
         fx: { yield: 0.08, pop: -2, morale: -1, stain: ['ssn_cells', 1] } } },
   ] });
 
@@ -223,7 +224,7 @@ add({ id: 'ssn.fuel', arc: 'crops', tone: 'pressure', title: 'Fuel', w: 3, view:
 add({ id: 'ssn.weed', arc: 'crops', tone: 'council', title: 'Everything Grows', w: 9, gap: 0, view: 'colony',
   when: s => NEED('wild')(s) && s.day >= 4 && s.day < 200 && !s.flags.first_sow,
   text: s => `The seed was barely in before ${LF.lex(s, 'cover')} came in over it. The strip has been pulled clean twice. By the next morning it is green again, and most of the green is not wheat.\n\n`
-    + voice(s, 'botanist', `[[botanist]] "Everything grows here." "Ours too, only slower. Leave it a week and it's their harvest, not ours."`, 'Everything grows here, ours only slower, and a week left alone makes it the harvest of whatever else came up.'),
+    + voice(s, 'botanist', `[[botanist]] "Everything grows here, and ours does too, only slower." "Turn your back on it a few mornings and it's their harvest, not ours."`, 'Everything grows here, ours only slower, and a week left alone makes it the harvest of whatever else came up.'),
   choices: [
     { label: 'Sow it all, and weed by hand every day', note: 'The salvage crews are on their knees in the rows from first light, and the wreck waits.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A full sowing'], ['danger', 'The plate that stays in the wreck']],
       out: { text: 'Every plot is sown, and every morning the whole camp walks the rows before breakfast with a sack each. The sacks are full by the time the bell goes. The wreck is not touched all season.',
@@ -232,7 +233,7 @@ add({ id: 'ssn.weed', arc: 'crops', tone: 'council', title: 'Everything Grows', 
       out: { text: 'The strip and a wide margin round it are burned off every time it is sown. The plots come up clean for a week at a time. The fire gets away once on a turning wind and takes a burn crew\'s hut with somebody asleep in it.',
         fx: s => ({ pop: -1, yield: 0.04, fops: fo(s, ['flora', 'fauna'], 6), flags: { first_sow: 'all', wild_burned: true }, sched: [['ssn.tangle', 24, 34]] }) } },
     { label: 'Sow half. Keep the rest sealed until we know what we\'re fighting', note: 'Half a harvest for a colony that needs a whole one, with seed kept back to try again.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'Half a sowing'], ['danger', 'Half the bread']],
-      out: { text: s => `Half the strip is sown. The other lockers are wired shut and tagged, and ${N(s, 'botanist')} keeps a notebook on what comes up in the rows and how fast.`,
+      out: { text: s => `Half the strip is sown. The other lockers are wired shut and tagged, and ${Nw(s, 'botanist')} keeps a notebook on what comes up in the rows and how fast.`,
         fx: { flags: { first_sow: 'half', seed_grain: true, soil_clues: true }, survey: 3, sched: [['ssn.tangle', 24, 34]] } } },
     { label: 'Put the lock-up in the rows from dawn to dark', dark: true, note: 'The rows are kept clean and nobody with a trade is taken off it, and the people on their knees all day are the ones who cannot refuse.', hint: 'unknown', info: [['yield', 'A full sowing, clean'], ['danger', 'Whoever is in the lock-up']],
       out: { text: 'The lock-up weeds the strip from first light to dark with the watch at the field edge. The rows are the cleanest anyone has seen. A man with a cut hand that went bad in the wet is buried at the end of his row.',
@@ -245,7 +246,7 @@ add({ id: 'ssn.weed', arc: 'crops', tone: 'council', title: 'Everything Grows', 
 add({ id: 'ssn.tangle', arc: 'crops', tone: 'council', chain: true, title: 'What Came Up With It', view: 'colony',
   setup: s => ({ took: took(s, 0.36 + (LF.ARCHETYPES[s.world.type].yield || 0) * 1.2 + (s.flags.salted ? 0.08 : 0) + (s.flags.site_delta ? 0.06 : 0)) }),
   text: (s, c) => `${s.flags.first_sow === 'half' ? 'Of the half that was sown, ' + frac(c.took).toLowerCase() : frac(c.took)} came up as wheat. The rest came up as wheat and something else, wound together at the root, and in some of the heads the grain is the wrong colour.\n\n`
-    + voice(s, 'xenobio', `${Nc(s, 'xenobio')} turns a head over.\n\n[[xenobio]] "It's crossed." "Or it's trying to, which shouldn't be possible, so either I'm wrong or this is the best thing that's happened here, and I honestly can't tell which, can we keep some? Please?"`, 'Some of the wheat looks crossed with the wild. That should not be possible.'),
+    + voice(s, 'xenobio', `${Nc(s, 'xenobio')} turns a head over.\n\n[[xenobio]] "It's crossed." "Or it's trying to, and it can't be, their pollen and ours shouldn't even recognise each other, so either my eyes are wrong or this is the best thing that's happened since landfall, and can we keep some, please, before somebody burns the row?"`, 'Some of the wheat looks crossed with the wild. That should not be possible.'),
   choices: [
     { label: 'Cut it all, weeds and wheat', note: 'Everything goes in the stores, and whatever is mixed into it goes into everyone who eats from them.', hint: 'good', info: [['yield', 'Food now'], ['danger', 'Everyone who eats it']],
       out: { text: 'It is cut in three days and carried in, and the wrong-coloured grain goes in with the rest. The bread is darker than it should be.',
@@ -267,7 +268,7 @@ add({ id: 'ssn.green', arc: 'crops', tone: 'pressure', title: 'Green in the Stor
   when: s => NEED('wild')(s) && s.day >= 50 && (s.flags.sprouted || s.day >= 90),
   setup: s => ({ mixed: !!s.flags.wild_in_stores, salted: !!s.flags.salted }),
   text: (s, c) => `A store pod was opened this morning and the sacks along the back wall had sprouted through the weave. Something grows in the stores here, in the dark, on nothing but grain${c.mixed ? ', and it came in with the wild grain that was cut with the wheat' : ''}. ${c.salted ? 'Round the plots, the salted ground is the only bare ground for a day\'s walk.' : `${LF.lex(s, 'cover').charAt(0).toUpperCase() + LF.lex(s, 'cover').slice(1)} is in over the field edge again.`}\n\n`
-    + voice(s, 'quartermaster', `[[quartermaster]] "It's in three pods. Maybe four." "I can't tell you how much is still food till it's sorted."`, 'It is in three pods, perhaps four, and nobody can say how much is still food until it is sorted.'),
+    + voice(s, 'quartermaster', `[[quartermaster]] "It's in three pods, maybe four, and I'll know which when I've been through the last of them." "I won't tell you how much is still food till it's sorted, because I'd only be guessing, and you'd plan on the guess."`, 'It is in three pods, perhaps four, and nobody can say how much is still food until it is sorted.'),
   choices: [
     { label: 'Sort the stores, grain by grain', note: 'Every hand that can be spared sits on the floor of the store pods for a month, and the build waits.', hint: 'unknown', info: [['yield', 'Most of the stores kept'], ['danger', 'The build, and a month of hands']],
       out: { text: 'The stores are emptied onto sheets on the pod floor and sorted by lamplight. Most of it is sound. The sprouted grain is burned in a pit, and the smell hangs over the camp for a week.',
@@ -291,7 +292,7 @@ add({ id: 'ssn.green', arc: 'crops', tone: 'pressure', title: 'Green in the Stor
 add({ id: 'ssn.tide', arc: 'crops', tone: 'council', title: 'The Food Is in the Water', w: 9, gap: 0, view: 'world',
   when: s => NEED('sea')(s) && s.day >= 4 && s.day < 200 && !s.flags.first_sow,
   text: s => `There is not much ground above the tide line, and what there is is ${LF.lex(s, 'top')} and salt. A strip of it could be sown. The shallows past it are thick with things that swim, and the survey team have already pulled three kinds out of the water that the clinic says can be eaten.\n\n`
-    + voice(s, 'engineer', `[[engineer]] "Boats, nets and the tide tables, or a field." "We haven't the hands for both this season, and don't ask me to find them."`, 'Boats and nets, or a field, and not the hands for both this season.'),
+    + voice(s, 'engineer', `[[engineer]] "It's boats and nets and somebody learning the tide tables, or it's a field." "We haven't the hands for both this season, and don't ask me to find them."`, 'Boats and nets, or a field, and not the hands for both this season.'),
   choices: [
     { label: 'Boats and nets. The strip can wait', note: 'The lander\'s plate goes into hulls, the strip is sown small, and the boats go out on water nobody has charted.', hint: 'unknown', info: [['time', 'One season'], ['yield', 'A catch every day'], ['danger', 'The plate, and the first crews out']],
       out: { text: 'Four flat boats are cut from hull plate and launched off the shingle. The strip is sown in squares at the top of the beach. The boats come back low in the water the first week, and one comes back short a hand who went over in a squall.',
@@ -315,9 +316,9 @@ add({ id: 'ssn.catch', arc: 'crops', tone: 'council', chain: true, title: 'The F
   setup: s => ({ c: s.flags.sea_catch || 0, took: took(s, 0.3 + (s.flags.site_delta ? 0.1 : 0)), dead: !!s.flags.sea_poisoned }),
   text: (s, c) => (c.dead ? 'The poisoned lagoon is empty, and the racks are full of what came out of it. Beyond the reef the water is clean, and nobody has gone out that far.'
       : c.c >= 1 ? 'The racks along the beach are full. The catch comes in every day now, more of it than the cooks know what to do with, and some of it is going off in the heat before it is gutted.'
-      : 'The shore lines bring in enough for a pot most nights and nothing to put by.')
+      : 'What the water gives is enough for a pot most nights and nothing to put by.')
     + ` Of the strip above the tide line, ${frac(c.took).toLowerCase()} came up green.\n\n`
-    + voice(s, 'physician', `[[physician]] "Three of what you're eating are fine. One of them isn't, and it looks like the other three." "I'd like that sorted before somebody's child gets it."`, 'One of the fish the colony eats is poison and looks like the others.'),
+    + voice(s, 'physician', `[[physician]] "Three of what you're eating are fine, and one of them isn't, and it looks just like the other three." "I'd like that sorted before I'm sitting up all night with somebody's child who ate the wrong one."`, 'One of the fish the colony eats is poison and looks like the others.'),
   choices: [
     { label: 'Dry and smoke it for the stores', note: 'Food put by, smoked in sheds that never cool, by a crew that breathes the smoke.', hint: 'good', info: [['yield', 'Food put by'], ['danger', 'The smokehouse crew']],
       out: { text: 'Smoking sheds go up along the top of the beach and the fires are kept going day and night. The stores fill with stiff brown sides of fish that smell of the fire. The smokehouse crew cough all season.',
@@ -330,10 +331,10 @@ add({ id: 'ssn.catch', arc: 'crops', tone: 'council', chain: true, title: 'The F
       ok: { text: 'Two boats go out past the reef and come back full. The catch is bigger beyond it than it ever was in the lagoon.', fx: { mat: -15, flags: { sprouted: true }, do: s2 => { s2.flags.sea_catch = 1; } } },
       bad: { text: 'Two boats go out past the reef and one comes back. The other is found a week later on the outer rocks, empty.', fx: { mat: -15, pop: -3, morale: -4, flags: { sprouted: true }, do: s2 => { s2.flags.sea_catch = 0.6; } } } },
     { label: 'Keep the seed from the beach strip, and eat fish', note: 'The strip\'s best heads are hung up for seed, and the colony lives on fish while they hang.', hint: 'unknown', info: [['yield', 'A wheat that stands the salt, in time'], ['danger', 'Everyone sick of fish']],
-      out: { text: s => `${Nc(s, 'botanist')} cuts the heads that stood up best to the salt wind and hangs them in the dry. The colony eats fish three times a day and starts to hate it.`,
+      out: { text: s => `${Nwc(s, 'botanist')} cuts the heads that stood up best to the salt wind and hangs them in the dry. The colony eats fish three times a day and starts to hate it.`,
         fx: (s, c) => ({ yield: 0.05 + c.took * 0.08, morale: -2, flags: { sprouted: true, seed_grain: true, seed_local: true, salt_seed: true } }) } },
     { label: 'The doubtful fish feed the lock-up until the clinic knows which is which', dark: true, note: 'Somebody has to eat them before anyone knows which one kills, and nobody in the lock-up gets a say in the menu.', hint: 'unknown', info: [['yield', 'Food, and an answer'], ['danger', 'Whoever is in the lock-up']],
-      out: { text: 'The lock-up is fed the doubtful fish, one kind a week, and the clinic writes down what happens. In the third week it knows. One of the four is dead of it by then.',
+      out: { text: 'The lock-up is fed the doubtful fish, one kind a week, and the clinic writes down what happens. In the third week it knows. One of the lock-up is dead of it by then.',
         fx: (s, c) => ({ food: Math.round((c.dead ? 120 : 300 * Math.max(0.5, c.c)) / 10) * 10, pop: -1, flags: { sprouted: true, fish_known: true }, stain: ['taster', 1] }) } },
   ] });
 
@@ -341,7 +342,7 @@ add({ id: 'ssn.reef', arc: 'crops', tone: 'pressure', title: 'What Comes With th
   when: s => NEED('sea')(s) && s.day >= 50 && (s.flags.sprouted || s.day >= 90) && !s.flags.sea_poisoned,
   setup: s => ({ c: s.flags.sea_catch || 0, deep: s.factors.some(f => f.kind === 'natives' && f.sub === 'deep' && f.stage > 0) }),
   text: (s, c) => `The nets have been coming back torn, and twice now with nothing in them but a hole the size of a door. Last night a spring tide came over the top of the beach strip and left it white with salt. ${c.deep ? 'There were marks on the rocks this morning, a hand high above the waterline, that nobody in the colony made.' : 'Something has been following the boats home.'}\n\n`
-    + voice(s, 'security', `[[security]] "Lovely. So the sea wants its fish back." "Do we argue with it, or do we fish somewhere it isn't?"`, 'The sea is taking back its fish, and the boats are fishing where it is.'),
+    + voice(s, 'security', `[[security]] "So now it's the sea that's stealing from us, a hole the size of a door in the nets and nobody saw it done, which is how every thief I ever caught liked to work." "Do we argue with it, or do we fish somewhere it isn't?"`, 'The sea is taking back its fish, and the boats are fishing where it is.'),
   choices: [
     { label: 'Keep the boats inside the reef', note: 'Nobody else is lost to whatever tears the nets, and the catch is what the lagoon can give.', hint: 'unknown', info: [['yield', 'Safe water'], ['danger', 'A smaller catch, every day']],
       out: { text: 'The boats are kept inside the reef. The catch is smaller and steadier, and the crews come home in daylight. The ladle shrinks by a spoon.',
