@@ -6,7 +6,7 @@
    Free: about the colony itself, no factor charged. Dice: LF.srand. No DOM. */
 (function () {
 'use strict';
-const { h } = LF; const { N, Nc, F } = h;
+const { h } = LF; const { N, Nc, F, R } = h;
 const ID = 'knife', T = s => LF.T(s, ID);
 const cap1 = x => x.charAt(0).toUpperCase() + x.slice(1);
 const here = s => LF.SEAT_ORDER.map(k => LF.officer(s, k)).filter(p => p && LF.seatState(s, p.seat) === 'here');
@@ -53,8 +53,11 @@ B('note', { id: 'knf.note', chain: true, tone: 'pressure', title: 'For What You 
       out: { text: (s, c) => `You stand up after the evening meal and say it: ${c.deed}, who gave the order, and why. Nobody interrupts. Nobody claps. Three people walk out before you finish.`, fx: s => ({ morale: -4, tension: -8, do: s2 => { T(s2).owned = 1; strike(s2); } }) } },
     { label: 'Double the watch and say nothing', note: 'Everyone has read the note anyway.', hint: 'unknown', info: [['yield', 'The officers guarded'], ['danger', 'The work crews']],
       out: { text: 'The watch doubles. The note is burned. Everyone can still quote it.', fx: s => ({ morale: -2, do: s2 => { T(s2).guard = s2.day; strike(s2); } }) } },
-    { label: 'Use it. A purge of anyone who has spoken against you', dark: true, note: 'Whoever wrote it, they\'re one of the people who complain. Take all of them.', hint: 'unknown', info: [['yield', 'Every voice against you, silenced'], ['danger', 'Everyone who ever complained'], ['later', 'The officers, if the knife was not among them']],
-      out: { text: s => `The list is longer than anyone expected. Fourteen people lose their ration grade and are moved to the far pods. Three are put out past the wire. One of the three was the person who wrote the note. Nobody will ever know which.`, fx: s => ({ leave: 3, morale: -6, tension: -12, stain: ['purge', 2], do: s2 => { if (LF.srand(s2) < 0.5 && T(s2).truth.is !== 'officer') LF.endThread(s2, ID, 'purged', 'The colony purged its critics, and the attacks on the officers stopped.'); else strike(s2); } }) } },
+    { label: 'Use it. A purge of anyone who has spoken against you', dark: true, note: 'Whoever wrote it, they\'re one of the people who complain. Take all of them.', info: [['yield', 'Every voice against you, silenced'], ['danger', 'Everyone who ever complained'], ['fail', 'An officer, when the knife comes again']],
+      // a real roll since 2026-11-21 (Lachlan): did the purge catch the hand? Under the truth 'officer' it never does, whatever the dice say.
+      test: { base: 50, mods: [R('security', 5)] },
+      ok: { text: s => `The list is longer than anyone expected. Fourteen people lose their ration grade and are moved to the far pods. Three are put out past the wire. One of the three was the person who wrote the note. Nobody will ever know which.`, fx: s => ({ leave: 3, morale: -6, tension: -12, stain: ['purge', 2], do: s2 => { if (T(s2).truth.is !== 'officer') LF.endThread(s2, ID, 'purged', 'The colony purged its critics, and the attacks on the officers stopped.'); else strike(s2); } }) },
+      bad: { text: s => `The list is longer than anyone expected. Fourteen people lose their ration grade and are moved to the far pods. Three are put out past the wire. One of the three was the person who wrote the note. Nobody will ever know which.`, fx: s => ({ leave: 3, morale: -6, tension: -12, stain: ['purge', 2], do: s2 => { strike(s2); } }) } },
     { label: 'Let it be known that the note points somewhere else', dark: true, note: s => { const o = Object.keys(s.threads || {}).find(id => id !== ID && s.threads[id].on && !s.threads[id].end && LF.THREADS[id].called && LF.THREADS[id].called(s, s.threads[id])); return o ? `Blame it on ${LF.THREADS[o].called(s, s.threads[o])}. People are frightened of that already.` : 'Blame it on whatever people are already frightened of.'; }, hint: 'unknown', info: [['yield', 'Nobody looks at you'], ['later', 'Whoever really did it, still here']],
       out: { text: 'A story goes round the mess hall that the note was written by someone who isn\'t right in the head, someone touched by what\'s out there. It\'s believed. It explains everything and changes nothing.', fx: s => ({ stain: ['cover_story', 1], do: s2 => { LF.emit(s2, 'fear', 'th.knife', 40, 200, 'people believe whatever is out there has got inside someone'); strike(s2); } }) } },
   ] });

@@ -272,7 +272,7 @@ B(['second', 'test'], { id: 'nm.second', tone: 'pressure', title: 'Then Another'
   setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t), ev2: pickK(s, t, 0.05), m2pid: byK(t, t.m2).pid, m1pid: byK(t, t.m1).pid }); },
   text: (s, c) => `${c.M2} is the second. Another row, another cradle, the same words: the child is healthy, the book says it's theirs, and it isn't the one ${c.m2f} bore. ${c.Mw} was the midwife on the ward for both births.${c.glass}\n\nThe rows have started saying it in the mess. Every parent of an infant has looked twice at the cradle tonight.`,
   choices: [
-    { label: 'Call every parent of an infant to the hall, and tell them what is known', note: 'Everyone hears it at once, and every parent in the hall goes home and looks at the child in the cradle.',
+    { label: 'Call every parent of an infant to the hall, and tell them what is known', note: 'Everyone hears it at once, and every parent in the hall goes home and looks at the child in the cradle.', info: [['later', 'The infants, if it is catching']],
       out: { text: (s, c) => `The hall is full and very quiet. You tell them what the clinic knows, which is little. ${ev('mothers', c.ev, c)} By lamp-out two more households have come to the clinic door.`,
         fx: (s, c) => ({ tension: 3, do: s2 => { const t = T(s2); learn(s2, t, 16, c.ev); t.asked += 2; t.did.hall = true; if (t.truth.is === 'fever') for (const e of t.list) if (!e.fev && LF.srand(s2) < 0.25) { e.fev = true; e.asked = true; } } }) } },
     { label: 'See both mothers in private, with the children kept beside them', note: 'The clinic is shut to everyone else for the month, and the rows draw their own conclusions from the shut door.', test: { base: 50, mods: [R('physician', 10)] },

@@ -714,7 +714,8 @@ LF.fire = function (s, id) {
 };
 LF.view = s => s.cur.gen ? s.cur : { title: LF.byId[s.cur.id].titleOf ? LF.byId[s.cur.id].titleOf(s, s.cur.ctx) : LF.byId[s.cur.id].title, tone: LF.byId[s.cur.id].tone, text: LF.byId[s.cur.id].text(s, s.cur.ctx) };
 /* The line over a thread card's title: "The sickness in the well water · after “Not Themselves”, three months ago: Test everyone". */
-LF.storyLine = function (s) { const y = s.cur && s.cur.story; if (!y || (!y.name && !y.prev)) return '';
+// a thread's own 'last' can be a date of its own (the Red Month keeps the night of its last red week there): only a decision counts
+LF.storyLine = function (s) { const y0 = s.cur && s.cur.story, y = y0 && Object.assign({}, y0, { prev: y0.prev && typeof y0.prev === 'object' && y0.prev.title && y0.prev.label ? y0.prev : null }); if (!y || (!y.name && !y.prev)) return '';
   const cap = x => x.charAt(0).toUpperCase() + x.slice(1), ago = y.prev ? Math.round((s.day - y.prev.d) / MONTH) : 0;
   const prev = y.prev ? `after “${y.prev.title}”${ago >= 1 ? ', ' + LF.monthsWord(ago) + ' ago' : ''}: you chose “${y.prev.label}”` : '';
   return y.name ? cap(y.name) + (prev ? ' · ' + prev : '') : cap(prev); };
@@ -788,7 +789,7 @@ LF.odds = function (s, test, c) {
     if (m.k === 'machine') { const mm = s.machines[m.id], n = LF.MACHINES[m.id].name;
       // The laboratory stands in for the autodoc wherever a card needs an assay: half its weight, never a penalty.
       if (m.id === 'medbay' && (mm.lost || (mm.up && !test.aboard)) && LF.has(s, 'lab')) { v = h5(m.v); label = 'The laboratory, in the autodoc\'s place'; }
-      else if (mm.lost) { v = -m.v; label = `${n} lost`; } else if (mm.up && !test.aboard) { v = -h5(m.v); label = `${n} still aboard the ship`; } else if (mm.hp < 50) { v = h5(m.v); label = `${n} degraded`; } else { v = m.v; label = `${n} online`; } }
+      else if (mm.lost) { v = -m.v; label = `${n} lost`; } else if (mm.up && !test.aboard) { v = -h5(m.v); label = `${n} still aboard the ship`; } else if (mm.hp < 50) { v = h5(m.v); label = `${n}, worn`; } else { v = m.v; label = `${n} online`; } }
     else if (m.k === 'flag') { if (s.flags[m.flag]) v = m.v; }
     else if (m.k === 'if') { if (m.fn(s, c)) v = m.v; }
     else if (m.k === 'trait') { const x = P(s, m.role); if (x && x.trait === m.trait && LF.attached && LF.attached(s).includes(x)) { v = m.v; label = `${x.first} is ${m.trait}`; } }   // only the officer sent

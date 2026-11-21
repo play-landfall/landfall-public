@@ -196,9 +196,13 @@ const CHANCE = p => p >= 70 ? ['Likely', 'lk'] : p >= 30 ? ['Even', 'ev'] : ['Lo
 const DICE = '<svg class="dice" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="5.2" cy="5.2" r="1.3" fill="currentColor"/><circle cx="10.8" cy="10.8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>';
 const rollTip = (p, pre) => { const [w, c] = CHANCE(p); return `<span class="ch ${c}">${DICE}${pre ? esc(pre) + ' ' : ''}${p}% · ${w}</span>`; };
 // a loss that is a thing (stores, a machine, morale, standing) is an arrow; anything else on a loss chip is people, and a skull
-const THING = /^(morale|a department|the stores?|the reserve|stores|supper|half|a quarter|two spare parts|the plate|the record|your word|your standing|what is left of your standing|your own months|nothing (in it|held back)|no gear|everything still aboard|a season|the harvest|the next sowing|the far row|the home wall|the outer huts|the settlement|the lock-up|the ward|the clinic|the autodoc|the clerks|hands|unknown|whether anyone|the officers' nerve|hard on the lander|the lander|the hauler|the reactor|repairs)/i;
+const THING = /^(morale|a department|a food|the stores?|the reserve|stores|supper|half|a quarter|two spare parts|the plate|the record|your word|your standing|what is left of your standing|your own months|nothing (in it|held back)|no gear|everything still aboard|a season|the harvest|the next sowing|the far row|the home wall|the outer huts|the settlement|the lock-up|the ward|the clinic|the autodoc|the clerks|hands|unknown|whether anyone|the officers' nerve|hard on the lander|the lander|the hauler|the reactor|repairs)/i;
 // a mark under an option: the icon's shape flat in the text colour (#ink-flat, set by js/theme.js), red on a loss (#ink-loss)
 const mk = n => `<img class="mk" src="art/icons/${n}.png" alt="">`;
+// the party a sure option's outcome sends (fx.away), read without applying it; null if it sends none
+const awayOf = (s, o) => { const out = o.ch && o.ch.out; if (!out || !out.fx) return null; let fx = out.fx;
+  if (typeof fx === 'function') { const r0 = s.rng; try { fx = fx(s, s.cur.ctx); } catch (e) { fx = null; } s.rng = r0; }   // the fx may draw on the dice: put them back
+  return fx && fx.away && fx.away.n ? fx.away : null; };
 const isThing = t => THING.test(t) || Object.values(LF.MACHINES).some(m => t.toLowerCase() === ('the ' + m.name).toLowerCase());
 const lossTip = t => isThing(t) ? `<span class="dn"><i class="ar">\u25BC</i>${esc(t)}</span>` : `<span class="dn">${mk('danger')}${esc(t)}</span>`;
 const infoTip = ([k, t]) => k === 'yield' ? `<span class="upx"><i class="ar">\u25B2</i>${esc(t)}</span>` : k === 'danger' || k === 'fail' || k === 'later' ? lossTip(t) : `<span>${mk(INFO[k] || 'unknown')}${esc(t)}</span>`;
@@ -310,8 +314,11 @@ function cardHTML() {
       const tips = [], failRow = [];
       if (o.odds) tips.push(rollTip(o.odds.p));
       // a party is a roll too, made when it comes home: the chance that everyone does (LF.awayHome, js/gen.js)
-      const home = o.send && !o.odds && LF.awayHome ? LF.awayHome(s, { n: o.send.n, danger: o.send.danger, ret: (o.ch.send && o.ch.send.ret) || '', fid: s.cur.fid }) : null;
+      // a sure outcome that sends a party out (fx.away, as the Verge's "send them as an official party") is the same roll
+      const away = !o.send && !o.odds && !s.cur.gen ? awayOf(s, o) : null;
+      const home = (o.send || away) && !o.odds && LF.awayHome ? LF.awayHome(s, o.send ? { n: o.send.n, danger: o.send.danger, ret: (o.ch.send && o.ch.send.ret) || '', fid: s.cur.fid } : away) : null;
       if (home !== null) { tips.push(rollTip(home, 'Everyone back')); failRow.push(lossTip('Lives')); }
+      if (away) tips.push(`<span>${mk('people')}${away.n} go</span>`, `<span>${mk('time')}${Math.max(1, Math.round(away.days / LF.MONTH))} month${Math.round(away.days / LF.MONTH) > 1 ? 's' : ''}</span>`);
       for (const x of o.info || []) if (x[0] !== 'fail' && x[0] !== 'later') tips.push(infoTip(x));
       if (o.send) tips.push(`<span>${mk('people')}${o.send.n} go${o.send.lead ? ', led' : ''}</span>`, `<span>${mk('time')}${o.send.months} month${o.send.months > 1 ? 's' : ''}</span>`);
       const cost = o.cost || o.ch.cost; if (cost) for (const k in cost) tips.push(`<span class="${cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${mk(k)}${esc(LF.amount(s, k, -cost[k]))}</span>`);
