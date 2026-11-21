@@ -139,7 +139,7 @@
     'eat.graves': 'grave', 'eat.circle': 'kitchen', 'eat.missing': 'footsteps', 'eat.shakes': 'clinic', 'knf.cut': 'workshop', 'knf.note': 'papers', 'knf.strike': 'alarm', 'knf.hand': 'trial', 'col.two': 'crowd_angry',
     // the quiet ship and humanity (2026-11-16)
     'qs.silent': 'radio', 'qs.board': 'hull_hit', 'qs.two': 'whisper', 'qs.tell': 'footsteps',
-    'qs.deep': 'creep', 'qs.lights': 'beacon', 'qs.second': 'radar', 'qs.air': 'cryo', 'qs.glass': 'ward_door', 'qs.guests': 'second_ship',
+    'qs.deep': 'creep', 'qs.walk': 'hull_hit', 'qs.lights': 'beacon', 'qs.second': 'radar', 'qs.air': 'cryo', 'qs.glass': 'ward_door', 'qs.guests': 'second_ship',
     'hum.numbers': 'papers', 'hum.game': 'calls', 'hum.penance': 'hymn', 'hum.pen': 'chains', 'hum.decent': 'crowd_angry', 'hum.tribute': 'drums', 'hum.record': 'console',
     // the Long Years, officers out of the chair and the standing order (2026-11-17)
     'late.fall': 'ship_fall', 'late.sun': 'white_sun', 'late.ground': 'ground_goes', 'late.fleet': 'second_ship', 'late.sleep': 'wont_wake', 'late.born': 'yard_sitdown', 'late.core': 'core_climb', 'late.tide': 'everything_walks',
@@ -280,5 +280,7 @@
       LFMusic.sfx(f, { gain: GAIN[f] || 1, swell: SWELL.has(n), card: true });
     }
   }
-  window.LFSound = { update, cardSound, bedOf, order, orderSound, ORDER, N, GAIN, files: () => Object.entries(N).flatMap(([n, k]) => Array.from({ length: k }, (_, i) => file(n, i + 1))) };
+  // a sound by name, for a move on a puzzle card (the walk: footsteps, weld_seam, creep, hiss, door)
+  function play(n) { if (!window.LFMusic || !n || !N[n]) return; const f = take(n); LFMusic.sfx(f, { gain: GAIN[f] || 1, swell: SWELL.has(n), card: true }); }
+  window.LFSound = { update, cardSound, bedOf, order, orderSound, play, ORDER, N, GAIN, files: () => Object.entries(N).flatMap(([n, k]) => Array.from({ length: k }, (_, i) => file(n, i + 1))) };
 })();

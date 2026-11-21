@@ -410,6 +410,7 @@ LF.ASK = {
 'fl.after': 'With the ground richer than ever, do you plant hard and take what it gives, or keep the fields small?',
 'qs.silent': 'The ship in orbit has gone silent: do you send a party up to board her, or leave her alone, for now or for good?',
 'qs.board': 'Now that the party has found what is aboard, how do you deal with it, and at what cost to the ship and the people on her?',
+'qs.walk': 'Where does the boarding party go, with an hour of air between them?',
 'qs.deep': 'One of the boarding party is in trouble: do all four go deeper together, does the whole party come home now, or do three go on and leave the fourth?',
 'qs.lights': 'The ship\'s lights are blinking a pattern: do you try to read it, try to answer it, or tell the colony it is a fault?',
 'qs.air': 'Behind the bulkhead is what is left of the ship\'s crew deck: do you bring the party home and leave her unminded, or leave two aboard to start her again by hand?',

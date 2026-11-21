@@ -162,7 +162,7 @@ const BORROW = { plan: () => libPool('lib_group_00'), done: () => libPool('lib_b
   'voy.dead': () => libPool('voy_cryo'), 'voy.petition': () => libPool('voy_wake'), 'voy.spine': () => libPool('voy_plan'), 'voy.dust': () => libPool('voy_plan'),
   away: () => libPool('lib_landscape_').concat(libPool('lib_group_06')),
   // the quiet ship's boarding (2026-11-16): until each has its own picture
-  'qs.deep': () => libPool('qs_board'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
+  'qs.deep': () => libPool('qs_board'), 'qs.walk': () => libPool('qs_board'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
 // A scene that shows a seat's officer has a variant per officer (<scene>@<castkey>, js/scenes-cast.js): the person the
 // card is about, else whoever holds the seat now. With nobody, or no variant painted, the plain scene.
 /* An officer's picture at the age the game year makes them (AGE_FROM; the portraits and the scene variants both have a
@@ -236,6 +236,7 @@ function cardHTML() {
   if (s.cur.phase === 'choose') {
     h += talkHTML(def.text);
     { let a = ''; try { a = LF.askOf ? LF.askOf(s) : ''; } catch (e) { a = ''; } if (a) h += `<p class="ask">${esc(a)}</p>`; }   // what the card asks, in one sentence (js/asks.js)
+    if (!s.cur.gen && s.cur.ctx && s.cur.ctx.pz) h += pzHTML(s.cur.ctx.pz);   // a puzzle card (the Quiet Ship's walk): the board, above the options
     const opts = LF.choices(s), av = LF.available(s), rest = LF.resting(s), on = s.cur.attach || [];
     if (!hold && (av.length || rest.length) && opts.some(o => !o.lock && (o.odds || o.send))) h += `<div class="att"><div class="lbl">${ic('notable', 'h3i')}${LF.sendMost(s) > 1 ? 'Send up to two officers' : 'Send an officer · one at a time'}</div>${av.map(p =>
       `<button data-act="attach" data-v="${p.id}" class="${on.includes(p.id) ? 'on' : ''}"><b>${esc(LF.seatTag(p))}</b><span>${esc(LF.green(s, p) ? 'New to the post' : LF.job(p))}</span></button>`).join('')}${rest.map(p =>
@@ -278,6 +279,24 @@ function cardHTML() {
     h += `<button class="opt go" data-act="dismiss">${r.then ? 'There is more' : 'Go on'}</button>`;
   }
   return h + `</div>`;
+}
+/* A puzzle on the card (js/thread-quiet.js, the walk; docs/quiet-ship-dread.md). The ship as nine compartments, the party's
+   air, what the last move found and what can be heard, and one button for each move. Moves go through LF.pzMove. */
+function pzHTML(pz) {
+  if (pz.kind !== 'walk') return '';
+  const R = LF.WALK_ROOMS, done = new Set(), lines = [];
+  for (const id in R) for (const n of R[id].adj) { const k = [id, n].sort().join('|'); if (done.has(k)) continue; done.add(k);
+    const a = R[id], b = R[n], seen = pz.seen.includes(id) || pz.seen.includes(n);
+    lines.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${seen ? 'on' : ''}${pz.seal.includes(k) && !pz.cut.includes(k) ? ' seal' : ''}"/>`); }
+  const nodes = Object.entries(R).map(([id, r]) => { const cls = [id === pz.at ? 'at' : '', pz.seen.includes(id) ? 'seen' : '', pz.grown.includes(id) && pz.seen.includes(id) ? 'grown' : '', pz.thin.includes(id) && pz.seen.includes(id) ? 'thin' : ''].filter(Boolean).join(' ');
+    return `<g class="${cls}"><circle cx="${r.x}" cy="${r.y}" r="${id === pz.at ? 11 : 8}"/><text x="${r.x + (r.lx || 0)}" y="${r.y + (r.ly || 18) + ((r.ly || 18) > 0 ? 3 : 0)}">${esc(r.name.replace(/^the /, ''))}</text></g>`; }).join('');
+  const air = Math.max(0, pz.air), back = LF.PUZZLES.walk.back(pz), low = air - back < 10;
+  const moves = LF.pzMoves(s).map(m => `<button class="opt pzm${m.home ? ' home' : ''}" data-act="pz" data-v="${m.id}">${ic(m.home ? 'lander' : 'ship')}<span class="b"><span class="l">${esc(m.label)}</span><em>${esc(m.sub)}</em></span></button>`).join('');
+  return `<div class="pz walk"><svg viewBox="0 0 300 168" role="img" aria-label="The ship, compartment by compartment">${lines.join('')}${nodes}</svg>`
+    + `<div class="pzstat"><span>${ic('time')}${air} minutes of air${pz.done ? '' : ` · ${back === Infinity ? '?' : back} back to the collar`}</span><span>${ic('people')}${pz.party} of four</span><span>${ic('unknown')}${pz.clues} found</span></div>`
+    + `<div class="pbar"><i style="transform:scaleX(${air / pz.air0})"${low ? ' class="low"' : ''}></i></div>`
+    + `<div class="pzlog">${pz.log.map(t => talkHTML(t)).join('')}${pz.heard ? `<p class="heard">${esc(pz.heard)}</p>` : ''}</div>`
+    + (moves ? `<div class="pzmoves">${moves}</div>` : '') + `</div>`;
 }
 /* Why the officer of a seat cannot be sent on this card, or '' if they can. */
 function cantSend(k, av, rest) {
@@ -961,6 +980,7 @@ function act(a, v, el) {
   else if (a === 'new') { if (!s || s.over || s.day < 5 || confirm('Abandon this colony and start another?')) { menu(false); return fresh(); } }
   else if (a === 'attach') { if (!hold) LF.attach(s, v); }
   else if (a === 'pick') { LF.pickToggle(s, +v); }
+  else if (a === 'pz') { if (hold || review) return; const snd = LF.pzMove(s, v); if (!snd) return; if (window.LFSound && LFSound.play) LFSound.play(snd); save(); }
   else if (a === 'pickgo') { if (!LF.pickConfirm(s)) return; }
   else if (a === 'choose' && s.cur && s.cur.phase === 'choose') { if (hold || review) return;
     // the landing site is chosen: the lander goes down while the choice resolves underneath

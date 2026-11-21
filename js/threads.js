@@ -107,7 +107,9 @@ function storm(s) {
   // catalogue is open: any thread this run has not held, a Turn and the dread it was not dealt included, as long as it
   // still fits the world and wakes on a date. A colony that lasts long enough meets all of them.
   const wide = s.day >= 4 * LF.YEAR;
-  const fresh = Object.keys(DEFS).filter(id => !s.threads[id] && !DEFS[id].own && !(s.plot && (s.plot.tried || []).includes(id)) && !DEFS[id].always && !DEFS[id].port && (wide || (!DEFS[id].dread && !DEFS[id].needs && !DEFS[id].turn && (DEFS[id].free || DEFS[id].minor))) && (!DEFS[id].fits || DEFS[id].fits(s) > 0));
+  // a dread on top of the two (def.third: the Quiet Ship) holds every other dread back while it presses
+  const third = Object.keys(s.threads).some(k => DEFS[k] && DEFS[k].third && s.threads[k].on && !s.threads[k].end && s.threads[k].phase !== 'latent');
+  const fresh = Object.keys(DEFS).filter(id => !s.threads[id] && !DEFS[id].own && !(s.plot && (s.plot.tried || []).includes(id)) && !DEFS[id].always && !DEFS[id].port && (!third || !DEFS[id].dread) && (wide || (!DEFS[id].dread && !DEFS[id].needs && !DEFS[id].turn && (DEFS[id].free || DEFS[id].minor))) && (!DEFS[id].fits || DEFS[id].fits(s) > 0));
   if (!fresh.length) return;
   // In the long years (s.late, js/late.js) what is left of the catalogue is paced to last until year forty: a colony
   // that met a new thread every four months had met all of them by year fifteen (2026-11-18).

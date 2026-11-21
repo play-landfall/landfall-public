@@ -31,8 +31,11 @@ const dark = (s, on) => { s.flags.qs_dark = on ? s.day : 0; };
 const canUp = s => LF.canFly(s) && !s.machines.lander.lost && s.machines.lander.hp > 15 && !s.flags.lander_grounded;
 const dbl = (s, t) => t.dbl && byPid(s, t.dbl);
 
-LF.thread({ id: ID, free: true, name: 'The Quiet Ship', view: 'ship',
-  fits: s => (s.sleepers >= 40 || LF.inOrbit(s).length) ? 0.42 : 0,
+/* A dread since 2026-11-21 (Lachlan; docs/quiet-ship-dread.md "How it is dealt"): never dealt by the plot or the storm
+   (own: true), opened by LF.qsTick below, on top of the run's two dreads (third: while it presses, the storm deals no
+   other dread). A save that holds the old free thread plays on with it. */
+LF.thread({ id: ID, free: true, dread: true, own: true, third: true, name: 'The Quiet Ship', view: 'ship',
+  fits: s => 0,
   roll: s => ({ is: LF.spick(s, ['gone', 'changed', 'grown', 'double', 'signal', 'other']), real: LF.spick(s, ['ground', 'ship']), msg: LF.spick(s, ['help', 'away']) }),
   sig: t => t.truth.is + (t.truth.is === 'double' ? '/' + t.truth.real : t.truth.is === 'signal' ? '/' + t.truth.msg : ''),
   called: (s, t) => t.phase !== 'latent' ? 'the quiet ship' : null,
@@ -123,7 +126,7 @@ B('silent', { id: 'qs.silent', tone: 'crisis', title: 'No Answer', urgent: true,
     : `The ${ship(s)} has stopped answering. No telemetry, no cryo report, ${c.up.length ? `nothing from ${and(c.up)},` : 'no ship\'s voice,'} and the radio room has tried every channel for three days. She still crosses at dusk on time. ${c.is === 'signal' ? 'There are lights in the windows, and her running lights have started to blink.' : c.is === 'other' ? 'There are lights in the windows, and a second light, small and dim, a little way behind her.' : 'There are lights in the windows.'}\n\n${c.n} people are asleep up there.${c.L ? `\n\n[[${c.Lid || 'security'}]] "Give me four and the lander." "Whatever it is, I'd rather see it."` : ' Nobody wants to be the one who says what it might be.'}`,
   choices: [
     { label: 'Send the lander up with a boarding party', req: (s, c) => canUp(s), reqText: s => s.machines.lander.lost ? 'There is no lander' : LF.flyWhy(s) || 'The lander is not fit to fly', note: 'Four of the watch, suited, armed, with orders to report every ten minutes.', hint: 'unknown', info: [['danger', 'The four, and the lander'], ['yield', 'An answer']],
-      out: { text: (s, c) => `The lander goes up at first light with four aboard${c.fled ? ', two of them the same two as before' : ''}. Nobody on the pad says anything while she climbs. The first report comes from the docking collar.\n\n[[x19]] "Hard seal. Collar lights are on. Nobody here to meet us."\n\nThen the inner door, and they go in.`, fx: s => ({ fly: 1, machine: { lander: -6 }, flags: { qs_lander_up: s.day }, do: s2 => { T(s2).moUp = mo(s2, T(s2)); LF.phase(s2, ID, 'boarding'); LF.cue(s2, 'qs.deep', 0, 2); } }) } },
+      out: { text: (s, c) => `The lander goes up at first light with four aboard${c.fled ? ', two of them the same two as before' : ''}. Nobody on the pad says anything while she climbs. The first report comes from the docking collar.\n\n[[x19]] "Hard seal. Collar lights are on. Nobody here to meet us."\n\nThen the inner door, and they go in.`, fx: s => ({ fly: 1, machine: { lander: -6 }, flags: { qs_lander_up: s.day }, do: s2 => { T(s2).moUp = mo(s2, T(s2)); LF.phase(s2, ID, 'boarding'); LF.cue(s2, 'qs.walk', 0, 2); } }) } },
     // waiting: four times at most (two until 2026-11-16). After that it is go up or cut her loose, and the shuttle runs wait on the answer.
     { show: (s, c) => c.waited < 4, label: 'Keep the radio room open on every pass, and wait', note: 'Nobody goes up. Every month the banks go unminded, and whatever is aboard has another month.', hint: 'unknown', info: [['danger', 'The sleepers, unminded'], ['yield', 'Nobody sent into it']],
       out: { text: 'The radio room is manned in shifts, day and night. People bring the operators tea and ask, and are told nothing has come.', fx: s => ({ sleepers: -Math.min(4, s.sleepers), do: s2 => { const t = T(s2), k = t.truth.is; t.waited++; if (k === 'signal' && !t.lights) LF.cue(s2, 'qs.lights', 6, 14); else if (k === 'other' && !t.second) LF.cue(s2, 'qs.second', 6, 14); else LF.cue(s2, 'qs.silent', 22, 34); } }) } },
@@ -213,6 +216,189 @@ B('boarding', { id: 'qs.deep', tone: 'crisis', title: 'Forty Minutes', urgent: t
       out: { text: 'The four are back at the collar in six minutes and on the ground by dark. They give their report standing. Asked what was in there:\n\n[[x19]] "We didn\'t get that far."\n\nThe party leader looks at the one it got to.', fx: s => ({ morale: -3, do: s2 => { LF.emit(s2, 'fear', SRC, 35, 180, `the boarding party came back from the ${ship(s2)} with nothing`); pullOut(s2); } }) } },
     { label: 'Three go on. The fourth stays where they are', dark: true, note: 'The answer is certain, and one person is left alone in a corridor of that ship to buy it.', hint: 'unknown', info: [['yield', 'An answer'], ['danger', 'The one who is left']],
       out: { text: 'The order goes up, and for a while nobody acknowledges it. Then three sets of boots go on down the spine. The fourth channel stays open the whole time, and nobody in the radio room turns it down.', fx: s => ({ dead: 1, morale: -2, stain: ['qs_left', 2], do: s2 => reveal(s2) }) } },
+  ] });
+
+/* ======================= the walk (Lachlan, 2026-11-21; docs/quiet-ship-dread.md "Forty Minutes") =======================
+   A puzzle card: the player takes the boarding party through the ship, compartment by compartment, on an hour of
+   suit air. Every move costs minutes; a sealed door costs ten more to cut, an airless deck five, a wall grown over ten.
+   Each compartment gives a line the truth writes. Something moves too (t.truth decides what), heard and never shown.
+   Reach where the truth is (the ship gets to one of the four there, as on qs.deep), get back to the collar, undock.
+   Out of air, the party starts losing people. All of it is plain data in the card's ctx (c.pz), so a reload keeps
+   the walk where it was; moves go through LF.pzMove (UI and sim), dice from an LCG kept in pz.r, never s.rng.
+   The card's one ordinary option leaves it to the party lead, which deals qs.deep as before. */
+LF.PUZZLES = LF.PUZZLES || {};
+const ROOMS = {
+  collar: { name: 'the docking collar', adj: ['spine'], x: 150, y: 140, ly: 18 },
+  spine: { name: 'the spine', adj: ['collar', 'crew', 'bridge', 'bankB', 'hold'], x: 150, y: 84, lx: -24, ly: 18 },
+  bridge: { name: 'the bridge', adj: ['spine', 'infirm'], x: 34, y: 84, ly: 20 },
+  infirm: { name: 'the infirmary', adj: ['bridge', 'crew'], x: 78, y: 30, ly: -14 },
+  crew: { name: 'the crew deck', adj: ['spine', 'galley', 'infirm'], x: 150, y: 30, ly: -14 },
+  galley: { name: 'the galley', adj: ['crew'], x: 222, y: 30, ly: -14 },
+  bankB: { name: 'bank B', adj: ['spine', 'bankC'], x: 212, y: 84, ly: -14 },
+  bankC: { name: 'bank C', adj: ['bankB', 'hold'], x: 270, y: 84, ly: -14 },
+  hold: { name: 'the hold', adj: ['bankC', 'spine'], x: 240, y: 140, ly: 18 },
+};
+LF.WALK_ROOMS = ROOMS;
+const SUIT = 60, STEP = 5, CUT = 10, THIN = 5, SKIN = 10, TURN = 10;   // minutes: the suits, a move, a sealed door, an airless deck, a grown wall, the moment it gets to one
+const edge = (a, b) => [a, b].sort().join('|');
+const roomName = id => ROOMS[id].name, RoomName = id => cap1(ROOMS[id].name);
+/* where each truth is aboard, what moves (hunt: comes for the party; none), what is sealed, airless or grown over */
+const WALK = {
+  gone:    { target: 'bankC', mode: 'none', seal: ['hold|spine'], thin: [], grown: [] },
+  changed: { target: 'galley', mode: 'hunt', thing: 'infirm', seal: ['hold|spine'], thin: [], grown: [] },
+  grown:   { target: 'hold', mode: 'spread', seal: [], thin: [], grown: ['hold', 'bankC'] },
+  double:  { target: 'infirm', mode: 'none', seal: ['hold|spine'], thin: [], grown: [] },
+  help:    { target: 'bankC', mode: 'none', seal: ['hold|spine'], thin: ['crew', 'galley', 'infirm', 'bridge'], grown: [] },
+  away:    { target: 'crew', mode: 'none', seal: ['crew|spine', 'hold|spine'], thin: [], grown: [] },
+  other:   { target: 'hold', mode: 'hunt', thing: 'bankC', seal: [], thin: [], grown: [] },
+};
+const ROOM_LINE = {
+  collar: 'The collar: hard seal, lights on, nobody to meet them.',
+  spine: 'The spine runs the length of her, dim, the handrails cold through the gloves.',
+  bridge: 'The bridge. Every screen on standby, and the commander\'s chair turned to face the door.',
+  infirm: 'The infirmary: two beds, the autodoc\'s arm folded up against the ceiling.',
+  crew: 'The crew deck. Bunks, lockers, the table with the chairs pushed in.',
+  galley: 'The galley, clean counters, the extractor running for nobody.',
+  bankB: 'Bank B, the pods in their rows, every light green.',
+  bankC: 'Bank C is colder. Frost on the pod seams.',
+  hold: 'The hold. The system cradles in their racks, and the cargo lights down low.',
+};
+/* what each truth leaves in the compartments: evidence, counted as clues */
+const WALK_LINE = {
+  gone: { spine: 'Frost on the spine\'s handrails, thicker toward bank B.', crew: 'Every bunk on the crew deck is made, tight enough to bounce a coin.', galley: 'A cup of tea on the galley counter has dried to a brown ring.',
+    bridge: 'The bridge log stops at ten past two on the night she went quiet. The last line is the inner airlock door, cycling.', bankB: 'Bank B is as it should be, every light green, which somehow makes it worse.' },
+  changed: { spine: 'There is humming in the vents along the spine, a few notes over and over, loudest at the crew deck hatch.', crew: 'Every bunk on the crew deck has been dragged round to face the floor, the planet side.',
+    infirm: 'Every bed in the infirmary has been slept in. Every chart says the same word, in the same hand: well.', bridge: 'Someone has written a name across the main screen in grease pencil. It is a name for the world, and nobody on the ground gave it.' },
+  grown: { spine: 'The spine is warmer toward the stern, and the air tastes of salt.', galley: 'The galley is cold and clean, and somebody has taken every knife.',
+    bankB: 'Bank B is blood warm. The pods are fogged on the inside.', crew: 'The crew deck\'s locker doors are welded shut from outside, all of them, in a hurry.' },
+  double: { spine: 'Forward, past the crew deck, one light is on: the infirmary\'s.', bridge: (c) => `The watch log has been written up every day since the flight, in one hand. It is ${c.dblFirst}'s.`, crew: (c) => `One bunk on the crew deck is in use, and the name on its locker is ${c.dblFirst}'s.`,
+    galley: 'The galley bin: one ration pack a meal, every meal, for one person, for months.', bankB: (c) => `${cap1(c.dblFirst)}'s own pod in bank B is open, and dry, and logged as opened on the day of the flight.` },
+  help: { spine: 'A cable is taped along the spine\'s ceiling, every metre, running aft toward the banks.', crew: 'There is no air on the crew deck. Frost on every surface, and a door blown off its track.', bridge: 'The flight computer is dark. Somebody has opened its panel and pulled the boards out one by one, looking for the fault.',
+    bankB: 'The cable from the spine runs the length of bank B and through the bulkhead into bank C.', galley: 'The galley has been emptied of food into sacks. The sacks are gone.' },
+  away: { spine: 'There is a smell in the spine, coming through the suit filters, which should not be possible.', bankB: 'Six pods in bank B are open and have been wiped clean with disinfectant, lids and all.',
+    bridge: 'The bridge has a list taped to the screen: names off the waking roll, each with a time beside it.', infirm: 'The infirmary glass is taped over from the inside, corner to corner.' },
+  other: { spine: 'There is a light in the cargo lift shaft where there has never been one.', bankB: 'Pods in bank B have been tagged in a code that is not the ship\'s.',
+    bankC: 'Eight cradles in bank C are empty, the couplings cut clean.', bridge: 'The docking log shows a second collar in use, on the far side of the hull, that she was never built with.' },
+};
+/* what is heard from the next compartment over: the thing, never seen */
+const NEAR = {
+  changed: r => `Humming from ${roomName(r)}: a few voices together, coming this way.`,
+  other: r => `Voices from ${roomName(r)}, low, in something close to ship's talk.`,
+  grown: r => `The bulkhead toward ${roomName(r)} is warm through the glove.`,
+  help: r => `Knocking from ${roomName(r)}, three and three, on metal.`,
+  gone: () => 'Behind them, from the collar, the inner door plays its two notes.',
+  double: () => 'The intercom clicks on, and someone breathes into it, and it clicks off.',
+  away: r => `Something is moving on the far side of ${roomName(r)}'s door, slowly, and it stops when they stop.`,
+};
+/* what can be heard from next door to where the truth is: every walk can be steered by ear */
+const TARGET = {
+  gone: r => `The cold is coming from ${roomName(r)}.`,
+  changed: r => `From ${roomName(r)}, the clink of cups being set out on a counter, a lot of cups.`,
+  grown: r => `The bulkhead toward ${roomName(r)} is warm through the glove.`,
+  double: r => `Someone is talking quietly in ${roomName(r)}: one voice, taking both sides of a conversation.`,
+  help: r => `Knocking from ${roomName(r)}, three and three, on metal.`,
+  away: r => `Something is moving on the far side of ${roomName(r)}'s door, slowly, and it stops when they stop.`,
+  other: r => `Metal on metal from ${roomName(r)}, something heavy being moved, for a long time.`,
+};
+const MET = {
+  changed: r => `They are in ${roomName(r)}, waiting, smiling, a dozen in two rows. One of the four walks into the rows before anyone can catch a harness, and the rows close round them.`,
+  other: r => `A hand comes out of the dark of ${roomName(r)} and takes the back of a suit. One of the four is pulled through a hatch nobody had seen, and the hatch shuts.`,
+};
+/* what is there when they get to it: the moment the ship gets to one of the four, and the ten minutes it costs */
+const ARRIVE = {
+  gone: c => `Bank C's lids are up, every one, and the pods are dry inside. Down the spine behind the party the inner airlock door plays its two notes, and goes on playing them, open, shut, with nobody at it. One of the four has climbed into an open pod and lain down in it, and will not say why. It takes ten minutes to get them out.`,
+  changed: c => `The galley is laid for a meal. Forty cups stand in rows on every counter, each with a spoon in it, and the extractor is running. One of the four picks a cup up, sets it back exactly where it was, and starts to hum. It takes ten minutes of the party leader talking before they will walk.`,
+  grown: c => `The hold is warm as a body, and the cradles are gone under it: something pale and ribbed, grown from deck to ceiling round the warm racks, moving the way a sleeper's chest moves. One of the four put a glove to it at the door, and the glove will not come away. It takes ten minutes to cut the arm of the suit free and tape the sleeve.`,
+  double: c => `${c.dbl} is sitting up in the infirmary bed: thinner, hollow under the eyes, with a week's ration packs stacked on the locker. ${cap1(c.dblFirst)} asks who sent them, and why they are whispering. One of the four has served under ${c.dblFirst} for years, sits down on the deck, and will not get up. It takes ten minutes to get them on their feet.`,
+  help: c => `Through the bulkhead of bank C is the cryo bay, and somebody in it is alive: grey, in a suit with frost on the inside of the visor, sitting by a lamp switch with a hand on it. One of the four tore a suit on the bulkhead frame getting through. It takes ten minutes to patch it.`,
+  away: c => `Behind the tape the crew deck is lit, and somebody has lettered NO on the lockers, the table, the walls. The smell is in the suits now. One of the four has a visor open before the others can stop it, and says the air in here is fine. It takes ten minutes to get the visor sealed and the suit flushed.`,
+  other: c => `There is a second collar in the hold where she was never built with one, and through it a tunnel into somebody else's ship, lit, with voices at the far end. One of the four is already halfway down it. It takes ten minutes to bring them back along the harness line.`,
+};
+const rnd = pz => { pz.r = (pz.r * 1103515245 + 12345) % 2147483648; return pz.r / 2147483648; };
+const near = r => ROOMS[r].adj;
+/* the shortest way through, in minutes as things stand: what the sim's walker and the "way back" figure read */
+const cost = (pz, a, b) => STEP + (pz.seal.includes(edge(a, b)) && !pz.cut.includes(edge(a, b)) ? CUT : 0) + (pz.thin.includes(b) ? THIN : 0) + (pz.grown.includes(b) ? SKIN : 0);
+LF.walkPath = function (pz, from, to) {
+  const d = { [from]: 0 }, prev = {}, q = [from];
+  while (q.length) { q.sort((a, b) => d[a] - d[b]); const u = q.shift(); if (u === to) break;
+    for (const v of near(u)) { const w = d[u] + cost(pz, u, v); if (d[v] === undefined || w < d[v]) { d[v] = w; prev[v] = u; if (!q.includes(v)) q.push(v); } } }
+  const path = []; for (let v = to; v && v !== from; v = prev[v]) path.unshift(v);
+  return { mins: d[to] === undefined ? Infinity : d[to], path };
+};
+const back = pz => LF.walkPath(pz, pz.at, 'collar').mins;
+LF.newWalk = function (s, c) {
+  const k = c.k, w = WALK[k] || WALK.gone, lines = {};
+  for (const r in ROOMS) { const o = (WALK_LINE[k] || {})[r]; lines[r] = o ? (typeof o === 'function' ? o(c) : o) : null; }
+  return { kind: 'walk', k, at: 'collar', air: SUIT, air0: SUIT, party: 4, lost: 0, seen: ['collar'], cut: [], seal: w.seal.slice(), thin: w.thin.slice(), grown: w.grown.slice(),
+    mode: w.mode, thing: w.thing || null, target: w.target, got: false, done: false, end: null, turns: 0, clues: 0, lines, log: [ROOM_LINE.collar], heard: '',
+    r: 1 + Math.floor(LF.srand(s) * 2147483000) };
+};
+LF.PUZZLES.walk = {
+  /* what the player can do from here: one move to each compartment next door, and undocking at the collar */
+  moves(s, pz) {
+    if (pz.done) return [];
+    const out = near(pz.at).map(r => { const e = edge(pz.at, r), m = cost(pz, pz.at, r), why = [];
+      if (pz.seal.includes(e) && !pz.cut.includes(e)) why.push('a sealed door to cut'); if (pz.thin.includes(r)) why.push('no air in there'); if (pz.grown.includes(r)) why.push('the walls grown over');
+      return { id: r, label: `Into ${roomName(r)}`, sub: `${m} minutes${why.length ? ': ' + why.join(', ') : ''}${pz.seen.includes(r) ? '' : ' · not yet seen'}`, mins: m }; });
+    if (pz.at === 'collar' && pz.turns) out.unshift({ id: 'home', label: 'Undock, and bring them home', sub: pz.got ? 'With what they found' : 'Without an answer', mins: 0, home: true });
+    return out;
+  },
+  move(s, pz, id) {
+    if (pz.done) return null;
+    const c = s.cur.ctx, say = [];
+    if (id === 'home') { if (pz.at !== 'collar') return null; pz.done = true; pz.end = 'home'; pz.log = ['The collar seals behind them, and the lander falls away from her.']; pz.heard = ''; return 'door'; }
+    if (!near(pz.at).includes(id)) return null;
+    const e = edge(pz.at, id), m = cost(pz, pz.at, id); let sound = 'footsteps';
+    if (pz.seal.includes(e) && !pz.cut.includes(e)) { pz.cut.push(e); say.push(id === 'crew' && pz.k === 'away' ? 'The door is taped corner to corner, and lettered by hand on the tape: NO. They cut the tape.' : 'The door is sealed. Ten minutes with the cutter.'); sound = 'weld_seam'; }
+    if (pz.grown.includes(id)) say.push('The skin on the walls takes ten minutes of cutting to get through.');
+    pz.air -= m; pz.at = id; pz.turns++;
+    if (!pz.seen.includes(id)) { pz.seen.push(id); if (pz.lines[id]) { say.push(pz.lines[id]); pz.clues++; } else say.push(ROOM_LINE[id]); } else say.push(`${RoomName(id)} again.`);
+    if (id === pz.target && !pz.got) { pz.got = true; pz.air -= TURN; say.push(ARRIVE[pz.k](c)); sound = 'creep'; }
+    // what moves aboard
+    if (pz.mode === 'hunt' && pz.thing) {
+      if (pz.rest) pz.rest--;
+      else if (pz.thing !== pz.at && rnd(pz) < 0.4) { const step = LF.walkPath(Object.assign({}, pz, { seal: [], thin: [], grown: [] }), pz.thing, pz.at).path[0]; if (step && step !== 'collar') pz.thing = step; }
+      if (pz.thing === pz.at && pz.party > 0) { pz.party--; pz.lost++; say.push(MET[pz.k](pz.at)); sound = 'creep';
+        const far = Object.keys(ROOMS).filter(r => r !== 'collar' && r !== pz.at && !near(pz.at).includes(r)); pz.thing = far[Math.floor(rnd(pz) * far.length)] || pz.thing; pz.rest = 3; }
+    }
+    if (pz.mode === 'spread' && pz.turns % 3 === 0) { const edgeRooms = []; for (const g of pz.grown) for (const r of near(g)) if (!pz.grown.includes(r) && r !== 'collar' && r !== pz.at) edgeRooms.push(r);
+      if (edgeRooms.length) { const r = edgeRooms[Math.floor(rnd(pz) * edgeRooms.length)]; pz.grown.push(r); } }
+    // the suits
+    if (pz.air <= 0 && pz.party > 0) { pz.party--; pz.lost++; say.push(pz.party ? 'One of the four is out of air, and goes down on the deck where they stand. The others take the tank and leave the rest.' : 'The last of them is out of air.'); sound = 'hiss'; }
+    if (pz.party <= 0) { pz.done = true; pz.end = 'lost'; pz.heard = ''; pz.log = say; return sound; }
+    // what can be heard from here
+    const adj = near(pz.at);
+    pz.heard = pz.mode === 'hunt' && pz.thing && adj.includes(pz.thing) ? NEAR[pz.k](pz.thing)
+      : pz.mode === 'spread' && adj.some(r => pz.grown.includes(r)) ? NEAR.grown(adj.find(r => pz.grown.includes(r)))
+      : adj.includes(pz.target) && !pz.got ? TARGET[pz.k](pz.target)
+      : (pz.k === 'gone' || pz.k === 'double') && pz.turns % 3 === 0 ? NEAR[pz.k]() : '';
+    pz.log = say; return sound;
+  },
+  /* the minutes it would take to get back to the collar from here, as things stand */
+  back,
+};
+/* any puzzle: its moves, and one move (UI and sim). Returns the sound the move makes, or null if it was not allowed. */
+LF.pzMoves = s => { const c = s.cur, pz = c && c.phase === 'choose' && c.ctx && c.ctx.pz; return pz && LF.PUZZLES[pz.kind] ? LF.PUZZLES[pz.kind].moves(s, pz) : []; };
+LF.pzMove = (s, id) => { const c = s.cur, pz = c && c.phase === 'choose' && c.ctx && c.ctx.pz; return pz && LF.PUZZLES[pz.kind] ? LF.PUZZLES[pz.kind].move(s, pz, id) : null; };
+
+const WALK_END = {
+  found: (s, c, pz) => `The lander undocks with ${pz.party === 4 ? 'all four aboard' : `${num(pz.party)} of the four aboard`}, and the party leader reports from the couch with a hand over the faceplate.\n\n[[x19]] "We found it. We found where it is."`,
+  home: (s, c, pz) => `The lander undocks with ${pz.party === 4 ? 'all four' : `${num(pz.party)} of the four`}. They give their report standing, ${pz.clues ? `with ${num(pz.clues)} thing${pz.clues === 1 ? '' : 's'} written down that nobody can put together` : 'and there is not much in it'}. Whatever is aboard is still aboard.`,
+  lost: (s, c, pz) => `The reports stop ${roomName(pz.at) === 'the docking collar' ? 'at the collar' : 'in ' + roomName(pz.at)}. The radio room keeps the channel open until the lander's own clock says the suits are empty, and then for some time after that. The lander comes home on its own program, with nobody in it.`,
+};
+B('boarding', { id: 'qs.walk', tone: 'crisis', title: 'An Hour of Air', urgent: true, w: 10, repeat: 6, puzzle: 'walk',
+  setup: s => { const t = T(s), p = dbl(s, t), c = { k: deepKey(t), fled: t.fled || 0, dbl: p ? p.name : t.dblName, dblFirst: p ? p.first : (t.dblName || '').split(' ')[0], mo: moUp(s, t) };
+    c.pz = LF.newWalk(s, c); return c; },
+  text: (s, c) => `The lander has a hard seal on the collar. Four of the watch are in the airlock, suited, with an hour of air each and a cutter between them, and they are waiting to be told where to go.\n\n[[x19]] "Inner door's green. Your call, every step of it."\n\nShe is nine compartments end to end. Nobody on the ground knows which one the trouble is in.`,
+  choices: [
+    { show: (s, c) => !c.pz || !c.pz.turns, label: 'Leave it to the party lead, by the book', note: 'They go in on the ten-minute reports, and you hear about it when it happens.', hint: 'unknown', info: [['yield', 'Nobody on the ground making the calls'], ['danger', 'The party']],
+      out: { text: 'The order goes up: by the book. The inner door opens, and the first report comes on the ten minutes.', fx: s => ({ do: s2 => LF.cue(s2, 'qs.deep', 0, 1) }) } },
+    { show: (s, c) => !!(c.pz && c.pz.done), label: (s, c) => c.pz.end === 'lost' ? 'The channel is open, and nobody is on it' : c.pz.got ? 'They are off her, with an answer' : 'They are off her, with nothing', note: (s, c) => c.pz.lost ? `${cap1(num(c.pz.lost))} of the four did not come back.` : 'All four are coming home.', hint: 'unknown',
+      info: (s, c) => [c.pz.got && c.pz.end !== 'lost' ? ['yield', 'An answer'] : ['danger', 'No answer'], ...(c.pz.lost ? [['danger', `${cap1(num(c.pz.lost))} lost`]] : [])],
+      out: { text: (s, c) => WALK_END[c.pz.end === 'lost' ? 'lost' : c.pz.got ? 'found' : 'home'](s, c, c.pz),
+        fx: (s, c) => { const pz = c.pz; return Object.assign(pz.lost ? { dead: pz.lost } : {}, { morale: pz.end === 'lost' ? -6 : pz.got ? 0 : -3, do: s2 => { const t = T(s2); t.ev = Math.max(t.ev || 0, pz.clues); t.walked = (t.walked || 0) + 1;
+          if (pz.end === 'lost') { LF.emit(s2, 'fear', SRC, 55, 240, `the boarding party never came off the ${ship(s2)}`); pullOut(s2); }
+          else if (pz.got) reveal(s2); else { LF.emit(s2, 'fear', SRC, 35, 180, `the boarding party came back from the ${ship(s2)} with nothing`); pullOut(s2); } } }); } } },
   ] });
 
 /* ======================= signal: the lights ======================= */
@@ -322,6 +508,7 @@ B('boarding', { id: 'qs.guests', tone: 'crisis', title: 'The Other Lock', urgent
         fx: (s, c) => ({ pop: 28, morale: -2, machine: { lander: -8 }, flags: home, do: s2 => { LF.emit(s2, 'strangers', SRC, 55, 400, 'thirty people from another ship are living in the colony'); LF.endThread(s2, ID, 'joined'); } }) } },
   ] });
 LF.TAGS['qs.deep'] = ['bold', 'cautious', 'severe'];
+LF.TAGS['qs.walk'] = ['cautious', ''];
 LF.TAGS['qs.lights'] = ['cautious', 'open', 'closed order'];
 LF.TAGS['qs.air'] = ['mercy', 'bold', 'severe', 'cautious closed'];
 LF.TAGS['qs.glass'] = ['mercy cautious', 'bold', 'severe closed', 'open mercy', 'order'];
@@ -382,4 +569,33 @@ LF.TAGS['qs.tell'] = ['open', 'severe', 'open'];
 });
 /* The ship's own cards wait while she is dark (the launch order checks s.flags.qs_dark itself: js/orders.js). */
 for (const id of ['ship.orbit', 'ship.cabin', 'ship.pods', 'plan.sleepers', 'sleep.cryo']) { const st = LF.byId[id]; if (!st) continue; const w0 = st.when; st.when = s => !s.flags.qs_dark && (!w0 || w0(s)); }
+/* What the walk turned up helps on the card that follows it (t.ev, the clues found): +10 on the reveal cards' tests at
+   three, +20 at five. Going straight to it is safe and learns little; looking round costs air. */
+for (const id of ['qs.board', 'qs.air', 'qs.glass', 'qs.guests', 'qs.two']) { const st = LF.byId[id]; if (!st) continue;
+  for (const ch of st.choices) if (ch.test) (ch.test.mods = ch.test.mods || []).push(h.If(s => (T(s).ev || 0) >= 3, 10, 'What the walk turned up'), h.If(s => (T(s).ev || 0) >= 5, 10, 'All the walk turned up')); }
+/* ======================= when she goes quiet (2026-11-21) =======================
+   Two openings (docs/quiet-ship-dread.md). With an officer still aboard, a roll every month from mid year two that
+   ramps to certain: the month's chance is 0.01 + 0.99 * (m / RAMP)^POW, m the months since RAMP_FROM that someone has
+   been up there (s.flags.qs_m: bringing the last one down stops the clock, sending one up again starts it where it
+   stopped). That is how the game settles an officer left aboard. With nobody aboard, a flat low roll from year three,
+   as long as there are sleepers to go back for. Never in a run that holds Standing Orders, and below certain it waits
+   while two other dreads are pressing. */
+const RAMP = 24, POW = 3, RAMP_FROM = 18 * LF.MONTH, EMPTY_FROM = 2 * LF.YEAR, EMPTY_ODDS = 0.0044;
+LF.QS_RAMP = m => m >= RAMP ? 1 : 0.01 + 0.99 * Math.pow(m / RAMP, POW);
+const pressing = s => Object.keys(s.threads).filter(id => id !== ID && LF.THREADS[id] && LF.THREADS[id].dread && s.threads[id].on && !s.threads[id].end && s.threads[id].phase !== 'latent').length;
+LF.qsTick = function (s, force) {
+  if ((s.day % LF.MONTH && !force) || !LF.THREADS[ID] || !s.threads || s.threads[ID] || !s.world || LF.aloft(s) || (s.over && !s.over.cont)) return;
+  if (s.threads.orders || s.flags.ship_down || s.flags.sleepers_abandoned || !s.machines.lander || s.machines.lander.lost) return;
+  if (s.day < RAMP_FROM && !force) return;
+  const up = LF.inOrbit(s).filter(p => !p.stranded).length;
+  let p;
+  if (up) { const m = s.flags.qs_m || 0; s.flags.qs_m = m + 1; p = LF.QS_RAMP(m); }
+  else { if ((s.day < EMPTY_FROM || s.sleepers <= 20) && !force) return; p = EMPTY_ODDS; }
+  if (!force && p < 1 && pressing(s) >= 2) return;
+  if (!force && LF.srand(s) >= p) return;
+  const d = LF.THREADS[ID], t = s.threads[ID] = { on: true, phase: 'latent', since: s.day, path: ['latent'], truth: d.roll(s), end: null, own: true, open: up ? 'aboard' : 'empty' };
+  if (typeof force === 'string') t.truth.is = force;
+  d.start(s, t); t.wake = s.day; if (s.plot && s.plot.threads) s.plot.threads.push(ID);
+};
+(function () { const t0 = LF.threadTick; LF.threadTick = function (s) { LF.qsTick(s); if (t0) t0(s); }; })();
 })();

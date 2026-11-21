@@ -595,3 +595,14 @@ html.grim2 h2 { letter-spacing:.01em; }
 
 /* A person's record on this world (histHTML): the card and the choice, then what came of it, dimmer. */
 .profile .hist .entry, .who .hist .entry { padding:6px 0; border-bottom:1px solid var(--hair); font-size:14px; line-height:1.4; } .hist .entry:last-child { border-bottom:0; } .hist .ho { color:var(--dim); } .hist details summary { cursor:pointer; color:var(--rust); font:700 12px var(--label); padding:6px 0; }
+/* A puzzle on the card (the Quiet Ship's walk, js/ui.js pzHTML): the ship's plan, the air, what was found, the moves. */
+.pz { margin:12px 0 4px; padding:12px; border-radius:18px; background:var(--raise); box-shadow:var(--rest); }
+.pz svg { display:block; width:100%; height:auto; margin-bottom:8px; }
+.pz svg line { stroke:var(--line); stroke-width:2; } .pz svg line.on { stroke:var(--dim); } .pz svg line.seal { stroke-dasharray:3 4; }
+.pz svg circle { fill:var(--card); stroke:var(--line); stroke-width:2; } .pz svg .seen circle { fill:var(--dim); stroke:var(--dim); }
+.pz svg .grown circle { fill:var(--bad); stroke:var(--bad); } .pz svg .thin circle { stroke:var(--gold); stroke-dasharray:2 2; }
+.pz svg .at circle { fill:var(--rust); stroke:var(--rust); } .pz svg text { font-size:9px; fill:var(--dim); text-anchor:middle; font-weight:700; } .pz svg .at text { fill:var(--ink); }
+.pzstat { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:14px; margin-bottom:6px; font-variant-numeric:tabular-nums; } .pzstat span { display:inline-flex; align-items:center; gap:5px; } .pzstat img { width:18px; height:18px; display:block; }
+.pz .pbar i.low { background:var(--bad); }
+.pzlog { margin-top:8px; } .pzlog p.narr { margin:6px 0; } .pzlog .heard { margin:6px 0; font-style:italic; color:var(--dim); }
+.pzmoves .opt { margin-top:8px; } .pzmoves .opt.home { box-shadow:inset 0 0 0 2px var(--rust), var(--rest); }
