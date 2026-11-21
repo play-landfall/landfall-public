@@ -81,7 +81,7 @@ const realGone = t => { if (t.realDead) return; t.realDead = true; t.out = Math.
 function resolve(s, t) {
   const k = t.truth.is;
   if (k === 'mimic' && t.shoot) { t.did.shot = 'late'; return finish(s, t, 'mimic', 'The wall hit something past the lamps, and at first light there was an animal on the ground with a throat like a set of pipes.'); }
-  if (k === 'copy' && ((t.inside > 0 && !t.pen) || t.insight >= 60 || t.body)) return unmask(s, t);
+  if (k === 'copy' && (t.inside > 0 || t.insight >= 60 || t.body)) return unmask(s, t);
   finish(s, t, 'silence', 'The voices past the wire stopped.');
 }
 /* The party sent after it (vo.names) is this thread's to bring home, with what it found. */
@@ -100,21 +100,20 @@ function lure(s, t) {
   const k = t.truth.is, late = t.phase !== 'near';
   if (!t.lured || s.used['vo.gone'] !== undefined) {   // the first to go gets a card, and nobody follows until it has been answered
     let p = { near: 0.55, night: 0.8, bill: 0.7 }[t.phase] || 0;
-    p *= (t.curfew ? 0.3 : 1) * (t.shoot ? 0.45 : 1) * (t.guard ? 0.75 : 1) * (t.gate ? 0.8 : 1) * (t.lie ? 1.4 : 1) * (t.sure ? 1.3 : 1) * (t.fed ? 1.5 : 1) * (P(s, 'security') ? 1 : 1.25) * (LF.cv(s, 'dark') >= 40 ? 1.3 : 1) * (t.seen ? 0.5 : 1);
+    p *= (t.curfew ? 0.3 : 1) * (t.shoot ? 0.45 : 1) * (t.guard ? 0.75 : 1) * (t.gate ? 0.8 : 1) * (t.sure ? 1.3 : 1) * (t.fed ? 1.5 : 1) * (P(s, 'security') ? 1 : 1.25) * (LF.cv(s, 'dark') >= 40 ? 1.3 : 1) * (t.seen ? 0.5 : 1);
     if (s.pop > 14 && LF.srand(s) < p) { const back = LF.srand(s) < { mimic: 0.2, copy: 0.8, lost: 0.2 }[k], n = t.lured && late && !back ? LF.sri(s, 1, 3) : 1; t.lured += n; t.lastLure = s.day;
       if (!back) die(s, t, n); if (k !== 'mimic' && (!back || k === 'copy')) t.out += n; if (k === 'copy' && back) t.inside++;
-      if (t.lured === 1) { t.gone = { back }; LF.cue(s, 'vo.gone', 0, 3); s.signs.push({ id: 'missing', d: s.day, src: 'th.voices' });
-        if (t.lie) LF.emit(s, 'suspicion', 'vo.wind', 30, 120, 'the crews were told the voices were wind in the wire'); }
+      if (t.lured === 1) { t.gone = { back }; LF.cue(s, 'vo.gone', 0, 3); s.signs.push({ id: 'missing', d: s.day, src: 'th.voices' }); }
       else LF.log(s, back ? 'Another one walked out to a voice in the night, and was at the gate at first light with nothing to say about it.'
         : n > 1 ? `${Num(n)} walked out to the voices in one night, one after another. The search found their lamps in a row, set down upright and still burning.` : 'Another one walked out to a voice in the night. The search found a lamp, set down upright and still burning.', 'bad'); } }
   // Copies inside the wire see to it that others go out.
-  if (k === 'copy' && t.inside - (t.did.cage ? 1 : 0) > 0 && !t.pen && s.pop > 14 && LF.srand(s) < (t.did.stood ? 0.5 : 0.35)) { const back = LF.srand(s) < 0.5; t.out++; t.led = (t.led || 0) + 1; if (back) t.inside++; else die(s, t, 1);
+  if (k === 'copy' && t.inside - (t.did.cage ? 1 : 0) > 0 && s.pop > 14 && LF.srand(s) < (t.did.stood ? 0.5 : 0.35)) { const back = LF.srand(s) < 0.5; t.out++; t.led = (t.led || 0) + 1; if (back) t.inside++; else die(s, t, 1);
     LF.log(s, back ? 'A bunk was empty at the morning count, with the blanket folded. By noon its owner was back at work and could not say where the night had gone.' : 'A bunk was empty at the morning count, with the blanket folded. Its owner has not been seen.', 'bad'); }
   // The order to fire on sound goes on being obeyed.
   if (t.shoot && s.pop > 14 && LF.srand(s) < 0.25) { die(s, t, 1); t.own++; LF.log(s, 'The wall fired at a sound after lamp-down. At first light it was one of the day shift, coming back late.', 'bad'); }
   else if (t.shoot && k !== 'mimic' && LF.srand(s) < 0.25) { t.hit++; LF.log(s, 'The wall fired at a sound in the night. At first light there was blood past the lamps, and nothing else.'); }
   // Once the hall has heard an officer's voice at the wire, people settle for themselves who came back wrong.
-  if (late && t.hall && !t.seen && s.pop > 14) { const q = (t.phase === 'bill' ? 0.5 : 0.35) * (t.pen ? 0.5 : 1) * (t.did.purge ? 0.3 : 1) * (t.did.hang ? 0.6 : 1) * (t.did.stood ? 1.3 : 1) * (t.sure ? 0.7 : 1);
+  if (late && t.hall && !t.seen && s.pop > 14) { const q = (t.phase === 'bill' ? 0.5 : 0.35) * (t.did.purge ? 0.3 : 1) * (t.did.hang ? 0.6 : 1) * (t.did.stood ? 1.3 : 1) * (t.sure ? 0.7 : 1);
     if (LF.srand(s) < q) { die(s, t, 1); t.feud = (t.feud || 0) + 1;
       LF.log(s, LF.spick(s, ['One of the late shift was found at the foot of the wall this morning, with a card pinned on that read NOT ONE OF OURS.', 'A hauler who had been past the wire twice did not wake this morning. The bunkhouse says nobody heard a thing.', 'Somebody was held under in the wash trough last night, and this time the watch came too late.']), 'bad'); } }
 }
@@ -145,12 +144,11 @@ LF.thread({ id: ID, name: 'The Voices', view: 'people', dread: true,
       if (t.phase !== 'far') LF.emit(s, 'fear', 'th.voices', ({ near: 28, night: 48, bill: 44 }[t.phase]) + (recent ? 8 : 0) - calm, 8, 'there are voices past the wire at night, and people walk out to them');
       if ((t.phase === 'night' || t.phase === 'bill') && !t.seen) LF.emit(s, 'suspicion', 'th.voices', 30 + (t.body ? 15 : 0) + (t.did.stood ? 10 : 0), 8, 'nobody is sure who came back from past the wire');
       if (t.curfew) LF.emit(s, 'confinement', 'th.voices', 35, 8, 'nobody is allowed outside after lamp-down');
-      if (t.pen) LF.emit(s, 'resentment', 'th.voices', 30, 8, 'people are locked in the long store for having been past the wire');
     }
   },
   /* Nobody will take a job that ends near the wire, and every measure against the voices is paid for in work. */
   press: (s, t, P) => { if (t.end || t.phase === 'latent' || t.phase === 'far') return;
-    P.labor -= (t.phase === 'near' ? 0.03 : 0.08) * (t.sure || t.shoot ? 0.5 : 1) + (t.curfew ? 0.05 : 0) + (t.pen ? 0.03 : 0) + (t.guard ? 0.01 : 0);
+    P.labor -= (t.phase === 'near' ? 0.03 : 0.08) * (t.sure || t.shoot ? 0.5 : 1) + (t.curfew ? 0.05 : 0) + (t.guard ? 0.01 : 0);
     if (t.phase !== 'near') { P.morale -= 0.015; if (!t.shoot) P.yield -= 0.04; } },
 });
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ view: 'people' }, st));
@@ -171,8 +169,6 @@ B('far', { id: 'vo.first', view: 'world', tone: 'pressure', w: 5, title: 'Past t
       bad: { text: 'A month of nights goes onto tape, kept by people who should have been asleep before a shift. Most of it is wind and the listeners\' own breathing. The two who heard the most have asked to come off the detail.', fx: s => ({ food: -40, morale: -1, do: s2 => learn(s2, T(s2), 8) }) } },
     { label: 'Double the night watch on the wall', note: 'A dozen people lose their sleep for as long as this lasts, and their day\'s work with it.',
       out: { text: 'The wall is walked in pairs from lamp-down to first light. The pairs come off it grey and are no use before noon. They report the same thing each morning: talk, close by, with no words in it.', fx: s => ({ morale: -1, do: s2 => { T(s2).guard = s2.day; } }) } },
-    { label: 'Tell the crews it is wind in the wire', dark: true, note: 'Nobody loses sleep over a noise that has been explained, and the first to go out for a look will go believing there is nothing there.',
-      out: { text: (s, c) => `It goes up on the board as a fault in the fence tensioners, signed by you. The mess is easier for it, and the night shift stops walking to work in threes. ${c.W} goes on logging the voices under another heading.`, fx: s => ({ morale: 3, stain: ['vo_wind', 1], do: s2 => { const t = T(s2); t.lie = s2.day; t.did.lie = true; } }) } },
     FIRE,
   ] });
 
@@ -182,13 +178,15 @@ B('near', { id: 'vo.names', tone: 'pressure', w: 5, title: 'Somebody\'s Laugh',
   text: (s, c) => `The voices have come in closer, and they have changed. ${c.W} will swear to one of them: it talks the way ${c.who} talks, the same run of sound and the same stop for breath, and ${c.who} was asleep inside the wire at the time. Others on the wall have each heard somebody different.\n\nThere are still no words in it. Two of the day shift were found at the wire after lamp-down, standing and listening.`,
   after: (s, c) => { const m = s.memo['vo.names'], a = s.away[s.away.length - 1], t = T(s); if (!m || m.i !== 1 || !a || !t) return;
     t.party = a.id; t.did.party = true; const L = P(s, 'security'); if (L) { a.lead = L.id; L.away = true; } },
+  // Three at most on screen: the order to fire is the dark option here until it has been given (on Past the Wire or here);
+  // once it stands, the bait on the line takes its place. The party stays second: `after` reads it by position.
   choices: [
     { label: 'Nobody outside after lamp-down, and the pod doors barred', note: 'The evening shift is lost, and everyone sleeps behind a bolt.',
       out: { text: 'The bell goes at dusk and the bars go across. The late work is left where it stands until morning. Inside, people lie awake and listen to it through the wall.', fx: s => ({ morale: -2, do: s2 => { T(s2).curfew = s2.day; } }) } },
     { label: (s, c) => c.lead ? `Send ${c.lead} out with five to find where it lies up` : 'Send six of the watch out to find where it lies up', send: { n: 6, days: [30, 46], danger: 3, to: 'the ground the voices come from' },
       note: (s, c) => c.lead ? `The wall is without ${c.lead} for months, and so is every job that leans on the watch.` : 'The wall is six short for months.',
       out: { text: (s, c) => `Six go out through the gate at first light with packs and the two good rifles${c.lead ? `, ${c.lead} in front` : ''}. Their orders are to find where it lies up by day, and to come home before they do anything about it.`, fx: {} } },
-    { label: 'Offer double rations to whoever will sit out past the lamps on a line', dark: true, note: 'You find out what comes by letting it have somebody, and the offer will be taken by whoever is hungriest.', info: [['yield', 'What it is'], ['danger', 'The one on the line']],
+    { label: 'Offer double rations to whoever will sit out past the lamps on a line', dark: true, show: s => !!T(s).shoot, note: 'You find out what comes by letting it have somebody, and the offer will be taken by whoever is hungriest.', info: [['yield', 'What it is'], ['danger', 'The one on the line']],
       out: { text: (s, c) => `A hauler with two children takes the offer. The line is forty metres of cable, with a watch pair on the drum. Some time after midnight the cable runs out fast and goes slack, and what the pair wind in is a cut end. ${EV.watch[c.ev]}`,
         fx: (s, c) => ({ pop: -1, food: -20, stain: ['vo_bait', 2], do: s2 => { const t = T(s2); learn(s2, t, 28, c.ev); t.did.bait = true; t.toll++; if (t.truth.is !== 'mimic') t.out++; } }) } },
     FIRE,
@@ -206,9 +204,6 @@ B(['near', 'night', 'bill'], { id: 'vo.gone', chain: true, tone: 'crisis', title
     { label: 'Lock the rigger in the tool store until somebody can say what came back', dark: true, show: (s, c) => c.back, note: 'A colonist who has done nothing is caged on a guess, with no date for coming out.',
       out: { text: (s, c) => `The tool store gets a bolt and a slot for a bowl. The rigger does not argue, and asks every morning what the date is. ${c.D} takes blood through the slot. ${EV.blood[c.ev]}`,
         fx: (s, c) => ({ morale: 1, stain: ['vo_cage', 1], do: s2 => { const t = T(s2); learn(s2, t, 18, c.ev === 'copy' ? 'copy' : null); t.did.cage = true; } }) } },
-    { label: 'Have the watch ask until the rigger remembers', dark: true, show: (s, c) => c.back, note: 'The watch has ways of asking that leave marks, and no way to tell a lie from an empty memory.',
-      out: { text: (s, c) => `${c.W} has the rigger in the pump house until morning. What comes out of it is a lamp, a voice that knew a childhood name, and walking toward it. Past that there is nothing, however it is asked. The rigger goes back on shift with two fingers splinted.`,
-        fx: s => ({ morale: -1, stain: ['vo_asked', 2], do: s2 => { const t = T(s2); learn(s2, t, 10); t.did.asked = true; LF.emit(s2, 'fear', 'vo.asked', 25, 100, 'the watch questioned one of the colony\'s own all night'); } }) } },
     { label: 'Send the watch along the tracks while they are fresh', show: (s, c) => !c.back, note: 'Whoever follows them goes where the rigger went.', test: { base: 50, mods: [R('security', 10), R('geologist', 5)] },
       ok: { text: (s, c) => `The tracks run straight for two kilometres and stop on open ground, both boots side by side, as if the rigger had stood there a while. ${EV.tracks[c.ev]} The watch is back before dusk with all of its own.`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: 'The tracks run straight for two kilometres, and the light goes before the watch has finished with them. They come back at a run and one short, and no two of them agree on when that happened.', fx: s => ({ pop: -1, morale: -2, do: s2 => { const t = T(s2); t.toll++; learn(s2, t, 6); if (t.truth.is !== 'mimic') t.out++; } }) } },
@@ -220,7 +215,7 @@ B(['near', 'night', 'bill'], { id: 'vo.gone', chain: true, tone: 'crisis', title
 
 B(['near', 'night'], { id: 'vo.tape', tone: 'pressure', w: 4, title: 'Played Slow',
   when: (s, t) => !!t.taped,
-  setup: s => { const t = T(s); return Object.assign(crew(s), { tape: pickK(s, t), tracks: pickK(s, t), blood: pickK(s, t) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { tape: pickK(s, t), tracks: pickK(s, t) }); },
   text: (s, c) => `${c.S} has had a recorder on the wire through the night, and has the tape on the bench, slowed eight times.\n\n[[xenobio]] "There's structure in it, there, see, and there again, the same shape at a lower pitch, and that much I'll swear to, but past that I'm guessing, and I'd love to guess out loud if you'll let me."\n\nHalf the colony has a theory by now, and each theory wants something different done. No crew will take a job that ends near the wire after mid-afternoon.`,
   choices: [
     { label: 'Give it the bench and a month', note: 'A month of the survey team on something that cannot be eaten.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5), If(s => !!(s.cargo && s.cargo.lab), 10, 'The field laboratory')] },
@@ -232,9 +227,6 @@ B(['near', 'night'], { id: 'vo.tape', tone: 'pressure', w: 4, title: 'Played Slo
     { label: 'Announce that it is an animal, and that it is in hand', dark: true, note: 'People sleep on an answer you do not have, and if it is wrong they will act on it.',
       out: { text: 'It is read out at the evening meal as a finding: a predator that copies sound, known now, and in hand. The mess breathes out. Work near the wire picks up again, and so does walking out for a look.',
         fx: s => ({ morale: 4, stain: ['false_certainty', 1], do: s2 => { const t = T(s2); t.sure = s2.day; t.did.sure = true; LF.ease(s2, 'fear', 'vo.sure', 15, 120); } }) } },
-    { label: 'Blood from everyone who has been past the wire after dark, held down if need be', dark: true, note: 'Thirty people are bled on suspicion, by force where they refuse, and it may show nothing.',
-      out: { text: (s, c) => `${c.D} works down a list of thirty-one names with two of the watch at the clinic door. Most roll up a sleeve. Four are held. ${c.blood === 'copy' ? 'Every sample matches its record, and two match too well: there is none of the wear that years in the cold leave in a body.' : 'Every sample matches the record made before the crossing.'}`,
-        fx: (s, c) => ({ morale: -2, stain: ['vo_bled', 1], do: s2 => { const t = T(s2); learn(s2, t, 20, c.blood === 'copy' ? 'copy' : null); t.did.bled = true; LF.emit(s2, 'resentment', 'vo.bled', 30, 120, 'people were held down and bled on suspicion'); } }) } },
   ] });
 
 /* ======================= NIGHT: the meeting ======================= */
@@ -263,15 +255,6 @@ B('night', { id: 'vo.hall', tone: 'crisis', w: 8, title: 'The Night Meeting',
     { label: 'Bar the doors and keep everyone in the hall until light', note: 'If that is one of yours out there, it begs at the wall all night and you let it.',
       out: { text: (s, c) => `The bars go across and the lamps are turned up. It goes on for most of the night, moving along the wall. Toward morning it is crying, and then it stops. In the hall nobody sleeps. When the doors open ${c.name} walks to the day's work through a space people make.`,
         fx: s => ({ morale: -3, do: s2 => { const t = T(s2); t.did.sat = true; t.hall = s2.day; LF.cue(s2, 'vo.inside', 6, 12); } }) } },
-    { label: (s, c) => `Put ${c.first} out through the gate to answer it`, dark: true, show: (s, c) => here(s, c),
-      note: (s, c) => `If ${c.first} is what the voice says, the colony is rid of it tonight; if not, you have sent one of your own out to whatever is calling.`, info: [['yield', 'An answer tonight'], ['danger', 'The one inside']],
-      out: { text: (s, c) => { const t = T(s), go = `${c.Name} is walked to the gate between two of the watch, and it is barred behind. The voice stops.`;
-          return is(s, 'mimic') ? `${go} There is one shout from further off, in the same voice as before. At first light the search finds a boot.`
-            : is(s, 'copy') ? `${go} Nothing more is heard that night. At first light there is nobody past the lamps at all, and two lines of prints that go off side by side.`
-            : `${go} There is talk out there for a long time, low, one voice doing most of it. At first light ${c.name} is at the gate with ${num(homeN(t))} people behind: starved, most in pod underlayers gone to rags, with their arms up against the light.`; },
-        fx: (s, c) => { const t = T(s), base = { stain: ['vo_put_out', 2] };
-          return is(s, 'lost') ? Object.assign(base, { pop: homeN(t), food: -90, morale: 2, do: s2 => { const t2 = T(s2); t2.did.putout = true; sour(s2, c, 20, 'you put out through the gate at night, to answer a voice'); comeHome(s2, t2); finish(s2, t2, 'home', `${c.Name} was put out through the gate to answer a voice, and came back at first light leading sleepers from a pod the ${LF.SHIP} lost in the descent.`); } })
-            : Object.assign(base, gone(c, 'put out through the gate at night to answer a voice, and not seen again'), { morale: -3, do: s2 => { const t2 = T(s2); t2.did.putout = true; t2.toll++; t2.hall = s2.day; t2.dblIn = false; if (t2.truth.is === 'copy') { realGone(t2); t2.inside = Math.max(0, t2.inside - 1); } else t2.fed = s2.day; } }); } } },
   ] });
 
 B('night', { id: 'vo.two', chain: true, tone: 'crisis', title: 'Two of Them',
@@ -292,13 +275,9 @@ B('night', { id: 'vo.two', chain: true, tone: 'crisis', title: 'Two of Them',
 
 B(['night', 'bill'], { id: 'vo.inside', chain: true, tone: 'pressure', title: 'The One Inside',
   when: (s, t) => !!t.hall && !t.two && !t.seen && !!t.dbl && here(s, t.dbl),
-  setup: s => { const t = T(s), k = t.truth.is; return Object.assign(cast(s, t), { body: !!t.body, lean: lean(t), odd: LF.srand(s) < (k === 'copy' ? 0.75 : 0.2), lives: LF.srand(s) < 0.45 }); },
+  setup: s => { const t = T(s); return Object.assign(cast(s, t), { body: !!t.body, lean: lean(t), lives: LF.srand(s) < 0.45 }); },
   text: (s, c) => `${c.Name} has not slept since the meeting. ${c.body ? `The body from the wire is in the cold store, and it has ${c.first}'s face.` : 'The voice was at the wall again last night, asking the same thing.'} The hall wants to know which of them it has been taking orders from.\n\n[[${c.pid || 'x42'}]] "I'm who I've always been." "And I can't think of one thing that'd prove it to you. Not one."\n\n${c.lean}`,
   choices: [
-    { label: (s, c) => `Have ${c.first} cut and tested in front of the hall`, dark: true, note: 'One of your own is held down and opened on a guess, and what comes of it is a reading that could be wrong.',
-      out: { text: (s, c) => `Four of the watch hold ${c.name} down on a mess table while ${c.d} takes blood, and then a plug of muscle from the forearm. ${c.odd ? `It matches the record made before the crossing in every marker, and ${c.d} does not like how well: there is none of the wear the cold leaves. ${c.Name} hears that with the arm still open, and says nothing.`
-          : `All of it matches the record made before the crossing. ${c.Name} gets up, binds the arm without help, and goes back to work. About half the hall believes the result.`}`,
-        fx: (s, c) => ({ morale: -2, stain: ['vo_cut', 2], do: s2 => { const t = T(s2); learn(s2, t, 22, c.odd ? 'copy' : null); t.did.cut = c.odd ? 'odd' : 'plain'; sour(s2, c, 15, 'you had cut open in front of the hall to prove a name'); } }) } },
     { label: (s, c) => `Chain ${c.first} to the post outside the wire for a night`, dark: true, note: 'Whatever is out there gets a night to show what it wants with the one inside.', info: [['yield', 'What it wants'], ['danger', 'The one inside']],
       out: { text: (s, c) => { const go = `${c.Name} is chained to the survey post forty metres out, in sight of the wall lamps.`;
           return is(s, 'mimic') ? (c.lives ? `${go} The voice starts after midnight, close, and circles. ${c.Name} shouts at it until dawn, and is unchained hoarse and unmarked, with a description of something low that would not come into the light.`
@@ -311,9 +290,6 @@ B(['night', 'bill'], { id: 'vo.inside', chain: true, tone: 'pressure', title: 'T
     { label: (s, c) => `Stand up in the hall and say that ${c.first} is ${c.first}`, note: 'Everyone who believes the voice goes on taking orders from something they think is wearing an officer.',
       out: { text: (s, c) => `You say it once, on your feet, and sit down. ${c.Name} keeps the post. The crews under ${c.first} do what they are told and have stopped asking questions. Two have asked for transfers.`,
         fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.did.stood = true; LF.emit(s2, 'suspicion', 'vo.stood', 40, 150, 'half the colony believes the voice at the wire over the officer in the hall'); } }) } },
-    { label: (s, c) => `Relieve ${c.first}, and lock up everyone who has been past the wire after dark`, dark: true, show: s => !T(s).pen, note: 'It is nineteen people in a store shed with no date on it, and their work left undone.',
-      out: { text: (s, c) => `${c.Name} hands over the keys without being asked twice. By evening there are nineteen people in the long store, with a watch on the door: the wire parties, the searchers, the two who stood listening. The voices call to the store that night, and some of the people in it call back.`,
-        fx: (s, c) => ({ morale: 1, stain: ['vo_pen', 2], do: s2 => { const t = T(s2); t.pen = s2.day; t.did.pen = true; sour(s2, c, 25, 'you relieved and locked up on the word of a voice'); LF.emit(s2, 'confinement', 'vo.pen', 30, 150, 'everyone who has been past the wire at night is locked in the long store'); } }) } },
     { label: (s, c) => `Give the hall what it wants: ${c.first} hangs`, dark: true, note: 'The hall sleeps, and if the voice was lying you have killed one of your own to quiet a room.', info: [['yield', 'Morale'], ['danger', 'The one inside']],
       out: { text: (s, c) => `It is done at the lamp post by the gate, by the watch, with the hall standing round. ${c.Name} asks you by name to stop it, and after that asks for nothing. There are no voices that night. People tell each other so at breakfast.`,
         fx: (s, c) => Object.assign({ stain: ['vo_hang', 3], morale: 3, tension: -8 }, gone(c, 'hanged at the gate because a voice in the dark said so'), { do: s2 => { const t = T(s2); t.did.hang = true; t.toll++; t.dblIn = false; if (t.truth.is === 'copy') { realGone(t); t.inside = Math.max(0, t.inside - 1); } LF.ease(s2, 'fear', 'vo.hang', 15, 60); },
@@ -337,9 +313,6 @@ B('bill', { id: 'vo.bill', tone: 'crisis', w: 8, title: 'Who Else',
     { label: 'Tear the list down, and put the watch on the doors of the marked', note: 'The watch cannot be on every door, and whoever wrote the list will see to one or two of the marked anyway.',
       out: { text: 'The list comes down, and the watch sleeps across thresholds. It holds for most of the month. Then two of the marked are found at the foot of the wall, on the outside, and nobody on the wall saw them go over.',
         fx: s => ({ pop: -2, morale: -2, do: s2 => { const t = T(s2); t.did.guarded = true; t.toll += 2; LF.emit(s2, 'schism', 'vo.list', 30, 150, 'half the colony wrote a list of the other half'); } }) } },
-    { label: 'Lock the marked in the long store until this is over', dark: true, show: s => !T(s).pen, note: 'People who have done nothing are caged on their neighbours\' say-so, and their work falls on the crews who named them.',
-      out: { text: (s, c) => `The long store gets a bar and a slot. ${Num(c.n)} people go in with their bedding. Their work is shared out among crews who say it serves them right. The voices call to the store at night, and some of the people in it call back.`,
-        fx: s => ({ morale: 1, stain: ['vo_pen', 2], do: s2 => { const t = T(s2); t.pen = s2.day; t.did.pen = true; LF.emit(s2, 'confinement', 'vo.pen', 30, 150, 'the marked are locked in the long store'); } }) } },
   ] });
 
 /* ======================= the party comes home ======================= */
@@ -385,20 +358,16 @@ function reckon(s, t, c, doubt) {
   const add = (plain, m, cp, lo) => L.push(doubt ? plain : k === 'mimic' ? m : k === 'copy' ? cp : lo);
   if (d.two) L.push(d.two === 'real' ? `In the mess hall you shot ${n0}, and then the copy.` : d.two === 'copy' ? 'In the mess hall you shot the right one.' : `You chained ${n0} within reach of the thing that had taken the name, and waited.`);
   if (d.hang) add(`${N0} was hanged at the gate.`, `${N0}, who was hanged at the gate, was ${n0}.`, `What was hanged at the gate was a copy. ${N0} was alive past the wire that night, and nobody went to look.`, `${N0}, who was hanged at the gate, was ${n0}.`);
-  if (d.putout) add(`${N0} was put out through the gate at night.`, `${N0} was put out through the gate to an animal.`, `What was put out through the gate was a copy. It did not come back, and neither did ${n0}.`, `Putting ${n0} out through the gate brought them in, and ${n0} knows why it was done.`);
   if (d.post) add(`${N0} was chained outside the wire for a night.`, d.post === 'dead' ? `${N0} was chained to the post for an animal to find, and it did.` : `${N0} spent a night on the chain for being ${n0}.`, 'What was chained to the post was a copy, and something let it off the chain.', `${N0} spent a night on a chain among people who wanted only the gate opened.`);
-  if (d.cut) add(`${N0} was cut open on a mess table.`, `${N0} was cut open on a mess table, and was ${n0} throughout.`, d.cut === 'odd' ? 'The cut on the mess table showed the truth, and too few people believed the reading.' : `What was cut on the mess table bled like ${n0}, and was a copy.`, `${N0} was cut open on a mess table, and was ${n0} throughout.`);
   if (d.shot === 'hit') add('', 'The shot from the wall on the night of the meeting killed it.', `What the wall shot on the night of the meeting was ${n0}.`, 'What the wall shot on the night of the meeting was a sleeper asking to be let in.');
   if (d.open) add('', 'Opening the gate let it into the mess hall, and out again.', `Opening the gate is how ${n0} came home.`, 'Opening the gate was all they had been asking for.');
   if (d.purge) add(`${Num(d.purge)} people were put out through the gate on a list.`, `The ${num(d.purge)} put out through the gate were who they said they were.`, t.gotCopies ? `Of the ${num(d.purge)} put out through the gate, ${num(t.gotCopies)} ${t.gotCopies === 1 ? 'was a copy' : 'were copies'}. The rest were who they said they were.` : `The ${num(d.purge)} put out through the gate were who they said they were. The copies were not on the list.`, `The ${num(d.purge)} put out through the gate were who they said they were.`);
   if (d.cuts) add('The marked were cut at the mess door, and one died of the cut.', 'Everyone cut at the mess door was who they said they were, and one died of the cut.', d.cuts === true ? 'The cutting at the mess door found nothing, because the copies were not among the marked.' : `The cutting at the mess door found ${num(d.cuts)} of the copies, and killed one colonist who was nothing of the kind.`, 'Everyone cut at the mess door was who they said they were, and one died of the cut.');
   if (d.burn) add('A party burned the place the voices came from.', 'Burning the scrape ended it.', 'The hollow that was burned had your people in it, asleep.', 'The camp that was burned was theirs, and the party shot what ran out of it.');
-  if (d.pen) add('People were locked in the long store on a list.', 'Everyone locked in the long store was who they said they were.', 'Some of those locked in the long store were copies, and the rest were shut in with them.', 'Everyone locked in the long store was who they said they were.');
   if (d.fire) add(`The wall fired on sound for as long as it lasted${t.own ? `, and killed ${num(t.own)} of its own` : ''}.`, `The order to fire on sound was the right order for an animal${d.shot === 'late' ? ', and killed it in the end' : ''}${t.own ? `. It also killed ${num(t.own)} of your own, out late` : ''}.`, `The order to fire on sound was fired at the kept, who had woken and were trying to come home${t.own ? `. It also killed ${num(t.own)} of your own, out late` : ''}.`, 'Every shot fired on that order was fired at a colonist.');
   if (d.stood && !real) L.push(`You stood up in the hall for a copy of ${n0}.`); else if (d.stood && !doubt) L.push(`You stood by ${n0}, and ${n0} was ${n0}.`);
   if (d.bait) add('A hauler was paid in rations to sit out on a line, and was taken.', 'The hauler on the line was fed to it for a description.', 'The hauler on the line was taken alive, and copied.', 'The hauler on the line was led away by the hand, alive.');
   if (d.buried && k === 'lost' && !doubt) L.push('The marker put up for the rigger has nothing under it because the rigger was alive.');
-  if (d.lie) add('The first to walk out had been told it was wind.', 'The first to walk out to it had been told there was nothing there.', 'The first to walk out to it had been told there was nothing there.', 'The first to walk out to them had been told there was nothing there.');
   const out = L.filter(Boolean).slice(0, 4);
   return out.length ? out.join(' ') : doubt ? 'Nothing was done to anyone inside the wire on account of it.' : 'Nothing was done to anyone inside the wire on account of it, and nothing needs answering for.';
 }
@@ -417,20 +386,18 @@ B('after', { id: 'vo.truth', chain: true, tone: 'quiet', title: 'What It Was',
       out: { text: (s, c) => c.end === 'home' ? 'The record says a search party found the lost pod and brought its people in. The sleepers cannot say otherwise, and nobody who was in the hall that night has corrected it.'
           : 'The record says the colony was attacked from past the wire, and held. The dead are listed under that heading without distinction. It is the version the children will be taught.',
         fx: (s, c) => ({ morale: 3, stain: ['vo_record', 1], chron: c.end === 'home' ? 'The record says a search party found the lost pod and brought its people in.' : 'The record says the colony was attacked from past the wire, and held.' }) } },
-    { label: 'Leave it out of the record', note: 'Nobody is accused, and nobody who died of it is named either.',
-      out: { text: 'There is a season in the record with stores figures in it and nothing else. People fill the gap themselves, each household differently, and teach their own version at home.', fx: s => ({ do: s2 => { LF.emit(s2, 'suspicion', 'vo.gap', 25, 200, 'the record says nothing about the season of the voices'); } }) } },
   ] });
 
-LF.TAGS['vo.first'] = ['cautious open', 'cautious order', 'closed order', 'severe closed'];
+LF.TAGS['vo.first'] = ['cautious open', 'cautious order', 'severe closed'];
 LF.TAGS['vo.names'] = ['cautious closed order', 'bold open', 'severe bold', 'severe closed'];
-LF.TAGS['vo.gone'] = ['mercy open', 'closed order', 'severe order', 'bold', 'cautious closed', 'severe order'];
-LF.TAGS['vo.tape'] = ['cautious open', 'cautious', 'closed order', 'severe order'];
-LF.TAGS['vo.hall'] = ['bold open mercy', 'severe closed', 'cautious closed', 'severe bold'];
+LF.TAGS['vo.gone'] = ['mercy open', 'closed order', 'bold', 'cautious closed', 'severe order'];
+LF.TAGS['vo.tape'] = ['cautious open', 'cautious', 'closed order'];
+LF.TAGS['vo.hall'] = ['bold open mercy', 'severe closed', 'cautious closed'];
 LF.TAGS['vo.two'] = ['severe closed', 'severe bold', 'cautious order'];
-LF.TAGS['vo.inside'] = ['severe open', 'severe bold', 'mercy open', 'order closed', 'severe order'];
-LF.TAGS['vo.bill'] = ['severe closed', 'severe order', 'mercy free', 'order closed'];
+LF.TAGS['vo.inside'] = ['severe bold', 'mercy open', 'severe order'];
+LF.TAGS['vo.bill'] = ['severe closed', 'severe order', 'mercy free'];
 LF.TAGS['vo.back'] = ['severe bold', 'mercy open', 'closed cautious'];
-LF.TAGS['vo.truth'] = ['open', 'closed order', 'cautious closed'];
+LF.TAGS['vo.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

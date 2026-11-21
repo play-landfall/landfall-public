@@ -10,12 +10,12 @@
      blood  it answers killing. It climbs with every kill and falls when the killing stops. Right: stand down, lock
             the rifles away, give ground. Laying the country waste brings all of it at once.
      mood   it answers what the colony feels: fear, hatred, a wall with rifles on it, cruelty inside the wire. Right:
-            quiet the ones who hate it most (the doses, the gate) or learn to walk out easy. Standing down while the
+            quiet the ones who hate it most (the gate) or learn to walk out easy. Standing down while the
             colony is still afraid gets unarmed people killed.
      heart  one old thing out in the country steers the rest and is defending itself. Right: find it and burn it (the
             march, or laying the country waste once the place has been found). Nothing else slows it for long.
      none   nothing is linked. A colony is a heap of food, and fast breeders changed to get at it. It peaks and falls
-            off by itself. Right: hold on. The waste, the doses and the open gate bought nothing.
+            off by itself. Right: hold on. The waste and the open gate bought nothing.
    Evidence (the watch log, the bench, the two quarters, the night at the wire, the one who walks out, the place) is
    drawn per card and points at the truth only most of the time (pickK). The world's own words come from LAND and
    LF.lex, so it reads on a lichen world as on a hothouse. Nothing here knows any other thread: it reads factors,
@@ -37,37 +37,37 @@ const LAND = {
     all: 'There is not much alive on this world: a crust on the stones, the mites that graze it, and the borers under the dust.',
     teeth: 'The mites that grazed the crust and ran from a boot now come up the boot.',
     sting: 'The grey crust has crept onto the outer beds. It used to flake off a glove, and now it raises blisters through one.',
-    strip: 'Scrape and burn the crust off a strip a hundred metres deep round the wire', scorch: 'Burn the crust off the flats, to the horizon',
+    scorch: 'Burn the crust off the flats, to the horizon',
     fire: 'Fuel is sprayed from the carts and lit along a line longer than the colony has ever walked. The crust burns low and blue, and it burns for a long time.' },
   ice: { small: 'the rime-lice', weed: 'the red rime', big: 'the floe-hunters', land: 'the ice',
     all: 'There is not much alive on this world: red rime on the thaw pools, the lice that graze it, and the white things that hunt along the floe edge.',
     teeth: 'The lice that grazed the rime and froze when a lamp found them now come toward the lamp.',
     sting: 'The red rime has come onto the outer beds. It used to wipe off, and now it burns bare skin like lye.',
-    strip: 'Oil and salt a dead strip a hundred metres deep round the wire', scorch: 'Poison every thaw pool and oil the floe edge, to the horizon',
+    scorch: 'Poison every thaw pool and oil the floe edge, to the horizon',
     fire: 'Reactor salt and waste oil go out on the sledges and into every thaw pool for as far as the colony has ever walked. The pools go black, and then they go still.' },
   ruin: { small: 'the wall-runners', weed: 'the scrub', big: 'the things in the old cellars', land: 'the rubble fields',
     all: 'Scrub in the cracks, the runners that nest in the walls, whatever dens in the old cellars: none of it was any trouble at landfall.',
     teeth: 'The wall-runners that scattered from a thrown stone now hold their ground and watch the thrower.',
     sting: 'The scrub in the outer beds has put out thorns as long as a finger. They are hollow, and what is in them numbs a hand for most of a month.',
-    strip: 'Burn the scrub back a hundred metres from the wire', scorch: 'Fire the scrub and smoke every cellar, to the horizon',
+    scorch: 'Fire the scrub and smoke every cellar, to the horizon',
     fire: 'It is lit along a line longer than the colony has ever walked, with the wind behind it, and smoke pots go down every stair the survey has mapped.' },
   drowned: { small: 'the reed-skippers', weed: 'the reeds', big: 'the things in the lagoon', land: 'the shallows',
     all: 'Reeds, the skippers that live in them, the slow things in the lagoon: none of it was any trouble at landfall.',
     teeth: 'The skippers that fled a wading boot now gather on it.',
     sting: 'The reeds along the outer beds have grown an edge that opens a hand to the bone, and the cut is slow to close.',
-    strip: 'Cut and burn the reeds back a hundred metres from the wire', scorch: 'Burn the reed beds and poison the lagoon, to the horizon',
+    scorch: 'Burn the reed beds and poison the lagoon, to the horizon',
     fire: 'The reed beds are lit from the boats with the wind behind them, and drums of reactor salt are tipped into the lagoon at every channel the survey has mapped.' },
   jungle: { small: 'the leaf-runners', weed: 'the undergrowth', big: 'the things in the canopy', land: 'the forest',
     all: 'This world is as alive as any the array ever saw, and at landfall most of it ran from a raised voice.',
     teeth: 'The leaf-runners that fled a raised voice now come to one.',
     sting: 'The undergrowth along the outer beds has grown spines as long as a finger. They are hollow, and what is in them stops a hand working for most of a month.',
-    strip: 'Cut and burn the undergrowth back a hundred metres from the wire', scorch: 'Fire the forest, to the horizon',
+    scorch: 'Fire the forest, to the horizon',
     fire: 'It is lit along a line longer than the colony has ever walked, with the wind behind it. At night the whole sky on that side is the colour of the lamps.' },
   garden: { small: 'the meadow-hoppers', weed: 'the grass', big: 'the grazers', land: 'the downs',
     all: 'Grass, the hoppers in it, the herds of grazers on the downs: at landfall the children fed them by hand.',
     teeth: 'The hoppers the children used to catch in jars now bite through the cloth of a sleeve.',
     sting: 'The grass along the outer beds has grown a saw edge that opens a hand to the bone, and seed heads with barbs that work inward.',
-    strip: 'Burn the grass back a hundred metres from the wire', scorch: 'Fire the downs, to the horizon',
+    scorch: 'Fire the downs, to the horizon',
     fire: 'It is lit along a line longer than the colony has ever walked, with the wind behind it. The herds run ahead of it until they cannot.' },
 };
 const L = s => LAND[s.world.type] || LAND.garden;
@@ -83,7 +83,7 @@ function feed(s, t) {
   const k = t.truth.is, rec = record(s), st = s.flags.stain || 0, dK = Math.max(0, rec - t.rec) + t.blood, dS = Math.max(0, st - t.st), g = t.gave;
   t.rec = rec; t.st = st; t.blood = 0; t.gave = 0; t.viol += dK;
   let d;
-  if (k === 'blood') d = t.kill > 0 || dK > 0 ? t.kill * 0.7 + dK * 0.8 : -(t.open ? 10 : 6);
+  if (k === 'blood') d = t.kill > 0 || dK > 0 ? t.kill * 0.9 + dK : -(t.open ? 10 : 6);   // 0.7 and 0.8 until 2026-11-21: with three options a card there is less killing on offer, and blood had gone tame
   else if (k === 'mood') d = clamp((heat(s, t) - 35) / 6, -8, 6) + dK * 0.4 + dS * 0.8;
   else if (k === 'heart') d = t.heartDead ? -30 : 1.7 + dK * 0.8 - Math.min(1.5, g * 0.2);
   else d = (s.day - (t.woke || s.day) < 220 ? 2.2 : -4) + dK * 0.4;
@@ -213,7 +213,7 @@ LF.thread({ id: ID, name: 'The Grudge', view: 'world', dread: true,
   },
   /* Crews that will not go to the outer beds, beds that are eaten or overgrown, and the hands every measure takes. */
   press: (s, t, P) => { if (t.phase === 'latent' || t.phase === 'signs' || (t.end && t.end !== 'siege') || (t.quiet && s.day < t.quiet)) return;
-    const x = t.host / 100 * (t.end ? 0.6 : 1); P.labor -= x * 0.03 + (t.armed ? 0.02 : 0) + (t.dosed && s.day < t.dosed + 200 ? 0.04 : 0); if (!t.inner) P.yield -= x * 0.04; if (t.host >= 70 && !t.end) P.morale -= 0.01; },
+    const x = t.host / 100 * (t.end ? 0.6 : 1); P.labor -= x * 0.03 + (t.armed ? 0.02 : 0); if (!t.inner) P.yield -= x * 0.04; if (t.host >= 70 && !t.end) P.morale -= 0.01; },
 });
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ view: 'world', chain: true }, st));
 
@@ -230,9 +230,6 @@ B('signs', { id: 'dw.first', tone: 'pressure', title: 'Teeth',
     { label: 'Lay poisoned bait along the whole wire', dark: true, note: 'It kills what takes the bait, what eats the dead, and whatever drinks below the wire, and the colony drinks below the wire.', info: [['yield', 'The stores'], ['later', 'Whoever drinks downstream']],
       out: { text: (s, c) => `${c.D} mixes it from the clinic's stock and will not sign for it. In the morning there are dead things along the wire in drifts, of more kinds than the survey had drawn. The stores are untouched all month. Two children are in the clinic with their hands blistered, and the lower well is closed.`,
         fx: s => ({ food: 60, stain: ['dw_poison', 1], do: s2 => { const t = T(s2); hit(t, 8); t.did.poison = true; LF.emit(s2, 'sickness', 'dw.poison', 25, 80, 'bait was laid along the wire, and the lower well is closed'); } }) } },
-    { label: (s, c) => L(s).strip, dark: true, cost: { mat: 10 }, note: 'Nothing can cross open ground unseen, and the crews who make the strip breathe what comes off it for a month.', info: [['yield', 'A clear field of fire'], ['danger', 'The crews who make it']],
-      out: { text: (s, c) => `It takes the month and most of the reserve fuel. When it is done the wire stands in a ring of dead ground, and the wall can see anything that moves on it. Six of the crew that made it are coughing black, and ${c.d} has taken one of them off work for good.`,
-        fx: s => ({ morale: 2, yield: -0.02, stain: ['dw_strip', 1], do: s2 => { const t = T(s2); hit(t, 10); t.did.strip = true; } }) } },
   ] });
 
 /* ======================= TURN ======================= */
@@ -247,13 +244,10 @@ B('turn', { id: 'dw.fields', tone: 'pressure', view: 'colony', title: 'The Outer
     { label: 'Spray the beds and the ground beyond them from the ship\'s defoliant', dark: true, cost: { mat: 10 }, note: 'The beds are clean for a season, and what the spray does to the people who work them and eat from them is in a manual written for another planet.', info: [['yield', 'The harvest, and more'], ['danger', 'Whoever eats from the beds']],
       out: { text: (s, c) => `Three drums go on from the carts with the wind behind them. Within the month the outer beds are bare of everything except the crop, and so is the ground for two hundred metres past them. The crop comes up heavy. ${c.D} has started keeping a list of who has a rash.`,
         fx: s => ({ yield: 0.04, stain: ['dw_spray', 2], do: s2 => { const t = T(s2); hit(t, 12); t.did.spray = true; LF.emit(s2, 'sickness', 'dw.spray', 25, 120, 'the outer beds were sprayed from the ship\'s drums'); } }) } },
-    { label: 'Put the punishment roster on the clearing, without the gloves', dark: true, note: 'The gloves and the field crew are kept for the harvest, and the clearing is done bare-handed by people who were late to muster or answered back.', info: [['yield', 'The harvest and the field crew'], ['danger', 'The punishment roster']],
-      out: { text: (s, c) => `Fourteen people off the punishment roster clear the outer beds with sacking wound round their hands. The crop is saved and the field crew is whole. Two of the fourteen are dead before it is finished, one of them there for sleeping through a bell.`,
-        fx: s => ({ pop: -2, food: 40, stain: ['dw_detail', 2], do: s2 => { const t = T(s2); hit(t, 4); t.toll += 2; t.did.detail = true; LF.emit(s2, 'resentment', 'dw.detail', 30, 150, 'the punishment roster was sent bare-handed into the outer beds'); } }) } },
   ] });
 
 B(['turn', 'war'], { id: 'dw.bench', tone: 'pressure', view: 'colony', title: 'Side by Side',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t), ev2: pickK(s, t, 0.1), ev3: pickK(s, t), lean: lean(t) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t), ev2: pickK(s, t, 0.1), lean: lean(t) }); },
   text: (s, c) => `${c.Sc} has two rows of jars on the long bench: what the colony took at landfall, and the same kinds taken this month. No jar in the second row matches its partner in the first.\n\n[[xenobio]] "It's too fast, much too fast, and every change runs the same way, toward us, and nothing evolves like that, that isn't evolving, that's answering, so what's it answering, what does it think we did?"\n\n${c.lean} Every theory in the mess wants something different done, and the crews are waiting to hear which.`,
   choices: [
     { label: 'Give it the bench and a month', note: 'A month of the survey team on jars, while the wire is held by guesswork.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5), If(s => !!(s.cargo && s.cargo.lab), 10, 'The field laboratory')] },
@@ -262,9 +256,6 @@ B(['turn', 'war'], { id: 'dw.bench', tone: 'pressure', view: 'colony', title: 'S
     { label: 'Split the wire in two for a month: kill nothing along one half, everything along the other', note: 'The crews on the quiet half stand their posts with the rifles racked, whatever comes.', info: [['yield', 'What it shows'], ['danger', 'The crews on the quiet half']],
       out: { text: (s, c) => `The wire is chalked at the gate and the two halves are stood for the month under two sets of orders. ${EV.plot[c.ev2]} One of the quiet half's crew was taken off the wire with the rifle still in the rack.`,
         fx: (s, c) => ({ pop: -1, do: s2 => { const t = T(s2); learn(s2, t, 26, c.ev2); hit(t, 5); t.toll++; t.did.plot = true; } }) } },
-    { label: 'Have the watch bring in forty alive, and open them on the bench one kind at a time', dark: true, note: 'It is the quickest way to see what has changed inside them, and it is done to things that scream, by catching parties sent out to lay hands on them.', info: [['yield', 'What it shows'], ['danger', 'The catching parties']],
-      out: { text: (s, c) => `The cages fill the pump house, and the noise carries to the bunkhouse at night. ${c.Sc} works through them in order of size. ${ev('bench', c.ev3, s, c)} One of the catching party lost an arm to the elbow, and the pump house has been hosed out twice.`,
-        fx: (s, c) => ({ morale: -1, stain: ['dw_bench', 1], do: s2 => { const t = T(s2); learn(s2, t, 30, c.ev3); hit(t, 8); t.did.bench = true; } }) } },
     { label: 'Announce that it is a hard season, and that hard seasons pass', dark: true, note: 'The crews go back to the outer beds on an answer you do not have, and go less carefully.', info: [['yield', 'Morale, and work'], ['danger', 'Whoever believes it']],
       out: { text: 'It is read out at the evening meal as the survey team\'s finding. The mess breathes out. The second marker is passed again the next morning, by crews who have stopped looking at the ground.',
         fx: s => ({ morale: 4, stain: ['false_certainty', 1], do: s2 => { const t = T(s2); t.sure = s2.day; t.did.sure = true; LF.ease(s2, 'fear', 'dw.sure', 15, 120); } }) } },
@@ -284,10 +275,7 @@ B(['turn', 'war', 'choice'], { id: 'dw.hater', tone: 'pressure', view: 'people',
     { label: (s, c) => `Put ${c.first} and the ${num(c.n)} worst of them out through the gate, with their rifles`, dark: true, note: (s, c) => `If the hatred is what it comes for, the hatred goes out to it. ${Num(c.n + 1)} colonists who have done nothing but kill vermin are put outside the wire for good.`, info: (s, c) => [['yield', 'Quiet in the mess'], ['danger', `${cap(c.first)} and the ${num(c.n)}`]],
       out: { text: (s, c) => `They are walked to the gate at dusk with a rifle and a blanket each. ${c.Name} does not look back. For some nights there is shooting out in ${L(s).land}, further off each time. The mess is quiet, and nobody cheers anything.`,
         fx: (s, c) => Object.assign({ leave: c.n, tension: -8, stain: ['dw_exile', 3] }, c.pid ? { depart: [{ who: c.pid, cause: 'put out through the gate with a rifle, for hating the country too well' }] } : { pop: -1 },
-          { do: s2 => { const t = T(s2), k = t.truth.is; t.did.exile = c.n + 1; t.toll += c.n + 1; if (k === 'mood') t.host = Math.max(0, t.host - 20); else hit(t, 8); LF.ease(s2, 'fear', 'dw.exile', 10, 100); }, chron: `${Num(c.n + 1)} colonists were put out through the gate for hating the country too well.` }) } },
-    { label: 'Leave them to it', note: 'The mess keeps its cheer, and whatever the bag is doing out there goes on being done every dusk.',
-      out: { text: (s, c) => `Nothing is said. The parties go out every dusk, and more go with them each time. One evening a party comes back one short and carrying nothing, and goes out again the next dusk all the same.`,
-        fx: s => ({ pop: -1, morale: 1, do: s2 => { const t = T(s2); hit(t, 10); t.toll += 1; t.did.bag = true; } }) } },
+          { do: s2 => { const t = T(s2), k = t.truth.is; t.did.exile = c.n + 1; t.toll += c.n + 1; t.calm = s2.day; if (k === 'mood') t.host = Math.max(0, t.host - 20); else hit(t, 8); LF.ease(s2, 'fear', 'dw.exile', 10, 100); }, chron: `${Num(c.n + 1)} colonists were put out through the gate for hating the country too well.` }) } },
   ] });
 
 /* ======================= WAR ======================= */
@@ -298,9 +286,6 @@ B('war', { id: 'dw.wall', tone: 'crisis', title: 'Everything at Once',
     { label: 'Hold the inner wire with every rifle', note: 'If the line holds there is meat for a season. If it breaks, it breaks at the bunkhouse doors.', test: { base: 50, mods: [R('security', 10), If(s => !!(s.cargo && s.cargo.arms), 10, 'The arms locker'), If(s => !!s.built.shelter, 5, 'Walls to stand on')] },
       ok: { text: (s, c) => `The line holds until first light behind a bank of dead things as high as the posts. ${Num(c.few)} of the watch are dead on it. ${ev('night', c.ev, s, c)}`, fx: (s, c) => ({ pop: -c.few, food: 150, morale: 2, do: s2 => { const t = T(s2); hit(t, 14); t.toll += c.few; learn(s2, t, 18, c.ev); t.did.held = true; } }) },
       bad: { text: (s, c) => `The line holds until the rifles run dry, a little after midnight. What comes through then goes into the bunkhouse row. ${Num(c.many)} are dead by first light, most of them in their blankets.`, fx: (s, c) => ({ pop: -c.many, food: -100, morale: -6, do: s2 => { const t = T(s2); hit(t, 10); t.toll += c.many; learn(s2, t, 6); t.did.broke = true; } }) } },
-    { label: 'Flood the ditch with the reserve fuel and light it', dark: true, cost: { mat: 20 }, note: 'It stops everything, and it burns whatever is in the ditch when it goes up, the picket included.', info: [['yield', 'The colony behind it'], ['danger', 'The picket in the ditch']],
-      out: { text: (s, c) => `The valves are opened, and it is lit from the gate before the picket has been called in. The ditch burns until morning with a noise like a kiln. Nothing crosses it. At first light the far bank is black for a hundred metres, and the two who had the picket are entered as lost at their post.`,
-        fx: s => ({ pop: -2, morale: 2, stain: ['dw_flame', 2], do: s2 => { const t = T(s2); hit(t, 18); t.toll += 2; t.did.flame = true; } }) } },
     { label: 'Give them the yard: everyone into the hall, and bar it', note: 'Nobody stands on the wire, and whatever is in the stores and the yard by morning belongs to what came for it.', info: [['yield', 'The people'], ['danger', 'The stores, and anyone slow']],
       out: { text: (s, c) => `The bell is rung and the hall is barred with everyone in it who could reach it. The yard is theirs until first light, and from the hall it sounds like a storm. In the morning the stores have a hole in them a cart could pass. ${ev('night', c.ev, s, c)}`,
         fx: (s, c) => ({ pop: -1, food: -250, mat: -20, morale: -3, do: s2 => { const t = T(s2); give(t, 10); t.toll++; learn(s2, t, 18, c.ev); t.did.yard = true; LF.emit(s2, 'confinement', 'dw.yard', 25, 60, 'the colony sat out a night barred in the hall'); } }) } },
@@ -312,18 +297,12 @@ B('war', { id: 'dw.wall', tone: 'crisis', title: 'Everything at Once',
 /* Somebody it does not touch. */
 B(['war', 'choice'], { id: 'dw.walker', tone: 'pressure', view: 'people', title: 'The One It Leaves Alone',
   setup: s => { const t = T(s), not = t.hater && t.hater.pid, p = anyNamed(s, LF.SEAT_ORDER.concat(not ? [not] : [])), c = who(p, 'one of the seed crew', 'the seed hand'); t.walker = { pid: c.pid, name: c.name, Name: c.Name };
-    return Object.assign(c, crew(s, c.pid), { ev: pickK(s, t), ev2: pickK(s, t, 0.25), lean: lean(t) }); },
+    return Object.assign(c, crew(s, c.pid), { ev: pickK(s, t), lean: lean(t) }); },
   text: (s, c) => `${c.Name} has gone out past the wire at first light all season, alone, with a seed bag and no rifle, to the far beds nobody else will work. Nothing has touched ${c.first}.\n\n[[security]] "Walked through a mob of them like they were washing on a line and never looked round once." "So that's either the luckiest fool we've got or somebody who knows something, and I'd like to hear which before I bury anyone else."\n\n${c.lean}`,
   choices: [
     { label: (s, c) => `Have a watch pair follow ${c.first} out and write down everything`, about: true, note: 'Two of the watch go out unarmed behind someone the country may be sparing for reasons that do not cover them.', test: { base: 50, mods: [R('security', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `The pair follow at fifty paces for the month, with a slate. ${ev('walker', c.ev, s, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 24, c.ev) }) },
       bad: { text: (s, c) => `The pair follow at fifty paces. On the fourth morning something comes between them and ${c.first}, and only one of the pair reaches the gate. The slate is still out there.`, fx: s => ({ pop: -1, morale: -1, do: s2 => { const t = T(s2); t.toll++; learn(s2, t, 6); } }) } },
-    { label: 'Order six more out the same way, unarmed, and see who comes back', dark: true, note: 'It will show what the country spares and what it does not, and the six are not asked.', info: [['yield', 'What it shows'], ['danger', 'The six']],
-      out: { text: (s, c) => { const k = T(s).truth.is, base = `Six are picked off the roster and walked out past the second marker at first light with a seed bag each.`;
-          return k === 'blood' ? `${base} Four come back at dusk, untouched and shaking. The two who did not had both stood on the wall with a rifle this season. ${ev('walker', c.ev2, s, c)}`
-            : k === 'mood' ? `${base} Three come back at dusk. They are the three who went out angry at you and thinking of little else. The three who went out frightened did not come back. ${ev('walker', c.ev2, s, c)}`
-            : `${base} Four come back at dusk, at a run. Nothing about the two who did not sets them apart from the four who did. ${ev('walker', c.ev2, s, c)}`; },
-        fx: (s, c) => { const n = is(s, 'mood') ? 3 : 2; return { pop: -n, morale: -2, stain: ['dw_unarmed', 2], do: s2 => { const t = T(s2); learn(s2, t, 32, c.ev2); t.toll += n; t.did.unarmed = n; } }; } } },
     { label: (s, c) => `Lock ${c.first} up, as gone over to it`, dark: true, note: (s, c) => `The mess has been asking why the country spares one of its own, and ${c.first} is given to it as the answer.`, info: (s, c) => [['yield', 'Morale'], ['danger', cap(c.first)]],
       out: { text: (s, c) => `${c.Name} goes into the tool store without arguing and asks only that somebody water the far beds. Nobody does. The mess is easier for having a door with the reason behind it, and the far beds are lost before the month is out.`,
         fx: (s, c) => ({ morale: 2, tension: -6, yield: -0.02, stain: ['dw_walker', 2], do: s2 => { const t = T(s2); t.did.locked = true; sour(s2, c, 30, 'you locked up for being the one the country did not bite'); LF.ease(s2, 'suspicion', 'dw.locked', 10, 80); } }) } },
@@ -350,9 +329,6 @@ B(['war', 'choice'], { id: 'dw.place', tone: 'crisis', title: 'Where It Comes Fr
     { label: 'Send the survey team to lie up in sight of it and watch', note: 'The colony\'s only people who can read the country spend the month a day from help.', test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: (s, c) => `They lie up on high ground with a glass for most of the month and come home thin, all of them. ${ev('place', c.ev2, s, c)}`, fx: (s, c) => ({ food: -30, do: s2 => { const t = T(s2); learn(s2, t, 30, c.ev2); if (c.ev2 === 'heart') { t.circle = s2.day; if (t.truth.is === 'heart') t.found = s2.day; } } }) },
       bad: { text: 'They lie up on high ground with a glass and are found there on the sixth night. Two come home. What they saw of the place is a long way off, in poor light, and they do not agree about it.', fx: s => ({ pop: -2, morale: -2, do: s2 => { const t = T(s2); t.toll += 2; learn(s2, t, 8); } }) } },
-    { label: 'Send the lock-up to dig into it and carry a piece home', dark: true, note: 'It settles what is there, and the six who settle it go because they cannot refuse.', info: [['yield', 'What is there'], ['danger', 'The lock-up']],
-      out: { text: (s, c) => `Six from the lock-up go out roped to a cart with spades, and the watch stays a rifle shot behind them. Three come back with the cart. ${ev('place', T(s).truth.is, s, c)}`,
-        fx: s => ({ pop: -3, stain: ['dw_dig', 2], do: s2 => { const t = T(s2), k = t.truth.is; t.toll += 3; t.did.dig = true; learn(s2, t, 40, k); hit(t, 5); if (k === 'heart') { t.found = s2.day; t.circle = s2.day; } } }) } },
     { label: 'Cart a month of stores out to it and leave them', cost: { food: 120 }, note: 'The galley goes short to feed something that has killed colonists, on the chance that it can be bought.',
       out: { text: (s, c) => { const k = T(s).truth.is; return `Twelve crates are left inside the circle and the carts come home empty. ${k === 'heart' ? 'The crates are gone in the morning, every board of them. The wire is quieter that month than it has been since the season turned, and then it is as it was.' : k === 'blood' ? 'The crates are found broken open and fouled. Nobody was touched on the road, going or coming, and the party carried no rifles.' : 'The crates are found broken open and fouled, and the wire is hit that night as on any other.'}`; },
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2), k = t.truth.is; t.did.fed = true; give(t, 8); if (k === 'heart') t.host = Math.max(0, t.host - 12); } }) } },
@@ -360,8 +336,8 @@ B(['war', 'choice'], { id: 'dw.place', tone: 'crisis', title: 'Where It Comes Fr
 
 /* ======================= CHOICE: the drastic answers ======================= */
 B('choice', { id: 'dw.choice', tone: 'crisis', title: 'Ways to End It',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { lean: lean(t), n: clamp(Math.round(s.pop * 0.1), 5, 14), few: part(s, 0.04, 2), dead: t.toll, circle: !!t.circle }); },
-  text: (s, c) => `The board by the gate has ${num(Math.max(2, c.dead))} names on it. Your officers have stopped explaining the country and started offering ways to finish with it. ${c.W} wants everything dead as far as the eye can see. ${c.Q} wants the rifles locked away and the gate left open. ${c.D} has a list of the ${num(c.n)} who hate the place worst, and a sedative, and hates having either.\n\n${c.lean} The hall has been told there will be an answer tonight.`,
+  setup: s => { const t = T(s); return Object.assign(crew(s), { lean: lean(t), few: part(s, 0.04, 2), dead: t.toll, circle: !!t.circle }); },
+  text: (s, c) => `The board by the gate has ${num(Math.max(2, c.dead))} names on it. Your officers have stopped explaining the country and started offering ways to finish with it. ${c.W} wants everything dead as far as the eye can see. ${c.Q} wants the rifles locked away and the gate left open.\n\n${c.lean} The hall has been told there will be an answer tonight.`,
   choices: [
     { label: (s, c) => L(s).scorch, dark: true, cost: { mat: 25 }, note: (s, c) => `Nothing is left alive within a day of the wire, the colony's own snares and forage included, and whoever else lives out there burns with it.${c.circle ? ' The circle on the survey map is well inside the line.' : ''}`, info: [['yield', 'Quiet at the wire'], ['danger', 'The country, and the harvest']],
       out: { text: (s, c) => `${L(s).fire} When it is over the wall looks out on black ground to the edge of sight. Nothing comes to the wire. People sleep with the shutters open for the first time in a year.`,
@@ -370,10 +346,6 @@ B('choice', { id: 'dw.choice', tone: 'crisis', title: 'Ways to End It',
     { label: 'Take down the outer wire, bury the rifles, and kill nothing', note: (s, c) => `If it is answering the rifles, this is the end of it. If it is answering anything else, the colony will be standing in the open with empty hands when it comes.`, info: [['yield', 'An end to it, perhaps'], ['danger', 'Everyone']],
       out: { text: (s, c) => `The outer wire is rolled and stacked. The rifles are crated and buried under the landing ground, by your order, so that nobody can change their mind in a bad hour. The first nights are the worst anyone remembers: ${num(c.few)} die with nothing in their hands. After that the colony waits to see what it has bought.`,
         fx: (s, c) => ({ pop: -c.few, morale: -4, do: s2 => { const t = T(s2); t.open = s2.day; t.did.open = true; t.toll += c.few; t.armed = 0; give(t, 15); t.kill = 0; }, chron: 'The colony took down its outer wire and locked its rifles away.' }) } },
-    { label: (s, c) => `Dose the ${num(c.n)} on the list, and keep them dosed`, dark: true, note: (s, c) => `If it comes for hatred, the hatred is put to sleep. ${Num(c.n)} people who have buried friends are held down and drugged for feeling what anyone would.`, info: (s, c) => [['yield', 'Quiet in the mess'], ['danger', `The ${num(c.n)}`]],
-      out: { text: (s, c) => `${c.D} does it in the clinic with the watch at the door, and says nothing to you before or after. The ${num(c.n)} are led back to their bunks slow and mild. They do light work now, when they are told to. The mess is quieter without them, and the talk at the wire is of other things.`,
-        fx: (s, c) => ({ morale: 2, tension: -10, stain: ['dw_dose', 3], do: s2 => { const t = T(s2), k = t.truth.is; t.dosed = s2.day; t.did.dose = c.n; t.calm = s2.day; if (k === 'mood') t.host = Math.max(0, t.host - 35); LF.ease(s2, 'fear', 'dw.dose', 15, 120); LF.emit(s2, 'resentment', 'dw.dose', 30, 200, 'people were drugged for hating what killed their friends'); },
-          chron: `${Num(c.n)} colonists were kept drugged because they hated the country too much.` }) } },
     { label: 'Draw in behind an inner wire, and outlast it', note: 'The outer beds and half the yard are given up, and everyone lives on top of everyone else for as long as it takes.',
       out: { text: (s, c) => `A second wire goes up round the hall, the stores and the nearest beds, and everything outside it is let go. The colony fits inside it, at two to a bunk. From the wall you can see the old outer fence going under.`,
         fx: s => ({ yield: -0.08, morale: -3, do: s2 => { const t = T(s2); t.inner = s2.day; t.did.inner = true; give(t, 6); } }) } },
@@ -425,9 +397,6 @@ B('bill', { id: 'dw.open', tone: 'crisis', view: 'people', title: 'Empty Hands',
     { label: 'Hold to it another month, with empty hands', show: (s, c) => !c.held, note: 'If the country only needed longer, this gives it longer, and the price of the month is paid by whoever is caught in the open.', info: [['danger', 'Everyone']],
       out: { text: (s, c) => `The gate stays open and the rifles stay buried. ${Num(c.few)} more die that month. ${is(s, 'mood') ? 'Toward the end of it there are mornings when things cross the yard and go round the people in it, and mornings when they do not.' : 'Nothing about the last night of the month is different from the first.'}`,
         fx: (s, c) => ({ pop: -c.few, morale: -5, do: s2 => { const t = T(s2); t.toll += c.few; t.did.heldOn = true; give(t, 10); } }) } },
-    { label: 'Give the hall the ones who argued for the open gate', dark: true, show: (s, c) => !c.held, note: 'The hall gets somebody to blame for its dead, and they are the people who believed the country could be met half way.', info: [['yield', 'Morale'], ['danger', 'The ones who argued for it']],
-      out: { text: 'Five people who spoke for the open gate are named in the hall and marched to the lock-up through a crowd. Two do not reach it on their feet. The rifles are dug up, and the wall goes back up with a will.',
-        fx: s => ({ pop: -2, morale: 3, tension: -8, stain: ['dw_blame', 2], do: s2 => { const t = T(s2); t.open = 0; t.armed = s2.day; t.toll += 2; t.did.blame = true; hit(t, 12); } }) } },
   ] });
 
 B('bill', { id: 'dw.siege', tone: 'crisis', view: 'colony', title: 'The Far Beds',
@@ -437,9 +406,6 @@ B('bill', { id: 'dw.siege', tone: 'crisis', view: 'colony', title: 'The Far Beds
   choices: [
     { label: 'Everyone draws for the far beds, the top table included', note: 'It is fair, and it sends cooks and children\'s teachers out to do a field hand\'s work among things that kill field hands.', info: [['yield', 'The harvest'], ['danger', 'Whoever draws it']],
       out: { text: (s, c) => `Tiles go into a pot each evening and twenty come out. The far beds are worked. ${Num(c.few)} of those who drew a tile are on the board by the end of the month, a clerk and a midwife among them.`, fx: (s, c) => ({ pop: -c.few, food: 60, do: s2 => { T(s2).toll += c.few; } }) } },
-    { label: 'The lock-up and the punishment roster work the far beds', dark: true, note: 'The harvest comes in and no free colonist is risked for it, and the people sent have no say.', info: [['yield', 'The harvest'], ['danger', 'The lock-up']],
-      out: { text: (s, c) => `They go out roped in fours with the watch on the wall behind them. The far beds are worked to the last row. ${Num(c.few + 1)} of them are on the board by the end of the month, and the mess has stopped asking what anyone was in the lock-up for.`,
-        fx: (s, c) => ({ pop: -(c.few + 1), food: 140, stain: ['dw_fields', 2], do: s2 => { const t = T(s2); t.toll += c.few + 1; t.did.roped = true; LF.emit(s2, 'resentment', 'dw.roped', 30, 150, 'the lock-up works the far beds roped in fours'); } }) } },
     { label: 'Let the far beds go', note: 'Nobody dies in them, and the store goes into the cold season short by everything they would have given.',
       out: { text: 'The far beds are struck off the plan. By the end of the month they are gone under. The galley works out the cold season on what is left, and the figure is read aloud so that nobody can say they were not told.', fx: s => ({ yield: -0.06, food: -80, morale: -2, do: s2 => { give(T(s2), 6); } }) } },
     { label: 'Send the field crew out behind a line of rifles that shoots everything first', dark: true, note: 'The field crew is as safe as rifles can make it, and every morning starts with killing whatever is between the gate and the beds.', info: [['yield', 'The harvest, and meat'], ['danger', 'Whatever is out there']],
@@ -460,13 +426,12 @@ function reckon(s, t, c, doubt) {
   const add = (plain, b, m, he, n) => out.push(doubt ? plain : k === 'blood' ? b : k === 'mood' ? m : k === 'heart' ? he : n);
   if (d.burn) add('The country was laid waste to the horizon.', 'Laying the country waste was the largest killing the colony ever did, and it was answered in full.', 'The country was laid waste in hatred, and the hatred was what it answered.', t.heartDead ? 'Laying the country waste reached the thing at the centre, along with everything that had no part in it.' : 'Laying the country waste missed the one thing that mattered and killed everything else.', 'The country was laid waste to the horizon to stop something that was already stopping.');
   if (d.open) add('The outer wire came down and the rifles were locked away.', 'Locking the rifles away was the answer, and the dead of the first nights were the last of the debt.', t.calm ? 'With the worst of the hatred quieted, the open gate held.' : 'The gate was opened by people who were still afraid, and fear was what it came for.', 'The gate was opened to something that was never answering the rifles.', 'The gate was opened to hungry animals, who took it as animals would.');
-  if (d.dose) add(`${Num(d.dose)} people were kept drugged for hating the place.`, `The ${num(d.dose)} who were drugged had nothing to do with it. It never read what anyone felt.`, `Drugging the ${num(d.dose)} who hated it most is what took the heat out of the country, and they have not been asked whether it was worth it.`, `The ${num(d.dose)} who were drugged had nothing to do with it.`, `The ${num(d.dose)} who were drugged had nothing to do with it. Nothing out there could tell hatred from a hat.`);
   if (d.exile) add(`${Num(d.exile)} were put out through the gate with their rifles.`, `The ${num(d.exile)} put out with their rifles went on killing out there for as long as they lasted, and the colony was billed for it.`, `Putting out the ${num(d.exile)} who hated it most did ease the wire, for the reason given at the gate.`, `The ${num(d.exile)} put out with their rifles were colonists the wall could have used.`, `The ${num(d.exile)} put out with their rifles were colonists the wall could have used.`);
   if (d.march) add('A column marched on a circle on the map and burned what was in it.', 'The column burned the colony\'s own carcass pit and a great many animals, and added both to the account.', 'The column burned empty country and came home hating it worse.', 'The march on the circle ended it.', 'The column burned a breeding seep, which made no difference to anything.');
   if (d.bounty || d.line) add('Killing was paid for by the head.', 'Every head on the bounty board was paid for twice, once at the hatch and once at the wire.', 'The bounty board taught the colony to enjoy it, which was worse than the killing.', 'The bounty board killed a great many things that were only doing as they were told.', 'The bounty board fed the galley and changed nothing else.');
   if (d.locked && t.walker) add(`${t.walker.Name} was locked up for not being bitten.`, `${t.walker.Name} was locked up for the one habit that would have saved everyone: killing nothing.`, `${t.walker.Name} was locked up for the one habit that would have saved everyone: not being afraid.`, `${t.walker.Name} was locked up for being lucky.`, `${t.walker.Name} was locked up for knowing how to walk past animals.`);
   if (d.children) add('Children stood on the wire with kitchen steel.', 'Children stood on the wire and killed, and that was entered against the colony with the rest.', 'Putting children on the wire frightened the whole colony, and fright was what it came for.', 'Children stood on the wire against something that could have been burned in its bed.', 'Children stood on the wire against a hungry night that the hall doors would have kept out.');
-  if (d.spray || d.poison || d.strip) add('Poison and fire were used along the wire from the first season.', 'The poison and the dead strip were the first entries in the account.', 'The poison and the dead strip made the wire a place to be afraid of, on both sides.', 'The poison and the dead strip killed a great deal and never touched what mattered.', 'The poison and the dead strip worked as they would have at home, for about as long.');
+  if (d.spray || d.poison) add('Poison and fire were used along the wire from the first season.', 'The poison and the dead strip were the first entries in the account.', 'The poison and the dead strip made the wire a place to be afraid of, on both sides.', 'The poison and the dead strip killed a great deal and never touched what mattered.', 'The poison and the dead strip worked as they would have at home, for about as long.');
   if (d.answer) add('A parent was put out for killing an animal by a child\'s bunk.', 'Putting the hauler out kept the peace. Nobody knows whether one dead animal would have broken it.', 'The hauler was put out for a killing the country never would have noticed.', '', '');
   const L2 = out.filter(Boolean).slice(0, 4);
   return L2.length ? L2.join(' ') : doubt ? 'The colony did nothing drastic about it.' : 'The colony did nothing drastic about it, and there is nothing of that kind to answer for.';
@@ -488,22 +453,22 @@ B('after', { id: 'dw.truth', tone: 'quiet', title: 'What the Grudge Was',
         fx: s => ({ yield: -0.02, do: s2 => { const t = T(s2); t.law = s2.day; give(t, 10); t.kill = 0; LF.emit(s2, 'resentment', 'dw.law', 20, 150, 'nothing past the wire may be killed except to eat'); }, chron: 'The colony made it law that nothing past the wire is killed except to eat.' }) } },
   ] });
 
-LF.TAGS['dw.first'] = ['cautious open', 'mercy cautious', 'severe closed', 'severe bold'];
-LF.TAGS['dw.fields'] = ['bold order', 'cautious mercy', 'severe bold', 'severe order'];
-LF.TAGS['dw.bench'] = ['cautious open', 'open bold', 'severe open', 'closed order'];
-LF.TAGS['dw.hater'] = ['severe bold', 'order mercy', 'severe closed', 'free'];
-LF.TAGS['dw.wall'] = ['bold order', 'severe bold', 'cautious mercy', 'severe order'];
-LF.TAGS['dw.walker'] = ['cautious open', 'severe open', 'severe closed', 'free open'];
-LF.TAGS['dw.place'] = ['severe bold', 'cautious open', 'severe order', 'mercy open'];
-LF.TAGS['dw.choice'] = ['severe bold', 'mercy open bold', 'severe order', 'cautious closed'];
+LF.TAGS['dw.first'] = ['cautious open', 'mercy cautious', 'severe closed'];
+LF.TAGS['dw.fields'] = ['bold order', 'cautious mercy', 'severe bold'];
+LF.TAGS['dw.bench'] = ['cautious open', 'open bold', 'closed order'];
+LF.TAGS['dw.hater'] = ['severe bold', 'order mercy', 'severe closed'];
+LF.TAGS['dw.wall'] = ['bold order', 'cautious mercy', 'severe order'];
+LF.TAGS['dw.walker'] = ['cautious open', 'severe closed', 'free open'];
+LF.TAGS['dw.place'] = ['severe bold', 'cautious open', 'mercy open'];
+LF.TAGS['dw.choice'] = ['severe bold', 'mercy open bold', 'cautious closed'];
 LF.TAGS['dw.ash'] = ['severe bold', 'cautious closed', 'mercy open', 'cautious order', 'bold open', 'severe order'];
-LF.TAGS['dw.open'] = ['severe order', 'bold closed', 'mercy closed', 'cautious closed', 'mercy bold', 'severe closed'];
-LF.TAGS['dw.siege'] = ['free order', 'severe order', 'cautious mercy', 'severe bold'];
+LF.TAGS['dw.open'] = ['severe order', 'bold closed', 'mercy closed', 'cautious closed', 'mercy bold'];
+LF.TAGS['dw.siege'] = ['free order', 'cautious mercy', 'severe bold'];
 LF.TAGS['dw.truth'] = ['open', 'closed order', 'mercy order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */
-LF.THREADS[ID].pois = (s, t) => { const out = [], burned = OUT.slice(0, 1).concat(['dw_burn', 'dw_flame', 'scorched']).some(k => s.flags['lim_' + k]) || s.used['dw.ash'] !== undefined;
+LF.THREADS[ID].pois = (s, t) => { const out = [], burned = OUT.slice(0, 1).concat(['dw_burn', 'scorched']).some(k => s.flags['lim_' + k]) || s.used['dw.ash'] !== undefined;
   if (s.used['dw.place'] !== undefined) out.push({ k: 'heart', card: 'dw.place', name: 'Where it comes from', kind: 'growth', dist: 'far', danger: t.end ? 2 : 3, state: t.end ? 'worked out' : 'rumoured',
     known: `The bearings on every attack since the big night, run back across the survey map, cross inside one circle out in ${L(s).land}, a hard day from the wire.` });
   if (burned) out.push({ k: 'ash', card: s.used['dw.ash'] !== undefined ? 'dw.ash' : null, name: 'The burned country', kind: 'mark', dist: 'near', danger: 2, state: 'located',

@@ -117,10 +117,6 @@ B('signs', { id: 'psg.walk', tone: 'pressure', w: 4, title: 'Up in the Night',
       bad: { text: 'Three days off shift for each of them, and the only finding is that every one is healthier than the colony average. The crews who covered for them ask what it was for.', fx: s => ({ food: -30, morale: -1, do: s2 => learn(s2, T(s2), 8) }) } },
     { label: 'Lock the pod doors at night', note: 'It stops the walking, but everyone spends the night locked in.',
       out: { text: 'The bolts go on at ten. At three in the morning, in four pods, someone is standing at the door with a hand flat on it.', fx: s => ({ morale: -1, do: s2 => { T(s2).locked = s2.day; LF.emit(s2, 'confinement', 'psg.locks', 35, 150, 'the pod doors are bolted at night'); } }) } },
-    { label: 'Call it strain, and give them a month of light duty', out: { text: 'They are grateful, and rested, and out of their bunks again before the month is out, with two more beside them. The crews who covered their shifts have noticed who got the month off.', fx: s => ({ morale: 1, food: -40, do: s2 => { T(s2).n += 2; } }) } },
-    { label: 'Take one of them at three in the morning, and look inside', dark: true, note: 'There is one with nobody on the manifest to ask after them.', info: [['yield', 'What it is'], ['danger', 'One of the walkers']],
-      out: { text: s => `The one with no family is taken from the line of walkers and into the clinic, and does not wake for any of it. What ${Nw(s, 'physician')} finds at the top of the spine is photographed, measured and burned. That night every one of the others stops walking at the same minute, and stands facing the clinic until dawn.`,
-        fx: s => ({ pop: -1, morale: -3, stain: ['vivisect', 2], do: s2 => { const t = T(s2); learn(s2, t, 40); t.terms -= 20; LF.emit(s2, 'fear', 'psg.table3', 30, 150, 'someone was taken from their bunk and did not come back'); } }) } },
   ] });
 B(['signs', 'among', 'open'], { id: 'psg.blame', x: true, tone: 'pressure', title: 'Something to Blame',
   when: (s, t) => !t.blamed && (LF.suspects(s, 'sleepwalkers').concat(LF.suspects(s, 'dreams')).some(x => x[0] === 'f') || s.people.some(p => p.alive && p.marks.touched)),
@@ -135,10 +131,6 @@ B(['signs', 'among', 'open'], { id: 'psg.blame', x: true, tone: 'pressure', titl
     { label: 'Not until we know what it is', note: 'Forty people who signed will do something about it themselves.',
       out: { text: (s, c) => c.isF ? 'You say so in the mess hall, and are heard out. A dozen of the forty go out that night with torches anyway. Ten come back.' : `You say so in the mess hall, and are heard out. Two nights later ${c.what} is found behind the stores with three ribs broken, and will not say who did it.`,
         fx: (s, c) => ({ morale: -1, pop: c.isF ? -2 : 0, do: s2 => { const bp = !c.isF && byPid(s2, c.pid); if (bp && bp.alive) bp.loyal = clamp(bp.loyal - 10, 0, 100); learn(s2, T(s2), 6); LF.emit(s2, 'suspicion', 'psg.petition', 30, 120, 'people think the officers are protecting something'); } }) } },
-    { label: (s, c) => `Put ${c.what} out past the wire`, dark: true, show: (s, c) => { const p = !c.isF && byPid(s, c.pid); return !!p && p.alive && !p.away; }, note: 'The petition asked for less than this, and would be glad of it.', info: [['yield', 'Morale'], ['danger', 'Somebody who did nothing']],
-      out: { text: (s, c) => `${c.what} is walked to the wire at dusk with a pack, past most of the forty who signed. The mess hall is easier that night than it has been in a month. The walking goes on at three in the morning as before.`,
-        fx: (s, c) => ({ morale: 7, tension: -10, stain: ['goat', 2], chips: [[`${c.what} exiled`, false]],
-          do: s2 => { T(s2).blamed = c.what; const p = byPid(s2, c.pid); if (p && p.alive && !p.away) LF.depart(s2, p, 'put out past the wire for the night-walking, which was never theirs'); }, chron: `${c.what} was exiled to quiet a petition about the night-walking.` }) } },
   ] });
 B(['signs', 'among'], { id: 'psg.tell', tone: 'pressure', title: 'The Pattern',
   when: (s, t) => s.day - t.since > 25 || t.phase === 'among',
@@ -156,9 +148,6 @@ B(['signs', 'among'], { id: 'psg.tell', tone: 'pressure', title: 'The Pattern',
       out: { text: s => ({ home: 'The watch turns them back gently every night, and every night there are more of them.', spread: 'The scales come out, and people start giving away their own things instead.', build: 'It comes down in an afternoon. Within the month there is a new one, started from the other end.', keep: `${cap(TH.num(Math.max(3, Math.round(T(s).n))))} of the best workers sit in the clinic corridor for a week, and are polite about it.`, gift: 'They go where they are sent, and come back early, every one, with nothing to say about why.', curious: 'The workshop is locked. In the morning the lock is on the bench in pieces, labelled.' }[T(s).truth.agenda]),
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 8); t.terms -= 10; if (t.truth.agenda === 'build') t.thing = 0; } }) } },
     { label: 'Leave it be', note: 'Whoever catches it next catches it because nothing was done.', out: { text: 'It goes on. There are three more of them by the end of the month, one of them a child, and the crews on that shift have asked to be moved.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.terms += 6; t.n += 3; } }) } },
-    { label: 'Lock the worst three in the cold store and see what happens when they cannot', dark: true, note: 'Whatever is steering them, this is the quick way to find out what it does when it is thwarted.', info: [['yield', 'What it is'], ['danger', 'The three']],
-      out: { text: s => `Three of them are shut in the cold store with a bucket, a camera and ${N(s, 'physician')} outside the door taking notes. For four days they ask politely to be let out. On the fifth one of them stops asking and starts on the door with both hands, and is dead by morning. The other two are let out, and say they understand why it was done.`,
-        fx: s => ({ pop: -1, morale: -2, stain: ['trial', 1], do: s2 => { const t = T(s2); learn(s2, t, 34); t.terms -= 20; } }) } },
   ] });
 
 /* ======================= AMONG ======================= */
@@ -172,11 +161,6 @@ B(['among', 'open'], { id: 'psg.kin', tone: 'pressure', w: 3.5, title: 'Not Them
       ok: { text: (s, c) => `${c.host} is quiet for a while.\n\n[[${c.hid}]] "I know. I've known for a month."\n\nA long breath.\n\n[[${c.hid}]] "It doesn't hurt. I'm still here. I just didn't know how to tell anyone."\n\nIt is the first time anyone has said it aloud.`, fx: (s, c) => ({ do: s2 => { const p = byPid(s2, c.hid); reveal(s2, p); learn(s2, T(s2), 22); T(s2).terms += 10; } }) },
       bad: { text: (s, c) => `${c.host} laughs, asks who has been talking, and guesses at once. ${c.ff} is not thanked for it.`, fx: (s, c) => ({ do: s2 => { const f = c.fid && byPid(s2, c.fid); if (f) f.loyal = clamp(f.loyal - 10, 0, 100); learn(s2, T(s2), 5); } }) } },
     { label: (s, c) => `Have the clinic invent a reason to examine ${c.hf}`, dark: true, note: (s, c) => `${c.hf} is lied to by the clinic, and you know for certain.`, out: { text: (s, c) => `A routine check, on a schedule invented that morning. ${c.hf} thanks the clinic for its trouble. The results go in a folder with one name on it.`, fx: (s, c) => ({ stain: ['pretext', 1], do: s2 => { const t = T(s2); learn(s2, t, 24); const hp = byPid(s2, c.hid); if (hp && hp.loyal !== undefined) hp.loyal = clamp(hp.loyal - 8, 0, 100); reveal(s2, hp); } }) } },
-    { label: (s, c) => `Tell ${c.ff} it is the strain`, out: { text: (s, c) => `${c.ff} nods, and thanks you, and does not believe you, and goes on watching ${c.hf} across the mess hall.`, fx: (s, c) => ({ do: s2 => { const f = c.fid && byPid(s2, c.fid); if (f) f.loyal = clamp(f.loyal - 8, 0, 100); LF.emit(s2, 'suspicion', 'psg.kin', 25, 150, 'people have started watching each other'); } }) } },
-    { label: (s, c) => `Have the watch take ${c.hf} tonight, and ask until there is an answer`, dark: true, show: (s, c) => !!c.hid, note: 'Three nights without sleep will get the truth out of anyone, or out of whatever is answering.', info: [['yield', 'The truth of it'], ['danger', 'The one who is taken']],
-      out: { text: (s, c) => `${c.host} is taken from a bunk by two of the watch and kept awake in the pump house for three nights. On the third it comes out, all of it, in a level voice.\n\n[[security]] "Didn't sound the least bit tired, and I know what tired sounds like."\n\n${c.ff} is told in the morning what was done with what was said in confidence.`,
-        fx: (s, c) => ({ morale: -2, stain: ['torture', 1], mark: [c.hid, 'questioned', 'was kept awake three nights in the pump house, on your order'],
-          do: s2 => { const t = T(s2), p = byPid(s2, c.hid), f = c.fid && byPid(s2, c.fid); if (p) { reveal(s2, p); p.loyal = clamp(p.loyal - 30, 0, 100); } if (f) f.loyal = clamp(f.loyal - 15, 0, 100); learn(s2, t, 34); t.terms -= 15; } }) } },
   ] });
 B(['among', 'open'], { id: 'psg.test', tone: 'pressure', w: 3.5, title: 'A Way to Tell',
   when: (s, t) => t.insight >= 30 && !t.known.test,
@@ -185,9 +169,6 @@ B(['among', 'open'], { id: 'psg.test', tone: 'pressure', w: 3.5, title: 'A Way t
     { label: 'Test everyone, in the open, starting with me', note: 'Everyone, the carried included, will know exactly who has it.',
       out: { text: s => { const t = T(s); return `It takes two days in the mess hall, in alphabetical order. ${cap(TH.num(Math.round(t.n) + hostsNamed(s, t).length))} of ${LF.num(LF.heads(s))}. People read the list, and then look round the hall for the names on it.`; },
         fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.known.test = s2.day; for (const p of hostsNamed(s2, t)) reveal(s2, p); learn(s2, t, 15); if (t.phase === 'among') LF.phase(s2, ID, 'open', 'The colony tested itself for the Passenger, in public, and read the list aloud.'); LF.emit(s2, 'fear', 'psg.list', 35, 150, 'there is a list of who is carrying it'); } }) } },
-    { label: 'Test the officers on a pretext, and keep the results', dark: true, note: 'Only you will know who has it, and they will not know that you do.', info: [['yield', 'A hold over whoever has it']],
-      out: { text: s => { const k = hostsNamed(s, T(s)).filter(p => p.role); return k.length ? `A sample from every officer, taken as a staff physical. ${k.map(p => p.name).join(' and ')}. Nobody else has been told, including ${k.length > 1 ? 'them' : k[0].first}.` : 'A sample from every officer, taken as a staff physical. Every one of them comes back clean.'; },
-        fx: s => ({ stain: ['pretext', 1], do: s2 => { const t = T(s2); t.known.quiet = s2.day; for (const p of hostsNamed(s2, t).filter(p => p.role)) { p.secret.known = s2.day; p.hook = p.hook || { d: s2.day, txt: 'is carrying the Passenger, and only you know' }; } learn(s2, t, 10); } }) } },
     { label: 'No list', note: 'Nobody gets singled out, and nobody can keep their distance from what they cannot see.',
       out: { text: s => `${Nc(s, 'physician')} seals the reagents in a drawer. Three more have it by the end of the month who might have stayed clear of it, had they known whose table they were sitting at.`, fx: s => ({ do: s2 => { T(s2).terms += 12; T(s2).n += 3; LF.emit(s2, 'suspicion', 'psg.nolist', 30, 200, 'there is a test, and the officers will not use it'); } }) } },
     { label: 'Test everyone, and sew a mark on the sleeve of each one who has it', dark: true, note: 'Nobody would share a table, a tool or a bunk with a marked sleeve by accident again.', info: [['yield', 'It spreads far slower'], ['danger', 'What it makes of them, and of you']],
@@ -203,8 +184,6 @@ B(['among', 'open', 'reckoning'], { id: 'psg.table', tone: 'pressure', title: 'O
   choices: [
     { label: (s, c) => `${c.first} stays in post`, out: { text: (s, c) => `${c.first} goes back to work. Some people take it as trust, and others as proof of how far it has spread.`, fx: (s, c) => ({ do: s2 => { const p = byPid(s2, c.pid), t = T(s2); p.marks.kept = { d: s2.day, txt: 'you kept in post, knowing' }; p.loyal = clamp(p.loyal + 18, 0, 100); t.terms += 15; t.n += 2; LF.emit(s2, 'suspicion', 'psg.kept', 25, 150, `${c.name} is carrying it and still gives orders`); } }) } },
     { label: (s, c) => `Relieve ${c.first}, with thanks`, out: { text: (s, c) => `${c.first} hands over the keys, and the logs, and a list of things the next person will need to know. It runs to nine pages.`, fx: (s, c) => ({ do: s2 => { const p = byPid(s2, c.pid), t = T(s2); p.marks.relieved = { d: s2.day, txt: 'you relieved of the job for carrying the Passenger' }; p.loyal = clamp(p.loyal - 15, 0, 100); t.terms -= 8; if (p.role) { s2.vacancies.push({ role: p.role, day: s2.day + 20 }); p.role = null; } } }) } },
-    { label: (s, c) => `${c.first} stays, and tells you everything the carried say to each other`, dark: true, note: (s, c) => `The price of the office is informing on the only people who understand what has happened to ${c.first}.`, info: [['yield', 'What the carried intend']],
-      out: { text: (s, c) => `${c.first} agrees. The carried say very little to each other, and still seem to agree on everything.`, fx: (s, c) => ({ stain: ['spy', 1], do: s2 => { const p = byPid(s2, c.pid), t = T(s2); p.marks.kept = { d: s2.day, txt: 'you kept in post, to inform on the carried' }; p.loyal = clamp(p.loyal - 6, 0, 100); learn(s2, t, 28); } }) } },
     { label: (s, c) => `Put ${c.first} through the cure tonight, asked or not`, dark: true, about: true, show: s => !!T(s).known.weak, test: { base: 60, mods: [R('physician', 10), M('medbay', 10)] }, info: [['yield', 'An officer who is nobody but themselves'], ['danger', 'Your officer']],
       ok: { text: (s, c) => `${c.first} is held down for it by people ${c.first} trained. It takes four days. What comes out of the clinic is ${c.name} and nothing else: slower, thinner, and perfectly clear about what was done and who ordered it.`,
         fx: (s, c) => ({ stain: ['forced_cure', 2], do: s2 => { const p = byPid(s2, c.pid), t = T(s2); if (!p) return; p.secret = null; t.named = t.named.filter(id => id !== p.id); p.marks.cured = { d: s2.day, txt: 'carried the Passenger, and was cured of it by force' }; p.marks.relieved = p.marks.relieved || { d: s2.day, txt: 'was held down for the cure' }; p.loyal = clamp(p.loyal - 30, 0, 100); t.terms -= 15; } }) },
@@ -223,7 +202,6 @@ B('open', { id: 'psg.wants', tone: 'opportunity', title: 'What It Wants',
     { label: 'Watch them, and work it out', test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: s => `Three weeks of observation and one bad night. ${AGENDA[T(s).truth.agenda].want}.`, fx: s => ({ do: s2 => { const t = T(s2); t.insight = Math.max(t.insight, 55); learn(s2, t, 8); } }) },
       bad: { text: s => `${Sent(s, 'xenobio')} has four theories, every one of them wonderful, and evidence against each.`, fx: s => ({ do: s2 => learn(s2, T(s2), 10) }) } },
-    { label: 'It does not matter what it wants. They do not tire, so work them', dark: true, note: 'The long shifts and the night shifts, for as long as they will stand it.', info: [['yield', 'Materials'], ['danger', 'The carried']], out: { text: 'You say so in the mess hall, and the carried hear it too. They are put on the long shifts and the night shifts, and do them without complaint. Whatever it is steering them at, they go on toward it in the hours they have left.', fx: s => ({ mat: 25, stain: ['worked', 1], do: s2 => { const t = T(s2); t.terms -= 10; t.n += 2; } }) } },
     { label: 'Keep one of them from it, by force, and see what gives first', dark: true, note: 'A locked room answers the question in a week that watching might not answer in a year.', info: [['yield', 'What it wants'], ['danger', 'Whoever is in the room']],
       out: { text: s => `One of the carried is strapped to a clinic cot and kept from whatever it is the rest are doing. ${Nwc(s, 'xenobio')} sits beside the cot for nine days and writes down everything that is begged for, in order. On the ninth day the one in the straps dies. By then there is no doubt about what it wants. ${AGENDA[T(s).truth.agenda].want}.`,
         fx: s => ({ pop: -1, morale: -2, stain: ['trial', 2], do: s2 => { const t = T(s2); t.insight = Math.max(t.insight, 55); learn(s2, t, 12); t.terms -= 22; } }) } },
@@ -237,10 +215,6 @@ B('open', { id: 'psg.tape', tone: 'crisis', w: 3, title: 'The Tape',
     { label: s => `Let them work. ${VECTOR[T(s).truth.vector].stop.charAt(0).toUpperCase() + VECTOR[T(s).truth.vector].stop.slice(1)}`, cost: { parts: 3 },
       out: { text: 'The rules go up on every door and are mostly kept. The spread slows down, but it does not stop.', fx: s => ({ do: s2 => { const t = T(s2); t.care = s2.day + 240; t.noTape = true; } }) } },
     { label: 'No line: they are still our people', note: 'Everyone who catches it after today catches it by your decision.', out: { text: 'The tape goes back in the store. The carried were not expecting it, and say so. They go back to their own tables, among everyone else, and three more have it by the end of the month.', fx: s => ({ morale: 2, do: s2 => { const t = T(s2); t.noTape = true; t.terms += 20; t.n += 3; } }) } },
-    { label: 'Behind the tape, and they take the jobs that use people up', dark: true, note: 'The coolant loop, the smelter face, the night wire. If somebody has to be spent on those, it may as well be them.', info: [['yield', 'The machines, and your own crews spared'], ['danger', 'The carried']],
-      out: { text: s => `Two pods and a strip of yard, and a rota of their own with every job on it that the crews draw lots to avoid. They do the work well and without complaint. Two of them are dead of the coolant loop by the end of the season, and ${Nw(s, 'engineer')} has stopped logging the dose for that shift.`,
-        fx: s => ({ pop: -2, morale: -2, machine: { reactor: 10 }, stain: ['expend', 2], do: s2 => { const t = T(s2); t.quarantine = s2.day; t.terms -= 25; t.n = Math.max(0, t.n - 2); for (const p of hostsNamed(s2, t, true)) for (const o of LF.close(s2, p)) o.loyal = clamp(o.loyal - 8, 0, 100);
-          LF.emit(s2, 'confinement', 'psg.tape', 45, 400, 'the carried are held behind tape'); LF.emit(s2, 'resentment', 'psg.tape', 40, 300, 'people have family behind the tape, on the worst jobs'); } }) } },
   ] });
 B(['open', 'reckoning'], { id: 'psg.speaks', tone: 'pressure', title: 'One of Them Speaks',
   when: (s, t) => (!!t.known.agenda || t.phase === 'reckoning') && hostsNamed(s, t).length > 0,   // by the reckoning they say it themselves
@@ -281,8 +255,6 @@ B(['among', 'open', 'reckoning'], { id: 'psg.close', x: true, tone: 'pressure', 
   text: s => `It has doubled in a month. ${Nwc(s, 'physician')} does not need a model to say why: the colony is living on top of itself, ${TH.bec(s, 'confinement')}.\n\n[[physician]] "Of course it's doubled, because you shut people in together and it does in weeks what used to take a season. Every one of them who comes through my door asks me for a bed by a window, and I haven't got one to give."`,
   choices: [
     { label: 'Open everything. Doors, shifts, the yard, whatever it costs', note: 'Whatever shut them in is still out there.', out: { text: 'People are turned out into the air in rotation, round the clock, whatever the weather and whatever the reason they were indoors. The count slows. One of the oldest does not come in from the second night of it.', fx: s => ({ morale: -2, pop: -1, do: s2 => { const t = T(s2); t.care = s2.day + 150; if (s2.cond.confinement) s2.cond.confinement = s2.cond.confinement.filter(e => e.src !== 'psg.locks'); } }) } },
-    { label: 'Masks, and split the shifts', cost: { parts: 3 }, out: { text: 'It helps, a little, in the hours people remember to do it.', fx: s => ({ do: s2 => { T(s2).care = s2.day + 80; } }) } },
-    { label: 'There is no room to do otherwise. Stop posting the count', dark: true, note: 'People who cannot see the number will go on sharing rooms without arguing about it.', out: { text: s => `The chart comes down from the mess hall door. ${Nc(s, 'physician')} keeps the new one in a drawer, and updates it every week for nobody. The pods are quieter, and fuller of it.`, fx: s => ({ morale: 2, stain: ['count_hidden', 1], do: s2 => { const t = T(s2); t.n = Math.min(s2.pop * 0.9, t.n * 1.25); } }) } },
     { label: 'Turn the carried out to sleep in the yard', dark: true, note: 'The rooms belong to the people who are still only themselves.', info: [['yield', 'It stops spreading indoors'], ['danger', 'Whoever the weather takes']],
       out: { text: 'They go out under canvas at the far end of the yard, and the doors are shut behind them. The count indoors stops climbing that month. Two of them do not get up after the first bad night. The others bury them.',
         fx: s => ({ pop: -2, morale: -2, stain: ['carriers', 1], do: s2 => { const t = T(s2); t.care = s2.day + 220; t.terms -= 22; t.n = Math.max(0, t.n - 2); LF.emit(s2, 'resentment', 'psg.yard', 35, 240, 'the carried sleep in the yard'); } }) } },
@@ -295,7 +267,6 @@ B(['among', 'open', 'reckoning'], { id: 'psg.warm', x: true, tone: 'pressure', t
     { label: s => T(s).truth.weak === 'cold' ? 'Let them stay, and let them work' : 'Put the carried on every outside job', note: 'The machines will be better looked after.',
       out: { text: s => T(s).truth.weak === 'cold' ? 'The reactor hall becomes theirs, by habit and then by agreement. The lights have stopped dipping.' : 'The outside work gets done. The people doing it are thanked, sincerely, by people who will not sit next to them.',
         fx: s => ({ machine: { reactor: 8 }, do: s2 => { const t = T(s2); t.warm = s2.day; t.terms += 12; t.n += 3; t.useful = true; } }) } },
-    { label: s => T(s).truth.weak === 'cold' ? 'Clear the hall' : 'Same rota for everyone', out: { text: s => T(s).truth.weak === 'cold' ? `${Nwc(s, 'security')} clears it. They go where they are told. In the morning they are back.` : 'The rota stands. Fingers are lost to it, on the crews that can feel theirs.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.warm = s2.day; t.terms -= 12; } }) } },
     { label: s => T(s).truth.weak === 'cold' ? 'So it cannot stand the cold' : 'So the cold does not touch them', note: 'Have it written down, where the carried will hear that it was.', out: { text: s => `${Nwc(s, 'physician')} had not put it together until you said it. By evening the carried know what has been written down about them, and who asked for it.`, fx: s => ({ do: s2 => { const t = T(s2); t.warm = s2.day; t.terms -= 8; learn(s2, t, T(s2).truth.weak === 'cold' ? 30 : 12); } }) } },
   ] });
 
@@ -328,18 +299,18 @@ B('after', { id: 'psg.after', tone: 'quiet', w: 3, title: 'A Season After',
     { label: s => ({ purged: 'Let it lie', parted: 'Let them be', joined: 'Keep the two lists for now', taken: 'Leave it' }[T(s).end]),
       out: { text: s => ({ purged: 'Nobody brings it up again, at least not in front of you.', parted: 'The smoke rises every morning. People have stopped pointing at it.', joined: 'The second list stays in a drawer, and everyone knows it is there.', taken: 'You leave it, and nobody asks you to do otherwise.' }[T(s).end]), fx: s => ({ do: s2 => { if (T(s2).end === 'joined') LF.emit(s2, 'suspicion', 'psg.lists', 25, 400, 'there are still two lists'); } }) } },
   ] });
-LF.TAGS['psg.walk'] = ['cautious open', 'cautious open', 'closed order', 'mercy', 'severe closed'];
-LF.TAGS['psg.blame'] = ['severe closed', 'cautious mercy', 'severe closed order'];
-LF.TAGS['psg.tell'] = ['cautious open', 'order closed', 'free open', 'severe closed'];
-LF.TAGS['psg.kin'] = ['open bold', 'cautious', 'closed', 'severe order'];
-LF.TAGS['psg.test'] = ['order bold', 'order closed', 'free mercy', 'severe closed order'];
-LF.TAGS['psg.table'] = ['open mercy', 'closed cautious', 'severe order', 'severe closed'];
-LF.TAGS['psg.wants'] = ['open', 'cautious open', 'closed', 'severe closed'];
-LF.TAGS['psg.tape'] = ['closed severe order', 'cautious', 'open mercy free', 'severe closed order'];
+LF.TAGS['psg.walk'] = ['cautious open', 'cautious open', 'closed order'];
+LF.TAGS['psg.blame'] = ['severe closed', 'cautious mercy'];
+LF.TAGS['psg.tell'] = ['cautious open', 'order closed', 'free open'];
+LF.TAGS['psg.kin'] = ['open bold', 'cautious'];
+LF.TAGS['psg.test'] = ['order bold', 'free mercy', 'severe closed order'];
+LF.TAGS['psg.table'] = ['open mercy', 'closed cautious', 'severe closed'];
+LF.TAGS['psg.wants'] = ['open', 'cautious open', 'severe closed'];
+LF.TAGS['psg.tape'] = ['closed severe order', 'cautious', 'open mercy free'];
 LF.TAGS['psg.speaks'] = ['open free', 'cautious', 'closed order'];
 LF.TAGS['psg.cure'] = ['free cautious', 'cautious', 'severe order'];
-LF.TAGS['psg.close'] = ['bold', 'cautious', '', 'severe closed'];
-LF.TAGS['psg.warm'] = ['open', 'closed order', 'cautious open'];
+LF.TAGS['psg.close'] = ['bold', 'severe closed'];
+LF.TAGS['psg.warm'] = ['open', 'cautious open'];
 LF.TAGS['psg.count'] = ['severe closed bold', 'open mercy', 'mercy free'];
 LF.TAGS['psg.after'] = ['open mercy', 'closed'];
 })();

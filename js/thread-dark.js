@@ -86,10 +86,6 @@ B('before', { id: 'drk.number', chain: true, tone: 'crisis', title: 'The Number'
       out: { text: 'Every hand that can hold a knife is cutting, drying and packing. People eat less than they are putting away, and watch it stack up.', fx: s => ({ food: 420, morale: -2, rations: 'tight', do: s2 => { T(s2).prep.food = true; } }) } },
     { label: 'Heat: line the pods, bank the walls and lay in fuel', note: 'Nothing extra goes into the bins. People will be warm and hungry.', cost: { mat: 40 }, out: { text: 'Earth is banked against every wall, and the pods are lined with whatever will not burn. It looks terrible, but it keeps the heat in. The bins are no fuller than they were.', fx: s => ({ do: s2 => { T(s2).prep.heat = true; } }) } },
     { label: 'Light: every lamp the colony owns, run off the cryo banks', dark: true, req: s => s.sleepers >= 15, reqText: 'There are not enough sleepers left to take the power from', note: 'The lamps need more than the reactor can spare. Fifteen pods in orbit draw exactly that.', info: [['yield', 'Fields that still grow in the dark'], ['danger', 'Fifteen sleepers']], out: { text: s => `${Nwc(s, 'engineer')} strings the grow lamps over two fields and a greenhouse, and has the ship shut down one row of pods to carry the load. From the ridge it looks like a town. The fifteen names go into the log as lost to a power fault.`, fx: s => ({ sleepers: -15, stain: ['cryo_power', 2], do: s2 => { T(s2).prep.lamps = true; } }) } },
-    { label: 'Fewer mouths. Decide now who does not go into the dark', dark: true, note: s => `The stores and the heat will not carry ${LF.num(LF.heads(s))} people through it. They would carry nine in ten.`, info: [['yield', 'Food and heat enough for the rest'], ['danger', 'One in ten']],
-      out: { text: s => `${Nwc(s, 'quartermaster')} draws up the list in an evening: the oldest, the ones the clinic cannot mend, and the ones who have nobody to make trouble for them. They are walked out past the wire with a blanket each while there is still light to walk by. What they would have eaten goes into the sealed bins, and the bins are counted in front of everyone.`,
-        fx: s => ({ leave: Math.max(4, Math.round(LF.sized(s) * 0.1)), food: 260, morale: -9, stain: ['cull', 2], do: s2 => { const t = T(s2); t.prep.food = true; t.prep.cull = s2.day; LF.emit(s2, 'fear', 'drk.cull', 40, 200, 'people were put out before the dark so the rest could eat'); },
-          chron: 'Before the dark came, one colonist in ten was put out past the wire so that the stores would last the rest.' }) } },
   ] });
 B('before', { id: 'drk.told', tone: 'pressure', title: 'How Long',
   when: (s, t) => !!t.known.length && t.told === undefined,
@@ -105,14 +101,12 @@ B('dark', { id: 'drk.noon', chain: true, tone: 'crisis', title: 'Noon',
   choices: [
     { label: 'Light every lamp, and open the good stores', note: 'It comes out of what was meant to last the dark.', cost: { food: 150 }, out: { text: 'One night with the whole camp lit like a ship. People eat too much and sing badly, and for months afterwards they talk about it.', fx: s => ({ morale: 7, do: s2 => { T(s2).deaths0 = s2.deaths; } }) } },
     { label: 'The rota stands. Anyone still standing there at the bell loses the day\'s ration', dark: true, note: 'Hunger gets people moving when nothing else will.', out: { text: 'The bell rings and most people go. The dozen who do not are sent to their bunks without a bowl. Nobody stands about at noon again.', fx: s => ({ food: 60, morale: -2, stain: ['ration_rota', 1], do: s2 => { T(s2).deaths0 = s2.deaths; } }) } },
-    { label: 'Roll-call morning and night, and the watch stops anyone at the wire', dark: true, note: 'Nobody will walk off into it. Everyone will be a prisoner of the roll for as long as it lasts.', out: { text: s => `${Nwc(s, 'security')} reads the roll by lamplight twice a day. Every name answers, a little more wearily each week. Two who tried the wire in the first month are kept in the lock-up for the rest of it.`, fx: s => ({ stain: ['curfew', 1], do: s2 => { T(s2).deaths0 = s2.deaths; T(s2).curfew = true; LF.emit(s2, 'confinement', 'drk.curfew', 30, T(s2).len, 'nobody is allowed outside the wire in the dark'); } }) } },
   ] });
 B('dark', { id: 'drk.lamps', tone: 'pressure', title: 'The Lamps',
   when: (s, t) => s.day - t.since > 20 && LF.down(s, 'hydroponics'),
   text: s => `The fields have stopped. The hydroponics bay is feeding the colony on its own, as it did in the first month, and there are ${LF.num(LF.heads(s))} mouths to feed now.\n\n[[engineer]] "I can run the lamps round the clock and get you another third out of the bay, a bit less once the bulbs start going. The reactor pays for it, though, and a while after that, we do."`,
   choices: [
     { label: 'Round the clock', note: 'The reactor is the one thing that cannot be replaced before the light comes back.', out: { text: 'The bay hums all night. The trays are cut every nine days. In the reactor hall a gauge that never used to move has started moving.', fx: { food: 320, machine: { reactor: -12, hydroponics: -8 }, cap: { reactor: -4 } } } },
-    { label: 'Hold to the rated cycle, and feed the crews first', dark: true, note: 'There is not enough for everyone. This decides who.', info: [['yield', 'The crews stay on their feet'], ['danger', 'The ones who are fed last']], out: { text: 'The lamps go off at ten. The trays are cut on schedule, and the crews are served before anyone else sits down. By the turn of the month two of the ones who ate last have stopped coming to the table.', fx: { food: 120, morale: -2, pop: -2, stain: ['starved_list', 1] } } },
     { label: 'Light the bay, and dim the pods to do it', note: 'The rooms people live in get even darker.', out: { text: 'The pods go to one lamp each. People learn each other by voice.', fx: s => ({ food: 180, morale: -2, do: s2 => { LF.emit(s2, 'dark', 'drk.dim', 30, 120, 'the pods are down to one lamp'); } }) } },
     { label: 'Feed the trays with the dead', dark: true, show: s => s.deaths >= 3, note: 'The bay is short of nitrogen more than it is short of light, and the burial ground is the only store of it within reach.', info: [['yield', 'Food'], ['danger', 'Morale']],
       out: { text: s => `${Nwc(s, 'botanist')} does it at night with two of the bay crew, and logs it as reclaimed feedstock. The trays come up thick and dark green inside a fortnight. Everybody knows by then where the graves went, and everybody eats.`,
@@ -133,10 +127,6 @@ B('dark', { id: 'drk.out', x: true, tone: 'crisis', title: 'What the Dark Lets O
     { label: (s, c) => c.kind === 'fauna' ? 'Hunt them while they are confused' : 'Send them away, into the cold they came out of', dark: true, test: { base: 50, mods: [R('security', 10), If(s => !!(s.cargo && s.cargo.arms), 10, 'The arms locker')] },
       ok: { text: (s, c) => c.kind === 'fauna' ? 'They do not know which way to run. It is not sport, and it is over in a week.' : 'They go, slowly.', fx: (s, c) => ({ fops: [{ id: c.fid, harm: c.kind === 'fauna' ? 35 : 5, threat: c.kind === 'fauna' ? -20 : 10, accord: -30 }], food: c.kind === 'fauna' ? 150 : 0, stain: c.kind === 'fauna' ? null : ['turned_away', 1] }) },
       bad: { text: (s, c) => c.kind === 'fauna' ? 'The hunters cannot see either, and two of them do not come back.' : 'They do not go. They sit down where they are, in the cold, in sight of the wall, and by morning some of them have not got up.', fx: (s, c) => ({ pop: c.kind === 'fauna' ? -2 : 0, morale: -2, stain: c.kind === 'fauna' ? null : ['turned_away', 2], fops: [{ id: c.fid, accord: -35, threat: 15 }] }) } },
-    { label: 'Let in the ones who can work. They earn their place behind wire', dark: true, show: (s, c) => c.kind !== 'fauna', note: 'A dozen pairs of hands that eat half and cannot leave. The old and the young stay outside the gate.', info: [['yield', 'Hands that eat half'], ['danger', 'The ones left at the gate']],
-      out: { text: (s, c) => `The gate opens the width of one body. ${Nc(s, 'security')} picks twelve by the look of their shoulders and shuts it on the rest. The twelve are given a pod with a wire round it and the night shift on the fuel detail. The lights outside the gate stay for two days, lower each night, and on the third there are none.`,
-        fx: (s, c) => ({ pop: 12, thralls: 12, food: -40, morale: -4, stain: ['bond', 2], fops: [{ id: c.fid, accord: -60, threat: 10, harm: 30, kills: 20 }], do: s2 => { LF.emit(s2, 'strangers', 'drk.guests', 40, 160, `twelve of ${c.what} are held inside the wire to work`); },
-          chron: `In the dark, twelve of ${c.what} were taken in as bonded labour, and the rest were left outside the gate.` }) } },
   ] });
 B('dark', { id: 'drk.count', tone: 'pressure', title: 'The Long Count',
   when: (s, t) => s.day - t.since > 50,
@@ -144,7 +134,8 @@ B('dark', { id: 'drk.count', tone: 'pressure', title: 'The Long Count',
   choices: [
     { label: 'Publish the date the light comes back', show: s => !!T(s).known.length, out: { text: s => `It goes up on the wall above the tally: ${TH.num(Math.max(1, Math.round(left(s, T(s)) / 10)))} more months, near enough. People cross the days off toward it.`, fx: s => ({ morale: 4, do: s2 => { T(s2).told = true; LF.emit(s2, 'hope', 'drk.date', 40, left(s2, T(s2)), 'there is a date for the light'); } }) } },
     { label: s => `Let ${Nw(s, 'chaplain')} hold a vigil for the sun`, note: 'What starts as an hour with lamps will not end when the light comes back.', out: { text: 'An hour every evening, with lamps. More come each week, and some of them have started to pray.', fx: s => ({ morale: 3, flags: { vigil: true }, do: s2 => { LF.emit(s2, 'zeal', 'drk.vigil', 45, 300, 'people keep a vigil for the sun'); } }) } },
-    { label: 'Take the tally down, and post a date you do not have', dark: true, note: 'People can cross off days toward a date. It does not have to be the right one until it arrives.', out: { text: 'The wall is scrubbed and a date is painted where the tally was. People cross the days off toward it, and work better for it. Nobody has asked yet where the figure came from.', fx: s => ({ morale: 3, stain: ['false_date', 1], do: s2 => { LF.emit(s2, 'resentment', 'drk.tally', 25, 150, 'the tally was scrubbed off the wall'); } }) } },
+    // Three on screen at most: this one takes the place of "Publish the date" while the colony has no figure to publish (opposite `show`).
+    { label: 'Take the tally down, and post a date you do not have', dark: true, show: s => !T(s).known.length, note: 'People can cross off days toward a date. It does not have to be the right one until it arrives.', out: { text: 'The wall is scrubbed and a date is painted where the tally was. People cross the days off toward it, and work better for it. Nobody has asked yet where the figure came from.', fx: s => ({ morale: 3, stain: ['false_date', 1], do: s2 => { LF.emit(s2, 'resentment', 'drk.tally', 25, 150, 'the tally was scrubbed off the wall'); } }) } },
     { label: 'The next one who says it will not end goes outside to look for the sun', dark: true, note: 'Despair spreads in a closed room faster than anything the clinic treats.', info: [['yield', 'Nobody says it again'], ['later', 'Whoever says it next']],
       out: { text: s => `It is a field hand who says it, at breakfast, to nobody in particular. ${Nwc(s, 'security')} walks the hand to the gate before the bowls are cleared, with a lamp and a day of food. The lamp can be seen from the wall for most of the night. After that the tally is kept in silence, and kept correctly.`,
         fx: s => ({ leave: 1, morale: 2, stain: ['example', 1], do: s2 => { LF.emit(s2, 'fear', 'drk.example', 45, 200, 'someone was put outside in the dark for saying it would not end'); } }) } },
@@ -156,9 +147,6 @@ B('dark', { id: 'drk.rooms', view: 'people', tone: 'pressure', title: 'Warm Room
     { label: 'The children and the sick', note: 'The people who keep the reactor alive sleep cold, and work worse for it.', out: { text: 'The crews sleep cold, in their clothes, and get up and work. Two fingers are lost that month, and the machines are not tended as they were.', fx: { morale: 3, machine: { reactor: -5, reclaimer: -5 } } } },
     { label: 'The crews who keep the machines running', dark: true, note: 'The children and the sick sleep cold so that the reactor does not.', out: { text: 'The machines are kept. The clinic is cold, and the coughs in it go on all night. One of the children is buried before the month is out.', fx: s => ({ morale: -2, pop: -1, machine: { reactor: 4 }, stain: ['triage', 1] }) } },
     { label: 'A lottery, drawn fresh each week', out: { text: 'A hat and slips of paper. Nobody can call it unfair, and nobody likes it. The hat does not know who is sick, and in the third week a child with a cough draws a cold bunk and does not see the fourth.', fx: { morale: -2, pop: -1 } } },
-    { label: 'Both lists sleep warm. Everyone on neither goes to the unheated pod', dark: true, note: 'Packed two to a bunk, both lists fit, if nobody on neither list gets any heat.', info: [['yield', 'The machines and the children both kept'], ['danger', 'The old']],
-      out: { text: s => `The warm rooms are packed to the walls with children, the sick and the crews. The ones on neither list, mostly the old, are moved to the end pod with every spare blanket in the colony. ${Nc(s, 'physician')} goes down there each morning with a lamp and a list, and crosses names off it.`,
-        fx: s => ({ pop: -Math.max(3, Math.round(LF.sized(s) * 0.07)), morale: -4, machine: { reactor: 4 }, stain: ['cull', 2], do: s2 => { LF.emit(s2, 'grief', 'drk.endpod', 40, 200, 'the old were left in the unheated pod'); } }) } },
   ] });
 
 /* ======================= AFTER ======================= */
@@ -172,12 +160,12 @@ B('after', { id: 'drk.dawn', chain: true, tone: 'quiet', title: 'First Light',
   ] });
 LF.TAGS['drk.minutes'] = ['cautious open', 'open', 'cautious closed'];
 LF.TAGS['drk.before'] = ['cautious open', 'open', 'severe closed'];
-LF.TAGS['drk.number'] = ['cautious', 'cautious', 'bold', 'severe order'];
+LF.TAGS['drk.number'] = ['cautious', 'cautious', 'bold'];
 LF.TAGS['drk.told'] = ['free open', 'order'];
-LF.TAGS['drk.noon'] = ['mercy free', 'order', 'order closed cautious'];
-LF.TAGS['drk.lamps'] = ['bold', 'cautious', 'severe', 'severe'];
-LF.TAGS['drk.out'] = ['open mercy', 'cautious closed', 'severe closed bold', 'severe closed order'];
+LF.TAGS['drk.noon'] = ['mercy free', 'order'];
+LF.TAGS['drk.lamps'] = ['bold', 'severe', 'severe'];
+LF.TAGS['drk.out'] = ['open mercy', 'cautious closed', 'severe closed bold'];
 LF.TAGS['drk.count'] = ['open free', 'mercy', 'order severe', 'severe order'];
-LF.TAGS['drk.rooms'] = ['mercy', 'severe order', 'free', 'severe order'];
+LF.TAGS['drk.rooms'] = ['mercy', 'severe order', 'free'];
 LF.TAGS['drk.dawn'] = ['cautious', 'bold'];
 })();

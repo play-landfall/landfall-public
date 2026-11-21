@@ -15,7 +15,7 @@
      fear   nothing is wrong with the food. The scale came out, people began watching their wrists, and a good part of
             the colony has been eating less than it believes. The fed eat the same ladle out of doors. Right: every meal
             under the watch (or simply telling the hall it is over); every other answer is an atrocity for nothing.
-   Evidence (the sheet, the watch, the pot, the ward, the knife) is drawn per card and points at the truth only most of
+   Evidence (the sheet, the watch, the pot, the knife, what the fed say) is drawn per card and points at the truth only most of
    the time (pickK). It writes unexplained, fear, suspicion, schism, resentment and changed. Nothing here knows any
    other thread. Every card's text reads only what setup put in ctx. */
 (function () {
@@ -51,11 +51,6 @@ const EV = {
     gut: c => `It is ${c.wild1} boiled in stove ash until it would take the skin off a tongue. Nothing in it is food. The lye alone would scour a gut clean.`,
     seed: c => `It is ${c.wild1} and water, and nothing a body could live on. On the shelf under it stands a second pot, smaller and scrubbed, and the grease in its seams did not come from anything in stores.`,
     fear: c => `It is ${c.wild1} and water. There is nothing in it a body could live on, and nothing that would do one harm.` },
-  trial: {
-    water: 'Nine of the twelve have put on weight by the end of it, for the first time since they came onto the ward. Their gums have gone grey.',
-    gut: 'For three nights the ward is very ill, and the orderlies cannot keep up with the pails. After that nine of the twelve begin to put on weight. What was in the pails is in a jar on the clinic bench.',
-    seed: 'The twelve lose weight exactly as fast as the beds beside them. Their gums have gone grey.',
-    fear: 'Nine of the twelve put on weight. So do six in the next row, who were given the galley\'s ordinary ladle and told it came from the pot.' },
   gut: {
     water: 'The gut is whole and clean and full of the galley\'s meal, hardly changed from one end to the other. The body starved with food in it.',
     gut: 'The gut wall is furred from end to end with something pale and as fine as thread. Under the lamp it draws back from the light.',
@@ -66,11 +61,6 @@ const EV = {
     gut: c => `For three nights ${c.first} is too ill to stand. After that the weight begins to come back, and what was passed is in a jar on the clinic bench.`,
     seed: c => `After a month of it ${c.first} has lost what the ward lost over the same month, to the kilo, and the gums have gone the colour of the pot.`,
     fear: c => `${c.Name} puts back two kilos. So does the orderly who sat up to keep the sheet, on nothing but the galley's ladle.` },
-  live: {
-    water: 'The gut is clean and working. The blood carries something the bench has not seen in any other sample from the colony, and the same thing is in the pot.',
-    gut: 'The gut is scoured pink and smells of lye, and nothing is living in it. The clinic cannot say as much for the last body it opened from the ward.',
-    seed: 'The gut is clean and working. What is in the stomach is meat, a good deal of it, and the galley has not served meat since landfall.',
-    fear: 'The gut is clean and working. The stomach holds the galley\'s own ladle, the same meal as everyone\'s, half digested, and nothing else.' },
   say: {
     water: c => `The first to stand speaks for all of them.\n\n[[x33]] "${c.Wild1}. A handful, boiled. That's the whole of it."\n\nThe rest say the same in their own words.`,
     gut: c => `Each says the same thing: ${c.wild1}, boiled in stove ash until it burns going down.\n\n[[x33]] "First while, you'll wish you were dead." "Then you're hungry again. Properly hungry."`,
@@ -116,7 +106,7 @@ function month(s, t) {
   const k = t.truth.is, late = ['night', 'choice', 'bill'].includes(t.phase), ok = right(t);
   let d = { scales: 0.8, apart: 1 }[t.phase] || 1.3;
   if (t.open) d *= { water: 0.55, gut: 0.7, seed: 0.9, fear: 0.7 }[k];
-  if (k === 'fear') d *= (0.75 + LF.cv(s, 'fear') / 160) * (t.weighed ? 1.2 : 1) * (t.lie ? 0.7 : 1) * (t.ans ? 0.5 : 1);
+  if (k === 'fear') d *= (0.75 + LF.cv(s, 'fear') / 160) * (t.weighed ? 1.2 : 1) * (t.ans ? 0.5 : 1);
   if (ok) d = t.exempt ? -1.5 : -2.5;
   t.thin = clamp(t.thin + d, 0, 34);
   // From a tenth gone, people die of it at a full table.
@@ -166,7 +156,7 @@ LF.thread({ id: ID, name: 'The Wasting', view: 'people', dread: true,
     if (s.day % 10 === 0) month(s, t);
     if (s.day % 5 === 0) { const late = ['night', 'choice', 'bill'].includes(t.phase), ok = right(t);
       if (!late) LF.emit(s, 'unexplained', SRC, 35, 8, 'people are losing weight at a full table');
-      if (t.phase !== 'scales' && !ok) LF.emit(s, 'fear', SRC, clamp(22 + t.thin - (t.lie || t.told ? 8 : 0), 20, 50), 8, 'the scales go down every month and the bowls are full');
+      if (t.phase !== 'scales' && !ok) LF.emit(s, 'fear', SRC, clamp(22 + t.thin - (t.told ? 8 : 0), 20, 50), 8, 'the scales go down every month and the bowls are full');
       if (t.phase !== 'scales' && t.well > 0 && !ok) LF.emit(s, 'suspicion', SRC, (late ? 38 : 26) + (t.named ? 8 : 0), 8, 'a few people are not wasting, and nobody knows what they are doing');
       if (t.triage) LF.emit(s, 'resentment', SRC, 30, 8, 'the ward, the old and the children are on the shallow ladle');
       if (t.open && !t.ans) LF.emit(s, 'schism', SRC, 30, 8, 'the colony is split between the galley line and the other pot');
@@ -175,7 +165,7 @@ LF.thread({ id: ID, name: 'The Wasting', view: 'people', dread: true,
   /* Thin people do less, and every answer is paid for in work. */
   press: (s, t, P) => { if (t.sour && s.day < t.sour) P.labor -= 0.05; if (t.burnt && s.day < t.burnt + 90) P.yield -= 0.25;
     if (t.end || t.phase === 'latent') return;
-    let d = t.thin * 0.003; if (t.triage) d -= 0.02; if (t.weighed) d += 0.01; if (t.ans === 'table') d += 0.03; if (t.ans === 'force') d += 0.04; if (t.guard) d += 0.01; if (t.cullB && s.day < t.cullB) d -= 0.03;
+    let d = t.thin * 0.003; if (t.triage) d -= 0.02; if (t.weighed) d += 0.01; if (t.ans === 'table') d += 0.03; if (t.ans === 'force') d += 0.04; if (t.guard) d += 0.01;
     P.labor -= Math.max(0, d); if (t.phase !== 'scales' && t.phase !== 'apart') P.morale -= 0.015; },
 });
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ view: 'people', chain: true }, st));
@@ -191,9 +181,6 @@ B('scales', { id: 'wst.scales', tone: 'pressure', title: 'The Weigh Sheet',
     { label: 'Half a ladle more in every bowl until the weights come back', note: 'The stores pay for it by the sack, and if the ladle was never the trouble the sacks are gone for nothing.',
       out: { text: (s, c) => `The galley serves a ladle and a half from that night, and people eat all of it. At the next weighing the sheet is down again by the same amount as before. ${c.Q} writes the month's issue into the stores book in red.`,
         fx: s => ({ food: -60, morale: 1, do: s2 => { const t = T(s2); t.extra = s2.day; learn(s2, t, 4); } }) } },
-    { label: 'Tell the hall it is the air and the work, and take the scale out of the clinic', dark: true, note: 'People stop looking at their own wrists for a while, and the one record of how fast it is going stops being kept.', info: [['yield', 'Morale'], ['danger', 'The record']],
-      out: { text: (s, c) => `You say it at muster: thin air, harder work than anyone here has done in their lives, and bodies that will settle to it. The scale goes into stores under a tarpaulin. For a month the belts are a joke again. ${c.D} goes on weighing the ward by hand and eye, and keeps the figures in a drawer.`,
-        fx: s => ({ morale: 3, stain: ['wst_air', 1], do: s2 => { const t = T(s2); t.lie = s2.day; t.did.air = true; } }) } },
     { label: 'A deep ladle for a roster card, and a shallow one for everyone else', dark: true, note: 'The crews that keep the colony going are fed first, and the ward, the old and the children get what is left.', info: [['yield', 'Work'], ['danger', 'The ward, the old, the children']],
       out: { text: (s, c) => `The galley keeps two ladles at the hatch. The crews work the month out at something like full strength. On the ward the weights fall twice as fast as before, and ${c.d} has begun entering the reason in the files in plain words, with your name beside it.`,
         fx: s => ({ stain: ['wst_triage', 2], do: s2 => { const t = T(s2); t.triage = s2.day; t.did.triage = true; } }) } },
@@ -207,9 +194,6 @@ B(['scales', 'apart'], { id: 'wst.well', tone: 'pressure', title: 'The Ones Who 
     { label: (s, c) => `Have the watch follow the ${num(c.well)} for a month, and say nothing`, note: 'The watch comes off the wall to do it, and if it is seen the fed will know they are suspected of something.', test: { base: 50, mods: [R('security', 10)] },
       ok: { text: (s, c) => `${c.W} puts two people on it for the month. ${ev('watch', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 24, c.ev) }) },
       bad: { text: (s, c) => `The watch is seen on the second night, by a cook who brings its people out a mug of tea. After that the ${num(c.well)} eat every meal at the tables in full view and do nothing else that anyone can see.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 4) }) } },
-    { label: 'Ask them at the tables, in front of everyone', note: 'The hall hears the question as an accusation, and so do they.',
-      out: { text: (s, c) => `You ask it at the evening meal. One of them answers for all: they eat what is put in front of them, the same as anyone. The hall hears that in silence and looks at their wrists. Two of the ${num(c.well)} take their bowls outside from then on, and are followed.`,
-        fx: s => ({ tension: 4, do: s2 => { const t = T(s2); learn(s2, t, 5); LF.emit(s2, 'suspicion', 'wst.asked', 28, 120, 'the ones who are not wasting were asked why in front of the hall, and gave no answer'); } }) } },
     { label: 'Turn out their bunks and lockers while they are on shift', dark: true, note: 'It is done without cause shown to people who have broken no rule, and the bunkhouse knows by evening whose kit was on the floor.', info: [['yield', 'What is found'], ['danger', 'The fed']],
       out: { text: (s, c) => `${c.W} goes through ${num(c.well)} bunks and ${num(c.well)} lockers in an afternoon. The last locker but one holds a lidded pot, still warm, and a spoon. ${ev('pot', c.ev2, c)} The kit is left on the floor.`,
         fx: (s, c) => ({ stain: ['wst_search', 1], do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev2); t.did.search = true; LF.emit(s2, 'resentment', 'wst.search', 25, 120, 'the watch turned out the bunks of people who had broken no rule'); } }) } },
@@ -220,15 +204,12 @@ B(['scales', 'apart'], { id: 'wst.well', tone: 'pressure', title: 'The Ones Who 
 
 /* ======================= APART: the other pot ======================= */
 B('apart', { id: 'wst.pot', tone: 'pressure', title: 'The Other Pot',
-  setup: s => { const t = T(s); t.pot = s.day; return Object.assign(base(s, t), { ev: pickK(s, t), ev2: pickK(s, t, 0.15) }); },
+  setup: s => { const t = T(s); t.pot = s.day; return Object.assign(base(s, t), { ev: pickK(s, t) }); },
   text: (s, c) => `The fed have a pot of their own. It is kept on the back of the drying-shed stove, and by the black on it, it has been there since soon after landfall. Tonight it holds ${c.wild}, boiled down to a grey paste that smells of wet metal.\n\nNobody denies it. The one who was stirring answers for them.\n\n[[x43]] "Eat it or don't." "Nobody asked you to. Nobody asked us either."\n\n${c.Sc} wants the pot. Half the hall wants it emptied over the wire, and the other half wants a spoon.`,
   choices: [
     { label: 'Put the pot on the bench for the month', note: 'The fed go without it while it is on the bench, and the hall waits a month for a word.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5)] },
       ok: { text: (s, c) => `${cap(LF.sentName(s, 'xenobio'))} takes the pot and the shelf it stands on. ${ev('pot', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 26, c.ev) }) },
       bad: { text: (s, c) => `${cap(LF.sentName(s, 'xenobio'))} runs the paste through everything the bench has. It is ${c.wild1}, water and stove ash, in proportions that change from one spoonful to the next, and the bench was built to assay ore. There is no finding the hall can use.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 8) }) } },
-    { label: 'Feed it to the worst of the ward for a month, and do not tell them what it is', dark: true, note: 'The ward is past asking, and the clinic gets its answer out of people who never agreed to give one.', info: [['yield', 'What it does'], ['danger', 'The ward']],
-      out: { text: (s, c) => `It goes into twelve bowls on the ward in place of the evening ladle. ${ev('trial', c.ev2, c)} One of the twelve died before the month was half gone, of the wasting or of the pot, and ${c.d} will not sign for either.`,
-        fx: (s, c) => ({ pop: -1, stain: ['wst_trial', 2], do: s2 => { const t = T(s2); learn(s2, t, 28, c.ev2); t.did.trial = true; t.toll++; t.dead++; sour(s2, 'physician', 8); } }) } },
     { label: (s, c) => `Empty the pot over the wire, and forbid ${c.wild1} inside it`, dark: true, note: 'The hall sees the fed brought down to the same ladle as everyone, and whatever was keeping them well is thrown away untried.', info: [['yield', 'Morale'], ['danger', 'The fed']],
       out: { text: (s, c) => `The pot is emptied over the wire with the hall watching, and the shelf is broken up for the stove. Gathering ${c.wild1} is made an offence. The hall is content for the month. The fed take their ladle at the hatch with everyone else and say nothing to anyone.`,
         fx: s => ({ morale: 2, tension: -4, stain: ['wst_ban', 1], do: s2 => { const t = T(s2); t.banned = s2.day; t.did.ban = true; } }) } },
@@ -239,15 +220,12 @@ B('apart', { id: 'wst.pot', tone: 'pressure', title: 'The Other Pot',
 
 /* The first death, and whether the clinic may look. */
 B(['apart', 'night'], { id: 'wst.open', tone: 'pressure', title: 'No Cause Written',
-  setup: s => { const t = T(s); return Object.assign(base(s, t), { kg2: kilos(t) + 9, ev: pickK(s, t), ev2: pickK(s, t, 0.15) }); },
+  setup: s => { const t = T(s); return Object.assign(base(s, t), { kg2: kilos(t) + 9, ev: pickK(s, t) }); },
   text: (s, c) => `A field hand of thirty-one died on the ward this month, ${num(c.kg2)} kilos lighter than at landfall${c.full ? ', after eating a full bowl the night before' : ''}. The file has no cause written in it. There are eleven more on the ward going the same way.\n\n${c.D} wants the body opened before it is buried. The dead hand's crew is standing in the ward door. Nobody, they say, is cutting up one of theirs to find out what a ladle did.`,
   choices: [
     { label: 'Have the body opened, with the crew in the room', note: 'They see everything that is done to their friend, and so does whoever they tell.', test: { base: 50, mods: [R('physician', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `It is done on the ward table with three of the crew standing against the wall. ${ev('gut', c.ev, c)} The body is sewn and given back to them before dark.`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 26, c.ev) }) },
       bad: { text: 'It is done on the ward table with three of the crew against the wall. One of them faints and one has to be held back. The knife finds a thin body in good order and nothing the clinic can put a name to. The crew carries its friend out without a word to anyone.', fx: s => ({ morale: -2, do: s2 => learn(s2, T(s2), 8) }) } },
-    { label: 'Have it done at night, and give them back a closed box', dark: true, note: 'The clinic works without an audience and sees more, and the crew buries a friend it has been lied to about.', info: [['yield', 'What it shows'], ['danger', 'The dead hand\'s crew']],
-      out: { text: (s, c) => `The crew is told the body has been washed and boxed. The ward door is barred until morning. ${ev('gut', c.ev2, c)} The box is nailed before it leaves the ward. At the graveside one of the bearers remarks on the weight of it, and nobody answers.`,
-        fx: (s, c) => ({ stain: ['wst_box', 1], do: s2 => { const t = T(s2); learn(s2, t, 30, c.ev2); t.did.box = true; } }) } },
     { label: 'Give the body back whole, and bury it tonight', note: 'The crew keeps its dead, and the eleven on the ward go the same way with nobody the wiser.',
       out: { text: (s, c) => `The body goes into the ground before dark with the whole crew at the grave. The file says "wasting" and nothing more. The crew is back at work in the morning, and its lead hand thanks you at the hatch.`,
         fx: s => ({ morale: 1, do: s2 => sour(s2, 'physician', 6) }) } },
@@ -276,7 +254,6 @@ const DOSE = { water: 5, gut: -2, seed: -5, fear: 3 };
 B(['apart', 'night', 'choice'], { id: 'wst.chair', tone: 'pressure', title: 'Two Holes in the Belt',
   when: s => LF.SEAT_ORDER.some(r => P(s, r)),
   setup: s => { const t = T(s), pool = LF.SEAT_ORDER.map(r => P(s, r)).filter(Boolean), p = LF.spick(s, pool), c = who(p, 'the night shift lead', 'the shift lead');
-    t.chair = { pid: c.pid, name: c.name };
     return Object.assign(c, base(s, t, c.pid), { kg2: kilos(t) + 6, line: (p.key && CHAIR[p.key] ? `[[${c.pid}]] ${CHAIR[p.key]()}` : `${c.Name} asks for one thing, which is not to be fed ahead of anyone else.`), pot: !!t.pot && !t.banned, ev: pickK(s, t, 0.1) }); },
   text: (s, c) => `${c.Name} has lost ${num(c.kg2)} kilos, more than anyone on the work crews, and has been hiding it under a coat. It came out when ${c.first} sat down on the yard floor in the middle of giving an order and could not get up.\n\n${c.line}`,
   choices: [
@@ -286,9 +263,6 @@ B(['apart', 'night', 'choice'], { id: 'wst.chair', tone: 'pressure', title: 'Two
     { label: (s, c) => `Keep ${c.first} at the post`, note: (s, c) => `The work goes on being done by the one who knows it, at whatever that takes out of ${c.first}.`,
       out: { text: (s, c) => `${c.Name} goes back to work in the coat. The work is done, and done properly, from a chair for most of the month.`,
         fx: s => ({ off: [['ctx', 'body', -8], ['ctx', 'native', 2]] }) } },
-    { label: (s, c) => `Feed ${c.first} from the ward's share: three bowls a meal`, dark: true, note: (s, c) => `An officer is kept standing on food carried past the beds of people too weak to object.`, info: (s, c) => [['yield', cap(c.first)], ['danger', 'The ward']],
-      out: { text: (s, c) => `Three bowls go to ${c.name} at every meal, carried the length of the ward. They are eaten with the door shut. It slows the loss a little. Two of the beds the bowls were carried past are empty by the end of the month.`,
-        fx: s => ({ pop: -2, stain: ['wst_first', 2], off: [['ctx', 'body', 3], ['ctx', 'mind', -5]], do: s2 => { const t = T(s2); t.toll += 2; t.dead += 2; t.did.first = true; sour(s2, 'physician', 8); } }) } },
     { label: (s, c) => `Order ${c.first} to eat from the other pot, as the test`, dark: true, show: (s, c) => c.pot, note: (s, c) => `The colony gets an answer from someone whose weight is on paper for every month since landfall, and ${c.first} takes whatever the pot does.`, info: (s, c) => [['yield', 'What it shows'], ['danger', cap(c.first)]],
       out: { text: (s, c) => `${c.Name} eats a bowl of the grey paste at the ward table every night, with an orderly keeping the sheet. ${ev('dose', c.ev, c)}`,
         fx: (s, c) => ({ stain: ['wst_dose', 1], off: [['ctx', 'body', DOSE[c.ev]]], do: s2 => { const t = T(s2); learn(s2, t, 24, c.ev); t.did.dose = true; } }) } },
@@ -296,16 +270,13 @@ B(['apart', 'night', 'choice'], { id: 'wst.chair', tone: 'pressure', title: 'Two
 
 /* ======================= NIGHT: the hall and the fed ======================= */
 B('night', { id: 'wst.night', tone: 'crisis', title: 'The Fed',
-  setup: s => { const t = T(s); t.well = Math.max(2, t.well); return Object.assign(base(s, t), { well: t.well, ev: pickK(s, t), ev2: pickK(s, t, 0.25) }); },
+  setup: s => { const t = T(s); t.well = Math.max(2, t.well); return Object.assign(base(s, t), { well: t.well, ev: pickK(s, t) }); },
   text: (s, c) => `${Num(Math.max(1, c.dead))} dead of it, and ${num(c.kg)} kilos gone from the average hand. Tonight a hauling crew took the ${num(c.well)} who have lost nothing out of their bunks, and has them sitting on the mess floor with their hands on their heads. Nobody has been hurt yet. The crew has carried the clinic's scale in and set it down beside them.\n\n${c.W} is waiting for an order. ${c.lean}`,
   choices: [
     { label: 'Put them out through the gate tonight', dark: true, note: (s, c) => `The hall is rid of the sight of them, and ${num(c.well)} people who have harmed nobody go out past the wire with whatever it is they know.`, info: [['yield', 'Morale'], ['danger', 'The fed']],
       out: { text: (s, c) => `The ${num(c.well)} are walked to the gate with a blanket each. One of them asks for the pot and is refused. The bar goes down behind them, and the hall sleeps better than it has all season. At the next weighing every line on the sheet is down again.`,
         fx: (s, c) => ({ leave: c.well, morale: 3, tension: -10, stain: ['wst_putout', 3], do: s2 => { const t = T(s2); t.did.putout = { n: c.well }; t.toll += c.well; t.well = 0; t.open = 0; LF.emit(s2, 'grief', 'wst.putout', 25, 150, 'people everyone knew were put out through the gate for being well'); },
           chron: `${Num(c.well)} people were put out through the gate at night because they had lost no weight.` }) } },
-    { label: 'Have the clinic open one of them alive, and look', dark: true, note: 'One person is killed on the ward table for being well, and the clinic sees a sound gut for the first time since landfall.', info: [['yield', 'What it shows'], ['danger', 'One of the fed']],
-      out: { text: (s, c) => `The hall draws the name: a rigger off the night shift. It is done on the ward table under protest, with the protest entered in the file and the watch on the door. ${ev('live', c.ev2, c)} The rest are let up off the floor. Afterwards nobody in the hall will say who called for it.`,
-        fx: (s, c) => ({ pop: -1, morale: -2, stain: ['wst_cut', 3], off: [['physician', 'mind', -8]], do: s2 => { const t = T(s2); learn(s2, t, 34, c.ev2); t.did.cut = true; t.toll++; t.well = Math.max(1, t.well - 1); sour(s2, 'physician', 15); } }) } },
     { label: (s, c) => `Send the crew to its bunks, and put the watch on the ${num(c.well)}`, note: 'The fed are kept alive at the cost of the wall, and the hall takes it that you are protecting them for a reason.', info: [['danger', 'Whoever is caught alone']],
       out: { text: (s, c) => `${c.W} clears the mess and gives the ${num(c.well)} the tool store to sleep in, with a guard on it. The crew goes to its bunks. Before the month is out one of the ${num(c.well)} is caught between the store and the latrine by people nobody can name, and dies on the ward two nights later.`,
         fx: s => ({ pop: -1, morale: -2, do: s2 => { const t = T(s2); t.guard = s2.day; t.did.guard = true; t.toll++; t.feud++; t.well = Math.max(1, t.well - 1); LF.emit(s2, 'schism', 'wst.guard', 30, 150, 'half the hall wanted the fed put out, and was stopped'); } }) } },
@@ -314,22 +285,28 @@ B('night', { id: 'wst.night', tone: 'crisis', title: 'The Fed',
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 18, c.ev); t.did.said = true; if (!t.banned) t.open = t.open || s2.day; } }) } },
   ] });
 
-/* ======================= CHOICE: four answers ======================= */
-B('choice', { id: 'wst.choice', tone: 'crisis', view: 'colony', title: 'Four Answers',
-  setup: s => { const t = T(s); return Object.assign(base(s, t), { dn: drenchN(s, t) }); },
-  text: (s, c) => `${Num(Math.max(1, c.dead))} are dead of the wasting, and the ward has no beds left. ${c.full ? 'The stores are full, and so are the bowls.' : 'The stores are low as well, and that is a separate page of the book.'} Each of your officers has brought an answer, and none will sit at a table with another's. ${c.Sc} wants the colony fed from the other pot. ${c.Cm} wants every gut in the colony scoured with lye. ${c.E} wants the crop and the seed burned. ${c.W} wants every meal eaten under guard.\n\n${c.lean} The hall has been told it will hear tonight.`,
+/* ======================= CHOICE: three of the four answers ======================= */
+/* Three at most on screen. There are four answers, one for each truth; the hall hears the three that what has been found
+   speaks for most (top(t)), and the one with least found for it is not brought to the table. Level evidence leaves out
+   the later of water, gut, seed, fear, so with nothing found it is the long table: under fear the hall can still be told
+   the scales have turned at the second weighing, and the second weighing offers whichever answer the evidence leans to. */
+const ANS = ['table', 'drench', 'burn', 'force'], on = a => (s, c) => !c.offer || c.offer.includes(a);
+const WANT = { table: c => `${c.Sc} wants the colony fed from the other pot.`, drench: c => `${c.Cm} wants every gut in the colony scoured with lye.`, burn: c => `${c.E} wants the crop and the seed burned.`, force: c => `${c.W} wants every meal eaten under guard.` };
+B('choice', { id: 'wst.choice', tone: 'crisis', view: 'colony', title: 'Three Answers',
+  setup: s => { const t = T(s), best = top(t).slice(0, 3).map(e => CURE[e[0]]); return Object.assign(base(s, t), { dn: drenchN(s, t), offer: ANS.filter(a => best.includes(a)) }); },
+  text: (s, c) => `${Num(Math.max(1, c.dead))} are dead of the wasting, and the ward has no beds left. ${c.full ? 'The stores are full, and so are the bowls.' : 'The stores are low as well, and that is a separate page of the book.'} Your officers have brought three answers, and none will sit at a table with another's. ${(c.offer || ANS).map(a => WANT[a](c)).join(' ')}\n\n${c.lean} The hall has been told it will hear tonight.`,
   choices: [
-    { label: 'Close the galley line, and feed everyone from the other pot', dark: true, note: 'Nobody knows what a year of it does to a body, and the children get it with everyone else.', info: [['yield', 'If it is the food'], ['later', 'Everyone, in ways not yet known']],
+    { label: 'Close the galley line, and feed everyone from the other pot', dark: true, show: on('table'), note: 'Nobody knows what a year of it does to a body, and the children get it with everyone else.', info: [['yield', 'If it is the food'], ['later', 'Everyone, in ways not yet known']],
       out: { text: (s, c) => `From that night the galley boils ${c.wild} by the cartload, with the ship's meal served beside it for bulk. The gathering takes a crew off the fields. People hold their noses and eat. Within the month the first grey gums show at the tables, and the children's show first.`,
         fx: s => ({ morale: -3, stain: ['wst_table', 2], do: s2 => answer(s2, T(s2), 'table'), chron: 'The whole colony was put onto a pot of what grows here, the children included.' }) } },
-    { label: 'Drench every gut in the colony with lye and ash water', dark: true, note: (s, c) => `It will empty whatever is in there, and the clinic expects it to kill ${num(c.dn)} of the weakest outright.`, info: [['yield', 'If it is in the gut'], ['danger', 'The weakest']],
+    { label: 'Drench every gut in the colony with lye and ash water', dark: true, show: on('drench'), note: (s, c) => `It will empty whatever is in there, and the clinic expects it to kill ${num(c.dn)} of the weakest outright.`, info: [['yield', 'If it is in the gut'], ['danger', 'The weakest']],
       out: { text: (s, c) => `It is done over three nights, a bunkhouse at a time: a measured cup each, and the latrine trench dug double. Nobody works. ${Num(c.dn)} of the ward do not come through it, and each is signed for by name. At the end of it the colony is as weak as it has ever been, and waits for the scale.`,
         fx: (s, c) => ({ pop: -c.dn, morale: -4, stain: ['wst_drench', 3], do: s2 => { const t = T(s2); answer(s2, t, 'drench'); t.toll += c.dn; t.drenched = (t.drenched || 0) + c.dn; },
           chron: `Every gut in the colony was drenched with lye, and ${num(c.dn)} people died of it.` }) } },
-    { label: 'Burn everything the colony has raised and every seed saved from it, and sow again from the sealed vault', note: 'If the fault is in what has been grown here it ends tonight, and either way the colony eats tins and ship\'s blocks until a new crop stands.', info: [['later', 'Everyone, in the hungry months']],
+    { label: 'Burn everything the colony has raised and every seed saved from it, and sow again from the sealed vault', show: on('burn'), note: 'If the fault is in what has been grown here it ends tonight, and either way the colony eats tins and ship\'s blocks until a new crop stands.', info: [['later', 'Everyone, in the hungry months']],
       out: { text: (s, c) => `Everything green the colony has raised is fired at dusk, and the seed bins after it, with ${c.q} standing by to see that nothing is held back. The galley goes over to tins and blocks. The vault seed is in the ground within the month, and the stores book has a new last page.`,
         fx: s => ({ food: -Math.round(Math.min(150, s.res.food * 0.3)), morale: -3, do: s2 => answer(s2, T(s2), 'burn'), chron: 'The colony burned its crop and its saved seed, and sowed again from the vault.' }) } },
-    { label: 'Every meal at one long table under the watch, and a tube for anyone who will not swallow', dark: true, note: 'If people are not truly eating, it ends. If they are, the colony is held down and fed for nothing.', info: [['yield', 'If it is in their heads'], ['danger', 'Anyone who cannot keep it down']],
+    { label: 'Every meal at one long table under the watch, and a tube for anyone who will not swallow', dark: true, show: on('force'), note: 'If people are not truly eating, it ends. If they are, the colony is held down and fed for nothing.', info: [['yield', 'If it is in their heads'], ['danger', 'Anyone who cannot keep it down']],
       out: { text: (s, c) => `The benches are set in one line, and the watch walks behind it. Nobody leaves until the bowl is clean and an hour has gone by. The clinic will not hold the tube, so the watch is taught how. On the first night nine people are fed that way, and on the second night four.`,
         fx: s => ({ morale: -5, stain: ['wst_force', 2], do: s2 => { answer(s2, T(s2), 'force'); sour(s2, 'physician', 10); }, chron: 'Every meal in the colony was eaten under guard, and those who would not swallow were fed by tube.' }) } },
   ] });
@@ -349,7 +326,7 @@ const MADE = {
 };
 B(['choice', 'bill'], { id: 'wst.refuse', tone: 'crisis', title: 'The Ones Who Will Not',
   when: (s, t) => !!t.ans,
-  setup: s => { const t = T(s), n = clamp(Math.round(s.pop * 0.1), 4, 10); return Object.assign(base(s, t), { ans: t.ans, n, lost: Math.ceil(n * 0.3), what: { table: 'the pot', drench: 'the drench', burn: 'the burning', force: 'the long table' }[t.ans] }); },
+  setup: s => { const t = T(s), n = clamp(Math.round(s.pop * 0.1), 4, 10); return Object.assign(base(s, t), { ans: t.ans, n, what: { table: 'the pot', drench: 'the drench', burn: 'the burning', force: 'the long table' }[t.ans] }); },
   text: (s, c) => `${WONT[c.ans](c)}\n\n${c.Cm} wants to know whether the order was an order. The hall is watching to see whether it applies to everyone.`,
   choices: [
     { label: 'Make them, with the watch, one at a time', dark: true, note: 'The answer is the same for everyone, and it is put into people who are held down for it.', info: [['yield', 'One rule for all'], ['danger', 'The ones who refused']],
@@ -358,9 +335,6 @@ B(['choice', 'bill'], { id: 'wst.refuse', tone: 'crisis', title: 'The Ones Who W
     { label: 'Let them be, and enter their names', note: 'They go their own way and take what comes of it, and everyone else asks why the order binds them.',
       out: { text: (s, c) => `Their names are entered and nothing more is done. They keep to their own end of the mess. By the end of the month there are a few more of them than there were.`,
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.exempt = s2.day; t.did.exempt = t.did[t.ans]; LF.emit(s2, 'schism', 'wst.exempt', 30, 150, 'some of the colony will not take the answer, and were let be'); } }) } },
-    { label: (s, c) => `Put the ${num(c.n)} outside the wire until they come round`, dark: true, note: (s, c) => `They are put out to change their minds in the open, and not all of them will have the time to.`, info: [['yield', 'One rule for all'], ['danger', 'The ones who refused']],
-      out: { text: (s, c) => `The ${num(c.n)} are walked to the gate. Before the month is out ${num(c.n - c.lost)} have come back to the hatch and done as they were told. The other ${num(c.lost)} did not come back.`,
-        fx: (s, c) => ({ leave: c.lost, morale: -2, stain: ['wst_wire', 2], do: s2 => { const t = T(s2); t.toll += c.lost; t.did.wire = { n: c.lost, was: t.did[t.ans] }; } }) } },
     { label: (s, c) => `Give up ${c.what}, for everyone`, note: 'The colony is spared what the answer costs, and is back where it was, with nothing being done.',
       out: { text: (s, c) => `The order is withdrawn at muster, and most of the hall is glad of it. ${{ table: 'The galley goes back to the ship\'s meal alone.', drench: 'There will be no second round of cups.', burn: 'The plot behind the windbreak is left to grow, and its seed will be in the bins again by harvest.', force: 'The benches go back to their old places.' }[c.ans]} Nobody proposes anything in its place.`,
         fx: s => ({ morale: 2, do: s2 => { const t = T(s2); t.did.gaveup = t.did[t.ans]; t.gave = t.ans; t.ans = null; if (t.burnt) t.burnt = 0; } }) } },
@@ -375,7 +349,7 @@ const ALT = {
 };
 B('bill', { id: 'wst.weigh', tone: 'crisis', title: 'The Second Weighing',
   setup: s => { const t = T(s), alt = top(t).map(e => CURE[e[0]]).concat(['burn', 'table', 'drench', 'force']).find(a => !t.did[a]) || 'burn';
-    return Object.assign(base(s, t), { ans: t.ans, turned: right(t), alt, dn: Math.max(2, drenchN(s, t) - 1), cull: clamp(Math.round(s.pop * 0.05), 2, 5) }); },
+    return Object.assign(base(s, t), { ans: t.ans, turned: right(t), alt, dn: Math.max(2, drenchN(s, t) - 1) }); },
   text: (s, c) => `The whole colony goes over the scale again. ${c.turned ? 'For the first time since landfall the sheet has gone the other way: up a kilo a head, and more than that on the ward.' : 'Every line is down again, by as much as the month before.'} ${{ table: 'Most of the colony has grey gums now, and the ones who have eaten the paste longest cannot keep the ship\'s meal down at all.', drench: 'The colony has not got its strength back from the three nights, and the trench crews say they would not do it twice.', burn: 'The stores book is on its last pages, and the new crop is a hand high.', force: 'The long table takes three hours every night, and the tube is used on a dozen people at each sitting.' }[c.ans] || 'Nothing the colony tried is still being done.'}\n\n${Num(Math.max(1, c.dead))} are dead of the wasting. ${c.lean}`,
   choices: [
     { label: (s, c) => c.ans ? 'Hold to it for another season' : 'Go on as you are', note: 'If it is working it goes on working, and if it is not, another season of the ward is the price of finding out.',
@@ -386,9 +360,6 @@ B('bill', { id: 'wst.weigh', tone: 'crisis', title: 'The Second Weighing',
         fx: (s, c) => ({ pop: c.alt === 'drench' ? -c.dn : 0, food: c.alt === 'burn' ? -80 : 0, morale: -3, stain: ['wst_second', 1], do: s2 => { const t = T(s2); if (t.ans) t.gave = t.ans; if (t.burnt && c.alt !== 'burn') t.burnt = 0;
           answer(s2, t, c.alt); t.second = c.alt; if (c.alt === 'drench') { t.toll += c.dn; t.drenched = (t.drenched || 0) + c.dn; }
           if (c.alt !== 'burn') (LF.stain || (() => {}))(s2, { table: 'wst_table', drench: 'wst_drench', force: 'wst_force' }[c.alt], 2); } }) } },
-    { label: 'Stop the ladle at the beds that will not get up again', dark: true, note: (s, c) => `${Num(c.cull)} people on the ward are past any answer, and what they eat and the hands that nurse them go back to the colony.`, info: [['yield', 'Food and work'], ['danger', 'The ward']],
-      out: { text: (s, c) => `The clinic is handed the list and will not read it out, so it is read by ${c.cm}. The ladle stops at ${num(c.cull)} beds. It takes most of the month. The orderlies go back to the field crews, and the ward is quiet enough to hear the stove.`,
-        fx: (s, c) => ({ pop: -c.cull, food: c.cull * 8, morale: -3, stain: ['wst_cull', 3], off: [['physician', 'mind', -6]], do: s2 => { const t = T(s2); t.toll += c.cull; t.did.cull = { n: c.cull, late: right(t) }; t.cullB = s2.day + 60; sour(s2, 'physician', 15); } }) } },
     { label: 'Announce that the scales have turned, and stop the weighing', dark: true, note: 'The hall gets good news tonight, and nobody will be able to say afterwards how many it was true for.', info: [['yield', 'Morale'], ['danger', 'The record']],
       out: { text: (s, c) => `You read out a figure that is not on the sheet, and the hall cheers it. The scale goes into stores. ${c.turned ? 'As it happens, the figure was not far wrong.' : 'The ward goes on being weighed at night, with the door shut.'}`,
         fx: s => ({ morale: 4, lift: 6, stain: ['wst_told', 1], do: s2 => { const t = T(s2); t.told = s2.day; t.did.told = true; } }) } },
@@ -416,19 +387,14 @@ function reckon(s, t, c, doubt) {
   const d = t.did, k = t.truth.is, L = [], w = c.wild1;
   const add = (plain, o) => L.push(doubt ? plain : typeof o === 'string' ? o : o[k]);
   if (d.putout) add(`${Num(d.putout.n)} people were put out through the gate for having lost no weight.`, { water: `The ${num(d.putout.n)} put out through the gate were the only people in the colony who were eating properly, and what they knew went out with them.`, gut: `The ${num(d.putout.n)} put out through the gate had cured themselves by accident, and had harmed nobody.`, seed: `The ${num(d.putout.n)} put out through the gate had been eating the colony's dead. The hall put them out without knowing it.`, fear: `The ${num(d.putout.n)} put out through the gate had done nothing but eat their supper out of doors.` });
-  if (d.cut) add('A rigger was opened alive on the ward table for being well.', { water: `The rigger opened alive on the ward table was well because of a handful of boiled ${w}.`, gut: 'The rigger opened alive on the ward table had the cure standing in a pot by the bunk.', seed: 'The rigger opened alive on the ward table had been eating the dead, and nobody in the room knew what they were looking at.', fear: 'The rigger opened alive on the ward table had nothing inside that was not in everyone.' });
   if (d.table) add(`The whole colony was put onto ${w}.`, { water: `Putting the whole colony onto ${w} was the answer, and it was given to children who could not be asked.`, gut: `The whole colony was put onto ${w}, with the galley soaking the bitterness out of it first, as a galley would. The bitterness was the cure. The grey gums were for nothing.`, seed: `The whole colony was put onto ${w}, which feeds nobody, and has the grey gums to show for it.`, fear: `The whole colony was put onto ${w} for a fault that was never in the food, and has the grey gums to show for it.` });
   if (d.drench) add(`Every gut in the colony was drenched with lye, and ${num(t.drenched || 2)} died of it.`, k === 'gut' ? `The drench was the answer. The ${num(t.drenched || 2)} it killed would have been dead of the wasting within the season, by the clinic's reckoning, and were killed sooner.` : `The drench scoured ${num(t.drenched || 2)} people to death and reached nothing, because there was nothing in them to reach.`);
   if (d.burn) add('The crop and the saved seed were burned.', k === 'seed' ? 'Burning the crop and the seed was the answer.' : 'The crop and the seed that were burned were sound, and the hungry months after the fire bought nothing.');
   if (d.force) add('Every meal was eaten under guard, with a tube for those who would not swallow.', k === 'fear' ? 'The long table was the answer, and it was given with a tube and some broken teeth.' : `The people held down at the long table had been swallowing every meal honestly since landfall${t.tube ? `, and ${num(t.tube)} of them choked there` : ''}.`);
-  if (d.cull) add(`The ladle was stopped at ${num(d.cull.n)} beds on the ward.`, d.cull.late ? `The ${num(d.cull.n)} beds where the ladle was stopped held people the answer would have reached within the season.` : `The ladle was stopped at ${num(d.cull.n)} beds on the ward, and nobody can say now which of them would have got up.`);
-  if (d.wire) add(`${Num(d.wire.n)} people died outside the wire for refusing an order.`, d.wire.was === 'right' ? `The ${num(d.wire.n)} who died outside the wire had refused the one thing that would have saved them.` : `The ${num(d.wire.n)} who died outside the wire were right to refuse.`);
   if (d.made) add('People who refused were held down for it.', d.made === 'right' ? 'The people held down for the answer are alive because of it, and have not forgiven it.' : 'The people held down for the answer were held down for nothing.');
   if (d.gaveup === 'right') add('', 'The answer that was given up at muster was the right one.');
   if (d.ban) add(`The fed's pot was emptied over the wire.`, { water: 'The pot emptied over the wire was the only sound meal in the colony.', gut: 'The pot emptied over the wire was the only medicine in the colony.', seed: 'The pot emptied over the wire was for show, and its owners lost nothing by it.', fear: `The pot emptied over the wire held ${w} and water.` });
-  if (d.trial) add('Twelve people on the ward were fed from the pot without being told.', k === 'water' || k === 'gut' ? 'The twelve on the ward who were fed from the pot unasked were the only patients there given anything that could have helped.' : `The twelve on the ward who were fed from the pot unasked got ${w} and water in place of a meal.`);
   if (d.triage) add('The ward, the old and the children were put on a shallow ladle.', k === 'fear' ? 'The shallow ladle took food from the people who most needed to be seen eating it.' : 'The shallow ladle starved people faster who were starving already.');
-  if (d.first && t.chair) add('', `Two people on the ward died beside the bowls that were carried past them to ${t.chair.name}.`);
   if (d.told && k !== 'fear') add('The hall was told the scales had turned.', 'The hall was told the scales had turned when they had not.');
   const out = L.filter(Boolean).slice(0, 5);
   return out.length ? out.join(' ') : doubt ? 'Nobody was put out, cut or held down on account of it.' : 'Nobody was put out, cut or held down on account of it, and there is nothing of that kind to answer for.';
@@ -463,15 +429,15 @@ B('after', { id: 'wst.scale', tone: 'quiet', title: 'The Scale in the Mess', sce
         fx: s => ({ morale: 2 }) } },
   ] });
 
-LF.TAGS['wst.scales'] = ['cautious open', 'mercy bold', 'closed order', 'severe order'];
-LF.TAGS['wst.well'] = ['cautious closed', 'open bold', 'severe order', 'severe open'];
-LF.TAGS['wst.pot'] = ['cautious open', 'severe bold', 'severe closed', 'free open'];
-LF.TAGS['wst.open'] = ['open bold', 'closed order', 'mercy cautious', 'severe order'];
-LF.TAGS['wst.chair'] = ['mercy cautious', 'order', 'severe closed', 'severe bold'];
-LF.TAGS['wst.night'] = ['severe closed', 'severe bold', 'mercy order', 'open free'];
+LF.TAGS['wst.scales'] = ['cautious open', 'mercy bold', 'severe order'];
+LF.TAGS['wst.well'] = ['cautious closed', 'severe order', 'severe open'];
+LF.TAGS['wst.pot'] = ['cautious open', 'severe closed', 'free open'];
+LF.TAGS['wst.open'] = ['open bold', 'mercy cautious', 'severe order'];
+LF.TAGS['wst.chair'] = ['mercy cautious', 'order', 'severe bold'];
+LF.TAGS['wst.night'] = ['severe closed', 'mercy order', 'open free'];
 LF.TAGS['wst.choice'] = ['bold open', 'severe bold', 'cautious order', 'severe order'];
-LF.TAGS['wst.refuse'] = ['severe order', 'free mercy', 'severe closed', 'cautious free'];
-LF.TAGS['wst.weigh'] = ['cautious order', 'bold', 'severe order', 'closed order'];
+LF.TAGS['wst.refuse'] = ['severe order', 'free mercy', 'cautious free'];
+LF.TAGS['wst.weigh'] = ['cautious order', 'bold', 'closed order'];
 LF.TAGS['wst.truth'] = ['open', 'closed order', 'cautious order', 'free'];
 LF.TAGS['wst.scale'] = ['cautious order', 'free'];
 
