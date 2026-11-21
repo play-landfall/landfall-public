@@ -86,11 +86,12 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     <button class="opt go" data-act="pre" data-v="random">Randomise</button>
     <button class="pbtn back" data-act="pre" data-v="ship">Back to the ship</button></div>`;
   if (st.startsWith('legend')) { const n = +st.slice(6) || 0, last = n === LEGEND.length - 1;
-    return legendHTML(n, true, `<button class="opt go" data-act="pre" data-v="${last ? 'go' : 'legend' + (n + 1)}">${last ? 'Begin the voyage' : 'Next'}</button>
+    return legendHTML(n, true, `<button class="opt go" data-act="pre" data-v="${last ? 'go' : 'legend' + (n + 1)}">${last ? 'Launch your ship' : 'Next'}</button>
     <button class="pbtn back" data-act="pre" data-v="${n ? 'legend' + (n - 1) : 'review'}">${n ? 'Back' : 'Back to the crew'}</button>`); }
   if (st === 'review') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)} · crew file</div><h2>Your command crew</h2>
     ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0], d = LF.CAST[k][1 - (pre.picks[k] || 0)]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].lead)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(LF.SEATS[k].second)}: ${esc(d.first)} ${esc(d.last)}</span>${edgeHTML(c.key)}</div></div>`; }).join('')}
-    <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
+    <button class="opt go" data-act="pre" data-v="go">Launch your ship</button>
+    ${legendSeen() ? '<button class="opt go" data-act="pre" data-v="legend0">How to play</button>' : ''}
     <button class="opt go" data-act="pre" data-v="${pre.rolled ? 'random' : 'seat0'}">${pre.rolled ? 'Roll again' : 'Change them'}</button>
     ${pre.rolled ? '<button class="pbtn back" data-act="pre" data-v="seat0">Choose them yourself</button>' : ''}</div>`;
   const n = +st.slice(4), k = LF.SEAT_ORDER[n], S = LF.SEATS[k], sel = pre.sel && pre.sel[k] !== undefined ? pre.sel[k] : pre.picks[k] || 0;
@@ -100,7 +101,8 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     <button class="opt go" data-act="pre" data-v="pick${sel}">${esc(LF.CAST[k][sel].first)} as ${esc(S.lead)}</button>
     <button class="pbtn back" data-act="pre" data-v="${n ? 'seat' + (n - 1) : 'crew'}">Back</button></div>`; }
 /* How to read a card (Lachlan, 2026-11-21): the option icons and chips, and a sure choice against a roll. Once per device
-   before the first voyage (landfall.legend), and from the menu any time. The examples are drawn with the card's own classes. */
+   before the first voyage (landfall.legend), and from the menu any time. Once seen, the crew review offers it beside
+   Launch your ship (Lachlan, 2026-11-21); until then Launch goes to it first. The examples are drawn with the card's own classes. */
 const LEGEND_ROWS = [
   [() => rollTip(80), 'A roll', 'The chance it goes your way. Green is likely (70% or more), yellow could go either way, red is a long shot (under 30%).'],
   [() => infoTip(['yield', 'Gain']), 'What it can gain', 'Stores, repairs, safety: whatever the option is for.'],
