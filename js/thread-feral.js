@@ -18,7 +18,11 @@
    Evidence (the midden, the tracks, the hill, the prisoner, the questions, the one who came back) is drawn per card and
    points at the truth only most of the time (pickK). It carries people off, eats the outer stores, costs labour to the
    wall, and writes unexplained, fear, siege, strangers, suspicion and grief. Nothing here knows any other thread. Every
-   card's text reads only what setup put in ctx. */
+   card's text reads only what setup put in ctx.
+   Three options at most (Lachlan, 2026-11-21): the lies in the log, the snatch from the hill, the prisoner's and the hauler's
+   night with the watch, the shooting and the hanging at the gate, the ward left open, the tithe and the price, the bonded
+   children are no longer offered. What they set (t.lied, t.captive, t.tithe, t.paid, t.did.*) is still read below, for a game
+   saved while one of them stood. */
 (function () {
 'use strict';
 const { clamp, h } = LF; const { P, R, If } = h;
@@ -190,9 +194,6 @@ B('sign', { id: 'fer.midden', view: 'world', tone: 'pressure', title: 'The Bone 
     { label: 'Cut a trench through it and read it layer by layer', note: 'The survey team spends the month in a pit of human bone, and the crews know what is in it by the first evening.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5)] },
       ok: { text: (s, c) => `${c.Sc} cuts a trench to the bottom and reads the face of it. ${ev('midden', c.ev)} The plate is from a colony ship of an older class than the ${LF.SHIP}, and it was cut up with hand tools.`, fx: (s, c) => ({ morale: -1, do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: (s, c) => `The trench shows that the ground was turned over more than once by whoever dug here last, and the layers say nothing in order. ${c.Sc} counts four hundred skulls and stops. The forage crew has heard the number by supper.`, fx: s => ({ morale: -2, do: s2 => learn(s2, T(s2), 6) }) } },
-    { label: 'Fill it in, and log it as the burial ground of an earlier landing', dark: true, note: 'The crews go back to the outer field believing that the dead out there died in their beds.', info: [['yield', 'Morale'], ['later', 'Whoever works the outer field']],
-      out: { text: (s, c) => `The pit is filled and the log says burial ground. ${c.D} signs the entry and does not discuss it. The forage crew goes back out in the morning, two to a furrow, as before.`,
-        fx: s => ({ morale: 2, stain: ['fer_lied', 1], do: s2 => { const t = T(s2); t.lied = s2.day; t.did.lied = true; LF.ease(s2, 'unexplained', 'fer.lied', 15, 60); } }) } },
     { label: 'Pull the outer field in to the wire, and forbid the ground beyond it', note: 'The colony loses its forage and a part of the harvest, and is told why.',
       out: { text: 'The outer field is given up with the crop standing in it. The wire is walked at dusk and dawn, and the galley does without the forage.',
         fx: s => ({ food: -40, morale: -2, do: s2 => { const t = T(s2); t.infield = s2.day; LF.emit(s2, 'fear', 'fer.infield', 25, 100, 'the ground past the wire is forbidden on account of a pit of human bone'); } }) } },
@@ -211,9 +212,6 @@ B(['sign', 'found'], { id: 'fer.gone', view: 'world', tone: 'pressure', title: '
     { label: (s, c) => `Set somebody off the punishment detail to hoe that furrow at dusk, with rifles lying up in ${c.cover}`, dark: true, note: 'One person is put out to be taken, and the watch gets a clear shot at whatever comes for them.', info: [['yield', 'A look at them'], ['danger', 'The one in the furrow']],
       out: { text: (s, c) => `A hauler hoes the same furrow at dusk for the month, with a line on one ankle. On a night with no moon they come, low and quick, eight or nine of them. The watch drops two. The line is cut with somebody's knife, and the hauler goes with the rest. The two on the ground are human in every particular, small, scarred, and wearing nothing the colony made.`,
         fx: s => ({ pop: -1, stain: ['fer_bait', 2], do: s2 => { const t = T(s2); t.taken++; t.toll++; if (t.truth.is === 'kin') t.held++; t.did.bait = true; t.thin += 2; hate(s2, 1); learn(s2, t, 10); } }) } },
-    { label: 'Log the forager as a deserter, and stand the crew down', dark: true, note: 'The crew is told that a friend walked out on it, and goes on working ground where somebody was taken.', info: [['yield', 'Morale'], ['later', 'Whoever works the outer field']],
-      out: { text: 'The log says deserted, with the date. The crew does not believe it, and by the end of the month most of the mess does. The hoe goes back into stores.',
-        fx: s => ({ morale: 1, tension: -4, stain: ['fer_lied', 1], do: s2 => { const t = T(s2); t.lied = s2.day; t.did.deserter = true; } }) } },
     { label: 'Arm the field crews, and work the outer field in gangs of ten', note: 'Every field hand carries a weapon nobody trained them with, and the field is worked at the pace of the slowest gang.',
       out: { text: 'Pry bars, cut-down pipe and four spare rifles go out with the gangs each morning. The work is slow. Before the month is out a field hand is shot through the thigh at dusk by a neighbour who heard something in the next row.',
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.gangs = s2.day; } }) } },
@@ -227,9 +225,6 @@ B('found', { id: 'fer.warren', view: 'world', tone: 'pressure', title: 'The Hill
     { label: 'Put two watchers in a hide above the hill for the month', note: 'Two people lie up within a stone\'s throw of several hundred, with no help nearer than the wall.', test: { base: 50, mods: [R('security', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `The two lie up for the month and come back thin and unseen. ${ev('warren', c.ev)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 24, c.ev) }) },
       bad: { text: 'The hide is found in the first half of the month. One watcher comes in over the wire at a run, without rifle or pack. The other was a pace behind at the foot of the hill and then was not.', fx: s => ({ pop: -1, morale: -1, do: s2 => { const t = T(s2); t.taken++; t.toll++; if (t.truth.is === 'kin') t.held++; learn(s2, t, 8); } }) } },
-    { label: 'Have the watch take one of them alive from the edge of the hill', dark: true, note: 'Somebody is carried off from home to a pump house, by a colony that has just had the same done to it.', info: [['yield', 'Somebody to question'], ['danger', 'The one taken']],
-      out: { text: (s, c) => `The watch lies up by an outlying hole and comes back at a run with a grown one in a cargo net. Two of the watch are bitten to the bone. The hill is loud behind them for the rest of the night.`,
-        fx: s => ({ stain: ['fer_taken', 1], do: s2 => { const t = T(s2); t.captive = s2.day; t.did.captive = true; hate(s2, 1); if (!t.q.caught) { t.q.caught = s2.day; LF.cue(s2, 'fer.caught', 0, 4); } } }) } },
     { label: 'Light smudge fires in the nearest mouths tonight, and shoot what comes out', dark: true, note: 'It thins them before they have decided anything about the colony, and it is done to people in their sleep.', info: [['yield', 'Fewer of them near the wire'], ['danger', 'Everyone in the nearest holes']],
       out: { text: (s, c) => `Wet ${c.cover === 'the snow' ? 'bedding' : 'brush'} and engine oil go into nine mouths on the near side, and the watch waits at each with a lamp. About thirty come out, of all sizes, and are shot as they come. Nothing comes near the wire for the rest of the month.`,
         fx: s => ({ tension: -4, stain: ['fer_smoked', 3], do: s2 => { const t = T(s2); t.smoked = s2.day; t.did.smoked = true; t.thin += 30; t.cowed = s2.day + 40; hate(s2, 2); } }) } },
@@ -239,15 +234,12 @@ B('found', { id: 'fer.warren', view: 'world', tone: 'pressure', title: 'The Hill
   ] });
 
 B(['found', 'gate'], { id: 'fer.caught', tone: 'pressure', title: 'The One in the Pump House',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { taken: !!t.captive, ev: pickK(s, t), ev2: pickK(s, t, 0.1) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { taken: !!t.captive, ev: pickK(s, t) }); },   // t.captive: only a game saved before the three-option pass has it
   text: (s, c) => `${c.taken ? 'The one the watch brought back' : 'The watch caught one inside the wire last night, with both arms in a seed bin. The prisoner'} is on a chain in the pump house: a grown adult the size of a twelve-year-old, scarred, lousy, and human by every measure ${c.d} has. The prisoner has not spoken and has not looked away from the door.\n\nHalf the colony has found a reason to walk past the pump house today.${c.dv ? `\n\n[[physician]] "That's a person on that chain, and they're watching the door because they think whoever comes through it is going to hurt them." "Look at the hands before anyone starts, because that's somebody's grandchild, off a ship like ours."` : ''}`,
   choices: [
     { label: 'Have the clinic sit with the prisoner for the month, with food and without the chain', note: 'The clinic runs short-handed for the month, and one bolt for the door ends it.', test: { base: 50, mods: [R('physician', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `${cap(LF.sentName(s, 'physician'))} sits on the pump house floor through the month with a bowl and a slate. ${ev('speech', c.ev)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 26, c.ev) }) },
       bad: { text: (s, c) => `The prisoner eats, sleeps under the pump, and says nothing. Near the end of the month the door is left on the latch for the length of a meal. The prisoner goes over the wire with a blanket and a kitchen knife.`, fx: s => ({ morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 6); if (t.truth.is === 'inside') t.scouted = true; } }) } },
-    { label: 'Give the prisoner to the watch for the night', dark: true, note: 'The watch has answers by morning, out of somebody who may not have the words to give them.', info: [['yield', 'What it shows'], ['danger', 'The prisoner']],
-      out: { text: (s, c) => `${c.W} has the pump house until morning, and the colony hears some of it. ${ev('speech', c.ev2)} The prisoner is alive at first light and does not get up.`,
-        fx: (s, c) => ({ stain: ['fer_question', 2], do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev2); t.did.question = true; hate(s2, 1); LF.emit(s2, 'fear', 'fer.question', 25, 100, 'the watch had a prisoner in the pump house all night'); } }) } },
     { label: 'Hang the prisoner at the outer post, where the hill can see', dark: true, note: 'It is a warning anybody can read, given to people who may have been owed something else.', info: [['yield', 'Nothing near the wire for a while'], ['danger', 'The prisoner']],
       out: { text: 'It is done at the outer post at noon, and the body is left up. For the rest of the month nothing comes near the wire, and the field crews work as far as the last furrow.',
         fx: s => ({ morale: 2, tension: -6, stain: ['fer_hanged', 2], do: s2 => { const t = T(s2); t.did.hanged = true; t.cowed = s2.day + 40; hate(s2, 2); } }) } },
@@ -270,9 +262,6 @@ B('gate', { id: 'fer.woke', tone: 'crisis', title: 'Sleepers at the Gate',
     { label: 'Keep the gate shut', dark: true, note: 'If they are sleepers, the colony is sending its own back out to whoever dug the bone ground.', info: (s, c) => [['yield', 'Nobody unknown inside'], ['danger', `The ${num(c.k)} at the gate`]],
       out: { text: 'The gate stays barred. They stand at it until dusk, calling up the names of decks and banks. In the morning they are gone, and the ground where they stood is covered in small bare prints.',
         fx: s => ({ morale: -2, stain: ['fer_turned', 2], do: s2 => { const t = T(s2); t.did.turned = true; if (t.truth.is === 'kin') hate(s2, 1); } }) } },
-    { label: 'Have the wall shoot them where they stand', dark: true, note: 'It is certain, and it is done to weeping people in the colony\'s own coveralls with the whole wall looking on.', info: (s, c) => [['yield', 'Nobody unknown inside'], ['danger', `The ${num(c.k)} at the gate`]],
-      out: { text: (s, c) => `${c.W} gives the order twice before the wall carries it out. ${c.D} goes over the bodies afterwards. None has the cold-scar at the temples that every sleeper carries out of the racks, and all of them have the hill's lice. That shows they lied about the ship, and nothing about why they came.`,
-        fx: s => ({ tension: -6, morale: -1, stain: ['fer_shot', 3], do: s2 => { const t = T(s2); t.did.shot = true; learn(s2, t, 10); hate(s2, 2); } }) } },
   ] });
 
 B(['gate', 'choice'], { id: 'fer.ask', tone: 'pressure', title: 'What the Cold Tastes Like',
@@ -286,9 +275,6 @@ B(['gate', 'choice'], { id: 'fer.ask', tone: 'pressure', title: 'What the Cold T
     { label: 'Put them out through the gate tonight', dark: true, note: 'It ends the doubt, and if they are sleepers it sends them back to the hill in the dark.', info: (s, c) => [['yield', 'Nobody unknown inside'], ['danger', `The ${num(c.k)} from the gate`]],
       out: { text: (s, c) => `They are walked to the gate after lamp-down with a blanket each. One of them holds on to the bar and has to be lifted off it. By morning the field is empty.`,
         fx: (s, c) => Object.assign({ morale: -1, stain: ['fer_putout', 2], do: s2 => { const t = T(s2); t.in = 0; t.inpop = 0; t.penned = 0; t.did.putout = true; if (t.truth.is === 'kin') hate(s2, 1); } }, outFx(c)) } },
-    { label: 'Hang them in the yard as spies', dark: true, note: 'The colony sees an answer given for the people it has lost, on the evidence of a wrong word for the lander.', info: (s, c) => [['yield', 'Morale'], ['danger', `The ${num(c.k)} from the gate`]],
-      out: { text: (s, c) => `It is done at the cart crane with the colony turned out. The crews that have lost people stand at the front. The ${num(c.k)} do not seem to understand the charge, and the youngest is still asking a question when the cart is drawn away.`,
-        fx: (s, c) => Object.assign({ morale: 3, tension: -8, stain: ['fer_spies', 3], do: s2 => { const t = T(s2); t.in = 0; t.inpop = 0; t.penned = 0; t.did.spies = true; hate(s2, 2); } }, outFx(c)) } },
     { label: 'Vouch for them at muster, and stop the talk', note: 'They sleep in the row with everyone else on your word alone, and whoever still doubts them has to keep quiet about it.',
       out: { text: (s, c) => `You say it once at muster: they are colonists. ${c.penned ? 'The long store is unlocked and they are given bunks. ' : ''}The talk goes on in the bunkhouse, more quietly.`,
         fx: (s, c) => ({ morale: 1, pop: c.inpop ? 0 : c.k, do: s2 => { const t = T(s2); t.vouched = s2.day; t.penned = 0; t.inpop = t.in; t.did.vouched = true; t.warm++; } }) } },
@@ -304,24 +290,15 @@ B(['gate', 'choice'], { id: 'fer.raid', tone: 'crisis', title: 'Over the Wire',
     { label: 'Hold the bunkhouses, and let the breach go', note: 'The children\'s row is kept, and whoever is already on a shoulder is gone.',
       out: { text: (s, c) => `The watch falls back on the bunkhouse doors and holds them. The raid is over in the time it takes to say so. At the morning muster four names are called twice and not answered.`,
         fx: s => ({ morale: -3, chips: [['Four carried off', false]], do: s2 => { take(s2, T(s2), 4); LF.emit(s2, 'grief', 'fer.raid', 35, 150, 'four people were carried out of their bunks over the wire'); } }) } },
-    { label: 'Fire the outer store to light the ground, and fight them in the open', note: 'The wall can see what it is shooting, and a month of food burns to show it.',
-      out: { text: 'The outer store goes up, and the whole yard is lit yellow. They are caught in the open between the bunkhouses and the wire, and they drop what they are carrying and run. Two colonists are dead of the dropping and the shooting. The store burns until noon.',
-        fx: s => ({ food: -80, pop: -2, do: s2 => { const t = T(s2); t.toll += 2; t.thin += 15; } }) } },
-    { label: 'Bar the bunkhouses from outside, and leave the sick ward open', dark: true, note: 'They take what is easiest to carry, and the colony decides in advance who that is.', info: [['yield', 'The bunkhouses untouched'], ['danger', 'The sick ward']],
-      out: { text: (s, c) => `The bars go down on the bunkhouse doors. The ward door is left on the latch. They find it in a few minutes and are gone in a few more, with three who could not have run. ${c.D} was not told beforehand.`,
-        fx: s => ({ morale: -1, tension: -4, chips: [['Three carried off from the ward', false]], stain: ['fer_ward', 3], do: s2 => { const t = T(s2); take(s2, t, 3); t.cowed = s2.day + 30; t.did.ward = true; } }) } },
   ] });
 
 B(['gate', 'choice', 'bill'], { id: 'fer.ours', tone: 'pressure', title: 'The One Who Came Back',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.1), ev2: pickK(s, t, 0.15) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.1) }); },
   text: (s, c) => `One of the people carried off is at the gate in daylight, alone, asking to be let in. It is a hauler from the second row, on the muster and known to forty people. The hauler is thin, walks unaided, and will say only a little through the bars: that there are others alive up there, and that it is not what the colony thinks.\n\n${c.wv ? `[[security]] "So the hauler's walking and talking, and looks well on it, which is more than I'd say for anyone else who went up that hill." "And I'll be the one to ask why anything that gets carried into that hill is let walk out of it, since nobody else seems keen."` : `${c.W} wants to know why anybody carried into that hill would be let walk out of it.`}`,
   choices: [
     { label: 'Open the gate, and have the hauler\'s whole account taken in the clinic', note: 'Somebody who has been inside the hill sleeps inside the wire tonight, on the strength of a face people know.', test: { base: 60, mods: [R('physician', 10), R('security', 5)] },
       ok: { text: (s, c) => `It comes out over the month, a little at a time. ${ev('ours', c.ev)}`, fx: (s, c) => ({ pop: 1, do: s2 => { const t = T(s2); learn(s2, t, 30, c.ev); back1(s2, t); } }) },
       bad: { text: (s, c) => `The hauler talks for an hour and then stops, and nothing ${LF.sentName(s, 'physician')} tries starts it again. The hauler is given the old bunk and sits on it, facing the door.`, fx: s => ({ pop: 1, morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 8); back1(s2, t); } }) } },
-    { label: 'Open the gate, take the hauler to the pump house, and let the watch ask', dark: true, note: 'One of the colony\'s own comes home from that hill to a chain and a lamp.', info: [['yield', 'What it shows'], ['danger', 'The hauler']],
-      out: { text: (s, c) => `${c.W} has it all by morning. ${ev('ours', c.ev2)} The hauler is let out to the bunkhouse at first light and is not spoken to there.`,
-        fx: (s, c) => ({ pop: 1, stain: ['fer_ours', 2], do: s2 => { const t = T(s2); learn(s2, t, 26, c.ev2); back1(s2, t); t.did.ours = true; LF.emit(s2, 'fear', 'fer.ours', 25, 100, 'one of the colony\'s own came back from the hill and was given to the watch'); } }) } },
     { label: 'Keep the gate shut', dark: true, note: 'Nothing that has been inside that hill comes inside the wire, and somebody forty people know is left outside it.', info: [['yield', 'Nothing from the hill inside'], ['danger', 'The hauler']],
       out: { text: 'The hauler stands at the bars until dark, saying the names of the second row one after another. Some of the second row answer. In the morning there is nobody at the gate.',
         fx: s => ({ morale: -2, stain: ['fer_shut', 2], do: s2 => { const t = T(s2); t.did.shut = true; LF.emit(s2, 'grief', 'fer.shut', 30, 150, 'one of the carried-off came home and was kept out'); } }) } },
@@ -346,14 +323,17 @@ const TREAT = {
   inside: (c) => `Two go to the foot of the hill with bread and the manifest. They are met by a dozen who speak well, and who agree to all of it in a day: nobody else taken, trade at the flat stone, and three of the hill's young to live inside the wire as a pledge. The three are at the gate the next morning, in clean coveralls.`,
 };
 B('choice', { id: 'fer.choice', view: 'world', tone: 'crisis', title: 'The Hill, Tonight',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { taken: Math.max(2, t.taken), guide: !!t.guide, mapped: !!t.mapped, lean: lean(t) }); },
-  text: (s, c) => `${Num(c.taken)} colonists have gone into that hill, and the outer field has not been worked without rifles since the first. ${c.W} wants to go in with fire. ${c.E} has charges enough to bring down every mouth. ${c.Cm} wants to try bread and the manifest once before either.${c.guide ? ' The ones who came through the gate say they can lead a party to whoever gives the orders up there.' : c.mapped ? ' The party that went out to the hill brought back a drawing of every mouth on it.' : ''}\n\n${c.lean} The hall has been told there will be an answer tonight.`,
+  setup: s => { const t = T(s); return Object.assign(crew(s), { taken: Math.max(2, t.taken), guide: !!t.guide, mapped: !!t.mapped, plan: !!(t.guide || t.mapped), lean: lean(t) }); },
+  text: (s, c) => `${Num(c.taken)} colonists have gone into that hill, and the outer field has not been worked without rifles since the first. ${c.plan ? `${c.E} has charges enough to bring down every mouth` : `${c.W} wants to go in with fire`}. ${c.Cm} wants to try bread and the manifest first.${c.guide ? ' The ones who came through the gate say they can lead a party to whoever gives the orders up there.' : c.mapped ? ' The party that went out to the hill brought back a drawing of every mouth on it.' : ''}\n\n${c.lean} The hall has been told there will be an answer tonight.`,
+  /* Three on screen (2026-11-21): destroying the hill is one option, and which one goes by what the colony has. With a plan of
+     the hill (the party's drawing, t.mapped, or the strangers' plan, t.guide) every mouth is known and the charges are offered;
+     without one it is fire, gallery by gallery. The two never show together. */
   choices: [
-    { label: 'Go into the hill with fire, gallery by gallery, and leave nobody in it', dark: true, note: 'It ends them, children and all, and the people who do it will have seen every gallery by lamplight.', info: [['yield', 'An end to it'], ['danger', 'Everyone in the hill'], ['danger', 'The party']],
+    { label: 'Go into the hill with fire, gallery by gallery, and leave nobody in it', dark: true, show: (s, c) => !c.plan, note: 'It ends them, children and all, and the people who do it will have seen every gallery by lamplight.', info: [['yield', 'An end to it'], ['danger', 'Everyone in the hill'], ['danger', 'The party']],
       out: { text: (s, c) => `It takes two nights. The galleries are low, and the watch goes down them on its knees behind a wall of burning oil. Four of the party do not come out. On the second morning the hill is smoking from every mouth and nothing on it moves.`,
         fx: s => ({ pop: -4, mat: -15, tension: -10, stain: ['fer_burned', 5], do: s2 => { const t = T(s2); t.toll += 4; t.burned = s2.day; t.did.burned = true; learn(s2, t, 40, t.truth.is); hate(s2, 9); },
           chron: 'The colony went into the hill with fire and left nobody alive in it.' }) } },
-    { label: 'Blow every mouth shut with mining charges, and leave the hill closed', dark: true, cost: { mat: 30 }, note: 'Nobody from the colony has to go inside, and nobody will ever know what was in there when the roof came down.', info: [['yield', 'An end to it'], ['danger', 'Everyone in the hill']],
+    { label: 'Blow every mouth shut with mining charges, and leave the hill closed', dark: true, show: (s, c) => !!c.plan, cost: { mat: 30 }, note: 'Nobody from the colony has to go inside, and nobody will ever know what was in there when the roof came down.', info: [['yield', 'An end to it'], ['danger', 'Everyone in the hill']],
       out: { text: (s, c) => `${c.E} sets the charges at noon, when the hill sleeps, and fires them together. The slope slides. For the rest of the month there is knocking under it, which the wall can hear at night when the wind drops.`,
         fx: s => ({ tension: -10, morale: 1, stain: ['fer_sealed', 5], do: s2 => { const t = T(s2); t.sealed = s2.day; t.did.sealed = true; hate(s2, 9); },
           chron: 'The colony blew the mouths of the hill shut with everyone inside.' }) } },
@@ -363,10 +343,6 @@ B('choice', { id: 'fer.choice', view: 'world', tone: 'crisis', title: 'The Hill,
         fx: s => ({ pop: is(s, 'raid') ? -2 : 0, stain: ['fer_deck', 2], do: s2 => { const t = T(s2), k = t.truth.is; learn(s2, t, 40, k); t.did.strike = k; if (k === 'raid') t.toll += 2; else if (k === 'kin') { t.keeper = true; hate(s2, 4); } else t.deck = s2.day; } }) },
       bad: { text: 'The party is heard in the second gallery. Three get out, one of them carried. The hill is awake all night, and at first light there are several hundred of them on the near slope, looking at the colony.',
         fx: s => ({ pop: -3, morale: -2, stain: ['fer_deck', 1], do: s2 => { const t = T(s2); t.toll += 3; t.did.strike = 'failed'; hate(s2, 2); learn(s2, t, 6); } }) } },
-    { label: 'Buy them off: one a month from the sick ward and the punishment detail, left at the flat stone', dark: true, note: 'The fields are worked in peace, and the colony chooses each month which of its own it can spare.', info: [['yield', 'Nobody carried off'], ['danger', 'One of the colony, every month']],
-      out: { text: (s, c) => `The first is walked to the flat stone at dusk and left on a line, with a blanket. ${c.Q} keeps the list and will not say how it is ordered. Nothing comes over the wire that month, and the outer field is worked to the last furrow.`,
-        fx: s => ({ pop: -1, tension: -8, stain: ['fer_tithe', 4], do: s2 => { const t = T(s2); t.tithe = s2.day; t.did.tithe = true; t.taken++; t.toll++; t.given++; if (t.truth.is === 'kin') t.held++; },
-          chron: 'The colony began leaving one of its own at the flat stone each month.' }) } },
     { label: 'Walk to the foot of the hill unarmed, with bread and the manifest', note: 'Whoever carries the bread is in their hands, and if the hill wants meat the colony has shown it the way to the larder.', info: [['yield', 'Terms, if they keep any'], ['danger', 'Whoever carries the bread']],
       out: { text: (s, c) => TREAT[T(s).truth.is](c),
         fx: s => ({ food: -30, pop: is(s, 'raid') ? -2 : is(s, 'inside') ? 3 : 0, do: s2 => { const t = T(s2), k = t.truth.is; t.did.treat = k;
@@ -382,21 +358,16 @@ B('bill', { id: 'fer.young', view: 'world', tone: 'crisis', title: 'What Was Lef
     { label: 'Bring them inside, and raise them as the colony\'s own', note: (s, c) => `The stores carry ${num(c.y)} more mouths from tonight, and they grow up among the people who ${c.sealed ? 'buried' : 'burned'} their parents.`,
       out: { text: (s, c) => `They are carried in, because they will not walk through the gate. For a month they sleep under the bunks and bite. By the end of it the smallest will take a bowl from a hand, and the oldest has learned to say one word, which is the name of the cook.`,
         fx: (s, c) => ({ pop: c.y, food: -120, morale: -1, do: s2 => { const t = T(s2); t.did.reared = c.y; LF.emit(s2, 'strangers', 'fer.young', 30, 250, 'the children of the hill are being raised inside the wire'); } }) } },
-    { label: 'Bring them in as bonded hands, under the watch', dark: true, note: 'The colony gets labour for a bowl a day, from children whose parents it killed.', info: [['yield', 'Hands'], ['danger', 'The children of the hill']],
-      out: { text: (s, c) => `They are roped in a line and walked through the gate. The watch works them in the trench and the night soil, and locks them in the long store at dusk. The crews call them the litter.`,
-        fx: (s, c) => ({ pop: c.y, thralls: c.y, food: -40, stain: ['fer_bond', 3], do: s2 => { T(s2).did.bond = c.y; } }) } },
     { label: 'Have the wall drive them off the field', dark: true, note: 'They go back to a dead hill with nobody to feed them, and the colony does not have to watch it.', info: [['yield', 'The stores untouched'], ['danger', 'The children of the hill']],
       out: { text: 'The wall fires over them and then at their feet. They go, the larger carrying the smaller. For most of the month there is one small fire on the high ground at night, and then there is not.',
         fx: s => ({ stain: ['fer_drove', 3], do: s2 => { T(s2).did.drove = true; } }) } },
-    { label: 'Leave a month of flour at the last furrow, and let them go where they will', note: 'The stores are a month shorter, and whoever lives through it will be grown and near the wire in ten years.',
-      out: { text: 'The sacks are left at the last furrow at noon and are gone by morning, and so are the children.',
-        fx: s => ({ food: -80, morale: 1, do: s2 => { T(s2).did.flour = true; } }) } },
   ] });
 
 B('bill', { id: 'fer.lean', view: 'world', tone: 'crisis', title: 'At the Wire in Daylight',
   when: (s, t) => t.billId === 'fer.lean',
   setup: s => { const t = T(s); return Object.assign(crew(s), { m: Math.max(200, Math.round((t.n - t.thin) / 50) * 50), k: t.in, inpop: t.inpop > 0, tithe: !!t.tithe, lean: lean(t) }); },
   text: (s, c) => `They have come down from the hill in daylight, every one that can walk: ${num(c.m)} or more, standing in the outer field a stone's throw from the wire. They are thinner than they were. The smallest are in front. They make no sound and they do not come on.\n\n${c.W} has every rifle on the wall and has asked for the order. ${c.Q} says, unasked, that the game on this ground was never enough to feed that many. ${c.lean}`,
+  /* Three on screen (2026-11-21): with strangers inside the wire, putting them out takes the place of standing to. */
   choices: [
     { label: 'Open fire from the wall, and keep firing until the field is empty', dark: true, note: 'It is the one clear shot the colony will ever have at all of them, and the smallest are standing in front.', info: [['yield', 'An end to it, if they are what the wall thinks'], ['danger', 'Everyone in the field']],
       out: { text: (s, c) => `The wall fires for the better part of an hour. For the first minutes they do not run. When the field is empty of anything standing, ${c.w} has the count taken from the wall, and it comes to more than two hundred.`,
@@ -408,12 +379,9 @@ B('bill', { id: 'fer.lean', view: 'world', tone: 'crisis', title: 'At the Wire i
     { label: (s, c) => `Put the ${num(c.k)} from the gate out to them, and bar it`, dark: true, show: (s, c) => c.k > 0, note: 'If the hill came for its own, it has them. If those are sleepers, they go into that field alone.', info: (s, c) => [['yield', 'Nobody unknown inside'], ['danger', `The ${num(c.k)} from the gate`]],
       out: { text: (s, c) => `The ${num(c.k)} are walked out through the gate and it is barred behind them. They cross the field slowly. The front rank opens to let them in and closes again, and the wall cannot see what is done with them.`,
         fx: (s, c) => Object.assign({ stain: ['fer_gave', 3], do: s2 => { const t = T(s2); t.in = 0; t.inpop = 0; t.penned = 0; t.did.gave = true; } }, outFx(c)) } },
-    { label: 'Hold fire, bar the gate and stand to until they move', note: 'Every hand is on the wall and none in the field for as long as they stand there, and what happens next is theirs to choose.',
+    { label: 'Hold fire, bar the gate and stand to until they move', show: (s, c) => !(c.k > 0), note: 'Every hand is on the wall and none in the field for as long as they stand there, and what happens next is theirs to choose.',
       out: { text: 'The colony stands to. They are still there at dusk, and at dawn. The crop in the inner field goes unweeded, and on the wall people have begun to learn faces.',
         fx: s => ({ food: -60, morale: -1, do: s2 => { const t = T(s2); t.stood = s2.day; t.did.stood = true; } }) } },
-    { label: 'Put the sick ward and the punishment detail outside the gate, and bar it', dark: true, show: (s, c) => !c.tithe, note: 'The hill is paid in the people the colony can best spare, all at once, with both sides looking on.', info: [['yield', 'A season\'s peace, if they take the price'], ['danger', 'The six put out']],
-      out: { text: (s, c) => `Six are put outside the gate, two of them on litters. ${c.D} goes out with them and has to be brought back by the arms. Toward dusk some of the front rank come forward and carry the six away. By morning the field is empty.`,
-        fx: s => ({ leave: 6, morale: -2, tension: -6, stain: ['fer_tithe', 4], do: s2 => { const t = T(s2); t.paid = s2.day; t.did.paid = true; t.taken += 6; t.toll += 6; t.cowed = s2.day + 60; if (t.truth.is === 'kin') t.held += 6; } }) } },
   ] });
 
 /* ======================= AFTER: who they were ======================= */
@@ -457,23 +425,20 @@ B('after', { id: 'fer.truth', view: 'world', tone: 'quiet', title: 'Who They Wer
     { label: 'Enter them in the record as animals', dark: true, note: 'The colony gets an account it can live beside, and several hundred people off a colony ship are written down as a kind of vermin.', info: [['yield', 'Morale']],
       out: { text: 'The record says that a native predator of human size and habit was met in the second season and dealt with. The word people does not occur in the entry. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['fer_record', 1], chron: 'The record says that a native predator of human size was met and dealt with.' }) } },
-    { label: (s, c) => c.doubt ? 'Post a standing watch on the closed hill' : 'Close the bone ground properly, and mark it', note: (s, c) => c.doubt ? 'Two people sit above a grave for as long as there is a colony, listening for something nobody wants to hear.' : 'A month of the yard\'s work goes on the dead of people who took the colony\'s own.',
-      out: { text: (s, c) => c.doubt ? 'A hut is built on the slide and a pair sits in it, turn about. The log they keep has one entry a night, and it is the same entry.' : 'The pit is filled and walled with field stone, and a spar of hull frame is set upright at the head of it. Nobody could agree what to cut on it, so it is bare.',
-        fx: (s, c) => ({ mat: c.doubt ? 0 : -10, morale: c.doubt ? -1 : 1, do: s2 => { if (c.doubt) LF.emit(s2, 'fear', 'fer.hut', 20, 200, 'a watch is kept on the closed hill'); } }) } },
   ] });
 
-LF.TAGS['fer.midden'] = ['cautious open', 'closed order', 'cautious closed', 'severe bold'];
-LF.TAGS['fer.gone'] = ['bold open', 'severe order', 'closed order', 'cautious order'];
-LF.TAGS['fer.warren'] = ['cautious open', 'severe bold', 'severe closed', 'mercy open'];
-LF.TAGS['fer.caught'] = ['mercy open', 'severe order', 'severe closed', 'mercy free'];
-LF.TAGS['fer.woke'] = ['mercy open', 'cautious order', 'closed order', 'severe closed'];
-LF.TAGS['fer.ask'] = ['cautious open', 'closed order', 'severe order', 'mercy open'];
-LF.TAGS['fer.raid'] = ['severe order', 'cautious order', 'bold', 'severe closed'];
-LF.TAGS['fer.ours'] = ['mercy open', 'severe order', 'closed order', 'bold open'];
-LF.TAGS['fer.choice'] = ['severe bold', 'severe closed', 'bold order', 'severe order', 'mercy open'];
-LF.TAGS['fer.young'] = ['mercy open', 'severe order', 'severe closed', 'mercy free'];
-LF.TAGS['fer.lean'] = ['severe closed', 'mercy open', 'severe order', 'cautious closed', 'severe order'];
-LF.TAGS['fer.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['fer.midden'] = ['cautious open', 'cautious closed', 'severe bold'];
+LF.TAGS['fer.gone'] = ['bold open', 'severe order', 'cautious order'];
+LF.TAGS['fer.warren'] = ['cautious open', 'severe closed', 'mercy open'];
+LF.TAGS['fer.caught'] = ['mercy open', 'severe closed', 'mercy free'];
+LF.TAGS['fer.woke'] = ['mercy open', 'cautious order', 'closed order'];
+LF.TAGS['fer.ask'] = ['cautious open', 'closed order', 'mercy open'];
+LF.TAGS['fer.raid'] = ['severe order', 'cautious order'];
+LF.TAGS['fer.ours'] = ['mercy open', 'closed order', 'bold open'];
+LF.TAGS['fer.choice'] = ['severe bold', 'severe closed', 'bold order', 'mercy open'];
+LF.TAGS['fer.young'] = ['mercy open', 'severe closed'];
+LF.TAGS['fer.lean'] = ['severe closed', 'mercy open', 'severe order', 'cautious closed'];
+LF.TAGS['fer.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

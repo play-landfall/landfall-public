@@ -9,7 +9,12 @@
    what a child says, what comes out on the table. Nothing here says which it was until the night has passed, and
    if the children were killed first, only opening the graves will ever say.
    It writes unexplained, changed, fear, suspicion, resentment and grief, and costs labour while parents will not work.
-   Every card's text reads only what setup put in ctx: the UI draws the card again under its outcome. */
+   Every card's text reads only what setup put in ctx: the UI draws the card again under its outcome.
+   Three options at most (Lachlan, 2026-11-21). No longer offered: what the parents were told (the exercise, the clear scans),
+   the watch carrying them in, the schoolroom bolted at dusk, the clerk's ledger, the work crews, the parents locked up, the
+   search of the far plots, the parents moved into the schoolroom, the undated order and the keys taken, every adult awake
+   and armed. What they set (t.lied, t.calm, t.split, t.jailed, t.undated, t.pliant, t.watch) is still read below, for a game
+   saved while one of them stood. */
 /* The child who answers: one of the roster's children near eight, fixed for the game (roster of sixty, 2026-11-20). */
 const EIGHT = ['x28', 'x54', 'x52', 'x51'], kidRk = s => EIGHT[Math.abs((s && s.seed) | 0) % EIGHT.length];
 
@@ -207,9 +212,6 @@ B('signs', { id: 'kid.draw', tone: 'pressure', title: 'The Same Shape',
     { label: 'Keep one of them in the clinic under a lamp for a week', dark: true, note: 'A week of watching would show whether they cannot sleep or will not. The parents would be told it was a fever.', info: [['yield', 'What it is'], ['danger', 'One child, and parents who are lied to']],
       out: { text: 'The oldest of them is kept in the end room for a week, with a nurse writing down every hour. The child does not sleep, does not complain, and scratches the shape into the wall with a fingernail. The parents are told it is a fever, and bring soup to the door every evening.',
         fx: s => ({ stain: ['kid_watched', 1], do: s2 => { learn(s2, T(s2), 26); LF.emit(s2, 'suspicion', 'kid.lamp', 20, 150, 'a child was kept in the clinic and the parents were told it was a fever'); } }) } },
-    { label: s => `Have ${N(s, 'teacher')} tell the parents it was set as an exercise`, dark: true, note: 'The parents sleep, on the strength of something you know to be false.', info: [['yield', 'Morale']],
-      out: { text: s => `${Nc(s, 'teacher')} says it at the schoolroom door, to each parent in turn, and is believed. The fields are worked as usual. The children go on drawing it, on paper when they are given paper and with a finger on the table when they are not.`,
-        fx: s => ({ morale: 2, stain: ['kid_lied', 1], do: s2 => { const t = T(s2); t.lied = s2.day; t.calm = s2.day + 60; } }) } },
     { label: 'Let them draw. They are children in a strange place', note: 'If it is the start of something, nobody is watching it start, and the parents sit up alone.',
       out: { text: 'School goes on. The children draw the shape when they have paper and go back to their sums when they are told. Their parents sit up at night watching them lie awake, and come to the fields late.', fx: s => ({ food: -30, do: s2 => learn(s2, T(s2), 2) }) } },
   ] });
@@ -223,14 +225,8 @@ B(['signs', 'spread'], { id: 'kid.wire', tone: 'pressure', title: 'Dusk',
       ok: { text: s => `Eleven kilometres out, on the bearing, the party finds the shape: a ring of pale crust a hundred paces across, with a gap on the side nearest the colony. The ground inside it is warm. The party brings a piece back in a sealed jar. The children were told nothing, and that evening they stand a pace closer together.`,
         fx: s => ({ food: -30, do: s2 => { const t = T(s2); learn(s2, t, 24); t.ring = s2.day; s2.signs.push({ id: 'warmth', d: s2.day, src: SRC }); } }) },
       bad: { text: 'The party walks the bearing for two days and finds nothing it can put a name to. One of them takes a fall on the way back and does not live to be carried home. The children are at the wire when the stretcher comes in, and none of them turns round.', fx: s => ({ food: -30, pop: -1, do: s2 => learn(s2, T(s2), 6) }) } },
-    { label: 'Have the watch carry them in at dusk, every evening', note: 'The watch lays hands on children in front of their parents, every evening until it stops.',
-      out: { text: 'They do not struggle. They are carried in stiff, set down in the mess hall, and stand facing the wall on the same bearing until full dark. After a week the watch asks to be taken off the detail, and two of the parents will not let the watch near their door.',
-        fx: s => ({ morale: -2, do: s2 => { learn(s2, T(s2), 6); LF.emit(s2, 'resentment', 'kid.carry', 20, 120, 'the watch carries the children in from the wire every evening'); } }) } },
     { label: 'Let them stand, and let their parents stand with them', note: 'Every parent gives up the last hour of light, every day.',
       out: { text: 'The parents bring coats. By the end of the month there is a second line behind the first, of adults who do not know what they are facing. The evening shift in the fields is not worked.', fx: s => ({ food: -50, morale: 1, do: s2 => { learn(s2, T(s2), 4); adj(par(s2, T(s2)), 8); } }) } },
-    { label: 'Bolt the schoolroom at the last bell, with the children inside', dark: true, note: 'Nobody has to watch it. The children stand at a wall behind a locked door, and their parents wait outside.', info: [['yield', 'Morale'], ['danger', 'The children, and their parents']],
-      out: { text: (s, c) => `The bolt goes on at the last bell. Through the window they can be seen lined up along the east wall with their faces a hand from the boards. ${c.pid ? `${c.first} waits outside the door every evening until it is opened.` : 'Some of the parents wait outside the door every evening until it is opened.'}`,
-        fx: s => ({ morale: 1, stain: ['kid_dorm', 1], do: s2 => { const t = T(s2); t.shut = s2.day; adj(par(s2, t), -8); LF.emit(s2, 'resentment', 'kid.bolt', 25, 150, 'the children are bolted into the schoolroom at dusk'); } }) } },
     { label: 'Open the wire in front of one of them, on a line, and see where the child goes', dark: true, note: 'The bearing says which way they face. Only a child walking it would say where they mean to go.', info: [['yield', 'What it is'], ['danger', 'One child']],
       out: { text: 'A gap is cut at dusk in front of the smallest of them, with a line round the child\'s waist and two of the watch holding it. The child walks out at once, steadily, and is still walking when the line runs out at four hundred metres. It takes both of the watch to carry the child back. By then the others have turned to face the gap.',
         fx: s => ({ stain: ['kid_line', 1], do: s2 => { learn(s2, T(s2), 22); LF.emit(s2, 'fear', 'kid.line', 22, 120, 'a child walked out through the wire and had to be carried back'); } }) } },
@@ -252,9 +248,6 @@ B(['spread', 'night'], { id: 'kid.knows', tone: 'pressure', title: 'What the Chi
     { label: 'Have the child questioned alone, through the night', dark: true, note: 'A child who does not sleep can be asked for as long as the asker stays awake. The parents would not be in the room.', info: [['yield', 'What the children say is coming'], ['danger', 'One child']],
       out: { text: (s, c) => `${Nwc(s, 'security')} asks, and a clerk writes it down. The child answers everything, in order, without fear, for eleven hours: things ${c.df || 'the technician'} knew, and things nobody now living was there for. The last question is what is coming.\n\n[[${kidRk(s)}]] ${CHILD[T(s).lean.child]}\n\nThe parents are let in at dawn, and have to unclench the child's hands from the chair.`,
         fx: s => ({ stain: ['kid_questioned', 1], do: s2 => { const t = T(s2); t.got.child = s2.day; learn(s2, t, 18); LF.emit(s2, 'fear', 'kid.asked', 25, 150, 'what the child said under questioning has got round'); } }) } },
-    { label: 'Put a clerk in the schoolroom, and have the children asked what the dead knew', dark: true, note: 'The dead knew where things were stowed and what was signed off unchecked. The children would be worked as a ledger, and the bereaved would hear of it.', info: [['yield', 'Spares and materials'], ['danger', 'The children, and the bereaved']],
-      out: { text: 'A clerk sits in the schoolroom after the last bell with a ledger. The children say where a dead rigger stowed a crate of fittings, and which seals on the lander were signed off unchecked. Within the month the bereaved are queuing at the door with questions of their own, and some of the answers are more than they can carry.',
-        fx: s => ({ parts: 5, mat: 10, morale: -2, stain: ['kid_ledger', 1], do: s2 => { learn(s2, T(s2), 8); LF.emit(s2, 'grief', 'kid.ledger', 25, 150, 'the bereaved are asking the children about their dead'); } }) } },
   ] });
 B(['spread', 'night'], { id: 'kid.thread', tone: 'pressure', title: 'The Thread',
   setup: s => { const t = T(s); if (t.insight < 30) learn(s, t, 30 - t.insight); return { kids: t.kids }; },
@@ -272,9 +265,6 @@ B(['spread', 'night'], { id: 'kid.thread', tone: 'pressure', title: 'The Thread'
         fx: s => ({ pop: -1, morale: -2, stain: ['kid_table', 2], do: s2 => { const t = T(s2); t.kids = Math.max(0, t.kids - 1); t.dead++; t.got.cut = s2.day; t.cutOne = 'bad'; learn(s2, t, 24); } }) } },
     { label: 'No knife. Scan them every month and wait', note: 'If the thread is growing toward something, it gets there while the clinic takes pictures.',
       out: { text: s => `The scanner is booked for the children on the first rest day of every month. The line is a little longer in each picture. ${Nc(s, 'physician')} files them in order and has stopped showing them to the parents.`, fx: s => ({ food: -20, do: s2 => learn(s2, T(s2), 10) }) } },
-    { label: 'Tell the parents the scans are clear', dark: true, note: 'The parents go back to work and sleep at night, on the strength of something the light box says is false.', info: [['yield', 'The fields are worked'], ['later', 'What the parents do when they learn of it']],
-      out: { text: s => `${Nc(s, 'physician')} says it in the mess hall, reading from a sheet. The parents take it the way people take good news they had stopped expecting. The evening shift is worked again, and the scans go into a locked drawer.`,
-        fx: s => ({ food: 80, morale: 3, stain: ['kid_lied', 2], do: s2 => { const t = T(s2); t.lied = s2.day; t.calm = s2.day + 90; } }) } },
   ] });
 
 /* ======================= THE BAD NIGHT ======================= */
@@ -291,9 +281,6 @@ B('night', { id: 'kid.night', tone: 'crisis', title: 'All of Them at Once',
     { label: 'A camp past the wire, with whoever will go with them', cost: { mat: 25 }, note: 'The children and a handful of adults sleep outside the wire until the number runs out.', info: [['yield', 'Whatever is coming happens out there'], ['danger', 'The adults who go']],
       out: { text: 'Six adults go, four of them parents. The camp is pitched a kilometre east, on the line the children face, because they would not settle anywhere else. One of the six is lost in the first month, fetching water alone after dusk.',
         fx: s => ({ pop: -1, do: s2 => { T(s2).hold = 'camp'; } }) } },
-    { label: 'One child to each work crew, dawn to dusk, and no two in sight of each other', dark: true, note: 'Whatever passes between them may need them close. They would be kept apart by being kept at work.', info: [['yield', 'Food'], ['danger', 'The children']],
-      out: { text: 'Each child is given to a different crew, to carry, sort or hold a lamp. They work without tiring and do not need telling twice. At dusk each of them stops wherever the crew happens to be and turns to face the same way, and the crews have learned to stop with them.',
-        fx: s => ({ food: 100, stain: ['kid_crews', 1], do: s2 => { const t = T(s2); t.hold = 'school'; t.split = s2.day; learn(s2, t, 8); } }) } },
   ] });
 B('night', { id: 'kid.lock', tone: 'pressure', title: 'Bolt Cutters',
   when: (s, t) => t.hold === 'dorm' || t.hold === 'camp',
@@ -310,9 +297,6 @@ B('night', { id: 'kid.lock', tone: 'pressure', title: 'Bolt Cutters',
         fx: s => ({ morale: -3, stain: ['kid_dorm', 1], do: s2 => adj(par(s2, T(s2)), -15) }) },
       bad: { text: (s, c) => `The watch goes from pod to pod at first light. At the fourth door the parents do not stand aside, and somebody swings a pry bar. When it is over ${c.pid ? c.name : 'one of the parents'} is dead on the step, one of the watch has lost an eye, and the children have walked back to the ${PLACE[c.hold]} by themselves.`,
         fx: (s, c) => Object.assign({ morale: -5, stain: ['kid_dorm', 2], do: s2 => { LF.emit(s2, 'grief', 'kid.step', 35, 200, 'a parent was killed at a pod door by the watch'); } }, c.pid ? { kill: [{ who: c.pid, cause: 'killed at a pod door, keeping the watch from a child' }] } : { pop: -1 }) } },
-    { label: 'Lock up the parents who did it until the number has run out', dark: true, note: (s, c) => `${Num(c.n)} parents sit in the lock-up with their work undone, so that everyone else keeps faith with the lock.`, info: [['yield', 'The lock holds'], ['danger', 'The parents, and the crews they leave short']],
-      out: { text: (s, c) => `${Num(c.n)} parents are walked to the lock-up, and their children back to the ${PLACE[c.hold]}. ${c.pid ? `${c.first} goes without being held. ` : ''}The hall is quieter that evening. The crews are ${num(c.n)} short from the next morning.`,
-        fx: s => ({ food: -60, stain: ['kid_parents', 2], do: s2 => { const t = T(s2); t.jailed = s2.day; adj(par(s2, t), -25); LF.emit(s2, 'resentment', 'kid.jail', 40, 150, 'parents are in the lock-up for taking their own children home'); } }) } },
     { label: (s, c) => c.hold === 'dorm' ? 'Let the parents sleep inside with them, and bolt the door on all of them' : 'Let the parents move out to the camp with them', note: 'Nobody is parted from a child. If the number means anything, the parents are beside the children when it runs out.',
       out: { text: (s, c) => c.hold === 'dorm' ? `Bunks are carried in for the parents. The bolt goes on from outside at the last bell, on ${num(c.kids)} children and nearly as many adults. The fields are worked by whoever is left.` : 'A dozen more adults carry their bedding out through the gate. The camp is now a third of the colony\'s working hands, a kilometre from the fields, and the fields are worked by whoever is left.',
         fx: s => ({ food: -40, do: s2 => { const t = T(s2); t.inside = true; adj(par(s2, t), 5); } }) } },
@@ -325,15 +309,9 @@ B('night', { id: 'kid.hidden', tone: 'pressure', title: 'One Short',
     { label: 'A parent may keep a child wherever the parent sees fit', note: 'One child is somewhere nobody is watching, and forty people have said what they will do about the rest.',
       out: { text: 'You say so in the hall. The forty take it quietly. Two nights later a dozen of them are sitting outside the schoolroom in shifts with pick handles across their knees, and the children walk past them to lessons in the morning.',
         fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.vigil = s2.day; adj(par(s2, t), 10); LF.emit(s2, 'fear', 'kid.vigil', 30, 120, 'adults are sitting outside the schoolroom with pick handles'); } }) } },
-    { label: 'Turn out the far plots until the child is found', dark: true, note: 'The watch searches every store and shed a parent might use, and brings a child in against a parent\'s will.', info: [['yield', 'Every child accounted for'], ['danger', 'The parent, and the watch\'s standing']],
-      out: { text: (s, c) => `The watch walks the far plots in a line, and before noon finds the child in a seed store, sitting awake in the dark, facing east. ${c.pid ? c.first : 'The parent'} is held by two of the watch while the child is carried past. The child is back at a desk the next morning.`,
-        fx: s => ({ morale: -1, stain: ['kid_search', 1], do: s2 => { const t = T(s2); adj(par(s2, t), -20); LF.emit(s2, 'resentment', 'kid.search', 25, 120, 'the watch took a hidden child from a parent'); } }) } },
     { label: 'Give the forty their lock', dark: true, note: 'The children sleep behind a bolt until the number runs out, because forty frightened people asked.', info: [['yield', 'The colony sleeps'], ['danger', 'The children, and their parents']],
       out: { text: 'The end store is cleared for bunks and a bolt. The children go in at the last bell, the hidden one among them: the others led the watch straight to the place. The forty take turns on the door without being asked.',
         fx: s => ({ mat: -15, morale: -2, stain: ['kid_dorm', 2], do: s2 => { const t = T(s2); t.hold = 'dorm'; adj(par(s2, t), -15); } }) } },
-    { label: 'Move the parents into the schoolroom to sleep beside their children', note: 'The parents guard their own, and stop sleeping properly until the number runs out.',
-      out: { text: 'Bedding is carried across the yard. The schoolroom at night is a floor of adults lying awake between bunks of children lying awake. The forty stay away. The fields get what is left of the parents each morning.',
-        fx: s => ({ food: -50, do: s2 => { const t = T(s2); t.inside = true; adj(par(s2, t), 6); } }) } },
   ] });
 
 /* ======================= THE DECISION ======================= */
@@ -358,16 +336,10 @@ B('night', { id: 'kid.order', tone: 'crisis', title: 'The Order',
     { label: 'No order and no knife. They are children', note: (s, c) => `If ${c.refuses ? 'the hall' : c.first} is right about the number, the whole colony pays for this answer.`,
       out: { text: (s, c) => `${c.refuses ? `${c.name} picks the keys up again and says the watch will be at its posts on the night, facing outward.` : `${Cap(c.first)} hears it out, and says the watch will be at its posts on the night, facing inward.`} The hall knows by morning that there will be no order. Some of them had been waiting for one, and have begun making arrangements of their own.`,
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2), p = c.pid && byPid(s2, c.pid); t.noOrder = s2.day; adj(p, c.refuses ? 15 : -10); adj(par(s2, t), 10); LF.emit(s2, 'fear', 'kid.noorder', 30, 100, 'the officers will not act before the number runs out'); } }) } },
-    { label: (s, c) => c.refuses ? `Take the keys from ${c.first} tonight, and give them to someone who will follow an order` : `Give ${c.first} the order undated, to use if the night goes wrong`, dark: true,
-      note: (s, c) => c.refuses ? 'The watch loses the one officer who said no, and learns what saying no costs.' : `Nothing is done tonight. On the night itself the decision is made by ${c.first}, in the dark, in a minute.`,
-      info: [['yield', 'A watch that will act on the night'], ['danger', 'Whoever the watch acts against']],
-      out: { text: (s, c) => c.refuses ? `${c.name} hands over the keys and the arms locker code, and is walked to quarters. The deputy who takes them is asked one question first, and gives the answer you needed.`
-          : `You write it without a date. ${Cap(c.first)} folds it into a breast pocket. Nothing changes in the schoolroom. That week the watch drills at night at the far end of the yard, without lamps.`,
-        fx: (s, c) => c.refuses ? { stain: ['kid_keys', 1], mark: [c.pid, 'relieved', 'you relieved of the watch for refusing an order about the children'], do: s2 => { const t = T(s2), p = byPid(s2, c.pid); t.pliant = s2.day; if (p && p.alive && p.role) { adj(p, -30); s2.vacancies.push({ role: p.role, day: s2.day + 20 }); p.role = null; } } }
-          : { stain: ['kid_undated', 2], do: s2 => { T(s2).undated = s2.day; } } } },
   ] });
 B('eve', { id: 'kid.eve', tone: 'crisis', title: 'The Night Before',
   setup: s => { const t = T(s); return { kids: t.kids, hold: t.hold, inside: !!t.inside, ev: evidence(t, s) }; },
+  /* Three on screen: the third is the bolt while they are in their own beds, and bringing them home once they are held. */
   text: (s, c) => `The number runs out tomorrow night. ${({ school: 'The children are in their own beds, with a parent awake beside each.', dorm: `The children are behind the bolt${c.inside ? ', and their parents with them' : ''}.`, camp: `The children are at the camp past the wire, with the adults who went out with them.` })[c.hold]} ${c.ev}\n\n${Nwc(s, 'physician')} can put every one of them under until it is past, and says plainly that the dose for a body that size is a guess. ${Nwc(s, 'security')} wants to know where the watch stands tomorrow, and which way it faces.`,
   choices: [
     { label: (s, c) => ({ school: 'Their own beds, like any other night', dorm: 'The bolt stays on', camp: 'The camp stays where it is' })[c.hold],
@@ -384,9 +356,6 @@ B('eve', { id: 'kid.eve', tone: 'crisis', title: 'The Night Before',
     { label: 'Bring them home, to their own beds', show: (s, c) => c.hold !== 'school', note: 'If the lock was ever needed, this is the night it was for.',
       out: { text: (s, c) => `The ${c.hold === 'dorm' ? 'bolt is drawn' : 'camp is struck'} at dusk and the children walk home with their parents. The people who asked for the ${c.hold === 'dorm' ? 'bolt' : 'camp'} sit up with tools across their knees.`,
         fx: s => ({ morale: 2, do: s2 => { const t = T(s2); t.hold = 'school'; t.inside = false; adj(par(s2, t), 10); } }) } },
-    { label: 'Every adult awake and armed: the reactor hall, the water, the gate', note: 'The children see the whole colony standing against them, their parents included. Nobody is fit to work the day after.',
-      out: { text: (s, c) => `Tools are handed out at dusk with the lamps. Four adults stand at every door that matters, and there is a ring of them round ${c.hold === 'school' ? 'the children\'s pods' : `the ${PLACE[c.hold]}`}. The children can see them. Some of the adults in the ring are their parents, holding pick handles.`,
-        fx: s => ({ food: -40, do: s2 => { T(s2).watch = s2.day; } }) } },
   ] });
 
 /* ======================= THE TRUTH ======================= */
@@ -424,6 +393,8 @@ B('bill', { id: 'kid.truth', tone: 'quiet', title: 'What It Was',
   when: (s, t) => !!t.dated && !!t.out && t.out !== 'culled',
   setup: s => { const t = T(s); return { out: t.out, what: t.truth.what, act: t.act, n: t.bill || 0, kd: t.kd || 0, gone: t.gone || 0, kids: t.kids, held: t.held, cutDead: t.cutDead || 0, n0: t.n0 || 0, inside: !!t.inside, watch: !!t.watch, byOrder: t.byOrder || 0, sedDead: t.sedDead || 0, late: !!t.late }; },
   text: (s, c) => TOLD[c.out](s, c),
+  /* Never more than three on screen: the third option needs the night to have ended well, caged, held or struck, the
+     fourth needs it to have ended fading, and a colony that came through well is not offered the second. */
   choices: [
     { label: 'Say all of it in the hall, with your name on every decision', note: 'The families hear exactly what was done to their children and why, from the person who ordered it.',
       out: { text: (s, c) => SAID[c.out], fx: (s, c) => ({ morale: ({ well: 3, caged: -3, struck: -4, held: 2, fading: -3, cut: -3 })[c.out], do: s2 => { LF.endThread(s2, ID, c.out); } }) } },
@@ -463,15 +434,15 @@ B('bill', { id: 'kid.grave', tone: 'pressure', title: 'One Row',
         fx: s => ({ morale: 8, stain: ['kid_lied', 3], do: s2 => { const t = T(s2); t.sour = s2.day; LF.endThread(s2, ID, 'culled'); adj(par(s2, t), -20); LF.emit(s2, 'suspicion', 'kid.proof', 35, 400, 'the proof about the children was never shown to anyone'); } }) } },
   ] });
 
-LF.TAGS['kid.draw'] = ['cautious open', 'severe closed', 'closed order', 'free mercy'];
-LF.TAGS['kid.wire'] = ['bold open', 'order', 'mercy free', 'order closed', 'severe bold'];
-LF.TAGS['kid.knows'] = ['cautious open', 'bold open', 'severe closed', 'severe order'];
-LF.TAGS['kid.thread'] = ['open bold', 'severe closed', 'cautious mercy', 'closed order'];
-LF.TAGS['kid.night'] = ['mercy free', 'severe order closed', 'cautious', 'severe order'];
-LF.TAGS['kid.lock'] = ['mercy free', 'severe order', 'severe order closed', 'mercy cautious'];
-LF.TAGS['kid.hidden'] = ['free mercy', 'order closed', 'severe order', 'mercy cautious'];
-LF.TAGS['kid.order'] = ['severe closed bold', 'severe bold', 'mercy free', 'severe order closed'];
-LF.TAGS['kid.eve'] = ['free bold', 'severe cautious', 'severe order closed', 'mercy free', 'order cautious'];
+LF.TAGS['kid.draw'] = ['cautious open', 'severe closed', 'free mercy'];
+LF.TAGS['kid.wire'] = ['bold open', 'mercy free', 'severe bold'];
+LF.TAGS['kid.knows'] = ['cautious open', 'bold open', 'severe closed'];
+LF.TAGS['kid.thread'] = ['open bold', 'severe closed', 'cautious mercy'];
+LF.TAGS['kid.night'] = ['mercy free', 'severe order closed', 'cautious'];
+LF.TAGS['kid.lock'] = ['mercy free', 'severe order', 'mercy cautious'];
+LF.TAGS['kid.hidden'] = ['free mercy', 'severe order'];
+LF.TAGS['kid.order'] = ['severe closed bold', 'severe bold', 'mercy free'];
+LF.TAGS['kid.eve'] = ['free bold', 'severe cautious', 'severe order closed', 'mercy free'];
 LF.TAGS['kid.truth'] = ['open', 'closed', 'severe order', 'mercy'];
 LF.TAGS['kid.grave'] = ['open severe', 'mercy', 'closed order'];
 

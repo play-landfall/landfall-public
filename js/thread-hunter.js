@@ -17,7 +17,13 @@
    Evidence (the ground, the body, what came back for it, the witness, the hatch, the lie-up) is drawn per card and
    points at the truth only most of the time (pickK). Between cards it takes people at night (month), by name where
    it can, wears the watch's nerve, and writes unexplained, fear, siege, confinement and grief. Nothing here knows any
-   other thread. Every card's text reads only what setup put in ctx. */
+   other thread. Every card's text reads only what setup put in ctx.
+   Three options at most (Lachlan, 2026-11-21). No longer offered: the walk-out and the fall in the log, the lamp walked down
+   the path, the witness kept under, the door-bunk lots, the officer at the post in person, the beaters, a weapon at every
+   bunk, the outer rows given up, the punishment detail sent in first, the wall pair hanged, the tarpaulin kept shut, the
+   volley in the hall, the night rule kept for good. Putting every lamp out is asked once, on the hall roof (hu.last), and
+   no longer at the third bunkhouse. What those options set (t.lied, t.inner, t.did.*) is still read below, for a game
+   saved while one of them stood. */
 (function () {
 'use strict';
 const { clamp, h } = LF; const { P, R, If, byPid, anyNamed } = h;
@@ -221,15 +227,9 @@ B('sign', { id: 'hu.first', view: 'world', tone: 'pressure', title: 'The Latrine
     { label: 'Search the ground past the path at first light', note: 'The search is the day\'s field crew, and it goes looking for whatever took a grown adult without a sound.', test: { base: 50, mods: [R('security', 10), R('xenobio', 5)] },
       ok: { text: (s, c) => `${c.W} quarters the ground from the path to the wire before the crews are let out. ${ev('ground', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: 'The field crew walks the ground in a line before anyone thinks to read it. By noon there are two hundred bootprints and nothing else. The crew has seen the lamp, and talks about it at supper.', fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 5) }) } },
-    { label: 'Log it as a walk-out, and hang the lamp back on its hook', dark: true, note: 'The bunk row is told that a friend deserted, and goes on using that path alone at night.', info: [['yield', 'Morale'], ['later', 'Whoever goes out after lamp-down']],
-      out: { text: (s, c) => `The log says walked out, with the date. The lamp goes back on its hook. ${c.W} asks for the order in writing and is given it.`,
-        fx: s => ({ morale: 2, tension: -3, stain: ['hu_lied', 1], do: s2 => { const t = T(s2); t.lied = s2.day; t.did.lied = true; } }) } },
     { label: 'Nobody outside alone after lamp-down: pairs, roped at the wrist', note: 'Everyone who needs the latrine wakes a neighbour, and the night crews work at half pace.',
       out: { text: 'The order is read at supper. That night the path is busy with pairs, each roped and each carrying a lamp. The night shift loses two hours to it, and will lose them every night.',
         fx: s => ({ morale: -1, do: s2 => { T(s2).pairs = s2.day; } }) } },
-    { label: 'Send one of the punishment detail down that path tonight with a lamp, and the watch behind in the dark', dark: true, note: 'The colony learns whether it comes twice to the same place, and somebody is walked out to find out.', info: [['yield', 'What comes'], ['danger', 'The one with the lamp']],
-      out: { text: (s, c) => `A hauler walks the path six times between lamp-down and midnight, with four rifles lying along it. Nothing comes. Toward dawn the watch hears the bar of the pump house door fall, on the far side of the yard, and finds the door open and nobody inside.`,
-        fx: s => ({ pop: -1, morale: -1, stain: ['hu_bait', 1], do: s2 => { const t = T(s2); count(t, 1); t.did.walked = true; learn(s2, t, 8); } }) } },
   ] });
 
 /* ======================= WIRE: inside the wire, and what was seen ======================= */
@@ -243,9 +243,6 @@ B('wire', { id: 'hu.wire', tone: 'pressure', title: 'Head Height',
     { label: 'Lay the body back where it was found tonight, with rifles on the stores roof', dark: true, note: 'The colony finds out whether it comes back for what it left, and the night hand lies in the yard a second night to show it.', info: [['yield', 'What comes back'], ['danger', 'The dead, and the row that knew them']],
       out: { text: (s, c) => `The night hand is carried back to the corner and uncovered, and four rifles lie up on the stores roof. ${ev('back', c.ev2, c)} The bunk row watched the body carried out, and has not spoken to the watch since.`,
         fx: (s, c) => ({ morale: -2, stain: ['hu_deadbait', 2], do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev2); t.did.deadbait = true; } }) } },
-    { label: 'Bury the night hand before the day shift is up, and log a fall from the stores roof', dark: true, note: 'The colony is spared what the doctor saw, and goes on walking past that corner at night.', info: [['yield', 'Morale'], ['later', 'Whoever passes that corner']],
-      out: { text: 'It is done before the bell, by four of the watch, without a word said. The marks on the wall are ground off. By supper the mess has a different story from the log, and its story is worse than what happened.',
-        fx: s => ({ morale: 1, tension: -4, stain: ['hu_lied', 1], do: s2 => { const t = T(s2); t.lied = s2.day; t.did.lied = true; LF.emit(s2, 'suspicion', 'hu.fall', 25, 120, 'a death behind the stores was logged as a fall, and nobody believes the log'); } }) } },
     { label: 'Lamps on every wall and corner, burning until dawn', cost: { mat: 15 }, note: 'The yard is lit like a landing pad all night, out of lamps and oil the build crews were counting on.',
       out: { text: 'Forty lamps go up on poles between the bunk rows, the stores and the pump house. From the wall the colony is the only light for a hundred kilometres. For the first time in a month, people sleep.',
         fx: s => ({ morale: 2, do: s2 => { const t = T(s2); t.lamps++; t.did.lamps = true; } }) } },
@@ -261,9 +258,6 @@ B(['wire', 'inside'], { id: 'hu.seen', tone: 'pressure', title: 'From the Galley
     { label: (s, c) => `Have ${c.name} tell the whole hall at supper`, note: 'Everyone hears it at once from the one who saw it, and takes it to bed.',
       out: { text: (s, c) => `${c.Name} tells it standing on a bench, in about forty words, and sits down. Nobody finishes eating. That night every row wedges its door, and the night shift does not turn out.`,
         fx: s => ({ morale: -2, progress: -0.04, do: s2 => { const t = T(s2); t.told = s2.day; LF.emit(s2, 'fear', 'hu.told', 25, 90, 'the hall heard what was seen from the galley step'); } }) } },
-    { label: (s, c) => `Put ${c.name} under in the clinic until the talk dies down`, dark: true, note: 'The mess loses its witness and gets its sleep back, and the one person who saw it is drugged for seeing.', info: [['yield', 'Morale'], ['danger', 'The witness']],
-      out: { text: (s, c) => `${c.D} is given the order and carries it out without a word to you. ${c.Name} sleeps the month through in the end cot. The mess is told it was nerves, and is easier for a while.`,
-        fx: (s, c) => ({ morale: 2, tension: -4, stain: ['hu_witness', 2], off: [['physician', 'mind', -4]], do: s2 => { const t = T(s2); t.did.witness = c.name; sour(s2, c.pid, 15, 'you had them kept under for a month for what they saw'); } }) } },
     { label: (s, c) => `Stand ${c.name} on the galley step again tonight, with rifles in the galley behind`, about: true, dark: true, note: 'It may come back to where it was seen, and the person it frightened most is put there to meet it.', info: [['yield', 'A shot at it'], ['fail', 'The witness']],
       test: { base: 40, mods: [R('security', 10)] },
       ok: { text: trapText(true, STEP), fx: trapFx(true, STEP, { stain: ['hu_post', 2] }) },
@@ -281,25 +275,19 @@ B('inside', { id: 'hu.roof', tone: 'crisis', title: 'The Roof Hatch',
     { label: 'Weld every roof hatch shut, and bolt the doors from inside at lamp-down', cost: { mat: 20 }, note: 'Nothing opens from outside again, and nothing opens quickly from inside if a stove goes over.',
       out: { text: (s, c) => `${c.E} welds forty hatches and fits drop-bolts to every door. The rows are close and smell of the stove. Twice a bolt jams, and a row is late to the fields waiting for the bar to be cut.`,
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.sealed = s2.day; } }) } },
-    { label: 'Draw lots in each row for the bunks nearest the door and under the hatch', dark: true, note: 'The rest of the row sleeps, knowing who it will reach first.', info: [['yield', 'Morale'], ['later', 'Whoever draws a door bunk']],
-      out: { text: 'The lots are drawn at supper, row by row. Those who draw the door bunks move their bedding without a word. The rows sleep better for knowing where they lie, and the door bunks do not sleep.',
-        fx: s => ({ morale: 2, tension: -4, stain: ['hu_doorbunk', 2], do: s2 => { const t = T(s2); t.doorbunk = s2.day; t.did.doorbunk = true; LF.emit(s2, 'resentment', 'hu.doorbunk', 28, 150, 'lots were drawn for who sleeps nearest the door'); } }) } },
     { label: 'Give each row two rifles, and let it keep its own watch', dark: true, note: 'A row can answer whatever comes through a hatch, and will answer a good many neighbours coming back from the latrine.', info: [['yield', 'Fewer taken'], ['danger', 'Anyone moving after lamp-down']],
       out: { text: (s, c) => `The rifles are handed in at each door with ten rounds. ${c.W} shows each row which end is which. Before the month is out the first row fires through its own door at a sound, and the sound was the latrine pair coming back. One of the pair lives.`,
         fx: s => ({ pop: -1, stain: ['hu_armed', 2], do: s2 => { const t = T(s2); t.armed = s2.day; t.own++; count(t, 1); t.did.armed = true; } }) } },
   ] });
 
-const POST = { place: 'the north post', person: true, staked: true, the: c => 'the one tied there' }, CHIEF = { place: 'the north post', person: true, the: c => c.w, pid: c => c.wpid }, MEAT = { place: 'the north post', person: false };
+const POST = { place: 'the north post', person: true, staked: true, the: c => 'the one tied there' }, MEAT = { place: 'the north post', person: false };
 B(['inside', 'bold'], { id: 'hu.trap', tone: 'pressure', title: 'The North Post',
-  setup: s => { const t = T(s), p = LF.officer(s, 'security'), up = p && LF.seatState(s, 'security') === 'here'; return Object.assign(crew(s), { trapN: t.traps, wpid: up ? p.id : null, lean: lean(t) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { trapN: t.traps, lean: lean(t) }); },
   text: (s, c) => `${c.W} has a plan, and does not like it. Whatever this is, it comes where the colony is thinnest: the path, the corner, the one bunk. So put something at the north post, where the ground is open on three sides, lie up with every rifle there is, and see what comes for it.${c.wv ? `\n\n[[security]] "It likes one of us on our own, so fine, we give it one." "I've a list of who I'd miss least if that helps you sleep, which I'd guess it doesn't."` : ' The watch has drawn up a list of who could be put there.'}\n\n${c.lean}`,
   choices: [
     { label: 'Tie one of the punishment detail to the post with a lamp, and lie up', dark: true, note: 'It gets what it has been coming for, with rifles over it, and somebody is tied there to be that.', info: [['yield', 'A shot at it'], ['fail', 'The one at the post']],
       test: { base: 50, mods: [R('security', 10), If(s => T(s).hurt > 0, 5, 'It has been hit before')] },
       ok: { text: trapText(true, POST), fx: trapFx(true, POST, { stain: ['hu_bait', 2] }) }, bad: { text: trapText(false, POST), fx: trapFx(false, POST, { stain: ['hu_bait', 2] }) } },
-    { label: (s, c) => `Let ${c.w} sit at the post in person, with a lamp`, about: true, show: (s, c) => !!c.wpid, note: (s, c) => `Nobody is ordered to it, and the colony stakes the one officer who knows how the wall is run.`, info: (s, c) => [['yield', 'A shot at it'], ['fail', cap(c.w)]],
-      test: { base: 50, mods: [R('security', 10), If(s => T(s).hurt > 0, 5, 'It has been hit before')] },
-      ok: { text: trapText(true, CHIEF), fx: trapFx(true, CHIEF, {}) }, bad: { text: trapText(false, CHIEF), fx: trapFx(false, CHIEF, {}) } },
     { label: 'Hang a month of the meat ration at the post under a lamp, and lie up', cost: { food: 40 }, note: 'Nobody is tied to anything, and the galley goes a month without meat for a bait it may not want.',
       test: { base: 40, mods: [R('security', 10), If(s => T(s).hurt > 0, 5, 'It has been hit before')] },
       ok: { text: trapText(true, MEAT), fx: trapFx(true, MEAT, {}) }, bad: { text: trapText(false, MEAT), fx: trapFx(false, MEAT, {}) } },
@@ -331,9 +319,6 @@ B(['inside', 'bold'], { id: 'hu.out', tone: 'pressure', title: 'Going Out After 
     { label: (s, c) => `Keep the bar down, and order ${c.first} to the clinic to sleep`, note: (s, c) => `${c.Name} is shut in for wanting to do something about it, with the wall looking on.`,
       out: { text: (s, c) => `${c.Name} hands over the rifle and walks to the clinic between two of the watch. ${c.D} mixes the draught. The wall says nothing in your hearing.`,
         fx: (s, c) => ({ morale: -1, off: [['ctx', 'mind', -6]], do: s2 => sour(s2, c.pid, 12, 'you had them walked to the clinic for wanting to go out after it') }) } },
-    { label: (s, c) => `Lift the bar, and send the lock-up out ahead of ${c.first} as beaters`, dark: true, note: 'Eight people who owe the colony time walk through its ground in a line, unarmed, so that it shows itself to the rifle behind them.', info: [['yield', 'A clear look'], ['danger', 'The beaters']],
-      out: { text: (s, c) => `The eight are walked out at first light in a line, with pans to beat. ${c.Name} follows with the rifle. Seven come home at dusk: six beaters and ${c.first}. The six will not say in what order the others went. ${ev('den', c.ev2, c)}`,
-        fx: (s, c) => ({ pop: -2, stain: ['hu_beaters', 2], off: [['ctx', 'native', 4], ['ctx', 'mind', -6]], do: s2 => { const t = T(s2); count(t, 2); t.did.beaters = true; learn(s2, t, 30, c.ev2); } }) } },
   ] });
 
 /* ======================= BOLD: two together, and the third bunkhouse ======================= */
@@ -344,43 +329,29 @@ B('bold', { id: 'hu.two', tone: 'crisis', title: 'Both of Them',
     { label: 'Everyone into the mess hall at lamp-down, every night, until it is over', note: 'The whole colony sleeps on one floor with one stove and one door, for months, and the night work stops.',
       out: { text: 'The rows are emptied at dusk. The hall sleeps head to foot with the benches stacked against the walls and the lamps left burning. A cough that starts at one end of it has gone round the room by morning.',
         fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.hall = s2.day; t.did.hall = true; } }) } },
-    { label: (s, c) => c.armed ? 'A weapon at every bunk, and fire at what moves' : 'A rifle or a blade at every bunk, and fire at what moves', dark: true, note: 'Whatever comes into a room meets forty weapons, and so does anyone who gets up in the night.', info: [['yield', 'Fewer taken'], ['danger', 'Anyone who gets up in the night']],
-      out: { text: 'The armoury is emptied into the rows, and the yard shop cuts pipe for those the rifles do not reach. There are shots most nights. In the first month two of them hit colonists, and one of those was nine years old.',
-        fx: s => ({ pop: -2, tension: -4, stain: ['hu_armed', 2], do: s2 => { const t = T(s2); t.armed = s2.day; t.own += 2; count(t, 2); t.did.armed = true; } }) } },
     { label: 'One a month at the north post, off the punishment detail and the sick list', dark: true, note: 'If it is fed it may leave the rows alone, and the colony chooses each month who it can best spare.', info: [['yield', 'The rows left alone, if it takes the price'], ['danger', 'One of the colony, every month']],
       out: { text: (s, c) => `The first is walked to the north post at dusk with a blanket, and tied. The wall is ordered to look inward until first light. ${c.Cm} keeps the list and will not say how it is ordered.`,
         fx: s => ({ tension: -6, stain: ['hu_tithe', 2], do: s2 => { const t = T(s2); t.tithe = s2.day; t.did.tithe = true; }, chron: 'The colony began tying one of its own to the north post each month.' }) } },
-    { label: 'Give up the outer rows and the far field, and bring everyone inside the inner wire', note: 'The colony gives up ground it broke by hand, with the crop standing in it, to something nobody has seen.',
-      out: { text: 'The outer rows are stripped in a day and left. Everything the colony has is inside one wire now, a stone\'s throw across. In the morning the doors of the empty rows are all standing open.',
-        fx: s => ({ food: -60, morale: -2, do: s2 => { const t = T(s2); t.inner = s2.day; t.did.inner = true; } }) } },
     { label: 'Hang the watch corporal who posted that pair at the corner', dark: true, note: 'The hall gets somebody to blame tonight, and the watch learns what a posting order is worth.', info: [['yield', 'Morale'], ['danger', 'The corporal, and the watch']],
       out: { text: (s, c) => `It is done at the cart crane before midnight, and the hall goes to its bunks. At breakfast six of the watch hand in their rifles. ${c.W} takes the rifles out of the rack again, one at a time, and gives each back to its owner.`,
         fx: s => ({ pop: -1, morale: 3, tension: -8, stain: ['hu_corporal', 2], off: [['security', 'mind', -6]], do: s2 => { const t = T(s2); t.blamed = s2.day; t.did.hanged = true; } }) } },
   ] });
 
-/* What going in by the door finds. shield: the punishment detail went first, with the lamps. */
+/* What going in by the door finds. */
 const INSIDE = {
-  win: (c, shield) => shield ? `The six go in with a lamp each and the watch at their backs. It comes down the row at the lamps. The watch fires over the six and through them for most of a minute. When it is quiet, what the wall saw is on the floor between the bunks, and two of the detail are under it. The ${num(c.n)} are behind the washroom door, alive.`
-    : `Six of the watch go in by the door with two lamps. It comes down the row at them. They fire until the rifles are empty. What the wall saw is on the floor between the bunks, and two of the watch are dead beside it. The ${num(c.n)} are behind the washroom door, alive.`,
-  loss: (c, shield) => shield ? `The six go in with a lamp each and the watch at their backs. It comes down the row at the lamps, and the watch fires into its own people. Three of the detail are dead and one of the watch. It went out by the roof. The ${num(c.n)} are behind the washroom door, alive.`
-    : `Six of the watch go in by the door with two lamps. The lamps go first. Three of the six are dead in the dark, and it went out by the roof the way it came. The ${num(c.n)} are behind the washroom door, alive.`,
-  empty: (c, shield) => `${shield ? 'The six go in with a lamp each and the watch at their backs' : 'Six of the watch go in by the door with two lamps'}. The bunkhouse holds ${num(c.n)} frightened people behind the washroom door, and nothing else. While the watch is inside counting them, two of the cordon are taken from the dark side of the yard.`,
-  none: (c, shield) => `${shield ? 'The six go in with a lamp each and the watch at their backs' : 'Six of the watch go in by the door with two lamps'}. The bunkhouse holds ${num(c.n)} frightened people behind the washroom door, and nothing else. The roof hatch is open, and the roof is empty.${shield ? ' The detail is walked back to the lock-up. It knows what it was sent in to be.' : ''}`,
+  win: c => `Six of the watch go in by the door with two lamps. It comes down the row at them. They fire until the rifles are empty. What the wall saw is on the floor between the bunks, and two of the watch are dead beside it. The ${num(c.n)} are behind the washroom door, alive.`,
+  loss: c => `Six of the watch go in by the door with two lamps. The lamps go first. Three of the six are dead in the dark, and it went out by the roof the way it came. The ${num(c.n)} are behind the washroom door, alive.`,
+  empty: c => `Six of the watch go in by the door with two lamps. The bunkhouse holds ${num(c.n)} frightened people behind the washroom door, and nothing else. While the watch is inside counting them, two of the cordon are taken from the dark side of the yard.`,
+  none: c => `Six of the watch go in by the door with two lamps. The bunkhouse holds ${num(c.n)} frightened people behind the washroom door, and nothing else. The roof hatch is open, and the roof is empty.`,
 };
 const inKind = (s, ok) => { const k = T(s).truth.is; return k === 'man' ? 'none' : k === 'learns' ? 'empty' : ok ? 'win' : 'loss'; };
-const inFx = (ok, shield) => (s, c) => { const kind = inKind(s, ok), dead = { win: 2, loss: shield ? 4 : 3, empty: 2, none: 0 }[kind], fx = dead ? { pop: -dead } : {};
-  if (shield) fx.stain = ['hu_shield', 2]; if (kind === 'loss' || kind === 'empty') fx.morale = -2;
-  fx.do = s2 => { const t = T(s2); count(t, dead); t.did.went = kind; if (shield) t.did.shield = true;
+const inFx = ok => (s, c) => { const kind = inKind(s, ok), dead = { win: 2, loss: 3, empty: 2, none: 0 }[kind], fx = dead ? { pop: -dead } : {};
+  if (kind === 'loss' || kind === 'empty') fx.morale = -2;
+  fx.do = s2 => { const t = T(s2); count(t, dead); t.did.went = kind;
     if (kind === 'win') return finish(s2, t, 'killed', 'What had been taking people at night was shot dead in the third bunkhouse.');
-    if (kind === 'none') { learn(s2, t, 25, 'man'); if (shield) LF.emit(s2, 'resentment', 'hu.shield', 30, 150, 'the punishment detail was sent into the third bunkhouse ahead of the rifles'); }
+    if (kind === 'none') learn(s2, t, 25, 'man');
     else { nerve(s2, -6); learn(s2, t, 10, kind === 'empty' ? 'learns' : undefined); } };
   return fx; };
-const DARK = {
-  lamp: c => `Every lamp goes out by order, and the wall lies down where it stands. Some time later the roof of the third bunkhouse creaks, and then the wire. Nothing else is heard. At first light the ${num(c.n)} come out by themselves, and nobody anywhere has been touched.`,
-  beast: c => `Every lamp goes out by order, and the wall lies down where it stands. In the dark it leaves the third bunkhouse and goes through the first. Two are gone from there at first light. The people in the bunks beside them did as they were ordered and lay still.`,
-  learns: c => `Every lamp goes out by order, and the wall lies down where it stands. In the dark it leaves the third bunkhouse and goes through the first. One is gone from there at first light. The people in the bunks beside did as they were ordered and lay still.`,
-  man: c => `Every lamp goes out by order, and the wall lies down where it stands. At first light the ${num(c.n)} come out of the third bunkhouse unharmed. One is missing from the first row, and nobody there struck a light or heard a thing.`,
-};
 const COUNTED = {
   man: c => `The colony is turned out by rows and counted under the yard lamps. The roll comes out one short, and the one is not among the ${num(c.n)}. The night-soil carter is found lying flat on the roof of the third bunkhouse with a bill hook and a hooded lamp. The yard has the carter down off the roof before the watch can get a hand to the ladder.`,
   lamp: c => `The colony is turned out by rows and counted under the yard lamps. The count is half done when it comes out by the roof of the third bunkhouse and straight down into the light. The yard breaks. Three are dead where they stood, and a fourth was shot from the wall.`,
@@ -395,16 +366,9 @@ B('choice', { id: 'hu.choice', tone: 'crisis', title: 'The Third Bunkhouse',
       out: { text: (s, c) => `${c.E} pours the oil along the wall and ${c.w} lights it. The bunkhouse burns from end to end in a quarter of an hour. For the first part of that there is knocking on the inside of the door. The roof comes down at midnight, and nothing has come out.`,
         fx: (s, c) => ({ pop: -c.n, mat: -10, morale: -3, stain: ['hu_burned', 3], off: [['engineer', 'mind', -6], ['security', 'mind', -6]], do: s2 => { const t = T(s2); count(t, c.n); t.burned = s2.day; t.did.burned = c.n; },
           chron: `The colony burned the third bunkhouse with ${num(c.n)} of its own people inside.` }) } },
-    { label: 'Send the punishment detail in first with the lamps, and the watch behind them', dark: true, note: 'Whatever is in there meets six people it can have before it meets a rifle.', info: [['yield', 'Better odds for the watch'], ['danger', 'The six sent in first']],
-      test: { base: 60, mods: [R('security', 10), If(s => T(s).hurt > 0, 10, 'It has been hit before')] },
-      ok: { text: (s, c) => INSIDE[inKind(s, true)](c, true), fx: inFx(true, true) }, bad: { text: (s, c) => INSIDE[inKind(s, false)](c, true), fx: inFx(false, true) } },
     { label: 'Send the watch in by the door', note: 'Six of the wall go into a dark room after it by lamplight, and the colony has no second six.', info: [['yield', 'An end to it, if they find it'], ['danger', 'The six who go in']],
       test: { base: 50, mods: [R('security', 10), If(s => T(s).hurt > 0, 10, 'It has been hit before')] },
-      ok: { text: (s, c) => INSIDE[inKind(s, true)](c, false), fx: inFx(true, false) }, bad: { text: (s, c) => INSIDE[inKind(s, false)](c, false), fx: inFx(false, false) } },
-    { label: 'Put out every lamp in the colony, and have everyone lie still where they are until light', note: 'The whole colony lies in the dark with it for a night, and nobody may strike a light whatever they hear.',
-      out: { text: (s, c) => DARK[T(s).truth.is](c),
-        fx: s => { const k = T(s).truth.is, dead = { lamp: 0, beast: 2, learns: 1, man: 1 }[k]; return Object.assign(dead ? { pop: -dead, morale: -3 } : {}, { do: s2 => { const t = T(s2); count(t, dead); t.did.dark = true;
-          if (k === 'lamp') { learn(s2, t, 40, k); finish(s2, t, 'starved', 'The colony put out every lamp it had, and what had been taking people went back over the wire.'); } else learn(s2, t, 8); } }); } } },
+      ok: { text: (s, c) => INSIDE[inKind(s, true)](c), fx: inFx(true) }, bad: { text: (s, c) => INSIDE[inKind(s, false)](c), fx: inFx(false) } },
     { label: 'Turn the whole colony out into the yard and count it against the roll, now', note: 'Everyone stands in the open at night under lamps while it is loose, so that the roll can say who is where.',
       out: { text: (s, c) => COUNTED[T(s).truth.is](c),
         fx: s => { const k = T(s).truth.is, dead = { man: 0, lamp: 4, beast: 3, learns: 3 }[k]; return Object.assign(dead ? { pop: -dead, morale: -3 } : {}, { do: s2 => { const t = T(s2); count(t, dead); t.did.counted = true;
@@ -423,12 +387,6 @@ B('bill', { id: 'hu.ash', tone: 'crisis', title: 'In the Ashes',
     { label: (s, c) => `Say that the ${num(c.n)} were dead before the oil was lit`, dark: true, note: 'Nobody can check it, and the families are told that the knocking the yard heard was something else.', info: [['yield', 'Morale'], ['danger', 'The families']],
       out: { text: (s, c) => `It is given out at muster that the ${num(c.n)} were dead before the door was barred. ${c.E}, who heard the knocking from nearer than anyone, is not at muster. The families are given the bunks nearest the stove.`,
         fx: s => ({ morale: 2, tension: -4, stain: ['hu_ashlie', 2], off: [['engineer', 'mind', -5]], do: s2 => { T(s2).did.ashlie = true; } }) } },
-    { label: 'Hang the wall pair for a false report', dark: true, show: (s, c) => !c.found, note: 'The fire becomes somebody else\'s mistake, and two of the watch pay for having said what they saw.', info: [['yield', 'Morale'], ['danger', 'The wall pair']],
-      out: { text: 'It is done at the cart crane with the families at the front. Both of the pair say the same thing at the end: that there was something on that roof. One more is gone from the first row before the month is out.',
-        fx: s => ({ pop: -3, morale: 2, tension: -6, stain: ['hu_pair', 2], off: [['security', 'mind', -8]], do: s2 => { const t = T(s2); count(t, 3); t.did.pair = true; } }) } },
-    { label: (s, c) => `Keep it under the tarpaulin, and give it to ${c.sc}`, show: (s, c) => c.found, note: 'The colony is asked to take the word of the people who lit the oil that there was anything in there at all.',
-      out: { text: (s, c) => `It goes into the long store at night on a cart, covered. ${c.Sc} locks the door from inside. By the end of the month half the mess believes there was nothing under the tarpaulin but a roof beam.`,
-        fx: s => ({ morale: -2, do: s2 => { LF.emit(s2, 'suspicion', 'hu.tarp', 30, 150, 'nobody was let see what was found in the ashes of the third bunkhouse'); } }) } },
   ] });
 
 const END = (s, t, end, chron) => finish(s, t, end, chron);
@@ -437,8 +395,6 @@ const LAST = {
   hold: { win: 'The hatch goes at the darkest hour. The watch fires straight up for as long as it has rounds. What comes down through the hatch is dead when it lands, and it lands on two of them.',
     loss: 'The hatch goes at the darkest hour, and the lamps go with it. The watch fires at each other\'s flashes. At first light there are three dead on the hall floor, the galley wall is open to the yard, and the roof is empty.',
     learns: 'The watch stands under the hatch all night and the hatch does not move. It comes through the galley wall at the back, where the stores were stacked against it. Three are gone from the far end before a rifle can be turned round.' },
-  volley: { win: 'Knives, cut pipe and every spare rifle go round the floor. When the hatch goes the whole hall fires and strikes at once, and goes on for a long time. At first light it is dead under the hatch. So are three colonists, shot or cut by the people next to them.',
-    learns: 'Knives, cut pipe and every spare rifle go round the floor. It does not come by the hatch. When the galley wall goes, the hall fires at the sound and at itself. Two are gone through the wall, and two more are dead of their neighbours\' shooting.' },
   sick: { beast: c => `Three are put out through the door, one of them on a litter, and the bar goes back. ${c.D} has to be held by the arms. The roof is quiet soon afterwards. In the morning the yard is empty, and nothing walks on the roof that night or the next.`,
     learns: c => `Three are put out through the door, one of them on a litter, and the bar goes back. ${c.D} has to be held by the arms. The roof is quiet for an hour. Then it is in the hall, by the same door, which it had now seen opened. Two more are gone by first light.`,
     lamp: c => `Three are put out into the dark, one of them on a litter, and the bar goes back. ${c.D} has to be held by the arms. In the morning the three are sitting against the wall where they were left, alive and untouched. Inside, the two who lay nearest the galley lamp are gone.` },
@@ -456,9 +412,6 @@ B('bill', { id: 'hu.last', tone: 'crisis', title: 'On the Hall Roof',
     { label: 'Hold the hatch and the door with the watch, lamps lit, and wait for it', note: 'The watch stands under it with everyone the colony has at its back.', info: [['yield', 'An end to it'], ['danger', 'The watch, and the floor behind it']],
       test: { base: 50, mods: [R('security', 10), If(s => !!T(s).armed, 5, 'Rifles in the rows'), If(s => T(s).hurt > 0, 10, 'It has been hit before')] },
       ok: { text: s => LAST.hold[holdKind(s, true)], fx: holdFx(true) }, bad: { text: s => LAST.hold[holdKind(s, false)], fx: holdFx(false) } },
-    { label: 'Arm every hand in the hall, and fire at will when it comes', dark: true, note: 'It meets every weapon the colony has at once, in a room with the whole colony lying in it.', info: [['yield', 'An end to it'], ['danger', 'Whoever is beside a frightened neighbour']],
-      out: { text: s => LAST.volley[T(s).truth.is === 'learns' ? 'learns' : 'win'],
-        fx: s => { const lr = T(s).truth.is === 'learns', dead = lr ? 4 : 3; return { pop: -dead, stain: ['hu_volley', 2], do: s2 => { const t = T(s2); count(t, dead); t.own += lr ? 2 : 3; t.did.volley = true; END(s2, t, lr ? 'mauled' : 'killed', lr ? LEFT : KILLED); } }; } } },
     { label: 'Put the sick and the old out through the door, and bar it again', dark: true, note: 'It is given what is easiest to take, and the colony chooses who that is with the whole hall looking on.', info: [['yield', 'The hall left alone, if it takes them'], ['danger', 'The three put out']],
       out: { text: (s, c) => LAST.sick[T(s).truth.is](c),
         fx: s => { const k = T(s).truth.is, dead = { beast: 3, learns: 5, lamp: 2 }[k]; return { pop: -dead, morale: -3, stain: ['hu_sick', 2], off: [['physician', 'mind', -10]], do: s2 => { const t = T(s2); count(t, dead); t.did.sick = true;
@@ -515,22 +468,19 @@ B('after', { id: 'hu.truth', tone: 'quiet', title: 'What Came at Night',
     { label: (s, c) => c.man ? 'Enter it in the record as an animal, killed' : 'Enter it in the record as an animal met and killed, and nothing more', dark: true, note: (s, c) => c.man ? 'The colony keeps an account it can live beside, and the dead are written down as taken by something that never existed.' : 'The colony gets an account it can live beside, and what was done to its own people in those months is left out of it.', info: [['yield', 'Morale']],
       out: { text: 'The record says that a native predator was met in the first seasons and destroyed. The entry is four lines long, and no colonist is named in it. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['hu_record', 1], chron: 'The record says that a native predator was met and destroyed.' }) } },
-    { label: 'Keep the night rule for good: nobody out alone after lamp-down, and a count at dawn', note: 'The colony goes on living as if it were still out there, and children grow up roped to a neighbour.',
-      out: { text: 'The order stays on the board. The dawn count is taken every morning, and comes out right every morning. In time the younger children cannot sleep without a rope on the wrist.',
-        fx: s => ({ morale: -1, do: s2 => { LF.emit(s2, 'fear', 'hu.rule', 18, 250, 'the night rule was never lifted'); } }) } },
   ] });
 
-LF.TAGS['hu.first'] = ['cautious open', 'closed order', 'cautious order', 'severe bold'];
-LF.TAGS['hu.wire'] = ['cautious open', 'severe bold', 'closed order', 'cautious order'];
-LF.TAGS['hu.seen'] = ['mercy open', 'open', 'closed order', 'severe bold'];
-LF.TAGS['hu.roof'] = ['cautious open', 'cautious closed', 'severe order', 'bold free'];
-LF.TAGS['hu.trap'] = ['severe bold', 'bold', 'cautious bold', 'cautious order'];
-LF.TAGS['hu.out'] = ['bold free', 'bold order', 'cautious order', 'severe bold'];
-LF.TAGS['hu.two'] = ['cautious closed', 'bold free', 'severe order', 'cautious closed', 'severe order'];
-LF.TAGS['hu.choice'] = ['severe closed', 'severe bold', 'bold order', 'cautious closed', 'cautious open'];
-LF.TAGS['hu.ash'] = ['open', 'closed order', 'severe order', 'cautious closed'];
-LF.TAGS['hu.last'] = ['bold order', 'severe bold', 'severe closed', 'cautious closed'];
-LF.TAGS['hu.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['hu.first'] = ['cautious open', 'cautious order'];
+LF.TAGS['hu.wire'] = ['cautious open', 'severe bold', 'cautious order'];
+LF.TAGS['hu.seen'] = ['mercy open', 'open', 'severe bold'];
+LF.TAGS['hu.roof'] = ['cautious open', 'cautious closed', 'bold free'];
+LF.TAGS['hu.trap'] = ['severe bold', 'cautious bold', 'cautious order'];
+LF.TAGS['hu.out'] = ['bold free', 'bold order', 'cautious order'];
+LF.TAGS['hu.two'] = ['cautious closed', 'severe order', 'severe order'];
+LF.TAGS['hu.choice'] = ['severe closed', 'bold order', 'cautious open'];
+LF.TAGS['hu.ash'] = ['open', 'closed order'];
+LF.TAGS['hu.last'] = ['bold order', 'severe closed', 'cautious closed'];
+LF.TAGS['hu.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */
