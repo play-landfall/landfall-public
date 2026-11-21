@@ -315,7 +315,7 @@ const txt = (v, s) => (typeof v === 'function' ? v(s) : v);
 RU({ id: 'gen.chair', far: true, tone: 'quiet', title: 'The First Thing Asked', repeat: 14 * MONTH, max: 6, w: 4,
   when: s => !!askSeat(s),
   setup: s => { const g = G(s), seat = askSeat(s), o = LF.officer(s, seat), p = h.anyNamed(s, LF.SEAT_ORDER); g.asked = g.asked || {}; g.asked[seat] = s.day; if (p) p.bornHere = p.bornHere || yr(s);
-    return { pid: p ? p.id : null, name: p ? p.name : 'A young woman from the far rows', first: p ? p.first : 'she', seat, dept: LF.SEATS[seat].name, title: LF.SEAT_TITLE[seat], holder: o ? o.name : null, want: CHAIR[seat].want(s) }; },
+    return { pid: p ? p.id : null, name: p ? p.name : 'Someone from the far rows', first: p ? p.first : 'they', seat, dept: LF.SEATS[seat].name, title: LF.SEAT_TITLE[seat], holder: o ? o.name : null, want: CHAIR[seat].want(s) }; },
   text: (s, c) => `${c.name} was born here, in the colony's early years, and speaks for the born who work in ${c.dept}. ${c.holder ? `${c.holder} has held the ${c.title}'s chair since before any of them could walk.` : `The ${c.title}'s chair is empty. The people who could have sat in it came on the ship, and they are gone.`} The born have asked for one thing.\n\n${c.want}${CHAIR[c.seat].say ? `\n\n[[${c.pid || bornRk(s)}]] ${CHAIR[c.seat].say}` : ''}\n\nThe founders who are left have already heard about it.`,
   choices: [
     { label: 'Let them do it', info: [['yield', 'The born, and what the change brings'], ['danger', 'The founders']],

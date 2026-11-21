@@ -46,7 +46,7 @@ const PITCH = {
     go: 'A cargo pod is gutted and fitted with benches.',
     done: s => 'A cargo pod with benches, a centrifuge and a hand-lettered sign. Every sample the field crews bring in is logged on the wall.' },
   housing: { by: 'quartermaster', yields: 'Steadier morale', base: 45, need: s => (LF.harsh(s) ? 15 : 0) + (s.morale < 40 ? 20 : 0) + (s.pop > 95 ? 15 : 0),
-    say: s => LF.harsh(s) ? 'The pods weren\'t built for this weather. Folk sleep in their work clothes.' : s.pop > 95 ? `${s.pop} of us in pods meant for sixty.` : 'Folk need proper walls. They work easier once they\'ve got a door of their own.',
+    say: s => LF.harsh(s) ? 'The pods weren\'t built for this weather. Folk sleep in their work clothes.' : LF.heads(s) > 95 ? `${LF.num(LF.heads(s))} of us in pods meant for sixty.` : 'Folk need proper walls. They work easier once they\'ve got a door of their own.',
     go: 'The first street is pegged out with string, and argued over at once.',
     done: s => 'A street of doors, each a different colour because the paint ran short. Somebody has planted a seedling by one of the steps.' },
   wells: { by: 'engineer', yields: 'Water of your own', base: 75, need: s => s.machines.reclaimer.lost ? 45 : (100 - hp(s, 'reclaimer')) * 0.4,

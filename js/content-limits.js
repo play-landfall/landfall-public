@@ -32,7 +32,7 @@ LF.stain = function (s, k, w) {
   if (f.lim_vow && !f.lim_vow_broken) { f.lim_vow_broken = s.day; s.morale = clamp(s.morale - 6, 0, 100);
     LF.log(s, 'The promise that it would stop here has been broken, and a great many people heard it made.', 'bad'); allRegard(s, -10, p => p.vals && p.vals.mercy === 1); }
 };
-const stain = LF.stain;
+const stain = (s, k, w) => LF.stain(s, k, w);   // looked up each time: js/humanity.js wraps LF.stain after this file loads
 const WORST = [
   ['lim_expose', () => 'the infants put outside the wire'], ['lim_genocide', s => `what was done to ${s.flags.lim_genocide_n || 'the people who were here first'}`],
   ['lim_incubate', () => 'the children grown in women who were never woken to be asked'], ['lim_herd', () => 'the sleepers flown down as meat, ten a month'],
@@ -495,6 +495,7 @@ const DEEDS = {
   drafters: "the three who drafted a petition, put back into the cold",
 };
 LF.DEEDS = DEEDS;
+for (const d of LF.DEEDS_LATE || []) Object.assign(DEEDS, d);   // deeds of threads that load before this file (js/thread-quiet.js)
 /* The deeds on the colony's record that have a name, most recent first. */
 LF.deeds = s => Object.keys(DEEDS).filter(k => s.flags['lim_' + k]).sort((a, b) => s.flags['lim_' + b] - s.flags['lim_' + a]).map(k => DEEDS[k]);
 /* Every deed on the colony's record as [key, phrase], the worst kind first (the play log's end-of-game stats). */
@@ -941,7 +942,7 @@ add({ id: 'lim.camp', arc: 'lim.knife', view: 'world', tone: 'opportunity', titl
   setup: s => ({ n: Math.min(s.deserted, 14), hungry: foodDays(s) < 50 }),
   text: (s, c) => c.hungry
     ? `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, a good roof, and a store of dried food that would feed this colony for a month.\n\n[[security]] "Who took the good saws and the long cable when they went? They did, and now they're sat under a good roof on a full store, laughing at us, I'd bet." "Four days and I'll have the lot back, and the people too if you want them, though I can't think why you would."`
-    : `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, thin, two graves, and a roof that will not see out the season. They have sent a runner to ask whether they can come home.\n\n[[security]] "So who walked out on us when the bins were full, and who's at the gate now their roof's coming in? The same faces, and now they'd like a bunk in our rows." "Fine, but it's on our terms, and I'll be watching every one of them, because anyone who walks out once will walk out twice."`,
+    : `The people who walked out have a camp two days from the wire. A party that went to look came back with a count: ${num(c.n)} of them, thin, two graves, and a roof that will not see out the season. They have sent a runner to ask whether they can come home.\n\n[[security]] "So who walked out on us when the bins were full, and who's at the gate now their roof's coming in? The same faces, and now they'd like a bunk in our rows." "Fine, on our terms, and every one of them goes in my book with the night they left and who they left with, because whoever walked out once already knows the way."`,
   choices: [
     { label: (s, c) => c.hungry ? 'Trade for some of it' : 'Open the gate', cost: (s, c) => c.hungry ? { mat: 30 } : null,
       out: { text: (s, c) => c.hungry ? 'They drive a hard bargain, and enjoy it. The cart comes back a third full.' : 'They come in through the gate in a line and are given their old bunks. The crews who stayed, and went short to stay, watch them served from the same pot.',
@@ -1023,7 +1024,7 @@ add({ id: 'lim.organ', arc: 'lim.knife', view: 'people', tone: 'crisis', title: 
 add({ id: 'lim.nest', arc: 'lim.out', view: 'world', tone: 'pressure', title: 'So That It Is Never Done Twice', w: 3, gap: 14,
   when: s => { const f = nat(s); return s.day >= 200 && !!f && f.threat >= 30 && f.insight >= 10 && !!P(s, 'security'); },
   setup: s => { const f = nat(s); return { fid: f.id, n: f.name, N: f.Name, weak: LF.KINDS.natives.subs[f.sub].weak }; },
-  text: (s, c) => `${Nwc(s, 'security')} and ${Nw(s, 'xenobio')} have been working on the same map from opposite ends, and tonight they bring it to you together. On it is every place where ${c.n} sleep, breed and store food, and the one thing to use against them: ${c.weak}.\n\n[[security]] "A border, is it, and who holds it? We do, every bloody year, and they only need to get lucky once." "All of them, the young too. One season, and we never do it twice, and then the ground's ours and nobody stands another night watch."`,
+  text: (s, c) => `${Nwc(s, 'security')} and ${Nw(s, 'xenobio')} have been working on the same map from opposite ends, and tonight they bring it to you together. On it is every place where ${c.n} sleep, breed and store food, and the one thing to use against them: ${c.weak}.\n\n[[security]] "A border, is it, and who holds it? We do, every bloody year, and they only need to get lucky once." "So it's all of them, the young too, in one season, and we never have to do it twice, and then the ground's ours and nobody on my watch stands another night out there."`,
   choices: [
     { label: 'All of them', dark: true, test: { base: 60, mods: [R('security', 10), If((s, c) => { const f = s.factors.find(x => x.id === c.fid); return !!f && f.insight >= 40; }, 10, 'They are well understood')] }, info: [['yield', 'Their ground, and no more night watch'], ['danger', 'Lives']],
       ok: { text: 'It takes nineteen days. The watch works outward from the wire, place by place, using what the map says to use. The last of it is the young, who do not run, because nothing has ever hunted them. The ground they held is clear, and the night watch is stood down.',

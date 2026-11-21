@@ -56,7 +56,7 @@ function settle(s, t, end) { // an ending: what is left of the hosts, and of the
     t.n = 0; LF.endThread(s, ID, 'purged', `The Passenger was burned out of the colony. ${dead} did not survive the cure.`);
     LF.emit(s, 'grief', 'th.passenger', 45, 240, 'the cure killed people'); LF.emit(s, 'fear', 'th.passenger', 30, 200, 'nobody is certain it is gone'); }
   else if (end === 'parted') { const go = Math.min(n, Math.round(s.pop * 0.1), Math.max(0, s.pop - 30)); s.pop -= go; t.lost = go; t.n = 0; // most stay: the ones who go are the ones furthest along
-    for (const p of named) { p.alive = false; p.left = s.day; p.cause = 'went with the carried'; s.pop = Math.max(0, s.pop - 1); if (p.role) s.vacancies.push({ role: p.role, day: s.day + LF.ri(s, 30, 60) }); }
+    for (const p of named) LF.depart(s, p, 'went with the carried');
     LF.endThread(s, ID, 'parted', `${go + named.length} who carried the Passenger left the colony together, in one long line.`);
     LF.emit(s, 'grief', 'th.passenger', 40, 240, 'the carried have gone'); LF.emit(s, 'schism', 'th.passenger', 35, 300, 'the colony split over the carried'); }
   else { for (const p of named) { if (p.secret) p.secret.known = p.secret.known || s.day; p.loyal = clamp(p.loyal + 15, 0, 100); }
@@ -138,7 +138,7 @@ B(['signs', 'among', 'open'], { id: 'psg.blame', x: true, tone: 'pressure', titl
     { label: (s, c) => `Put ${c.what} out past the wire`, dark: true, show: (s, c) => { const p = !c.isF && byPid(s, c.pid); return !!p && p.alive && !p.away; }, note: 'The petition asked for less than this, and would be glad of it.', info: [['yield', 'Morale'], ['danger', 'Somebody who did nothing']],
       out: { text: (s, c) => `${c.what} is walked to the wire at dusk with a pack, past most of the forty who signed. The mess hall is easier that night than it has been in a month. The walking goes on at three in the morning as before.`,
         fx: (s, c) => ({ morale: 7, tension: -10, stain: ['goat', 2], chips: [[`${c.what} exiled`, false]],
-          do: s2 => { T(s2).blamed = c.what; const p = byPid(s2, c.pid); if (p && p.alive && !p.away) { p.alive = false; p.left = s2.day; p.died = s2.day; p.cause = 'put out past the wire for the night-walking, which was never theirs'; s2.pop = Math.max(0, s2.pop - 1); if (p.role) s2.vacancies.push({ role: p.role, day: s2.day + 40 }); } }, chron: `${c.what} was exiled to quiet a petition about the night-walking.` }) } },
+          do: s2 => { T(s2).blamed = c.what; const p = byPid(s2, c.pid); if (p && p.alive && !p.away) LF.depart(s2, p, 'put out past the wire for the night-walking, which was never theirs'); }, chron: `${c.what} was exiled to quiet a petition about the night-walking.` }) } },
   ] });
 B(['signs', 'among'], { id: 'psg.tell', tone: 'pressure', title: 'The Pattern',
   when: (s, t) => s.day - t.since > 25 || t.phase === 'among',
@@ -148,7 +148,7 @@ B(['signs', 'among'], { id: 'psg.tell', tone: 'pressure', title: 'The Pattern',
     build: `There is something behind the workshop. Waist-high, built of plate offcuts and cable, curved where nothing the colony makes is curved. ${Nwc(s, 'engineer')} asked the night shift who designed it. They looked at each other as if the question were odd.`,
     gift: `The cold snap took a third of the night shift off the rota with chills. The other two thirds worked through it in shirtsleeves, and ${Nw(s, 'physician')} has their names on a list.\n\n[[physician]] "Not one of them's got so much as a cough, and every one of them's turned down the survey rota, and when I ask them why they just look at me, kindly, as if I'm the one who's ill. So don't ask me to call it good news."`,
     curious: `${Nwc(s, 'engineer')} found the water pump in pieces on the workshop floor at dawn, each part laid out on a cloth and labelled in a neat hand. The night shift had done it. They put it back together by noon, better than it was, and asked whether there was another one.`,
-    keep: `${Nwc(s, 'physician')} brings you the sick list for the quarter, and a second list.\n\n[[physician]] "That's thirty of them without so much as a cold, and on six hours' sleep they do the work of people on eight, and not one has come to me with a single worry in their head. I want to know why before anybody calls it good."`,
+    keep: `${Nwc(s, 'physician')} brings you the sick list for the quarter, and a second list.\n\n[[physician]] "That's every one of them without so much as a cold, and on six hours' sleep they do the work of people on eight, and not one has come to me with a single worry in their head. I want to know why before anybody calls it good."`,
   }[T(s).truth.agenda]),
   choices: [
     { label: 'Study them without telling them', dark: true, note: 'Blood drawn under another name, a camera in the bunkroom, and one ration quietly changed to see what happens.', info: [['yield', 'What it is'], ['danger', 'The ones being watched']], out: { text: 'Blood is taken at the clinic for a check that does not exist. A camera goes into one bunkroom, and one of them is fed differently for a month to see what changes. The notes pile up, and it goes on doing what it does while they are written.', fx: s => ({ stain: ['watched', 1], do: s2 => { const t = T(s2); learn(s2, t, 28); t.n += 1; t.terms -= 6; } }) } },

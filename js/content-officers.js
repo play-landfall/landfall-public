@@ -158,5 +158,5 @@ add({ id: 'off.relieve', view: 'people', arc: 'officers', tone: 'pressure', urge
         fx: (s, c) => ({ stain: ['signed_unfit', 1], do: s2 => { const p = byPid(s2, c.pid); if (p) LF.vacate(s2, p, 'relieved', `was ${c.title} until the clinic signed a paper`, true); } }) } },
   ] });
 LF.TAGS['off.relieve'] = ['severe order', 'mercy', 'order'];
-Object.assign(LF.DEEDS || {}, { signed_unfit: 'the officer signed unfit on a paper that was not true' });
+(LF.DEEDS_LATE = LF.DEEDS_LATE || []).push({ signed_unfit: 'the officer signed unfit on a paper that was not true' });
 })();

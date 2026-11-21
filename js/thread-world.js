@@ -64,7 +64,7 @@ BG('wrong', { id: 'hg.blame', view: 'people', x: true, tone: 'pressure', title: 
     { label: (s, c) => `Give them ${c.first}. A hearing, and the wire`, dark: true, note: 'There is no evidence, and the colony has stopped sleeping.', info: [['yield', 'The talk stops'], ['danger', 'Someone who did nothing']],
       out: { text: (s, c) => `The hearing takes an afternoon. Being on shift for three failures out of five is called a pattern, and nobody asks who was on shift for the other two. ${c.name} is put out past the wire at dusk with a pack. The mess hall is easy that night for the first time in a season, and the failures go on at exactly the rate they did before.`,
         fx: (s, c) => ({ morale: 7, stain: ['goat', 2], chips: [[`${c.name} exiled`, false]], do: s2 => { const t = HG(s2); t.blamed = c.pid; t.goat = c.name; const p = byPid(s2, c.pid);
-          if (p && p.alive && !p.away) { p.alive = false; p.left = s2.day; p.died = s2.day; p.cause = 'exiled for what the ground did'; s2.pop = Math.max(0, s2.pop - 1); if (p.role) s2.vacancies.push({ role: p.role, day: s2.day + 35 }); }
+          if (p && p.alive && !p.away) LF.depart(s2, p, 'exiled for what the ground did');
           LF.ease(s2, 'suspicion', 'hg.blame', 25, 200); LF.ease(s2, 'fear', 'hg.blame', 20, 200); }, chron: `${c.name} was exiled for sabotage. It was the ground.` }) } },
   ] });
 BG('known', { id: 'hg.known', chain: true, tone: 'crisis', title: 'Only the Ground',
