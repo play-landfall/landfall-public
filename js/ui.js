@@ -340,9 +340,9 @@ const sideWord = v => v >= 0.6 ? 'With most' : v >= 0.4 ? 'Split down the middle
 function yearRow(r) {
   const unq = l => String(l || '').replace(/[.!?]$/, '');
   if (r.kind === 'fate') return `<div class="cmp fate${r.mine ? ' dead' : ''}"><div class="ct"><b>${esc(r.t)}</b><span>${r.mine ? 'died here' : 'came back'}</span></div>
-    <div class="sbar"><i class="d" style="width:${100 * r.v}%"></i></div><small>“${esc(unq(r.l))}” · died in ${pct(r.v)} of ${r.n} colonies</small></div>`;
+    <div class="cbar"><i class="d" style="width:${100 * r.v}%"></i></div><small>“${esc(unq(r.l))}” · died in ${pct(r.v)} of ${r.n} colonies</small></div>`;
   return `<div class="cmp"><div class="ct"><b>${esc(r.t)}</b><span>${esc(sideWord(r.v))}</span></div>
-    <div class="sbar">${r.segs.map(x => `<i class="${x.me ? 'me' : ''}" style="width:${100 * x.v}%"></i>`).join('')}</div>
+    <div class="cbar">${r.segs.map(x => `<i class="${x.me ? 'me' : ''}" style="width:${100 * x.v}%"></i>`).join('')}</div>
     <small><em>You</em> “${esc(unq(r.l))}” · ${pct(r.v)}${r.top ? ` · most chose “${esc(unq(r.top))}”` : ''}</small></div>`;
 }
 const yearInner = rows => `<div class="lbl">The other colonies · this year</div>${rows.map(yearRow).join('')}`;

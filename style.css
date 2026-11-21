@@ -575,10 +575,10 @@ html.grim2 h2 { letter-spacing:.01em; }
 .cmp .ct { display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
 .cmp .ct b { font-weight:700; font-size:15px; min-width:0; }
 .cmp .ct span { flex:none; font:800 10.5px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--rust); }
-.sbar { display:flex; gap:2px; height:10px; margin:7px 0 6px; border-radius:999px; overflow:hidden; background:var(--track); }
-.sbar i { display:block; height:100%; background:color-mix(in srgb, var(--ink) 22%, transparent); min-width:3px; }
-.sbar i.me { background:var(--rust); }
-.sbar i.d { background:var(--bad); }
+.cbar { display:flex; gap:2px; height:10px; margin:7px 0 6px; border-radius:999px; overflow:hidden; background:var(--track); }
+.cbar i { display:block; height:100%; background:color-mix(in srgb, var(--ink) 22%, transparent); min-width:3px; }
+.cbar i.me { background:var(--rust); }
+.cbar i.d { background:var(--bad); }
 .cmp small { display:block; font-size:13.5px; color:var(--dim); text-wrap:pretty; font-variant-numeric:tabular-nums; }
 .cmp small em { font-style:normal; font-weight:800; color:var(--rust); }
 .cmp.fate .ct span { color:var(--dim); } .cmp.fate.dead .ct span { color:var(--bad); }
