@@ -15,7 +15,7 @@ LF.ARCHETYPES = {
     lex: { cover: 'the low grey growth', under: 'the dust flats', top: 'dust', surface: 'dust', slump: 'The dust bank slumps over it', wild: 'the grey crust off the lee of the stones', wild1: 'grey crust', burnt: 'windburnt' },
     zones: { wet: 'the meltwater basin', high: 'the basalt shelf', deep: 'the rift canyon', near: 'the dust plain beside the anomaly' } },
   ruin: { name: 'Graveyard world', cls: 'D', pts: 6, sv: { water: [14, 40], temp: [4, 26], bio: [14, 34] }, bounty: 1, yield: 0.07, late: 0.3, mat: 45,
-    blurb: 'From orbit the continents are scored with straight lines. Somebody built here once and is gone. The array cannot tell when they left, or why.',
+    blurb: 'From orbit the continents are scored with straight lines. Somebody built here once and is gone. The array cannot tell when they left, or why. Between the walls there is only dry rock, wind, and a grey-green crust in the lee of the stones.',
     prefixes: ['glass', 'slag', 'iron', 'bone', 'tomb', 'cable'], climate: { flare: 1.5, winter: 1, storm: 1 },
     kinds: { ruin: 4, natives: 0.8, humans: 1, fauna: 0.6, flora: 0.6, plague: 0.6 }, multi: ['ruin'],
     subs: { natives: ['remnant', 'hive'], humans: ['feral', 'claimants'], fauna: ['swarm', 'delver'], flora: ['mat', 'creeper'], plague: ['sleep', 'parasite'] },
@@ -53,6 +53,9 @@ LF.ARCHETYPES = {
 
 /* The world's own words for ground, for text that would otherwise assume one (a desert's dunes on an ice world). */
 LF.lex = (s, k) => LF.ARCHETYPES[s.world.type].lex[k];
+/* The kinds of world a new game is dealt (Lachlan, 2026-11-21): the Lichen world is folded into the Graveyard world, a dry dead
+   world of rock and old walls, and is no longer offered. Its entry stays above so a saved game on one plays on. */
+LF.DEALT = ['garden', 'jungle', 'ice', 'drowned', 'ruin'];
 
 /* What each kind of thing can be. Frames (frames.js) are written against these slots. */
 LF.KINDS = {
@@ -124,7 +127,7 @@ LF.makeFactor = function (s, A, kind, sev, late, usedNames) {
    drawn from s.rng, so the same candidate seed always builds the same world. */
 LF.makeWorld = function (s, c) {
   c = c || {};
-  const key = c.type || pick(s, Object.keys(LF.ARCHETYPES)), A = LF.ARCHETYPES[key], j = c.j || 0;
+  const key = c.type || pick(s, LF.DEALT), A = LF.ARCHETYPES[key], j = c.j || 0;
   let pts = Math.max(2, A.pts + (c.adj || 0) - Math.round(j * 2.5));
   s.yieldBonus = A.yield + 0.02;   // +0.02 for every world (2026-11-14): the variance the openings and drawn holds add, and the four minor threads (thread-small.js)
   s.world = { type: key, cls: A.cls, j, threatPts: pts, planet: c.desig || c.name || pick(s, PLANETS), sid: c.name || '', star: c.star || '', climate: wpick(s, A.climate), arcs: [], mysteries: [] };
@@ -252,7 +255,7 @@ LF.PREMISES = {
 };
 LF.premiseOf = seed => { const k = Object.keys(LF.PREMISES); let h = 2166136261; for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return k[(h >>> 0) % k.length]; };
 LF.makeAdrift = function (s) {
-  const types = Object.keys(LF.ARCHETYPES), names = PLANETS.slice(), n = 3, cands = [];   // three candidates: three of the six kinds of world, shuffled, so no two games offer the same choice
+  const types = LF.DEALT.slice(), names = PLANETS.slice(), n = 3, cands = [];   // three candidates: three of the kinds of world dealt (LF.DEALT), shuffled, so no two games offer the same choice
   for (let i = types.length - 1; i > 0; i--) { const q = ri(s, 0, i); [types[i], types[q]] = [types[q], types[i]]; }
   for (let i = 0; i < n; i++) {
     const j = clamp((i + 0.15 + 0.7 * rand(s)) / n, 0, 1), ly = Math.round((1.9 + 7.4 * j) * 10) / 10;
