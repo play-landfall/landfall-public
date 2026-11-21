@@ -17,7 +17,7 @@
     ice_storm: 1, rain: 1, gale: 1, dust: 1, meteor: 1, thaw: 1, flood: 1, fire: 1, blast: 1, shots: 2, collapse: 1, wind: 1,
     scale: 2, thin_mess: 1, pot: 1, ward_door: 1, slump: 1, mess_floor: 1, four_things: 1, refusal: 1, scale_yard: 1, two_lists: 1,
     bone_pit: 1, drag_marks: 1, warren: 1, prisoner: 1, gate_plea: 1, questioning: 1, wire_raid: 1, gate_bars: 1, hill_plan: 1, feral_young: 1, silent_crowd: 1, dead_hill: 1, flat_stone: 1,
-    plate_crumble: 1, bolt_ring: 1, housing_scrape: 1, wire_brush: 1, cart_creak: 1, hot_wire: 1, duct_fan: 1, warm_jar: 1, weld_seam: 1,
+    plate_crumble: 1, bolt_ring: 1, housing_scrape: 1, wire_brush: 1, cart_creak: 1, hot_wire: 1, duct_fan: 1, warm_jar: 1, weld_seam: 1, kettle_empty: 1, hum_round: 1, lamp_shutter: 1,
     sleep_lathe: 1, night_shift: 1, night_frame: 1, sleep_desk: 1, bunk_move: 1, relay_tick: 1, woken_press: 1, fourth_hour: 1, barred_door: 1, sleepwalk: 1, empty_shop: 1, roster_print: 1,
     trap_line: 1, spines: 1, jars: 1, bag: 1, wire_night: 1, seed_walk: 1, bearings: 1, three_ways: 1, black_ground: 1, open_gate: 1, far_beds: 1, tally_board: 1, two_orders: 1,
     schoolyard: 1, incubator: 1, recital: 1, row_court: 1,
@@ -67,7 +67,7 @@
     slow_heart_1: 2.77, barred_row_1: 0.25, yard_wait_1: 2.86,
     bone_pit_1: 0.42, drag_marks_1: 0.65, warren_1: 0.75, prisoner_1: 0.38, gate_plea_1: 1.26, questioning_1: 0.78, wire_raid_1: 0.25, gate_bars_1: 1.54,
     hill_plan_1: 0.7, feral_young_1: 5.07, silent_crowd_1: 0.61, dead_hill_1: 2.84, flat_stone_1: 0.7,
-    plate_crumble_1: 3.13, bolt_ring_1: 0.42, housing_scrape_1: 0.34, wire_brush_1: 0.42, duct_fan_1: 1.11, warm_jar_1: 6.29, weld_seam_1: 0.37, low_hum_1: 2.15, drum_trace_1: 1.87,
+    plate_crumble_1: 3.13, bolt_ring_1: 0.42, housing_scrape_1: 0.34, wire_brush_1: 0.42, duct_fan_1: 1.11, warm_jar_1: 6.29, weld_seam_1: 0.37, kettle_empty_1: 3.3, hum_round_1: 1.1, lamp_shutter_1: 1.42, low_hum_1: 2.15, drum_trace_1: 1.87,
     sleep_lathe_1: 0.84, night_shift_1: 0.25, night_frame_1: 1.32, sleep_desk_1: 1.09, bunk_move_1: 0.25, relay_tick_1: 8, woken_press_1: 0.25, fourth_hour_1: 8,
     barred_door_1: 0.75, sleepwalk_1: 2.16, empty_shop_1: 0.25, roster_print_1: 3.08,
     trap_line_1: 1.19, spines_1: 0.42, jars_1: 2.68, bag_1: 0.25, wire_night_1: 0.52, seed_walk_1: 0.32, bearings_1: 1.37, three_ways_1: 0.37, black_ground_1: 0.5,
@@ -139,7 +139,7 @@
     'eat.graves': 'grave', 'eat.circle': 'kitchen', 'eat.missing': 'footsteps', 'eat.shakes': 'clinic', 'knf.cut': 'workshop', 'knf.note': 'papers', 'knf.strike': 'alarm', 'knf.hand': 'trial', 'col.two': 'crowd_angry',
     // the quiet ship and humanity (2026-11-16)
     'qs.silent': 'radio', 'qs.board': 'hull_hit', 'qs.two': 'whisper', 'qs.tell': 'footsteps',
-    'qs.deep': 'creep', 'qs.walk': 'hull_hit', 'qs.lights': 'beacon', 'qs.second': 'radar', 'qs.air': 'cryo', 'qs.glass': 'ward_door', 'qs.guests': 'second_ship',
+    'qs.deep': 'creep', 'qs.walk': 'hull_hit', 'qs.count': 'slow_heart', 'qs.cups': 'kitchen', 'qs.late': 'radio', 'qs.blame': 'whisper', 'qs.answer': 'ship_voice', 'qs.kettle': 'kettle_empty', 'qs.collar': 'door', 'qs.ridge': 'moon_watch', 'qs.kin': 'crowd_angry', 'qs.nest': 'warren', 'qs.tune': 'hum_round', 'qs.keeper': 'ship_voice', 'qs.salvage': 'workshop', 'qs.fall': 'ship_fall', 'qs.lights': 'beacon', 'qs.second': 'radar', 'qs.air': 'cryo', 'qs.glass': 'ward_door', 'qs.guests': 'second_ship',
     'hum.numbers': 'papers', 'hum.game': 'calls', 'hum.penance': 'hymn', 'hum.pen': 'chains', 'hum.decent': 'crowd_angry', 'hum.tribute': 'drums', 'hum.record': 'console',
     // the Long Years, officers out of the chair and the standing order (2026-11-17)
     'late.fall': 'ship_fall', 'late.sun': 'white_sun', 'late.ground': 'ground_goes', 'late.fleet': 'second_ship', 'late.sleep': 'wont_wake', 'late.born': 'yard_sitdown', 'late.core': 'core_climb', 'late.tide': 'everything_walks',

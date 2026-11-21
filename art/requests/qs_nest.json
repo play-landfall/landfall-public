@@ -1,0 +1,11 @@
+{
+  "id": "qs_nest",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "qs.nest (js/thread-quiet-more.js)",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The Quiet Ship as a dread (docs/quiet-ship-dread.md). Never show the person who lived here: no figure, no face. Until it lands the card borrows op_hold.",
+  "requested": "2026-11-21, claude/fervent-davinci-0iaa74"
+}

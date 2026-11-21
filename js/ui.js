@@ -162,7 +162,7 @@ const BORROW = { plan: () => libPool('lib_group_00'), done: () => libPool('lib_b
   'voy.dead': () => libPool('voy_cryo'), 'voy.petition': () => libPool('voy_wake'), 'voy.spine': () => libPool('voy_plan'), 'voy.dust': () => libPool('voy_plan'),
   away: () => libPool('lib_landscape_').concat(libPool('lib_group_06')),
   // the quiet ship's boarding (2026-11-16): until each has its own picture
-  'qs.deep': () => libPool('qs_board'), 'qs.walk': () => libPool('qs_board'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
+  'qs.deep': () => libPool('qs_board'), 'qs.walk': () => libPool('qs_board'), 'qs.count': () => libPool('sleep_cryo'), 'qs.cups': () => libPool('ship_cabin'), 'qs.late': () => libPool('qs_silent'), 'qs.blame': () => libPool('qs_board'), 'qs.answer': () => libPool('qs_silent'), 'qs.kettle': () => libPool('qs_silent'), 'qs.collar': () => libPool('lander_pad'), 'qs.ridge': () => libPool('away_ridge'), 'qs.kin': () => libPool('lander_grounded'), 'qs.nest': () => libPool('op_hold'), 'qs.tune': () => libPool('fall_night'), 'qs.keeper': () => libPool('ship_orbit'), 'qs.salvage': () => libPool('rst_ship'), 'qs.fall': () => libPool('late_fall'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
 // A scene that shows a seat's officer has a variant per officer (<scene>@<castkey>, js/scenes-cast.js): the person the
 // card is about, else whoever holds the seat now. With nobody, or no variant painted, the plain scene.
 /* An officer's picture at the age the game year makes them (AGE_FROM; the portraits and the scene variants both have a
@@ -280,23 +280,18 @@ function cardHTML() {
   }
   return h + `</div>`;
 }
-/* A puzzle on the card (js/thread-quiet.js, the walk; docs/quiet-ship-dread.md). The ship as nine compartments, the party's
-   air, what the last move found and what can be heard, and one button for each move. Moves go through LF.pzMove. */
+/* A puzzle on the card (the Quiet Ship's boards: js/thread-quiet.js, js/thread-quiet-more.js; docs/quiet-ship-dread.md).
+   Each board says how it is drawn (LF.PUZZLES[kind].draw: svg or html, figures, a bar, what happened, what can be heard, a
+   note) and what can be done (LF.pzMoves); a move goes through LF.pzMove. Built by the rules files from their own words. */
 function pzHTML(pz) {
-  if (pz.kind !== 'walk') return '';
-  const R = LF.WALK_ROOMS, done = new Set(), lines = [];
-  for (const id in R) for (const n of R[id].adj) { const k = [id, n].sort().join('|'); if (done.has(k)) continue; done.add(k);
-    const a = R[id], b = R[n], seen = pz.seen.includes(id) || pz.seen.includes(n);
-    lines.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${seen ? 'on' : ''}${pz.seal.includes(k) && !pz.cut.includes(k) ? ' seal' : ''}"/>`); }
-  const nodes = Object.entries(R).map(([id, r]) => { const cls = [id === pz.at ? 'at' : '', pz.seen.includes(id) ? 'seen' : '', pz.grown.includes(id) && pz.seen.includes(id) ? 'grown' : '', pz.thin.includes(id) && pz.seen.includes(id) ? 'thin' : ''].filter(Boolean).join(' ');
-    return `<g class="${cls}"><circle cx="${r.x}" cy="${r.y}" r="${id === pz.at ? 11 : 8}"/><text x="${r.x + (r.lx || 0)}" y="${r.y + (r.ly || 18) + ((r.ly || 18) > 0 ? 3 : 0)}">${esc(r.name.replace(/^the /, ''))}</text></g>`; }).join('');
-  const air = Math.max(0, pz.air), back = LF.PUZZLES.walk.back(pz), low = air - back < 10;
-  const moves = LF.pzMoves(s).map(m => `<button class="opt pzm${m.home ? ' home' : ''}" data-act="pz" data-v="${m.id}">${ic(m.home ? 'lander' : 'ship')}<span class="b"><span class="l">${esc(m.label)}</span><em>${esc(m.sub)}</em></span></button>`).join('');
-  return `<div class="pz walk"><svg viewBox="0 0 300 168" role="img" aria-label="The ship, compartment by compartment">${lines.join('')}${nodes}</svg>`
-    + `<div class="pzstat"><span>${ic('time')}${air} minutes of air${pz.done ? '' : ` · ${back === Infinity ? '?' : back} back to the collar`}</span><span>${ic('people')}${pz.party} of four</span><span>${ic('unknown')}${pz.clues} found</span></div>`
-    + `<div class="pbar"><i style="transform:scaleX(${air / pz.air0})"${low ? ' class="low"' : ''}></i></div>`
-    + `<div class="pzlog">${pz.log.map(t => talkHTML(t)).join('')}${pz.heard ? `<p class="heard">${esc(pz.heard)}</p>` : ''}</div>`
-    + (moves ? `<div class="pzmoves">${moves}</div>` : '') + `</div>`;
+  const P = LF.PUZZLES[pz.kind]; if (!P || !P.draw) return '';
+  const d = P.draw(s, pz), mv = LF.pzMoves(s), chips = mv.filter(m => m.chip), rest = mv.filter(m => !m.chip);
+  return `<div class="pz ${pz.kind}">${d.note ? `<div class="pznote">${esc(d.note).replace(/\n/g, '<br>')}</div>` : ''}${d.svg || ''}${d.html || ''}`
+    + (d.stats ? `<div class="pzstat">${d.stats.map(([k, t]) => `<span>${ic(k)}${esc(t)}</span>`).join('')}</div>` : '')
+    + (d.bar ? `<div class="pbar"><i style="transform:scaleX(${d.bar[0] / d.bar[1]})"${d.bar[2] ? ' class="low"' : ''}></i></div>` : '')
+    + `<div class="pzlog">${(d.log || []).map(t => talkHTML(t)).join('')}${d.heard ? `<p class="heard">${esc(d.heard)}</p>` : ''}</div>`
+    + (chips.length ? `<div class="pzchips">${chips.map(m => `<button class="pzchip" data-act="pz" data-v="${m.id}"><b>${esc(m.label)}</b><span>${esc(m.sub || '')}</span></button>`).join('')}</div>` : '')
+    + (rest.length ? `<div class="pzmoves">${rest.map(m => `<button class="opt pzm${m.home ? ' home' : ''}${m.row ? ' row' : ''}" data-act="pz" data-v="${m.id}">${m.row ? '' : ic(m.home ? 'lander' : 'ship')}<span class="b"><span class="l">${esc(m.label)}</span>${m.sub && !m.row ? `<em>${esc(m.sub)}</em>` : ''}</span></button>`).join('')}</div>` : '') + `</div>`;
 }
 /* Why the officer of a seat cannot be sent on this card, or '' if they can. */
 function cantSend(k, av, rest) {

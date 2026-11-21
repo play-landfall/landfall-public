@@ -598,11 +598,29 @@ html.grim2 h2 { letter-spacing:.01em; }
 /* A puzzle on the card (the Quiet Ship's walk, js/ui.js pzHTML): the ship's plan, the air, what was found, the moves. */
 .pz { margin:12px 0 4px; padding:12px; border-radius:18px; background:var(--raise); box-shadow:var(--rest); }
 .pz svg { display:block; width:100%; height:auto; margin-bottom:8px; }
-.pz svg line { stroke:var(--line); stroke-width:2; } .pz svg line.on { stroke:var(--dim); } .pz svg line.seal { stroke-dasharray:3 4; }
-.pz svg circle { fill:var(--card); stroke:var(--line); stroke-width:2; } .pz svg .seen circle { fill:var(--dim); stroke:var(--dim); }
-.pz svg .grown circle { fill:var(--bad); stroke:var(--bad); } .pz svg .thin circle { stroke:var(--gold); stroke-dasharray:2 2; }
-.pz svg .at circle { fill:var(--rust); stroke:var(--rust); } .pz svg text { font-size:9px; fill:var(--dim); text-anchor:middle; font-weight:700; } .pz svg .at text { fill:var(--ink); }
+.pz.walk svg line { stroke:var(--line); stroke-width:2; } .pz.walk svg line.on { stroke:var(--dim); } .pz.walk svg line.seal { stroke-dasharray:3 4; }
+.pz.walk svg circle { fill:var(--card); stroke:var(--line); stroke-width:2; } .pz.walk svg .seen circle { fill:var(--dim); stroke:var(--dim); }
+.pz.walk svg .grown circle { fill:var(--bad); stroke:var(--bad); } .pz.walk svg .thin circle { stroke:var(--gold); stroke-dasharray:2 2; }
+.pz.walk svg .at circle { fill:var(--rust); stroke:var(--rust); } .pz.walk svg text { font-size:9px; fill:var(--dim); text-anchor:middle; font-weight:700; } .pz.walk svg .at text { fill:var(--ink); }
 .pzstat { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:14px; margin-bottom:6px; font-variant-numeric:tabular-nums; } .pzstat span { display:inline-flex; align-items:center; gap:5px; } .pzstat img { width:18px; height:18px; display:block; }
 .pz .pbar i.low { background:var(--bad); }
 .pzlog { margin-top:8px; } .pzlog p.narr { margin:6px 0; } .pzlog .heard { margin:6px 0; font-style:italic; color:var(--dim); }
 .pzmoves .opt { margin-top:8px; } .pzmoves .opt.home { box-shadow:inset 0 0 0 2px var(--rust), var(--rest); }
+/* the other boards (js/thread-quiet-more.js): the pod log's rules, the signal book and slate, the junctions, the doors */
+.pznote { font-size:14px; line-height:1.4; color:var(--dim); padding:8px 10px; margin-bottom:8px; border-radius:12px; background:var(--card); }
+.pzmoves .opt.row { padding:9px 12px; margin-top:6px; } .pzmoves .opt.row .l { font-weight:700; font-variant-numeric:tabular-nums; font-size:15px; }
+.pz .slate { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:4px 0 10px; }
+.pz .slate span { width:30px; height:38px; display:grid; place-items:center; border-radius:8px; background:var(--card); font-weight:800; font-size:20px; color:var(--ink); }
+.pz .slate span.at { box-shadow:inset 0 0 0 2px var(--rust); } .pz .slate span.gap { width:10px; background:transparent; }
+.pz .book { display:grid; grid-template-columns:repeat(auto-fill, minmax(78px, 1fr)); gap:4px 8px; font-size:12px; white-space:nowrap; color:var(--dim); margin-bottom:8px; font-variant-numeric:tabular-nums; }
+.pz .book b { color:var(--ink); margin-right:3px; }
+.pzchips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+.pzchip { flex:1 1 30%; min-width:84px; padding:10px 6px; border-radius:14px; background:var(--raise); box-shadow:var(--rest); display:flex; flex-direction:column; align-items:center; gap:2px; }
+.pzchip b { font-size:22px; color:var(--ink); } .pzchip span { font-size:12px; color:var(--dim); letter-spacing:1px; } .pzchip:active { scale:.96; }
+.pz.restart .tile { cursor:pointer; } .pz.restart .tile rect { fill:var(--card); stroke:var(--line); stroke-width:1.5; }
+.pz.restart .tile line { stroke:var(--dim); stroke-width:6; stroke-linecap:round; } .pz.restart .tile circle { fill:var(--dim); }
+.pz.restart .tile.hot line { stroke:var(--rust); } .pz.restart .tile.hot circle { fill:var(--rust); }
+.pz.restart svg text { font-size:10px; fill:var(--dim); font-weight:700; } .pz.restart svg text.hot { fill:var(--rust); }
+.pz.doors rect { fill:var(--card); stroke:var(--line); stroke-width:2; } .pz.doors .grown rect { fill:var(--bad); stroke:var(--bad); }
+.pz.doors .vent rect { fill:transparent; stroke-dasharray:4 4; } .pz.doors text { font-size:10px; fill:var(--dim); text-anchor:middle; font-weight:700; }
+.pz.doors text.n { font-size:14px; fill:var(--ink); } .pz.doors line { stroke:var(--line); stroke-width:3; } .pz.doors line.shut { stroke:var(--rust); stroke-width:5; }

@@ -1,0 +1,11 @@
+{
+  "id": "qs_keeper",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "qs.keeper (js/thread-quiet-more.js)",
+  "setting": "planet",
+  "officers": [],
+  "notes": "The Quiet Ship as a dread (docs/quiet-ship-dread.md). The ship is in it: a SHOTS entry in tools/craft.py, painted against her approved sheets. Until it lands the card borrows ship_orbit.",
+  "requested": "2026-11-21, claude/fervent-davinci-0iaa74"
+}

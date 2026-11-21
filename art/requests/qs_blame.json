@@ -1,0 +1,11 @@
+{
+  "id": "qs_blame",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "qs.blame (js/thread-quiet-more.js)",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The Quiet Ship as a dread (docs/quiet-ship-dread.md).  Until it lands the card borrows qs_board.",
+  "requested": "2026-11-21, claude/fervent-davinci-0iaa74"
+}
