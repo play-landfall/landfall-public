@@ -4,7 +4,7 @@
    - Three Fires (tg.three): three named threads pressing at once. One is let go, on purpose, and the other two get
      everything. The one let go comes back sooner and harder (t.neglect), and the colony knows whose call it was.
    - Aftershock (tg.after): a thread has just ended, and another is still pressing. What the colony learned, lost or
-     did in the first is carried into the second: the people who came through it, the grief, or the method.
+     did in the first is carried into the second: the people who came through it go onto it, or are stood down to grieve.
    - Pairs (tg.*): a card written for two particular threads that only means something when both are live: the ship's
      manifest and the count, the ship's radio and the voices at the wire, the eaters and the pen, the knife and a
      colony gone hollow, the charter and a dread, the congregation and a Turn, the ship's mind and the quiet ship, the
@@ -32,7 +32,8 @@ const voice = (s, seat, fall) => { const p = here(s, seat); return p ? p.first :
 const TG = st => add(Object.assign({ arc: 'tangle', x: true, w: 7, gap: 40, repeat: 9999 }, st));   // pairs are rare by nature (both threads live at once), so they weigh heavily when they can fire
 LF.ARC_VIEW.tangle = 'people';
 
-/* ============================== THREE FIRES ============================== */
+/* ============================== THREE FIRES ==============================
+   Three options, one for each fire (Lachlan, 2026-11-21: three at most): the only question is which is let go. */
 TG({ id: 'tg.three', view: 'people', tone: 'crisis', title: 'Three Fires', w: 5, repeat: 160,
   when: s => s.day >= 200 && pressing(s).length >= 3,
   setup: s => { const [a, b, c] = pressing(s); return { a, b, c, an: nm(s, a), bn: nm(s, b), cn: nm(s, c), why: `${nm(s, a)}, ${nm(s, b)} and ${nm(s, c)} are all pressing at once` }; },
@@ -40,12 +41,7 @@ TG({ id: 'tg.three', view: 'people', tone: 'crisis', title: 'Three Fires', w: 5,
   choices: ['a', 'b', 'c'].map(k => ({ label: (s, c) => `Let ${c[k + 'n']} go`, note: (s, c) => `Nobody on ${c[k + 'n']} for a season. Everyone on the other two. When it comes back, it comes back to people who were told to leave it.`, hint: 'unknown',
     info: (s, c) => [['yield', 'The other two held'], ['danger', cap1(c[k + 'n']) + ', left to itself']],
     out: { text: (s, c) => `The column for ${c[k + 'n']} is crossed out in chalk and stays crossed out. Every crew goes onto the other two. The people who were working ${c[k + 'n']} are moved without being told why, and work out why by evening.`,
-      fx: (s, c) => ({ tension: 5, morale: -2, do: s2 => { for (const x of ['a', 'b', 'c']) attend(s2, c[x], x !== k); const t = T(s2, c[k]); if (t) t.neglect = s2.day + 30; LF.emit(s2, 'resentment', 'tg.three', 30, 160, `the council let ${c[k + 'n']} go on purpose`); } }) } }))
-    .concat([{ label: 'All three, and nobody sleeps', note: 'Double shifts and the night watch on the work crews, for a season. Everyone is on everything, badly.', hint: 'unknown', info: [['yield', 'Nothing let go'], ['danger', 'Everyone, worked to the bone']],
-      out: { text: 'For a season nobody stops. Three crews fall asleep standing. A rigger asleep on a scaffold and a hauler asleep on the river path are buried the same afternoon, because there is no other time.', fx: (s, c) => ({ pop: -2, morale: -5, progress: -0.03, do: s2 => LF.emit(s2, 'exhaustion', 'tg.three', 55, 120, 'everyone is working three jobs at once') }) } },
-    { label: (s, c) => `Let ${c.cn} burn, and tell the colony it was ${c.an}'s doing`, dark: true, note: 'One fire let go, and blamed on another, so the colony is angry at the right thing.', hint: 'unknown', info: [['yield', 'Anger pointed one way'], ['danger', 'The truth, and the one let go']],
-      out: { text: (s, c) => `The story goes round by supper: ${c.cn} only got so bad because of ${c.an}. By the end of the week people believe it, and work on ${c.an} as if it had hurt them personally.`,
-        fx: (s, c) => ({ morale: 2, stain: ['three_lie', 1], do: s2 => { attend(s2, c.a, true); attend(s2, c.b, true); attend(s2, c.c, false); LF.emit(s2, 'zeal', 'tg.three', 40, 140, `the colony has been told ${c.an} is to blame for everything`); } }) } }]) });
+      fx: (s, c) => ({ tension: 5, morale: -2, do: s2 => { for (const x of ['a', 'b', 'c']) attend(s2, c[x], x !== k); const t = T(s2, c[k]); if (t) t.neglect = s2.day + 30; LF.emit(s2, 'resentment', 'tg.three', 30, 160, `the council let ${c[k + 'n']} go on purpose`); } }) } })) });
 
 /* ============================== AFTERSHOCK ============================== */
 /* A thread ended in the last two months, and another is pressing. */
@@ -64,9 +60,6 @@ TG({ id: 'tg.after', view: 'people', tone: 'pressure', title: 'Aftershock', w: 3
     { label: 'Stand them down. A season of rest for anyone who went through it', note: (s, c) => `The colony grieves first, and ${c.bn} waits for it. It may not wait well.`, hint: 'unknown', info: [['yield', 'Morale, and grief let out'], ['danger', 'What does not wait']],
       out: { text: (s, c) => `For a season the ones who came through ${c.an} are off the rosters. There is a lot of sitting by the stove. Some of them talk for the first time. ${cap1(c.bn)} goes on without them.`,
         fx: (s, c) => ({ morale: 4, tension: -5, progress: -0.02, do: s2 => { s2.flags['tg_after_' + c.a] = s2.day; attend(s2, c.b, false); LF.emit(s2, 'grief', 'tg.after', 35, 120, `the colony is letting itself grieve ${c.an}`); } }) } },
-    { label: (s, c) => `Hold a day for how ${c.an} ended. Say it was a victory, whatever it was`, dark: true, note: 'Flags, a speech and an extra ladle. What actually happened is not in the speech.', hint: 'unknown', info: [['yield', 'Morale, and a story'], ['danger', 'Everyone who was there and knows better']],
-      out: { text: (s, c) => `There is a day for it, with the flag and a speech from you in the yard. People cheer at the right places. ${c.vfirst} doesn't, and goes back to work before the end.`,
-        fx: (s, c) => ({ food: -40, morale: 5, stain: ['victory_day', 1], do: s2 => { s2.flags['tg_after_' + c.a] = s2.day; LF.emit(s2, 'zeal', 'tg.after', 35, 160, `the colony has been told ${c.an} was a victory`); LF.emit(s2, 'resentment', 'tg.after', 20, 160, `the people who were there know how ${c.an} really ended`); } }) } },
   ] });
 
 /* ============================== PAIRS ============================== */
@@ -109,8 +102,6 @@ TG({ id: 'tg.knifelist', view: 'people', tone: 'crisis', title: 'The Knife\'s Li
   choices: [
     { label: 'Pin up your own list beside it, with your name at the top', note: 'Every order was yours in the end. Say so. The knife may not care.', hint: 'unknown', info: [['yield', 'The truth, from you'], ['danger', 'Your officers, and you']],
       out: { text: 'Your list goes up beside the knife\'s, longer, in your hand, with your name heading every line. The next morning the knife\'s list is gone, and yours has a single word added under it in the neat hand.\n\n[[note:Under your list, in the same neat hand]] "Good."', fx: { hum: 6, morale: -4, do: s2 => { attend(s2, 'knife', true); LF.emit(s2, 'revelation', 'tg.knifelist', 30, 200, 'the colony\'s orders were posted with the names that signed them'); } } } },
-    { label: 'A guard on every officer, day and night', note: 'Two of the watch each, everywhere. It costs two crews and tells the colony the officers are afraid.', hint: 'unknown', info: [['yield', 'The officers kept'], ['danger', 'Two crews, and how it looks']],
-      out: { text: 'The officers go about in pairs of guards. The list still goes up every morning. Now it has the guards\' names on it too.', fx: { progress: -0.04, tension: 4, do: s2 => attend(s2, 'knife', true) } } },
     { label: 'Give the colony a name for the knife, any name, and a rope', dark: true, note: 'The list stops being read once someone has hanged for it.', hint: 'unknown', info: [['yield', 'The list stops'], ['danger', 'Whoever is named'], ['later', 'The real knife']],
       out: { text: 'A name is found. A rope is found. The list does not go up the next morning, or the one after. On the third morning it is back, with one more line at the bottom, and the hanged man\'s name beside it, and yours.', fx: { pop: -1, stain: ['knife_goat', 2], morale: 2, do: s2 => { attend(s2, 'knife', false); LF.emit(s2, 'fear', 'tg.knifelist', 50, 200, 'the knife has added the hanging to its list'); } } } },
   ] });
@@ -126,8 +117,6 @@ TG({ id: 'tg.powers', view: 'people', tone: 'pressure', title: 'Emergency Powers
       out: { text: (s, c) => `The charter is folded and locked in the strongroom "for the duration". Orders go out faster. ${cap1(c.dn)} is met head on. Nobody is sure when the duration ends.`, fx: (s, c) => ({ tension: -8, stain: ['charter_suspended', 2], do: s2 => { attend(s2, c.d, true); attend(s2, 'charter', false); LF.emit(s2, 'resentment', 'tg.powers', 45, 300, 'the charter was suspended'); } }) } },
     { label: (s, c) => `Put what to do about ${c.dn} to a vote`, note: 'Everybody decides together, and slowly. Whatever comes, comes to a colony that chose it.', hint: 'unknown', info: (s, c) => [['yield', 'The charter, kept'], ['danger', cap1(c.dn) + ', while they argue']],
       out: { text: (s, c) => `It goes to a vote, after two more nights. The vote is close. The losing side accepts it, which surprises everyone, them most of all.`, fx: (s, c) => ({ morale: 3, do: s2 => { attend(s2, 'charter', true); attend(s2, c.d, false); } }) } },
-    { label: 'Give the Speaker the decision, and stand behind it', note: 'Someone the colony chose decides. If it goes wrong, it is on them, and on you for handing it over.', hint: 'unknown', info: [['yield', 'A decision, with a mandate'], ['later', 'The Speaker, if it goes wrong']],
-      out: { text: (s, c) => `The Speaker takes it, and takes a night, and decides. People grumble and do it. It is the first time the colony has watched someone other than you make a call like this.`, fx: (s, c) => ({ morale: 1, do: s2 => { attend(s2, 'charter', true); attend(s2, c.d, true); } }) } },
   ] });
 
 /* The congregation and a Turn: the sign it was promised. */
@@ -214,8 +203,6 @@ TG({ id: 'tg.bothlists', view: 'people', tone: 'crisis', title: 'Both Lists', ur
   choices: [
     { label: 'Take the three, and tell the hall the wasting has its cause', dark: true, note: 'Three people answer for both things on the evidence of one, and the hall stops asking what the others on the clinic\'s list are eating.', hint: 'unknown', info: [['yield', 'Morale'], ['danger', 'The three, and the question']],
       out: { text: 'The three are taken at the hatch with their bowls in their hands. The hall is told that this is what the fed were. For a month nobody goes near the drying shed, and the clinic goes on weighing.', fx: { morale: 3, tension: -6, stain: ['fed_eaters', 2], do: s2 => { attend(s2, 'eaters', true); attend(s2, 'hunger', false); LF.emit(s2, 'zeal', 'tg.bothlists', 35, 140, 'the hall has been told the fed and the eaters are the same people'); } } } },
-    { label: 'Pin the two lists up side by side', dark: true, note: 'The hall can read, and everyone on either list will be taken for being on both.', hint: 'unknown', info: [['yield', 'Nothing kept back'], ['danger', 'Everyone on either list']],
-      out: { text: 'The lists go up on the mess door. By morning nobody tells them apart. A cook who has lost no weight and never went near a grave is beaten at the hatch, and one of the circle, as thin as anyone, is beaten in the same hour. The cook dies on the ward.', fx: { pop: -1, morale: -3, stain: ['lists_both', 1], do: s2 => { attend(s2, 'eaters', true); attend(s2, 'hunger', true); LF.emit(s2, 'suspicion', 'tg.bothlists', 40, 160, 'two lists were pinned up side by side, and the hall reads them as one'); } } } },
     { label: 'Burn the clinic\'s copy, and keep the two matters apart', note: 'The watch hunts the circle on its own evidence, and the hall, which knows there were two lists, decides for itself what was on the one you burned.', hint: 'unknown', info: [['danger', 'What the hall supposes']],
       out: { text: 'The clinic\'s list goes into the stove. The watch keeps its own, and the three are watched for the graves and for nothing else. The mess has it by supper that a list was burned, and by breakfast it has forty names on it.', fx: { morale: -2, do: s2 => { attend(s2, 'eaters', true); attend(s2, 'hunger', false); LF.emit(s2, 'suspicion', 'tg.bothlists', 30, 140, 'a list of names was burned before anyone could read it'); } } } },
   ] });
@@ -282,12 +269,6 @@ TG({ id: 'tg.vigil', view: 'people', tone: 'pressure', title: 'Outside the Secon
     { label: 'Keep the children in the schoolroom from dusk, with the door locked', note: 'The parents are told their children are locked in at night on account of other people\'s pregnancies.', hint: 'unknown', info: [['yield', 'The yard cleared'], ['danger', 'The children, and their parents']],
       out: { text: 'The schoolroom door is locked at dusk. The children stand at its windows, in rows, facing the second row across the yard. The mothers still come to their window.',
         fx: { morale: -1, do: s2 => { attend(s2, 'children', true); attend(s2, 'quickening', false); LF.emit(s2, 'confinement', 'tg.vigil', 28, 120, 'the children are locked in the schoolroom at dusk'); } } } },
-    { label: 'Let them stand, and have it written down each evening', note: 'Nobody is locked in anywhere, and the rows watch it go on from their doorways.', hint: 'unknown', info: [['danger', 'Morale']],
-      out: { text: (s, c) => `${Nwc(s, 'physician')} sits on an upturned drum by the pump with a notebook. The children come at dusk and go at dark. The page for each evening says the same thing. By the end of the month the rows have taken to standing in their own doorways at dusk to watch the children watch the door.`,
-        fx: { morale: -2, do: s2 => { LF.emit(s2, 'unexplained', 'tg.vigil', 35, 120, 'the ship\'s children stand outside the mothers\' door every dusk'); } } } },
-    { label: 'Send one of the children in at the window, to say what the mothers do in there', dark: true, note: 'The colony gets eyes inside the second row, and they are a child\'s.', hint: 'unknown', info: [['yield', 'A look inside'], ['danger', 'The child sent in']],
-      out: { text: 'A girl of nine is lifted up to the window, and the mothers take her in gently. She comes out at dark with her hair brushed. She says they gave her bread and asked her nothing, and that it is quiet in there. She will not say more. Next evening she stands in the front row.',
-        fx: { stain: ['vigil_child', 2], do: s2 => { attend(s2, 'quickening', true); attend(s2, 'children', false); LF.emit(s2, 'fear', 'tg.vigil', 22, 90, 'a child was put in at the mothers\' window to spy'); } } } },
     { label: 'Move the mothers to the far store under guard, out of sight of the children', dark: true, note: (s, c) => `The yard is cleared, and ${TH.num(c.n)} women at term are marched to a store shed to be rid of an audience.`, hint: 'unknown', info: [['yield', 'The yard cleared'], ['danger', 'The mothers']],
       out: { text: 'The watch moves them at noon, with their bedding on a cart. The far store has no stove. At dusk the children walk straight past the empty second row and stand outside the far store, in rows.',
         fx: { morale: -1, tension: -3, stain: ['vigil_moved', 2], do: s2 => { attend(s2, 'quickening', true); attend(s2, 'children', true); LF.emit(s2, 'resentment', 'tg.vigil', 26, 120, 'the mothers were marched to a store shed'); } } } },
@@ -307,23 +288,20 @@ TG({ id: 'tg.carriers', view: 'people', tone: 'pressure', title: 'Not One of The
     { label: 'Bunk four of the hosts in the second row with them, and see whether it crosses', dark: true, note: 'It settles the question in a month, and it is settled on women at term who were not asked.', hint: 'unknown', info: [['yield', 'An answer'], ['danger', 'The mothers']],
       out: { text: (s, c) => `Four of the hosts are moved in by order, with the watch at the door. The mothers give them the bunks by the stove and are civil. At the end of the month the four are hosts and the mothers are not, and ${c.d} has added nothing else to either list.`,
         fx: { stain: ['carriers_tried', 2], do: s2 => { attend(s2, 'passenger', true); attend(s2, 'quickening', true); LF.emit(s2, 'resentment', 'tg.carriers', 26, 120, 'hosts were bunked in with the mothers to see what would happen'); } } } },
-    { label: 'Give out that the mothers are proof against it, and move one into each row', dark: true, note: 'The rows sleep easier with a mother in the corner bunk, and the women are handed round the colony as charms.', hint: 'unknown', info: [['yield', 'Morale'], ['danger', 'The mothers']],
-      out: { text: 'It is read out at supper as a finding. Each row gets one of them, in the bunk nearest the stove, and each row brings her the best of its plate. They are not asked whether they want to be parted. By the end of the month people are touching their sleeves in the ladle line.',
-        fx: { morale: 3, tension: -4, stain: ['carriers_charm', 2], do: s2 => { attend(s2, 'passenger', false); attend(s2, 'quickening', false); } } } },
     { label: 'Say that two lists prove nothing, and post both', note: 'The hall is given no comfort, and everyone can read who is on which.', hint: 'unknown', info: [['danger', 'Whoever is on either list']],
       out: { text: 'Both lists go on the mess door. By morning somebody has ruled a line between them in charcoal and written a word over each column. Neither word is one the clinic would use.',
         fx: { morale: -2, tension: 4, do: s2 => { LF.emit(s2, 'suspicion', 'tg.carriers', 26, 120, 'the list of hosts and the list of mothers are posted side by side'); } } } },
   ] });
 
-LF.TAGS['tg.vigil'] = ['closed order', 'open', 'severe bold', 'severe closed'];
-LF.TAGS['tg.carriers'] = ['mercy open', 'severe bold', 'closed order', 'open'];
-LF.TAGS['tg.three'] = ['bold', 'bold', 'bold', 'mercy', 'severe closed'];
-LF.TAGS['tg.after'] = ['bold', 'mercy', 'order'];
+LF.TAGS['tg.vigil'] = ['closed order', 'severe closed'];
+LF.TAGS['tg.carriers'] = ['mercy open', 'severe bold', 'open'];
+LF.TAGS['tg.three'] = ['bold', 'bold', 'bold'];
+LF.TAGS['tg.after'] = ['bold', 'mercy'];
 LF.TAGS['tg.samevoice'] = ['closed cautious', 'bold', 'severe closed'];
-LF.TAGS['tg.bothlists'] = ['severe order', 'severe open', 'closed cautious'];
+LF.TAGS['tg.bothlists'] = ['severe order', 'closed cautious'];
 LF.TAGS['tg.penfeeds'] = ['severe', 'severe order', 'mercy open'];
-LF.TAGS['tg.knifelist'] = ['open mercy', 'order cautious', 'severe order'];
-LF.TAGS['tg.powers'] = ['order severe', 'open', 'open order'];
+LF.TAGS['tg.knifelist'] = ['open mercy', 'severe order'];
+LF.TAGS['tg.powers'] = ['order severe', 'open'];
 LF.TAGS['tg.sign'] = ['open', 'closed order', 'order severe'];
 LF.TAGS['tg.itknew'] = ['bold', 'cautious closed', 'cautious'];
 LF.TAGS['tg.roster'] = ['open cautious', 'order severe', 'closed cautious'];

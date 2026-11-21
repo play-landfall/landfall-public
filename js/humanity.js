@@ -129,7 +129,9 @@ add({ id: 'hum.pen', arc: 'hum', view: 'people', tone: 'crisis', title: 'Stock',
         fx: (s, c) => ({ food: -60, tension: 8, hum: 6, flags: { pen_asked: s.day }, do: s2 => { const p = c.pid && byPid(s2, c.pid); if (p) p.loyal = clamp((p.loyal || 50) - 25, 0, 100); } }) } },
   ] });
 
-/* The pen on generated cards: one more option on a threat's hard cards, spending the pen in place of colonists. */
+/* The pen on generated cards: the dark option on a threat's hard cards, spending the pen in place of colonists.
+   A generated card carries one dark extra at most, in a seat of its three (gen.js, three options at most): while the pen
+   can be spent it is the pen, and the kind's own (content-limits.js) is not asked for, so none of those is used up unseen. */
 const PEN = {
   fauna: { l: 'Stake two from the pen out past the wire, upwind', n: 'They will scream. The ones that come for them will come where the guns are.', ok: 'They come for the two at the stakes and the guns take them there. In the morning there is very little at the stakes to bury.', bad: 'They come for the stakes, and take what is at them, and go. Nothing is learned and nothing is shot.', f: { threat: -18, insight: 8 } },
   flora: { l: 'Send two from the pen in to cut it back by hand', n: 'Nobody else has to go near it.', ok: 'The two cut a lane through it by evening, and are walked back to the pen coughing. One of them stops coughing in the night.', bad: 'The growth closes on the lane before they reach the end of it. Nobody goes in after them.', f: { threat: -14 } },
@@ -140,11 +142,9 @@ const PEN = {
 };
 const lim0 = LF.limitSpecs;
 LF.limitSpecs = function (s, f, fr, x) {
-  const out = lim0 ? lim0(s, f, fr, x) : [];
-  const P0 = PEN[f.kind]; if (!P0 || !(s.flags.pen >= 2) || LF.hum(s) >= 10 || fr.stage < 2 || fr.stage > 4) return out;
-  out.push({ ap: 'exploit', lk: 'pen', dark: true, v: 'severe order', hint: 'unknown', l: P0.l, n: P0.n, b: 70, m: ['security'],
-    ok: [P0.ok, { pen: -2, stain: ['pen_spent', 1], f: P0.f }], bad: [P0.bad, { pen: -2, stain: ['pen_spent', 1] }] });
-  return out;
+  const P0 = PEN[f.kind]; if (!P0 || !(s.flags.pen >= 2) || LF.hum(s) >= 10 || fr.stage < 2 || fr.stage > 4) return lim0 ? lim0(s, f, fr, x) : [];
+  return [{ ap: 'exploit', lk: 'pen', dark: true, v: 'severe order', hint: 'unknown', l: P0.l, n: P0.n, b: 70, m: ['security'],
+    ok: [P0.ok, { pen: -2, stain: ['pen_spent', 1], f: P0.f }], bad: [P0.bad, { pen: -2, stain: ['pen_spent', 1] }] }];
 };
 
 /* ============================== BELOW 10%: the threats a colony like this draws ============================== */

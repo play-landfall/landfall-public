@@ -1126,14 +1126,12 @@ add({ id: 'lim.page', arc: 'lim.soul', view: 'people', tone: 'quiet', title: 'Th
 
 /* ============================== OLD CARDS, NEW OPTIONS ============================== */
 { const st = LF.byId['state.unrest']; if (st) { const n = s => Math.max(2, Math.round(LF.sized(s) / 10));
-  st.choices.push({ label: 'One in ten', dark: true, note: 'Counted off down the benches by the watch.', req: s => !s.flags.committee && !!P(s, 'security'), reqText: s => s.flags.committee ? 'The committee will not order it' : 'There is nobody to do the counting', info: [['yield', 'The work starts again'], ['danger', 'One in ten']],
+  st.choices.push({ label: 'One in ten', dark: true, show: s => !!s.flags.crackdown,   // takes the place of "Clear the hall" once force has been used before (three options at most; content-core.js)
+    note: 'Counted off down the benches by the watch.', req: s => !s.flags.committee && !!P(s, 'security'), reqText: s => s.flags.committee ? 'The committee will not order it' : 'There is nobody to do the counting', info: [['yield', 'The work starts again'], ['danger', 'One in ten']],
     out: { text: s => `The watch counts off down the benches. Every tenth is taken out to the yard: ${num(n(s))} people, some of whom had not wanted the stoppage. It takes less than an hour. The morning shift reports in full, in silence, and goes on reporting.`,
       fx: s => ({ pop: -n(s), flags: { crackdown: true, blood_spilled: true }, do: s2 => { stain(s2, 'tenth', 2); s2.morale = Math.max(s2.morale, 32); s2.lowMorale = 0; fear(s2, 'lim.tenth', 60, 260, 'one in ten were taken out of the mess hall'); }, chron: `A work stoppage was ended by killing one striker in ten: ${num(n(s))} people.` }) } });
   const clear = st.choices.find(c => c.label === 'Clear the hall'); if (clear) clear.test.mods.push(Fl('lim_house_blessed', 10, 'The watch owes you for the annex')); } }
-{ const st = LF.byId['pol.theft']; if (st) st.choices.push({ label: 'Take the hand', dark: true,
-    out: { text: (s, c) => `It is done in the clinic, so that it is done cleanly. ${c.first} is back at work in a month on lighter duties, and the stores are not touched again. People look at the sleeve.`,
-      fx: (s, c) => ({ morale: 1, flags: { justice_harsh: true }, mark: [c.pid, 'hand', 'lost a hand for nine kilos of meal'], do: s2 => { stain(s2, 'hand', 1); regard(s2, c.pid, -30); } }) } }); }
-{ const st = LF.byId['state.famine']; if (st) st.choices.push({ label: 'Fly the ten pods now', fly: 1, dark: true, show: s => !!s.flags.lim_herd_held && !s.flags.lim_herd, req: s => ok(s, 'lander') && s.sleepers >= 10, reqText: 'Needs the Lander and sleepers in orbit',
+{ const st = LF.byId['state.famine']; if (st) st.choices.push({ label: 'Fly the ten pods now', fly: 1, dark: true, show: s => LF.famine.pods(s),   // takes the place of half rations (three options at most; content-core.js)
     out: { text: 'The line ruled under the column is crossed through. Ten pods are on the pad by the next evening, and the kitchen works through the night.',
       fx: { sleepers: -10, food: 600, machine: { lander: -8 }, morale: -3, do: s => stain(s, 'larder', 1) } } }); }
 
@@ -1151,12 +1149,14 @@ Object.assign(LF.TAGS, {
   'lim.nest': ['severe closed', 'severe closed', 'mercy open'], 'lim.coffle': ['severe closed', 'severe closed', 'mercy open', ''], 'lim.refuse': ['free', 'severe order', 'mercy'],
   'lim.page': ['free open', 'order', 'order closed'],
 });
-for (const [id, t] of [['state.unrest', 'severe order'], ['pol.theft', 'severe order'], ['state.famine', 'severe']]) if (LF.TAGS[id]) LF.TAGS[id].push(t);
+for (const [id, t] of [['state.unrest', 'severe order'], ['state.famine', 'severe']]) if (LF.TAGS[id]) LF.TAGS[id].push(t);
 
 /* ============================== GENERATED CARDS: THE EXTRA OPTION ==============================
    Once a colony is frightened, hungry or already stained, its officers start proposing things on every card.
-   LF.limitSpecs hands gen.js at most one more option for a frame, by the factor's kind, never the same one twice
-   for the same factor (f.limU). Everything here is plain data: gen.js renders it into s.cur. */
+   LF.limitSpecs hands gen.js at most one option for a frame, by the factor's kind, never the same one twice
+   for the same factor (f.limU). It never makes a fourth (Lachlan, 2026-11-21: three options at most): gen.js seats it in
+   place of the frame's own last dark option, asks for it only when no other extra has the seat, and never on a card that
+   sends a party out. Everything here is plain data: gen.js renders it into s.cur. */
 // generated cards may not have named the officer yet: first mentions carry the post (Nw)
 const W = s => Nw(s, 'security'), Wc = s => Nwc(s, 'security'), Dr = s => Nwc(s, 'physician'), Xb = s => Nwc(s, 'xenobio');
 const LIMIT = {

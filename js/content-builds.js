@@ -6,7 +6,8 @@
    Guest and the Warrens' nights; the party table in gen.js). This file holds the cards: for each build one where its
    lack bites and says so (bu.no*) and one that happens because it stands (bu.*), and the lines and options the
    older cards gain when it stands. Those are added from here, at the end of each card's choices (option ids, LF.TAGS
-   and the sim's COUNCIL table go by position), so the older files are untouched:
+   and the sim's COUNCIL table go by position). No card shows more than three options (2026-11-21), so an option a
+   building adds takes the place of one of the card's own, which carries the opposite `show` in its own file:
      the laboratory     fever.first, crops.native, crops.assay (and any M('medbay') in the odds, core.js)
      the signals room   off.stranded, qs.lights, qs.deep (and the silent party's card, gen.js)
      the cannery        plan.harvest, pol.rations, state.famine
@@ -119,10 +120,8 @@ add({ id: 'bu.nocan', arc: 'bu_can', view: 'colony', tone: 'pressure', title: 'S
       out: { text: 'The soft grain goes into everything for a month. Nobody likes it. The clinic fills with stomachs, and one of the oldest doesn\'t get up.', fx: (s, c) => ({ food: c.b, morale: -3, pop: -1 }) } },
     { label: 'Throw out what\'s soft and keep the rest clean', note: 'Nobody is sick from it, and the store is the lighter by an eighth.', info: [['danger', 'The store, by an eighth']],
       out: { text: (s) => `The soft grain is barrowed out to the pit. ${Nc(s, 'quartermaster')} counts every barrow and writes the number down, and pins it up by the stores door where everyone can see it.`, fx: (s, c) => ({ food: c.a, morale: -1, flags: { can_wanted: s.day } }) } },
-    { label: 'The soft grain goes to the lock-up and the pod rows that sat out the harvest', dark: true, note: 'The ones who cut it eat clean. The ones who didn\'t eat what\'s going off.', info: [['yield', 'The store, and the cutters'], ['danger', 'The lock-up and the far pod rows']],
-      out: { text: 'Two ladles in the mess from now on, one from the clean bins and one from bin four, and a list of who gets which. The cutters eat well. The far rows get sick in turns, and one of them dies of it.', fx: (s, c) => ({ food: c.b, pop: -1, morale: 1, stain: ['bu_soft', 1] }) } },
   ] });
-LF.TAGS['bu.nocan'] = ['mercy', 'cautious', 'severe'];
+LF.TAGS['bu.nocan'] = ['mercy', 'cautious'];
 
 add({ id: 'bu.can', arc: 'bu_can', view: 'world', tone: 'opportunity', title: 'Putting Up', gap: 40, repeat: 360, w: 1.8,
   when: s => landed(s) && has(s, 'cannery') && since(s, 'cannery') >= 30 && LF.date(s.day).season < 3 && s.pop >= 20,
@@ -150,13 +149,11 @@ add({ id: 'bu.nowatch', arc: 'bu_watch', view: 'world', tone: 'pressure', title:
   choices: [
     { label: 'Double the night watch, on foot', note: 'Twelve more people up all night, and the day crews go short of them.', info: [['danger', 'The watch, and the day\'s work']],
       out: { text: 'Twice the lamps on the fence, and twice the people asleep on their feet by morning. The tracks stop coming as close.', fx: (s, c) => ({ fops: [{ id: c.fid, threat: -6 }], food: -60, morale: -1, flags: { watch_wanted: s.day } }) } },
-    { label: 'Clear and burn a strip forty metres wide outside the wire', cost: { mat: 10 }, note: 'Nothing comes across open ground unseen. Whatever lived in that strip is burned out of it.', info: [['yield', 'Open ground'], ['danger', 'What lives in the strip']],
-      out: { text: (s, c) => `The cutting takes a week and the burning a night. In the morning the fence stands in a ring of ash, and anything that crosses it leaves a mark.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -10, harm: 10 }], morale: 1 }) } },
     { label: 'Bury charges in the approaches', dark: true, cost: { parts: 2 }, note: 'Whatever comes to the wire comes to the charges first. They don\'t know who\'s walking on them, and neither will you.', info: [['yield', 'The approaches closed'], ['danger', 'Whoever walks there, ours included']],
       out: { text: (s, c) => `Charges go into the approaches on three sides, mapped on a slate that lives in the armoury. Two go off in the first month, and what's found is ${c.name}. The third, in the spring, is a field hand who went out after a stray.`,
         fx: (s, c) => ({ fops: [{ id: c.fid, threat: -18, harm: 15, kills: 2 }], pop: -1, stain: ['bu_mines', 2] }) } },
   ] });
-LF.TAGS['bu.nowatch'] = ['cautious', 'bold', 'severe'];
+LF.TAGS['bu.nowatch'] = ['cautious', 'severe'];
 
 add({ id: 'bu.watch', arc: 'bu_watch', view: 'world', tone: 'pressure', title: 'From the East Tower', gap: 40, repeat: 300, w: 1.8,
   when: s => landed(s) && has(s, 'watch') && since(s, 'watch') >= 30 && !!out(s),
@@ -186,10 +183,8 @@ add({ id: 'bu.nohall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 
       out: { text: 'The meeting is called off and the rota goes up on the door at breakfast. It isn\'t a bad rota. People read it with their arms folded.', fx: { morale: -3, tension: 3, flags: { hall_wanted: 1 } } } },
     { label: 'Hold it in the yard tonight, all of it, for as long as it takes', note: (s, c) => c.harsh ? 'Everyone is heard, in weather the pods were never built for. The old and the small stand in it too.' : 'Everyone is heard, standing, after a full shift. Supper is late and cold.', info: (s, c) => [['yield', 'A rota people agreed to'], ['danger', c.harsh ? 'The old and the small, in the cold' : 'Supper']],
       out: { text: (s, c) => `The whole colony stands in the yard with lamps until the rota is agreed, a line at a time.${c.harsh ? ' One of the oldest took a chill out there and didn\'t shake it.' : ' Supper is eaten cold at midnight.'}`, fx: (s, c) => c.harsh ? { morale: 3, pop: -1 } : { morale: 3, food: -30 } } },
-    { label: 'Crew heads vote. Everyone else hears the result', dark: true, note: 'Twelve people in a pod with a door, and it\'s done in twenty minutes. Everyone else is told.', info: [['yield', 'Quick, and quiet'], ['danger', 'Everyone who isn\'t a crew head']],
-      out: { text: 'Twelve crew heads, one pod, twenty minutes. The rota goes up that night with twelve names under it. It works, and the next meeting is called the same way, and the one after.', fx: { tension: -8, morale: -1, flags: { rota_heads: true }, stain: ['bu_heads', 1] } } },
   ] });
-LF.TAGS['bu.nohall'] = ['order', 'free', 'severe order'];
+LF.TAGS['bu.nohall'] = ['order', 'free'];
 
 const motion = s => LF.lean(s) ? 'ladle' : 'mess';
 add({ id: 'bu.hall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 'A Motion from the Floor', gap: 40, repeat: 400, w: 1.6,
@@ -246,12 +241,12 @@ opt('qs.lights', { label: 'Call her from the signals room, every pass, until som
 { const S = st('qs.deep'), c0 = S && S.choices[0]; if (c0 && c0.test) c0.test.mods.push(If(s => has(s, 'comms'), 5, 'The signals room on every report')); }
 
 /* --- the cannery --- */
-opt('plan.harvest', { label: 'Through the cannery first, then the store', show: s => has(s, 'cannery'), hint: 'unknown',
+opt('plan.harvest', { label: 'Through the cannery first, then the store', show: s => has(s, 'cannery'), hint: 'unknown',   // in place of "Into the store, all of it"
   note: 'The canning line runs day and night until it\'s all put up, and the cutters work it. Nobody gets a harvest supper.', info: [['yield', 'More of it kept'], ['danger', 'The cutters']],
   out: { text: (s, c) => `The boilers run for a week straight and the cutters go from the field to the canning line without a night off. It all goes in, jarred, dried or in the cold room, and less of it will go soft.${c.tight ? ' Nobody on the line gets a jar.' : ''}`,
     fx: (s, c) => ({ food: Math.round(c.n * 1.12), morale: c.tight ? -4 : -2, flags: { reaped: s.day } }) } }, 'cautious order');
 line('pol.rations', s => has(s, 'cannery') ? '\n\nThe cold store has shelves of jars in it. A short ladle stings less when people can see what is being kept.' : '');
-opt('state.famine', { label: 'Open the cold store. Every jar', show: s => has(s, 'cannery') && !(s.flags.jars_eaten && s.day - s.flags.jars_eaten < LF.YEAR), hint: 'unknown',
+opt('state.famine', { label: 'Open the cold store. Every jar', show: s => !s.flags.reserve && LF.famine.jars(s), hint: 'unknown',   // in place of the seed grain (three options at most; content-core.js)
   note: 'The jars were put up for the lean months. Eat them now, and the lean months come with nothing on the shelves.', info: [['yield', 'Food'], ['later', 'The next lean months']],
   out: { text: 'The cold room is emptied onto the mess tables a shelf a day. The queue at the stores door thins out. The shelves are bare by the end of the month, and stay bare.', fx: s => ({ food: 420, morale: -1, flags: { jars_eaten: s.day } }) } }, 'cautious');
 
@@ -261,6 +256,7 @@ line('hu.wire', s => has(s, 'watch') ? ' There were two on every tower all night
 line('fer.raid', s => has(s, 'watch') ? ' The towers rang the moment the first of them touched the wire. It bought the bunkhouses a minute, no more.' : '');
 
 /* --- the meeting hall --- */
+// the vote takes the place of "Let the committee take over" (content-society.js), which is hidden once the hall stands: three on screen
 opt('pol.mutiny', { label: 'Open the hall. Everyone in, the officers on the floor, and a vote', show: s => has(s, 'hall'), hint: 'unknown',
   note: 'They get their say and their vote, in the room they built. The officers stand there and take it, and might lose.', info: [['yield', 'An answer they agreed to'], ['fail', 'The officers, if the vote goes against them']],
   test: { base: 45, nobuild: ['hall'], mods: [R('command', 10), If(s => !!s.flags.council, 5, 'There is a lawful Council')] },
@@ -273,10 +269,10 @@ opt('ebb.ways', { label: 'Open the hall every night for a month. Anyone can stan
 line('ebb.knives', s => has(s, 'hall') ? '\n\nThe meeting hall stands dark across the yard. It started in the mess anyway, at supper, where it always does.' : '');
 
 /* --- the machine shop --- */
-opt('mach.cannibal', { label: 'Turn the parts on the lathe, and stop the build for it', show: s => has(s, 'machineshop'), cost: { mat: 30 }, hint: 'unknown',
+opt('mach.cannibal', { label: 'Turn the parts on the lathe, and stop the build for it', show: s => has(s, 'machineshop'), cost: { mat: 30 }, hint: 'unknown',   // in place of the scrap bodge
   note: s => s.project ? `The machine shop drops everything for it. ${LF.projName(s, s.project)} waits, and so does everyone waiting on it.` : 'The machine shop drops everything for it, and the plate goes into the part.', info: [['yield', 'The machine'], ['danger', 'Whatever is being built']],
   out: { text: (s, c) => `The shop works through two nights. The parts come off the lathe rough and are filed to fit by hand, and the ${c.name} runs again.`, fx: (s, c) => ({ machine: { [c.id]: 28 }, progress: s.project ? -0.3 : 0 }) } }, 'cautious');
-opt('mach.biofilm', { label: 'Cut new membrane frames in the machine shop', show: s => has(s, 'machineshop'), cost: { mat: 20 }, hint: 'unknown',
+opt('mach.biofilm', { label: 'Cut new membrane frames in the machine shop', show: s => has(s, 'machineshop'), cost: { mat: 20 }, hint: 'unknown',   // in place of the fresh membranes
   note: 'Steel frames and the shop\'s own filter stock. The lathe hands go without their filters for a month.', info: [['yield', 'Clean water, no spares'], ['danger', 'The lathe hands']],
   out: { text: 'The shop strips its own extractor for filter stock and cuts the frames overnight. Clean water by the next evening. The lathe hands cough through the month.', fx: { machine: { reclaimer: 7 }, morale: -1 } } }, 'cautious');
 })();

@@ -76,7 +76,7 @@ LF.TAGS['off.sick'] = ['mercy', 'bold', 'severe'];
    Each seat has two key crew. When the one in the chair is lost, the other, who has been deputy on the ground since
    landfall, can be given it: at landfall if the first was lost on the crossing, a month after one shown the door, a year
    after one dead or missing (LF.altWait). Never a named colonist. When both are gone the seat is empty for good and this
-   card does not come. Options two and three are the old second and third candidates, kept so ids hold their place. */
+   card does not come. Two options since 2026-11-21: the deputy, or nobody ever. */
 const openSeat = s => LF.SEAT_ORDER.find(k => LF.altOpen(s, k) && s.flags['empty_' + k] && s.day >= LF.altDue(s, k));
 const was = (s, seat) => LF.lastHeld(s, seat), outDay = LF.outDay;
 const HOW = { dead: 'died', left: 'left the colony', broken: 'put down the office', elder: 'handed the office on', relieved: 'was relieved', out: 'left the chair' };
@@ -109,14 +109,10 @@ add({ id: 'off.promote', view: 'people', arc: 'officers', tone: 'council', urgen
     { label: (s, c) => `Give ${c.first} the chair`, note: (s, c) => `${c.dept} has an officer again. ${c.first} is the last one it will ever have.`, info: (s, c) => [['people', `${c.dept}, whole again`], ['danger', `Nobody after ${c.first}`]],
       out: { text: (s, c) => `${c.name} takes the ${c.title}'s chair at the evening muster. ${cap(c.crew)} have been doing what ${c.first} said for a good while already, and nobody looks up from their plate.`,
         fx: (s, c) => ({ morale: 2, do: s2 => LF.seatAlt(s2, c.seat) }) } },
-    { show: () => false, label: '', out: { text: '', fx: {} } },
-    { show: () => false, label: '', out: { text: '', fx: {} } },
-    { label: 'Not yet. Ask again in a year', note: (s, c) => `${c.dept} stays closed, and anything that needs it stays closed with it. ${c.first} goes on doing the work without the title.`, hint: 'unknown', info: (s, c) => [['danger', `${c.dept}, for another year`], ['danger', `${c.first}, passed over`]],
-      out: { text: (s, c) => `The chair stays empty. ${c.first} hears it from you, says nothing much, and is back at the bench in the morning.`, fx: (s, c) => ({ morale: -1, do: s2 => { s2.flags['due_' + c.seat] = s2.day + LF.YEAR; } }) } },
     { label: (s, c) => `Nobody takes ${c.gfirst ? c.gfirst + "'s" : 'that'} chair. Leave it empty for good`, note: 'The colony will remember the gesture. It will also go on without the department.', hint: 'unknown', info: (s, c) => [['yield', 'A memory kept'], ['danger', `${c.dept}, for ever`]],
       out: { text: (s, c) => `The chair is pushed in under the table and left. People touch the back of it on the way past. ${c.first} goes on as deputy to nobody.`, fx: (s, c) => ({ morale: 3, do: s2 => { s2.flags['nopromote_' + c.seat] = s2.day; } }) } },
   ] });
-LF.TAGS['off.promote'] = ['open', 'open', 'open', 'cautious', 'closed'];   // by position: two and three are never shown
+LF.TAGS['off.promote'] = ['open', 'closed'];
 
 /* ---------- out of the chair (2026-11-17) ----------
    A playtester lost the lander with an officer still aboard, and the department below ran at half for the rest of the
@@ -153,10 +149,7 @@ add({ id: 'off.relieve', view: 'people', arc: 'officers', tone: 'pressure', urge
         fx: (s, c) => ({ morale: -3, do: s2 => { const p = byPid(s2, c.pid); if (p) { LF.vacate(s2, p, 'relieved', `was ${c.title}, and was relieved of it`, true); p.loyal = Math.max(0, (p.loyal || 50) - 25); } } }) } },
     { label: (s, c) => `${c.first} stays. The department carries its officer`, note: (s, c) => `${c.dept} goes on as it is, and so does everything that depends on it.`, info: (s, c) => [['yield', `${c.first}'s years in the job`], ['danger', `${c.dept}`], ['later', 'Whatever it gets wrong']],
       out: { text: (s, c) => `Nothing is said. The two who came to you are back at their benches in the morning, and do not look up when you pass.`, fx: { morale: -2 } } },
-    { label: (s, c) => `Have the clinic sign ${c.first} unfit, and say it was the clinic's doing`, dark: true, note: (s, c) => `${c.first} goes out on a medical paper that is not true, and nobody has to say the real reason aloud.`, info: (s, c) => [['people', LF.altOf(s, c.seat) ? 'The Empty Chair, next month' : 'An empty chair, for good'], ['danger', 'A lie with the clinic\'s name on it']],
-      out: { text: (s, c) => `The paper is two lines long. ${c.first} reads it twice, looks at the signature, and folds it into a pocket. The department is told it was a matter of health, and is relieved to believe it.`,
-        fx: (s, c) => ({ stain: ['signed_unfit', 1], do: s2 => { const p = byPid(s2, c.pid); if (p) LF.vacate(s2, p, 'relieved', `was ${c.title} until the clinic signed a paper`, true); } }) } },
   ] });
-LF.TAGS['off.relieve'] = ['severe order', 'mercy', 'order'];
+LF.TAGS['off.relieve'] = ['severe order', 'mercy'];
 (LF.DEEDS_LATE = LF.DEEDS_LATE || []).push({ signed_unfit: 'the officer signed unfit on a paper that was not true' });
 })();

@@ -1,6 +1,6 @@
 /* Landfall — the ship (Lachlan, 2026-11-15; DESIGN.md "The ship").
    The Ariadne stays in orbit with the sleepers, the three officers who did not come down first, and every system the
-   first flight could not carry. Only the reactor and one more go down at landfall (setup.sys); each shuttle run after
+   first flight could not carry. Only the reactor goes down at landfall for certain (setup.load can add the hydroponics bay or the autodoc); each shuttle run after
    that brings one officer (seat.down) and one system (ship.cargo). The lander has fuel for two flights; dry, it burns
    food rendered in a digester (ship.dry). Cards that happen aboard (st.aboard) can only send the officers up there,
    and their tests count the officer aboard, not the one on the ground (LF.odds, test.aboard). No DOM. */
@@ -21,30 +21,17 @@ const SYS = {
 const ORDER = ['hydroponics', 'reclaimer', 'medbay', 'fabricator'];
 const bring = id => s2 => { const m = s2.machines[id]; if (m && !m.lost) { m.up = false; LF.log(s2, `The ${LF.MACHINES[id].name} is down from the ship and working.`, 'good'); } };
 
-/* ---------- the first flight: the reactor, and one more ---------- */
-add({ id: 'setup.sys', view: 'colony', arc: 'setup', tone: 'council', chain: true, title: 'What Rides With the Reactor',
-  text: s => `The reactor takes most of the lander's hold. There's room beside it for one more of the ship's systems. Everything else stays aboard the ${s.world.ship} until a shuttle run can fetch it, one a flight, and the lander has fuel for ${NUM[s.fuel || 2]}.\n\n${P(s, 'engineer') ? F(s, 'engineer') + ' has' : 'The engineers have'} the cradles ready for any of the four.`,
-  choices: ORDER.map(id => ({ label: s => `The ${LF.MACHINES[id].name}`, note: s => `${SYS[id].say} Waiting: ${lc(ORDER.filter(x => x !== id).map(x => LF.MACHINES[x].name).join(', '))}.`,
-    info: [['yield', LF.MACHINES[id].name], ['danger', 'The other three wait a flight or more']],
-    out: { then: 'setup.hold1', text: s => SYS[id].down, fx: { do: bring(id) } } })).concat([
-    { label: 'The hydroponics and the autodoc both. Leave the cryo spares behind', dark: true, note: 'Two systems from the first day. The spare coolant cells for the cryo banks stay where they were, and some of the sleepers go without.', hint: 'unknown',
-      info: [['yield', 'Two systems down'], ['danger', 'The sleepers, over the next year']],
-      out: { then: 'setup.hold1', text: 'The coolant cells are unbolted from the cargo floor and left on the deck of the hold, and the two cradles go in where they were. The cryo bay loses its margin. Nobody below will see it happen.',
-        fx: { sleepers: -12, stain: ['cryo_spares', 1], do: s2 => { bring('hydroponics')(s2); bring('medbay')(s2); } } } }]) });
-
 /* ---------- every flight after: one system ---------- */
 const sysOf = (s, c) => (c.ids || []);
 add({ id: 'ship.cargo', view: SHIPV, arc: 'sleepers', tone: 'council', chain: true, preflight: true, repeat: 1, title: 'What Comes Down',
   setup: s => ({ ids: ORDER.filter(id => LF.aboard(s).includes(id)), then: null, fuel: s.fuel || 0 }),
   text: (s, c) => { const n = sysOf(s, c).length;
     return `Before the lander drops there is one cargo cradle to fill. ${n === 1 ? `The ${LF.MACHINES[c.ids[0]].name} is the last system still aboard.` : `${NUM[n] ? NUM[n].charAt(0).toUpperCase() + NUM[n].slice(1) : n} systems are still in the ${s.world.ship}'s hold.`}${N(s, 'engineer') === LF.seatWord(s, 'engineer') ? '' : `\n\n[[engineer]] "There's one cradle, so pick one, and pick the one you'd miss soonest." "Whatever stays up there goes on freezing, a bit worse every pass, and I can't mend what I can't get my hands on."`}\n\n${c.fuel ? `The tanks hold ${NUM[c.fuel] || c.fuel} more flight${c.fuel === 1 ? '' : 's'}.` : 'The tanks are dry. The next flight burns food.'}`; },
-  choices: ORDER.map(id => ({ show: (s, c) => sysOf(s, c).includes(id), label: `The ${LF.MACHINES[id].name}`, note: SYS[id].say + ' ' + SYS[id].wait.replace('Until it comes down', 'Leave it, and'),
+  // Three options at most (2026-11-21): with all four systems still aboard, the first three in ORDER are offered and the
+  // fabricator waits its turn. The dark option that brought two at once (twelve sleepers' power for a second cradle) is gone.
+  choices: ORDER.map(id => ({ show: (s, c) => sysOf(s, c).slice(0, 3).includes(id), label: `The ${LF.MACHINES[id].name}`, note: SYS[id].say + ' ' + SYS[id].wait.replace('Until it comes down', 'Leave it, and'),
     info: [['yield', LF.MACHINES[id].name], ['danger', 'Everything still aboard']],
-    out: { then: (s, c) => c.then, text: SYS[id].down, fx: { do: bring(id) } } })).concat([
-    { show: (s, c) => sysOf(s, c).length >= 2 && s.sleepers >= 12, label: (s, c) => `Two: the ${LF.MACHINES[c.ids[0]].name} and the ${LF.MACHINES[c.ids[1]].name}. Run the cradle heaters off the cryo banks`, dark: true,
-      note: 'Two systems on one flight. The heaters that keep the second cradle from freezing in the drop draw on the banks the sleepers are in.', hint: 'unknown', info: [['yield', 'Two systems down'], ['danger', 'A dozen sleepers']],
-      out: { then: (s, c) => c.then, text: (s, c) => `Both cradles come down warm. On the ship's cryo report that night, twelve pods in bank B are listed as no longer drawing power, in order of age.`,
-        fx: (s, c) => ({ sleepers: -12, stain: ['pods_drained', 1], do: s2 => { bring(c.ids[0])(s2); bring(c.ids[1])(s2); } }) } }]) });
+    out: { then: (s, c) => c.then, text: SYS[id].down, fx: { do: bring(id) } } })) });
 
 /* ---------- the tanks run dry ---------- */
 add({ id: 'ship.dry', urgent: true, view: SHIPV, arc: 'sleepers', tone: 'crisis', title: 'Dry Tanks', repeat: 60,   // back every two months until the digester is built or the lander is grounded on purpose
@@ -54,9 +41,6 @@ add({ id: 'ship.dry', urgent: true, view: SHIPV, arc: 'sleepers', tone: 'crisis'
   choices: [
     { label: 'Build the digester. Render food into fuel', note: s => `Every flight from now on burns about ${LF.FUEL_FOOD} food that people would otherwise eat.`, cost: { mat: 40 }, hint: 'unknown', info: [['yield', 'The lander flies again'], ['danger', 'The ladle, every flight']],
       out: { text: 'The digester goes up behind the lander pad: two tanks, a still and a smell that never leaves. The first sacks of food go in to a silence from the people watching.', fx: { morale: -2, do: s2 => { s2.flags.digester = s2.day; s2.built.digester = s2.day; } } } },
-    { label: 'Build the digester, and render the dead too', dark: true, note: s => `Half the food a flight. The ones in the burial ground, and everyone who dies from now on, go into the tanks.`, cost: { mat: 40 }, hint: 'unknown', info: [['yield', 'Fuel at half the food'], ['danger', 'Every grave, and everyone who mourns them']],
-      out: { text: s => `The burial ground is opened in the night, by ${P(s, 'security') ? F(s, 'security') + ' and the watch' : 'the watch'}, with screens up. By morning the graves are empty and the digester is running. Nobody holds a funeral here again. They hold a weighing.`,
-        fx: { morale: -7, flags: { render_dead: true }, stain: ['rendered', 2], do: s2 => { s2.flags.digester = s2.day; s2.built.digester = s2.day; s2.flags.render_dead = s2.day; }, chron: 'The colony began rendering its dead into lander fuel.' } } },
     { label: 'Ground the lander. What is up there stays up there', dark: true, note: s => `No food goes into the tanks. ${LF.inOrbit(s).length ? `${LF.inOrbit(s).map(p => p.first).join(' and ')} and the` : 'The'} ${s.sleepers} sleepers stay aboard for good.`, hint: 'unknown', info: [['yield', 'Every grain stays on the table'], ['danger', 'Everyone still aboard']],
       out: { text: s => `The lander is put under tarpaulin and its batteries pulled for the lamps. The ship crosses at dusk, the same as always.${LF.inOrbit(s).length ? ` ${LF.inOrbit(s).map(p => p.first).join(' and ')} send${LF.inOrbit(s).length === 1 ? 's' : ''} one message when the news reaches orbit, and then nothing.` : ''}`,
         fx: s => ({ morale: -4, stain: ['abandoned', 2], flags: { lander_grounded: s.day, sleepers_abandoned: true }, sched: s.sleepers > 0 ? [['sleep.lights', 20, 50]] : [], do: s2 => { for (const p of LF.inOrbit(s2)) { p.stranded = s2.day; } } }) } },

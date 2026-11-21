@@ -1,0 +1,11 @@
+{
+  "id": "setup_load",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "setup.load (js/content-setup.js): what rides down beside the reactor on the first flight (pick two of four)",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The crossing, tightened 2026-11-21 (five new incidents and one card for the lander's load). Aboard the weathered Ariadne. Replaces setup_sys, setup_hold1 and setup_hold2, which no card uses any more. The lander is a craft.py SHOTS entry: paint against the approved lander sheet. Until it lands the card borrows setup_sys.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "voy_scram",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "voy.scram (js/content-setup.js): the reactor keeps tripping on one sensor nobody can fault",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The crossing, tightened 2026-11-21 (five new incidents and one card for the lander's load). Aboard the weathered Ariadne. Until it lands the card borrows voy_bearing. The seat's officer variants (kovacs, halloran) can follow as officer_scene requests once the plain scene is approved.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

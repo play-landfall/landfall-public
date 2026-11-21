@@ -1,0 +1,11 @@
+{
+  "id": "voy_hold",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "voy.hold (js/content-setup.js): a hatch on the cargo deck welded shut from the inside; a colonist has lived behind it for eleven years",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The crossing, tightened 2026-11-21 (five new incidents and one card for the lander's load). Aboard the weathered Ariadne. Nobody is seen behind the hatch: only the light under it. Until it lands the card borrows voy_ledger. The seat's officer variants (dahl, zulu) can follow as officer_scene requests once the plain scene is approved.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

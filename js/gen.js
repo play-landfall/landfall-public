@@ -264,20 +264,33 @@ LF.fireGen = function (s, f, frames) {
   if (x.o) { const m = (LF.KINDS[x.o.kind] || {}).mass; x.on = x.o.name; x.oN = x.o.Name; x.oare = m ? 'is' : 'are'; x.othey = m ? 'it' : 'they'; x.othem = m ? 'it' : 'them'; x.ohave = m ? 'has' : 'have'; }
   x.cb = callback(s, f, x);
   let text = val(fr.text, x); if (x.cb) text += '\n\n' + x.cb;
-  const specs = fr.choices.slice();
-  // Help from something else the colony has made terms with.
-  if (fr.needs) { const b = LF.boons(s, f.id).find(b => fr.needs.includes(b.tag)); if (b) { const T = HELP[b.tag];
-    specs.push({ ap: 'accord', v: 'open', l: T[0](b.name), n: 'You will owe them for this.', b: 70, help: b,
-      ok: [T[1](b.name), { f: { threat: -28 }, helper: -12 }], bad: [T[2](b.name), { f: { threat: -6 }, lose: 0.5, helper: -22 }] }); } }
-  // Leverage: if you know something about the person in front of you, you can use it. Once.
-  if (LF.hookOn && LF.hookOn(s, leadP) && fr.stage >= 2 && fr.stage <= 4 && specs.some(c => c.ok))
-    specs.push({ ap: 'exploit', v: 'severe order', l: `Remind ${leadP.first} what you know`, n: `${leadP.name} ${leadP.hook.txt}. It will work, and neither of you will forget it.`, hint: 'bad',
-      out: [`${leadP.name} hears you out, goes very still, and then does everything that is needed, quickly and well.`, { f: { threat: -16 }, hook: leadP.id }] });
-  // What a frightened colony proposes once it has started proposing such things (content-limits.js).
-  if (LF.limitSpecs) for (const c of LF.limitSpecs(s, f, fr, x)) specs.push(c);
-  const choices = [];
-  for (let c of specs) {
-    if (c.show && !c.show(x)) continue;
+  /* Three options at most (Lachlan, 2026-11-21; DESIGN.md "Three seats on a generated card").
+     A frame shows three of its own at most: where it writes a fourth, two of them carry opposite `show`s, and one marked `spare`
+     is kept back (below). On top of those the generator has extras: help from something the colony has terms with, leverage
+     over the person in front of you, and the dark thing a frightened colony proposes (LF.limitSpecs). An extra never makes a
+     fourth, and a card carries one at most, the first of those three that applies:
+       - a frame with two of its own on screen gets it as the third;
+       - on a full card it takes a seat: a dark extra the seat of the frame's own last dark option, anything else (and a dark
+         one on a card with no dark option of its own) the seat of the frame's last option;
+       - a frame that sends a party out, or a lead from the interior, takes none: its third seat is the way to stay home. */
+  const specs = fr.choices.filter(c => !c.spare && (!c.show || c.show(x))).slice(0, 3);
+  let extra = null;
+  if (f.kind !== 'land' && !fr.choices.some(c => c.send)) {
+    // Help from something else the colony has made terms with.
+    if (fr.needs) { const b = LF.boons(s, f.id).find(b => fr.needs.includes(b.tag)); if (b) { const T = HELP[b.tag];
+      extra = { ap: 'accord', v: 'open', l: T[0](b.name), n: 'You will owe them for this.', b: 70, help: b,
+        ok: [T[1](b.name), { f: { threat: -28 }, helper: -12 }], bad: [T[2](b.name), { f: { threat: -6 }, lose: 0.5, helper: -22 }] }; } }
+    // Leverage: if you know something about the person in front of you, you can use it. Once.
+    if (!extra && LF.hookOn && LF.hookOn(s, leadP) && fr.stage >= 2 && fr.stage <= 4 && specs.some(c => c.ok))
+      extra = { ap: 'exploit', v: 'severe order', l: `Remind ${leadP.first} what you know`, n: `${leadP.name} ${leadP.hook.txt}. It will work, and neither of you will forget it.`, hint: 'bad',
+        out: [`${leadP.name} hears you out, goes very still, and then does everything that is needed, quickly and well.`, { f: { threat: -16 }, hook: leadP.id }] };
+    // What a frightened colony proposes once it has started proposing such things (content-limits.js; the pen, humanity.js).
+    // Asked last: it marks what it hands over as used, so it is only asked when the seat is its own.
+    if (!extra && LF.limitSpecs) extra = LF.limitSpecs(s, f, fr, x)[0] || null;
+  }
+  if (extra) { if (specs.length < 3) specs.push(extra);
+    else { let i = extra.dark ? specs.map(c => !!c.dark).lastIndexOf(true) : -1; specs[i < 0 ? specs.length - 1 : i] = extra; } }
+  const option = c => {
     const vv = val(c.v, x), tags = (vv !== undefined ? vv : AP_TAGS[c.ap] || '').split(' ').filter(Boolean), al = align(s, tags);
     const fi = fr.choices.indexOf(c), key = fi >= 0 ? String(fi) : c.hook !== undefined || (c.out && c.out[1] && c.out[1].hook) ? 'hook' : (c.lk || ('x' + c.ap + (c.dark ? '.dark' : '')));   // the option's id (decisions.js)
     const ch = { key, ap: c.ap, v: tags, label: val(c.l, x), note: val(c.n, x) || '', cost: c.cost ? Object.assign({}, c.cost) : null, against: al.against, lock: '', hint: c.hint || null, dark: !!c.dark, info: c.info || null };
@@ -327,10 +340,15 @@ LF.fireGen = function (s, f, frames) {
       if (leadP && leadP.marks.grudge) mods.push(H.If(() => true, -10, `${leadP.first} bears you a grudge`));
       if (s.morale < 30) mods.push(H.If(() => true, -5, 'A colony near the end of its patience'));
       ch.odds = LF.odds(s, { base: c.b || 50, mods, ap: c.ap }, x); ch.roles = mods.filter(m => m.k === 'role').map(m => ({ k: 'role', role: m.role, v: m.v })); }   // plain data: what an officer sent would add
-    choices.push(ch);
-  }
+    return ch;
+  };
+  const choices = specs.map(option);
+  // The spare: a frame whose every way of answering can be locked (no hands for a party, no spares for the drone) names one
+  // option that costs nothing. It is on screen only when everything else is locked, in the seat of the last of them.
+  const spare = fr.choices.find(c => c.spare);
+  if (spare && choices.length && choices.every(ch => ch.lock)) choices[choices.length - 1] = option(spare);
   s.cur = { gen: true, phase: 'choose', attach: [], id: fr.id, fid: f.id, title: val(fr.title, x), tone: fr.tone, text, ask: fr.ask ? val(fr.ask, x) : '', choices, view: LF.frameView(fr, f), lead: leadP ? leadP.id : null, stake: stake.phrase,
-    sig: [fr.id, f.sub, x.o ? x.o.sub : '', stake.t, x.cb ? 'cb' : '', choices.length].join('|') };
+    sig: [fr.id, f.sub, x.o ? x.o.sub : '', stake.t, x.cb ? 'cb' : '', choices.length, extra ? extra.lk || extra.ap + (extra.dark ? '.dark' : '') : ''].join('|') };
   LF.notice(s, text); if (leadP) leadP.known = leadP.known || s.day;
   f.last = s.day; f.lastFrame = fr.id; s.dilemmas++; s.lastTone = fr.tone;
   if (f.kind === 'land') f.next = s.survey + 32; if (f.seen) f.seen[fr.id] = s.day; (f.shown = f.shown || {})[fr.id] = s.day;

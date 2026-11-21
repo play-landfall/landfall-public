@@ -1,0 +1,11 @@
+{
+  "id": "voy_count",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "voy.count (js/content-setup.js): the stores count is a month short, cases of air filters where rations should be",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The crossing, tightened 2026-11-21. Aboard the weathered Ariadne. Until it lands the card borrows voy_mould. The old voy_ledger picture (wrappers under a mattress) now belongs to voy.hold (Bay Six), which borrows it; a voy_hold request is lodged too and will replace that borrow.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

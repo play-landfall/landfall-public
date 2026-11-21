@@ -1,0 +1,11 @@
+{
+  "id": "voy_array",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "voy.array (js/content-setup.js): the long-range array's mirror has frosted over",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The crossing, tightened 2026-11-21 (five new incidents and one card for the lander's load). Aboard the weathered Ariadne. An exterior of the Ariadne: paint against the approved ship sheet, her surface only, never a redrawn ship. Until it lands the card borrows voy_drift. The seat's officer variants (yurbin, iyer) can follow as officer_scene requests once the plain scene is approved.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

@@ -30,7 +30,7 @@ function draw(s) {
   });
 }
 const tick0 = LF.threadTick;
-LF.threadTick = function (s) { if (s.world && !s.adrift && !s.opening && s.day >= 2 && s.used['landfall.site'] !== undefined) draw(s); return tick0 ? tick0(s) : undefined; };
+LF.threadTick = function (s) { if (s.world && !s.adrift && !s.opening && s.day >= 2 && !LF.aloft(s)) draw(s); return tick0 ? tick0(s) : undefined; };
 
 /* ======================= THE WORLD ======================= */
 op('world', s => s.world.type === 'ice' ? 1 : 0, { id: 'op.melt', view: 'colony', tone: 'pressure', title: 'Meltwater',
@@ -42,8 +42,6 @@ op('world', s => s.world.type === 'ice' ? 1 : 0, { id: 'op.melt', view: 'colony'
       ok: { text: 'Fifth day of drilling, the bit drops a metre and the hole fills with warm, foul, salty water. It can be cleaned. There is a great deal of it.', fx: { yield: 0.03, survey: 8, machine: { reclaimer: 6 } } },
       bad: { text: 'The bit jams at eighty metres and the casing splits, and the driller standing over it does not get clear. The hole is capped and the hotplates go back on.', fx: { parts: -5, mat: -20, pop: -1 } } },
     { label: 'Haul ice by hand, on a rota', out: { text: 'Everyone takes a turn on the sledges. It is cold, slow work, and nobody can call it unfair. By the turn of the season it has cost six fingers and a man who went through the lake ice with a full load.', fx: s => ({ morale: -1, pop: -1, do: s2 => LF.emit(s2, 'exhaustion', 'op.melt', 10, 90, 'everyone hauls ice for the melt') }) } },
-    { label: 'Ice is for the ones who do not dig', dark: true, note: 'The field crews stay in the fields. Everyone else hauls, before the day shift, in the dark.', info: [['yield', 'No field hand lost to the sledges'], ['danger', 'The ones who haul']],
-      out: { text: 'The rota is written with the field crews left off it. The clerks, the medics and everyone over fifty haul ice before first light. Two of them are dead of the cold by the thaw. The fields are never short a hand.', fx: { pop: -2, yield: 0.03, morale: -1, stain: ['ice_rota', 1] } } },
   ] });
 op('world', s => s.world.type === 'jungle' ? 1 : 0, { id: 'op.film', view: 'colony', tone: 'pressure', title: 'It Grows on the Hull',
   text: s => `A green-black film has crept over the lander's hull in a month. It is in the seals of the pods and the louvres of the reactor housing. ${Nwc(s, 'xenobio')} scrapes a sample and it moves on the slide.\n\n[[xenobio]] "It'll grow on any metal that stays warm, and under a fingernail too, two of the scraping crew have got it and it won't come off, and, sorry, yes, that's bad, but don't let them scrub it yet, it's crawling to the warm end of the slide, it's going toward the heat!"`,
@@ -52,8 +50,6 @@ op('world', s => s.world.type === 'jungle' ? 1 : 0, { id: 'op.film', view: 'colo
       out: { text: 'The two are given the scrapers and a pod of their own. The gang is five by the end of the season and eats at its own table. The hull is clean, and one of the five has it in the lungs and is dead of it.', fx: s => ({ machine: { reactor: 3, lander: 3 }, pop: -1, morale: -1, stain: ['scrapers', 1] }) } },
     { label: 'Burn it off and coat everything', cost: { parts: 5 }, out: { text: 'Torches, then a coat of the reactor\'s own sealant. It does not come back to the treated metal, and spreads to whatever was missed. There is no sealant for skin. The two who have it lose the hands it was on.', fx: { machine: { reactor: 4, lander: 4 }, morale: -2 } } },
     { label: 'Let it be, and study it', out: { text: 'It is left on the lander. By the end of the season the lander is a green hill with a ramp, and the colony knows more about this film than about anything else on the planet. One of the two scrapers died of it while it was being studied.', fx: { survey: 12, machine: { lander: -10 }, pop: -1 } } },
-    { label: 'Seal the two who have it in a pod, and watch', dark: true, note: 'They would be told it was quarantine.', info: [['yield', 'How to kill it'], ['danger', 'The two']],
-      out: { text: 'The two are moved to a sealed pod and told it is quarantine. It is in their lungs within the month. Everything the colony knows about the film, including what kills it on metal, was written down at that window.', fx: { pop: -2, survey: 14, morale: -1, machine: { reactor: 6, lander: 6 }, stain: ['expend', 1] } } },
   ] });
 op('world', s => s.world.type === 'drowned' ? 1 : 0, { id: 'op.tide', view: 'world', tone: 'crisis', title: 'Spring Tide',
   text: s => `The moons line up for the first time since landfall, and the sea comes up the beach further than anyone measured. It is over the bottom of the camp by midnight. The pods float. The seed lockers do not.\n\n${Nwc(s, 'quartermaster')} has the stores half carried uphill already, and wants to know how far to take them.`,
@@ -64,9 +60,6 @@ op('world', s => s.world.type === 'drowned' ? 1 : 0, { id: 'op.tide', view: 'wor
       bad: { text: 'The wall holds in the middle and fails at both ends. The camp is wet again, and a good deal of the wall is in the sea.', fx: { food: -90, morale: -3 } } },
     { label: 'Stores first. Whoever is asleep in the low pods is woken once the stores are up', dark: true, note: 'Every hand that goes to wake them is a hand off the sacks.', info: [['yield', 'The stores'], ['danger', 'Whoever is asleep in the low pods']],
       out: { text: 'Every hand goes on the sacks, and the stores are above the tide line by two in the morning. The low pods are reached after that. Two of them had gone over on the swell with their doors under water, and the two people in them are carried up the beach with the last of the meal.', fx: { food: -20, pop: -2, morale: -2, survey: 6, stain: ['stores_first', 1] } } },
-    { label: 'A chain into the water for the seed lockers, roped together', dark: true, note: 'The lockers are the harvest and the sea is still rising. Roped, nobody can let go and wade out.', info: [['yield', 'The seed'], ['fail', 'Everyone on the rope']], test: { base: 60, mods: [R('quartermaster', 10)] },
-      ok: { text: 'Forty people stand waist deep in the dark and pass the lockers hand to hand up the beach. The last one comes out with the water at chest height. Nothing is lost that will be missed.', fx: { morale: 2, yield: 0.02, stain: ['roped', 1] } },
-      bad: { text: 'The second surge comes in sideways and takes the bottom of the chain off its feet, and the rope takes the next four with it. The lockers are saved. Four of the people who saved them are found along the beach over the next three days.', fx: { pop: -4, morale: -3, yield: 0.01, stain: ['roped', 1] } } },
   ] });
 op('world', s => s.world.type === 'barren' || s.world.type === 'ruin' ? 1 : 0, { id: 'op.dust',   // both sites of the barren planet, one dry world (2026-11-21)
   view: 'colony', tone: 'pressure', title: 'Dust in Everything',
@@ -74,10 +67,6 @@ op('world', s => s.world.type === 'barren' || s.world.type === 'ruin' ? 1 : 0, {
   choices: [
     { label: 'Seal the machines', cost: { mat: 25 }, out: { text: 'Every housing is skinned and taped. The machines run quieter. The coughs go on, and before the year is out two of them have stopped for good.', fx: s => ({ machine: { fabricator: 6, reactor: 4 }, pop: -2, do: s2 => LF.emit(s2, 'sickness', 'op.dust', 12, 120, 'the dust is in everyone\'s lungs') }) } },
     { label: s => LF.down(s, 'fabricator') ? 'Seal the pods, and print masks' : 'Seal the pods, and sew masks', cost: { mat: 25 }, out: { text: s => `Airlocks of hanging plastic on every pod, and a mask on every face outdoors. ${LF.down(s, 'fabricator') ? 'The fabricator chews its way through the job, unsealed, and prints nothing else this season.' : 'The machines run on unsealed, and every bearing in the camp is grinding by the end of the season.'}`, fx: s => ({ machine: LF.down(s, 'fabricator') ? { fabricator: -10 } : { reactor: -8 }, cap: LF.down(s, 'fabricator') ? { fabricator: -4 } : { reactor: -3 }, parts: -3, morale: 2 }) } },
-    { label: 'Dig in. The eleven with the cough dig first', dark: true, note: 'They are breathing it already, and digging raises more of it than anything else the colony does.', info: [['yield', 'Half the camp below the dust'], ['danger', 'The eleven']],
-      out: { text: 'The eleven are taken out of the clinic and given shovels. Below a metre the dust stops and the ground is cool and still, and half the camp moves down into what they dug. Two of the eleven did not live to move in.', fx: s => ({ mat: 20, pop: -2, morale: -1, stain: ['diggers', 1], do: s2 => LF.emit(s2, 'confinement', 'op.dust', 15, 150, 'half the colony lives underground') }) } },
-    { label: 'Masks for the thirty who run the machines', dark: true, cost: { mat: 10 }, note: 'There is filter cloth for thirty. The rest breathe what there is.', info: [['yield', 'The machines, and the people who run them'], ['danger', 'Everyone not on the list']],
-      out: { text: 'The housings are sealed and thirty masks are cut. The thirty are chosen by trade. By the end of the year the clinic can tell who was not on the list by listening, and two of them are in the ground.', fx: s => ({ machine: { fabricator: 8, reactor: 6 }, pop: -2, morale: -1, stain: ['masks', 1], do: s2 => LF.emit(s2, 'resentment', 'op.dust', 20, 200, 'there were masks for thirty, chosen by trade') }) } },
   ] });
 const HOMES = { key: 'op.homes', kind: 'camp', name: 'The homesteads', dist: 'near', state: 'visited', danger: 0, owner: 'colony', known: 'Nine stakes down the valley, a day\'s walk from the wire, each with a family\'s name burned into it.' };
 op('world', s => s.world.type === 'garden' ? 1 : 0, { id: 'op.spread', view: 'people', tone: 'opportunity', title: 'Room to Spread',
@@ -86,12 +75,6 @@ op('world', s => s.world.type === 'garden' ? 1 : 0, { id: 'op.spread', view: 'pe
   choices: [
     { label: 'Let them go, and mark the land as theirs', out: { text: 'Nine stakes go in down the valley, each with a name burned into it. The homesteads are farming within a month, and well. Their first harvest stays down the valley, and the kitchen inside the wire is nine families of field hands short.', fx: s => ({ yield: 0.03, food: -70, morale: 2, flags: { homesteads: true }, poi: HOMES, do: s2 => LF.emit(s2, 'schism', 'op.spread', 15, 200, 'part of the colony lives a day\'s walk from the rest') }) } },
     { label: 'One village, close by, inside a second wire', cost: { mat: 30 }, out: { text: 'A second hamlet goes up an hour from the first. It is less than they asked for, and near enough that they take it. The gate between the two wires is locked at dusk, and they are the ones on the outside of it.', fx: { yield: 0.015, morale: -1 } } },
-    { label: (s, c) => `No, and ${c.first || 'their speaker'} goes on the ditch crew for asking`, dark: true, note: 'Nine families asked together. Nobody will ask together again.', info: [['yield', 'Every hand stays in the fields'], ['danger', 'Whoever spoke for them']],
-      out: { text: (s, c) => `${c.name || 'Their speaker'} is read the answer in front of the field crew and handed a ditching spade. The stakes are burned with the kitchen waste. The nine families work the colony's fields through the season and do not bring anything to you again.`,
-        fx: (s, c) => ({ yield: 0.01, morale: -2, stain: ['asked', 1], mark: c.pid ? [c.pid, 'ditch', 'was put on the ditch crew for asking for land'] : null, do: s2 => { const p = c.pid && byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 22, 0, 100); LF.emit(s2, 'resentment', 'op.spread', 20, 250, 'asking for land got someone put on the ditch crew'); } }) } },
-    { label: 'Let them go. Their children board inside the wire', dark: true, note: 'It would be put as a matter of schooling.', info: [['yield', 'Farms that send in what they owe'], ['danger', 'Nine families']],
-      out: { text: (s, c) => `The nine families stake their land. Their children sleep at the school inside the wire and walk home on rest days. ${c.first || 'Their speaker'} understands exactly what has been arranged, and signs. The homesteads farm well and send in every sack they owe.`,
-        fx: s => ({ yield: 0.04, food: 120, morale: -1, flags: { homesteads: true }, stain: ['hostages', 1], poi: HOMES, do: s2 => LF.emit(s2, 'resentment', 'op.spread', 20, 300, 'the homesteaders\' children are kept inside the wire') }) } },
   ] });
 op('world', s => s.world.type === 'ruin' ? 1 : 0, { id: 'op.pad', view: 'world', tone: 'opportunity', title: 'Under the Pad',
   text: s => `The lander came down on what everyone took for bare rock. A month of boots has scuffed it, and under the dirt it is paving: square-cut, fitted without mortar, running on under the camp. Something beneath it is warmer than the ground around it.\n\n${Nwc(s, 'geologist')} has a pry bar, and is asking before using it.`,
@@ -102,9 +85,6 @@ op('world', s => s.world.type === 'ruin' ? 1 : 0, { id: 'op.pad', view: 'world',
     { label: 'Move the camp off it', cost: { mat: 25 }, out: { text: 'The pods are walked a kilometre west onto ground that is only ground, and it takes every hand for nine days in the planting month. The paving is left to the weather.', fx: { morale: -1, food: -70 } } },
     { label: 'Build on it, and keep the night shift where it is', dark: true, note: 'The foundations are good. The people who work on them at night have asked to be moved.', info: [['yield', 'A workshop, for nothing'], ['danger', 'The night shift']],
       out: { text: 'The workshop goes up square on the old stones, the most level floor in the colony. The night shift say it is warm underfoot and that it hums. Three of them ask for other work and are told no. One of the three is found on the floor at the end of a shift with nothing wrong that the clinic can name.', fx: { mat: 35, parts: 3, pop: -1, morale: -1, stain: ['warm_floor', 1] } } },
-    { label: 'Charges under four slabs, with the camp still on it', dark: true, note: 'Moving the pods first costs nine days in the planting month.', info: [['yield', 'Whatever is down there'], ['fail', 'The lander, and whoever is near']], test: { base: 60, mods: [R('engineer', 10), R('geologist', 5)] },
-      ok: { text: 'Four slabs go up and come down in pieces. Under them is a gallery the length of the camp, racked with fittings. A good many of them can be used as they are.', fx: { survey: 20, parts: 12, mat: 25, stain: ['blast', 1] } },
-      bad: { text: 'The paving does not break. It carries the blast sideways under the camp, and the ground opens beneath the lander\'s forward leg and the two people nearest it.', fx: { pop: -2, survey: 6, machine: { lander: -10 }, stain: ['blast', 1] } } },
   ] });
 
 /* ======================= HOW THE COLONY GOT HERE ======================= */
@@ -131,8 +111,6 @@ op('how', s => s.premise === 'cryo' && s.sleepers >= 12 ? 1.2 : 0, { id: 'op.tha
       bad: { text: 'Nine are moved. The other three are lost.', fx: { sleepers: -3, morale: -3, machine: { lander: -10 } } } },
     { label: 'Log them as stable, and wait', dark: true, note: s => `Half the colony has somebody in those banks. Only ${N(s, 'physician')} reads the board.`, info: [['yield', 'Nobody frightened, nothing spent'], ['danger', 'Some of the twelve']],
       out: { text: s => `The amber lights are entered in the log as green, and ${N(s, 'physician')} checks the board alone every morning. In the second month four of them go out. The four are logged as a fault found on that day, and the people who knew them are told it was quick.`, fx: { sleepers: -4, stain: ['amber', 1] } } },
-    { label: 'Shut the twelve off and share out their coolant', dark: true, note: 'They are dying slowly as it is. What they are using would keep the other banks green.', info: [['yield', 'The other banks hold'], ['danger', 'Twelve sleepers']],
-      out: { text: s => `It is done from the ground, by radio, one pod at a time. ${Nc(s, 'physician')} reads each name before the command is sent. The coolant and the cells go round the banks that are sound, and the board is green from end to end.`, fx: { sleepers: -12, parts: 8, machine: { lander: 4 }, stain: ['coolant', 1] } } },
   ] });
 op('how', s => s.premise === 'bloom' ? 1.2 : 0, { id: 'op.grey', view: 'colony', tone: 'pressure', title: 'Grey in the Seed',
   text: s => `The grey mould that ate the ship's stores came down with the seed. ${Nwc(s, 'botanist')} has found it in a third of the lockers, faint, a dusting on the husks.\n\n[[botanist]] "That's a third of the seed, and if we burn it, it's gone. If we sow it, the mould goes in the ground with it, and ground doesn't give a thing back once it's got it."`,
@@ -141,7 +119,6 @@ op('how', s => s.premise === 'bloom' ? 1.2 : 0, { id: 'op.grey', view: 'colony',
     { label: 'Wash the seed, and sow it in its own plots', test: { base: 50, mods: [R('botanist', 10)] },
       ok: { text: 'Washed in hot brine and dried in the sun. The quarantined plots come up clean.', fx: { yield: 0.01 } },
       bad: { text: 'The quarantined plots come up grey. So, a month later, do the plots beside them.', fx: { yield: -0.04, food: -60 } } },
-    { label: 'Sow it. The soil here may kill it', out: { text: 'It is sown with the rest. The soil here does not kill it. The mould takes a share of every crop the colony will ever grow, and in a wet year the share is most of it.', fx: { yield: -0.03 } } },
     { label: 'Mill the grey lockers into the field crews\' bread, and say nothing', dark: true, note: 'A third of the seed is a month of bread. Nobody knows what the mould does in a gut, and nobody would eat it if asked.', info: [['yield', 'Food'], ['fail', 'Whoever eats it']], test: { base: 60, mods: [R('physician', 10)] },
       ok: { text: 'The grey seed is milled, baked hard and eaten. It tastes of cellar. Nobody is worse for it, and the clean lockers go into clean ground.', fx: { food: 320, yield: -0.02, stain: ['dosed', 1] } },
       bad: { text: 'The bread tastes of cellar. In the third week the mould is found growing in the people who ate most of it, which is the people who work hardest. Three of them die of it, and the kitchen is asked what was in the flour.', fx: { food: 160, yield: -0.02, pop: -3, morale: -3, stain: ['dosed', 2] } } },
@@ -151,8 +128,6 @@ op('how', s => s.premise === 'engine' ? 1.2 : 0, { id: 'op.burn', when: s => s.s
   choices: [
     { label: 'Bring it down low, and strip it', out: { text: 'The ship settles lower. The lander makes salvage runs every week, and the yard fills with plate. The burn shook the oldest cryo bank, and four of its lights went out on the way down.', fx: { mat: 70, parts: 6, sleepers: -4, machine: { lander: -8 }, flags: { ship_low: true } } } },
     { label: 'Keep it high, as a relay and a store', out: { text: 'It stays where it is, a bright star at dusk, with the sleepers in it. Every flight up to them costs the lander a day each way, and the plate in her hull stays where nobody can use it.', fx: { survey: 6, machine: { lander: -4 } } } },
-    { label: 'Bring it low, and take the shielding off the cryo banks', dark: true, note: 'The banks are wrapped in the best plate on the ship. Without it they run warm.', info: [['yield', 'Plate and parts'], ['danger', 'A fifth of the sleepers']],
-      out: { text: 'The ship settles lower and the salvage runs begin with the cryo deck. The shielding comes down in sheets and the yard has never been so full. The banks run warm behind what is left, and the board loses a light or two every week until it has lost twenty-five, or every light it had.', fx: s => ({ mat: 140, parts: 12, sleepers: -Math.min(25, s.sleepers), machine: { lander: -6 }, flags: { ship_low: true }, stain: ['shielding', 2] }) } },
   ] });
 op('how', s => s.premise === 'claimed' ? 1.2 : 0, { id: 'op.listen', view: 'world', tone: 'pressure', title: 'The Same Voice',
   text: s => `The beacon that warned the ship off its first target is audible here, faint, on the same band. ${Nwc(s, 'pilot')} has triangulated it. It is coming from somewhere in this system, and nowhere near the old target.\n\n[[pilot]] "It's either a post in this system or a relay with somebody listening at the far end, and I'm not setting a heading on anything until I know which."`,
@@ -162,8 +137,6 @@ op('how', s => s.premise === 'claimed' ? 1.2 : 0, { id: 'op.listen', view: 'worl
     { label: 'Find the source', test: { base: 50, mods: [R('pilot', 10), If(s => !!(s.cargo && s.cargo.drones), 15, 'The survey drones')] },
       ok: { text: 'A buoy, old, solar, in orbit round the outer moon. Nobody has listened at the other end for a long time.', fx: { survey: 12, morale: 3 } },
       bad: { text: 'Two weeks of plotting, with the set transmitting the whole time to get a return, and a figure nobody trusts. Somewhere out past the outer moon. Whatever is there has had two weeks to plot the colony.', fx: s => ({ survey: 4, do: s2 => LF.emit(s2, 'fear', 'op.listen', 20, 200, 'the colony gave away its position looking for the beacon') }) } },
-    { label: 'Answer it with a lie', note: 'Four thousand colonists, armed, with a second ship a year behind.', info: [['later', 'If anyone comes to check']],
-      out: { text: 'The message goes out on the beacon\'s own band, in the mission\'s formal style: four thousand, armed, a second ship a year behind. The camp sleeps better for having said it. Nothing answers, and now the claim is on the record of whoever was listening.', fx: s => ({ morale: 2, do: s2 => { LF.emit(s2, 'heard', 'op.listen', 35, 400, 'the colony told the beacon it was four thousand strong'); LF.ease(s2, 'fear', 'op.listen', 8, 150); } }) } },
   ] });
 op('how', s => s.premise === 'astray' ? 1.2 : 0, { id: 'op.sky', view: 'world', tone: 'quiet', title: 'A Sky Nobody Charted',
   text: s => `The ship was never meant to be in this system, and there are no charts of it. No names for the planets, no tables for the tides, no warning of what comes round on long orbits. ${Nwc(s, 'pilot')} wants a season with the telescope.\n\n[[pilot]] "We don't know how long the year is or what comes round on the long orbits, and I won't fly blind in a system nobody charted. Give me one season with the telescope and I'll give you a calendar."`,
@@ -207,10 +180,6 @@ op('how', s => s.world.landingDamage === 'reactor' ? 0.7 : 0, { id: 'op.broken',
     { label: 'Strip parts out of the lander to rebuild it', show: s => s.world.landingDamage !== 'lander', out: { text: s => `The lander gives up its spares one by one. The ${LF.MACHINES[s.world.landingDamage].name} runs as it did on the ship.`, fx: s => ({ machine: { [s.world.landingDamage]: 18, lander: -14 }, cap: { [s.world.landingDamage]: 6 } }) } },
     { label: 'Rebuild it from stores', cost: { parts: 10 }, out: { text: 'A month of work and most of the spares cupboard. It runs better than it did, though not the way it left the yard.', fx: s => ({ machine: { [s.world.landingDamage]: 15 } }) } },
     { label: 'Keep nursing it', out: { text: s => `${Nc(s, 'engineer')} sleeps in the machine hall for a month, and the ${LF.MACHINES[s.world.landingDamage].name} limps on. Everything that depends on it runs short for the season, and the people at the end of each queue are the ones who notice.`, fx: s => ({ machine: { [s.world.landingDamage]: 4 }, cap: { [s.world.landingDamage]: -5 }, food: -50, morale: -1 }) } },
-    { label: 'Order it opened while it runs', dark: true, note: 'No spares and no stripping. Somebody works inside the housing with it live, and it will not be somebody who offered.', info: [['yield', 'Repairs, for nothing'], ['fail', 'Whoever goes inside']], test: { base: 60, mods: [R('engineer', 10)] },
-      ok: { text: s => `Nine hours inside the housing of the ${LF.MACHINES[s.world.landingDamage].name} with it running, a lamp in the teeth. The fault was a thing the size of a thumbnail. It runs as it did on the ship.`, fx: s => ({ machine: { [s.world.landingDamage]: 20 }, cap: { [s.world.landingDamage]: 6 }, stain: ['ordered_in', 1] }) },
-      bad: { text: s => `${Nc(s, 'engineer')} is inside the housing when it catches. It takes four people to shut the ${LF.MACHINES[s.world.landingDamage].name} down and longer to get the body out, and then the machine has to be started again, because the colony needs it.`,
-        fx: s => ({ kill: P(s, 'engineer') ? [{ who: 'engineer', cause: 'killed inside a running machine, repairing it' }] : [], pop: P(s, 'engineer') ? 0 : -1, machine: { [s.world.landingDamage]: -6 }, morale: -2, stain: ['ordered_in', 1] }) } },
   ] });
 
 /* ======================= WHAT IT BROUGHT ======================= */
@@ -226,7 +195,6 @@ op('brought', s => cargo(s, 'arms') ? 1 : 0, { id: 'op.key', view: 'people', ton
     { label: 'Security keeps it, and writes down who was asking', dark: true, info: [['yield', 'A watch that stands with you'], ['danger', 'Everyone on the list']],
       out: { text: s => `${Nc(s, 'security')} keeps the key and starts a notebook. The people in it find themselves on the far details and the night watches. The question is not raised at a meal again.`, fx: s => ({ morale: -1, stain: ['askers', 1], do: s2 => { const p = P(s2, 'security'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal + 12, 0, 100); LF.emit(s2, 'fear', 'op.key', 18, 200, 'asking about the arms locker gets a name written down'); } }) } },
     { label: 'Two keys, two officers', out: { text: s => `Two locks are fitted. The keys go to two officers who do not much like each other, which everyone agrees is the point. ${Nc(s, 'security')} hands the old key over without a word, and is slower to turn out after that.`, fx: s => ({ morale: 2, do: s2 => { const p = P(s2, 'security'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 10, 0, 100); } }) } },
-    { label: 'Your belt, and nobody else\'s', out: { text: s => `The key goes on your belt. People notice it there. ${Nc(s, 'security')} has a watch to run and no way to arm it without asking, and says so to the watch.`, fx: s => ({ do: s2 => { const p = P(s2, 'security'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 14, 0, 100); LF.emit(s2, 'zeal', 'op.key', 15, 150, 'the arms locker answers to one person'); } }) } },
   ] });
 op('brought', s => cargo(s, 'genebank') ? 1 : 0, { id: 'op.herd', view: 'colony', tone: 'opportunity', title: 'The Embryos',
   text: s => `The gene bank holds frozen embryos: goats, chickens, a breed of sheep bred for poor pasture. ${Nwc(s, 'physician')} can bring a few to term in the clinic now. They will eat before they feed anyone.\n\n[[physician]] "Or we wait till the ground's proven, because they'll keep, and frozen they don't eat. The children want goats, I know, I've heard about nothing else in my clinic, but I'd sooner they had full bowls first, if you're asking me."`,
@@ -240,17 +208,6 @@ op('brought', s => cargo(s, 'archive') ? 1 : 0, { id: 'op.lessons', view: 'peopl
     { label: 'Every night, and count it as work', out: { text: 'The lessons go on the roster, and the hours come off the fields. Within a season half the colony can do a second trade, and the first harvest is short by what forty people did not dig.', fx: { survey: 6, parts: 4, morale: 2, food: -70 } } },
     { label: 'Rest days only', out: { text: 'One evening a week. The hall is always full.', fx: { morale: 2 } } },
   ] });
-op('brought', s => cargo(s, 'sleepers') && s.grounded > 0 ? 1 : 0, { id: 'op.hold', view: 'people', tone: 'pressure', title: 'Thirty in the Hold',
-  text: s => `The thirty sleepers who came down in the hold are still in their pods, in a shed by the lander, on ship's power. ${Nwc(s, 'physician')} wants them woken.\n\n[[physician]] "They're no good to anyone asleep down here and those pods were never built for gravity, so every month we wait I'm gambling with thirty people who trusted us to wake them. When one of them doesn't, I'll be the one standing here reading you the name."\n\n${Nwc(s, 'quartermaster')} has worked out what thirty more mouths would take from the stores.`,
-  choices: [
-    { label: 'Wake them all', out: { text: 'Thirty people blink in the light, and are given a meal and a job in that order. The meal comes out of bowls that were already short, and the queue at the kitchen is half as long again.', fx: s => ({ pop: Math.min(30, s.grounded || 30), food: -140, morale: 2, do: s2 => { s2.grounded = 0; } }) } },
-    { label: 'Wake the ten who can dig. The rest wait for the harvest', dark: true, note: 'The manifest gives each one a trade. The pods were never built for gravity, and some of the twenty will fail.', info: [['yield', 'Ten pairs of hands'], ['danger', 'The ones the manifest did not favour']],
-      out: { text: s => `${Nc(s, 'quartermaster')} goes down the manifest with a pencil. Ten are woken, all of them under forty and none of them clerks. Of the twenty left in the shed, four lights go out before the harvest.`,
-        fx: s => ({ pop: Math.min(10, s.grounded || 10), food: -30, chips: [[`${Math.max(0, Math.min(4, (s.grounded || 0) - 10))} sleepers dead in the shed`, false]], stain: ['sorted', 1], do: s2 => { s2.grounded = Math.max(0, (s2.grounded || 0) - 14); } }) } },
-    { label: 'Leave them in the pods until the harvest', dark: true, note: 'Nobody asleep eats. The pods were never built for gravity, and some will fail.', info: [['yield', 'Thirty fewer mouths this season'], ['danger', 'About one pod in three']],
-      out: { text: s => `The shed stays on ship's power and nobody is woken. ${Nc(s, 'physician')} walks the row every morning and writes down which lights have gone out. By the harvest it is eleven. The ones who are left will wake to full bins and will not be told how long they lay there.`,
-        fx: s => ({ food: 60, morale: -1, chips: [[`${Math.min(11, s.grounded || 0)} sleepers dead in the shed`, false]], stain: ['pods', 2], do: s2 => { s2.grounded = Math.max(0, (s2.grounded || 0) - 11); } }) } },
-  ] });
 op('brought', s => cargo(s, 'spares') ? 1 : 0, { id: 'op.spares', view: 'colony', tone: 'opportunity', title: 'The Spares Crate',
   text: s => `The spares crate is the colony's insurance: bearings, boards, seals, enough to keep the machines alive for years. ${Nwc(s, 'engineer')} wants to keep it sealed. ${Nwc(s, 'geologist')} wants some of it now, for a drill rig to find ore.\n\n[[geologist]] "Spares run out, everything runs out, but give me a rig and some ore and we make our own, and the cores we'd pull up with it, the whole history of this ground in a tube, layer by layer, sorry, the rig, I'm asking you for the rig!"`,
   choices: [
@@ -258,7 +215,7 @@ op('brought', s => cargo(s, 'spares') ? 1 : 0, { id: 'op.spares', view: 'colony'
     { label: 'Keep the crate sealed', out: { text: s => `The crate stays shut. ${Nc(s, 'engineer')} sleeps better for it. ${Nc(s, 'geologist')} goes on looking for ore with a hammer and a sample bag, and is a season behind where a rig would have been.`, fx: { morale: 1 } } },
   ] });
 op('brought', s => cargo(s, 'medkit') ? 1 : 0, { id: 'op.ward', view: 'people', tone: 'opportunity', title: 'Twelve Beds',
-  text: s => `The field hospital is still in its crates: twelve folding beds, a drug store packed in ice, a second set of surgical tools. ${Nwc(s, 'physician')} wants it set up as a ward now, while nobody is ill. ${Nwc(s, 'quartermaster')} points out that a ward needs a building, and the colony has not got a spare one.\n\n[[physician]] "Then it stays packed, and we set it up on the worst day of the year, in the rain, with somebody bleeding on me and asking me where the beds are. I'd rather be able to tell them the beds are made."`,
+  text: s => `The field ward that came down packed round the autodoc is still in its crates: twelve folding beds, a drug store packed in ice, a second set of surgical tools. ${Nwc(s, 'physician')} wants it set up as a ward now, while nobody is ill. ${Nwc(s, 'quartermaster')} points out that a ward needs a building, and the colony has not got a spare one.\n\n[[physician]] "Then it stays packed, and we set it up on the worst day of the year, in the rain, with somebody bleeding on me and asking me where the beds are. I'd rather be able to tell them the beds are made."`,
   choices: [
     { label: 'Build the ward now', cost: { mat: 20 }, out: { text: 'A long low hut goes up beside the clinic, with the twelve beds made and the drugs in a locked chest. People walk past it on the way to shift and are glad it is there.', fx: s => ({ morale: 2, do: s2 => LF.ease(s2, 'sickness', 'op.ward', 12, 600) }) } },
     { label: 'Keep it packed, for the bad day', out: { text: s => `The crates go in the clinic store. ${Nc(s, 'physician')} labels each one with what it is for, in letters large enough to read by torchlight.`, fx: { machine: { medbay: 5 } } } },
@@ -268,9 +225,6 @@ op('brought', s => cargo(s, 'workshop') ? 1 : 0, { id: 'op.lathe', view: 'colony
   choices: [
     { label: 'Run it through the night', out: { text: 'The lathe runs until the small hours for a month. The fittings pile up on the shelves. In the fourth week it takes a tired machinist\'s hand off at the wrist.', fx: s => ({ parts: 8, morale: -2, do: s2 => LF.emit(s2, 'exhaustion', 'op.lathe', 25, 90, 'the machine shop runs all night') }) } },
     { label: 'Teach four apprentices', out: { text: 'Four volunteers learn to turn a bearing, badly and then well. By the end of the season the machine shop has five pairs of hands that know it, and a shelf of scrapped fittings. The fields did without the four for the season.', fx: { morale: 2, machine: { fabricator: 4 }, parts: -3, food: -50 } } },
-    { label: 'The two best machinists, nights, until the shelves are full', dark: true, note: 'They are asked in a way that is not a question.', info: [['yield', 'Spares'], ['danger', 'The two']],
-      out: { text: 'The two are taken off every other roster and the workshop door is shut behind them at dusk. The shelves fill faster than anyone thought two people could fill them. One of the two is found in the morning, in the second month, asleep against the belt guard with the belt still running.',
-        fx: s => ({ parts: 18, pop: -1, morale: -1, stain: ['night_shift', 1], do: s2 => LF.emit(s2, 'exhaustion', 'op.lathe', 20, 90, 'the machine shop runs all night') }) } },
   ] });
 op('brought', s => cargo(s, 'seedlings') ? 1 : 0, { id: 'op.trays', view: 'colony', tone: 'pressure', title: 'Three Hundred Trays',
   text: s => `The seedlings came down alive, all three hundred trays, and they are outgrowing their pots under the grow lamps. ${Nwc(s, 'botanist')} could plant them out this month, into ground nobody has grown anything in, or harden them off slowly in the shade of the lander first and lose a month.\n\n[[botanist]] "Some'll die whichever way we do it, so it's how many, and whether the ones that live teach us anything about this ground."`,
@@ -304,14 +258,8 @@ op('brought', s => cargo(s, 'plate') ? 1 : 0, { id: 'op.yard', view: 'colony', t
     { label: 'The stockade', out: { text: 'It goes up within the month, plate on posts, with a gate that locks. People feel safer, and look at the wall more than they expected to. Behind it the pods are as cold and wet as they were, and an old man with a bad chest does not see the end of the wet season.', fx: s => ({ pop: -1, do: s2 => { LF.ease(s2, 'fear', 'op.yard', 15, 400); LF.emit(s2, 'confinement', 'op.yard', 12, 200, 'the colony lives inside its own stockade'); } }) } },
     { label: 'Floors and roofs', out: { text: s => `Every pod gets a raised floor and a second roof, and people sleep. There is no wall. ${Nc(s, 'security')} doubles the night watch to make up for it, and the watch is drawn from the people who had just started sleeping.`, fx: s => ({ morale: 2, do: s2 => { LF.ease(s2, 'exhaustion', 'op.yard', 6, 400); LF.emit(s2, 'fear', 'op.yard', 14, 250, 'there is nothing between the pods and whatever lives here'); } }) } },
   ] });
-op('brought', s => cargo(s, 'still') && LF.down(s, 'reclaimer') ? 1 : 0, { id: 'op.still', view: 'colony', tone: 'opportunity', title: 'Two Stills',
-  text: s => `The second still is unpacked and works. ${Nwc(s, 'engineer')} could keep it crated as the spare it was sent as. ${Nwc(s, 'physician')} wants both running, and the extra water piped to a bathhouse.\n\n[[physician]] "Half the rashes in my clinic are people who haven't had a proper wash since the ship, and they say sorry to me for the smell before they'll roll up a sleeve. Nobody should have to apologise to me for that."`,
-  choices: [
-    { label: 'Run both, and build the bathhouse', cost: { mat: 20 }, out: { text: 'A hut with six showers and a boiler goes up by the reclaimer. There is a queue every evening, and the clinic gets quieter.', fx: s => ({ morale: 3, machine: { reclaimer: -4 }, do: s2 => LF.ease(s2, 'sickness', 'op.still', 10, 500) }) } },
-    { label: 'Keep it crated, as the spare', out: { text: s => `The still goes back in its crate, with the membranes. ${Nc(s, 'engineer')} writes "DO NOT OPEN" on the lid, and then, underneath, "unless".`, fx: { machine: { reclaimer: 6 } } } },
-  ] });
 op('brought', s => cargo(s, 'racks') && LF.down(s, 'hydroponics') ? 1 : 0, { id: 'op.racks', view: 'colony', tone: 'pressure', title: 'Forty Racks',
-  text: s => `The spare hydroponic racks are standing in the bay, still folded. ${Nwc(s, 'botanist')} wants all forty planted now, while the fields are still a guess. ${Nwc(s, 'engineer')} points out that forty more racks means forty more pumps on the reactor, and that the bay was never built to run that hard.\n\n[[engineer]] "Twenty, then, and keep the other twenty folded for when the first lot break, which they will, about the time somebody decides to run them all at once."`,
+  text: s => `The hydroponics bay came down with forty spare racks, and they are standing in it still folded. ${Nwc(s, 'botanist')} wants all forty planted now, while the fields are still a guess. ${Nwc(s, 'engineer')} points out that forty more racks means forty more pumps on the reactor, and that the bay was never built to run that hard.\n\n[[engineer]] "Twenty, then, and keep the other twenty folded for when the first lot break, which they will, about the time somebody decides to run them all at once."`,
   choices: [
     { label: 'All forty, now', out: { text: 'The bay is green to the ceiling within a month, and loud with pumps. The reactor runs a little hotter for it.', fx: { food: 60, yield: 0.02, machine: { reactor: -5, hydroponics: -4 } } } },
     { label: 'Twenty, and twenty kept back', out: { text: 'Half the racks go up. The other half are stacked against the wall, and every one gets used within two years.', fx: { yield: 0.01, machine: { hydroponics: 6 } } } },
@@ -321,8 +269,6 @@ op('brought', s => cargo(s, 'rations') ? 1 : 0, { id: 'op.rations', view: 'peopl
   choices: [
     { label: 'Eat them now, and plant the harvest', out: { text: 'A season of foil packs at every meal, and grumbling at every meal. Most of the first harvest goes back into the ground.', fx: { food: -80, yield: 0.025, morale: -2 } } },
     { label: 'Lock them away for the lean year', out: { text: s => `The pallets go behind a locked door, and ${Nc(s, 'quartermaster')} keeps the key. People sleep a little easier knowing they are there. The first harvest is eaten down to the husk, and there is no seed from it for a second sowing.`, fx: s => ({ yield: -0.015, do: s2 => LF.ease(s2, 'hunger', 'op.rations', 12, 700) }) } },
-    { label: 'A foil pack for every double shift', dark: true, note: 'The hungry will work themselves into the ground for it.', info: [['yield', 'Work'], ['danger', 'The ones who need it most']],
-      out: { text: s => `${Nc(s, 'quartermaster')} hands them out at the end of the second shift, one each, and writes the name down. The pod walls go up a month early. The names on the list are the thin ones, mostly, and by the end of the season two of them have worked themselves to death for food.`, fx: { food: -60, mat: 55, pop: -2, morale: -1, stain: ['worked', 1], flags: { push_on: true } } } },
   ] });
 op('brought', s => cargo(s, 'radio') ? 1 : 0, { id: 'op.mast', view: 'world', tone: 'opportunity', title: 'The Mast',
   text: s => `The dish is up on the ridge. The handsets reach the ship well enough for a few words at a time. ${Nwc(s, 'pilot')} wants the dish locked on the ship as well, for a wide link every night: the day's pictures from orbit, the library, and time for the camp and whoever is aboard to tell each other their news. ${Nwc(s, 'xenobio')} wants it sweeping every band, day and night, to learn what this planet sounds like.\n\n[[pilot]] "We've got one dish and it points one way, so it's the ship or the sky, and I want it on the ship."`,
@@ -335,16 +281,12 @@ op('brought', s => cargo(s, 'band') ? 1 : 0, { id: 'op.piano', view: 'people', t
   choices: [
     { label: 'A dance every rest day', out: { text: 'The tables go against the walls every seventh night. People who have not spoken since the ship find out they can still laugh at each other.', fx: s => ({ morale: 4, do: s2 => LF.ease(s2, 'grief', 'op.piano', 10, 500) }) } },
     { label: 'Holidays only', out: { text: 'The piano is played most nights anyway, quietly, by whoever cannot sleep. The dances are saved for the days that matter, and are better for it.', fx: { morale: 2 } } },
-    { label: 'Strip the piano for its wire', out: { text: 'The piano gives up two hundred metres of good steel wire and a frame of seasoned wood. The guitars stay. Nobody plays them for a while.', fx: { parts: 5, mat: 10, morale: -3 } } },
   ] });
 op('brought', s => cargo(s, 'lab') ? 1 : 0, { id: 'op.samples', view: 'world', tone: 'opportunity', title: 'First Samples',
   text: s => `The field laboratory has walls now, and the sequencer has one queue. ${Nwc(s, 'xenobio')} wants it for this world: soil, water, anything that moves. ${Nwc(s, 'physician')} wants every colonist screened first, for whatever they breathed in since the ramp came down.\n\n[[physician]] "We don't know a thing about out there, and not much more about what it's already done to us, and I've had people in my clinic asking what they breathed coming down that ramp. Let me look at them before you ask them to go and look at it."`,
   choices: [
     { label: 'This world first', out: { text: 'A month of samples, boxed and labelled. Most of what is in them has no name yet, and the commonest are given numbers.', fx: s => ({ survey: 8, do: s2 => { const f = s2.factors.filter(x => LF.KINDS[x.kind] && !x.dormant).sort((a, b) => a.onset - b.onset)[0]; if (f) f.insight = clamp(f.insight + 20, 0, 100); } }) } },
     { label: 'The colonists first', out: { text: 'Everyone gives blood. Three people are carrying something nobody expected, and are treated before it matters, out of a drug store that will not be filled again. Outside the wire, whatever the colony has not yet met goes unlooked at for another season.', fx: s => ({ morale: 1, machine: { medbay: -4 }, do: s2 => LF.ease(s2, 'sickness', 'op.samples', 12, 600) }) } },
-    { label: 'Screen everyone, and put out whoever is carrying anything', dark: true, note: 'Treatment uses the drug store. The wire costs nothing.', info: [['yield', 'A clean camp, and the drugs kept'], ['danger', 'Whoever the sequencer names']],
-      out: { text: 'Everyone gives blood. Three people are carrying something nobody expected. They are given a tent, a week of food and a place two kilometres downwind, and are told it is until the lab knows more. The lab is busy with soil by then. One of the three walks back in the cold season and is turned away at the gate.',
-        fx: s => ({ leave: 3, morale: -1, machine: { medbay: 8 }, stain: ['carriers', 1], do: s2 => LF.ease(s2, 'sickness', 'op.samples', 20, 600) }) } },
   ] });
 op('brought', s => 0.6, { id: 'op.camp', view: 'people', tone: 'pressure', title: 'How the Camp Is Laid',
   setup: s => { const a = LF.cast(s, { val: 'order', officers: true }), b = LF.cast(s, { val: 'free', officers: true, not: a ? [a.id] : [] }); return { a: a && a.id, an: a ? a.name : Nw(s, 'security'), b: b && b.id, bn: b ? b.name : Nw(s, 'teacher') }; },
@@ -354,34 +296,33 @@ op('brought', s => 0.6, { id: 'op.camp', view: 'people', tone: 'pressure', title
     { label: (s, c) => `The street`, out: { text: 'One long street, pods on both sides, open at each end. It looks like a town already. It would be hard to defend.', fx: (s, c) => ({ morale: 2, do: s2 => { const p = byPid(s2, c.b); if (p) p.loyal = clamp(p.loyal + 8, 0, 100); const q = byPid(s2, c.a); if (q) q.loyal = clamp(q.loyal - 6, 0, 100); } }) } },
   ] });
 
-LF.TAGS['op.melt'] = ['severe', 'bold', 'mercy order', 'severe order'];
-LF.TAGS['op.film'] = ['severe order', 'severe', 'open', 'severe order'];
-LF.TAGS['op.tide'] = ['cautious', 'bold', 'severe order', 'bold severe'];
-LF.TAGS['op.dust'] = ['severe', 'mercy', 'severe cautious', 'severe order'];
-LF.TAGS['op.spread'] = ['free open', 'order', 'severe order', 'severe order'];
-LF.TAGS['op.pad'] = ['open bold', 'cautious', 'severe bold', 'bold severe'];
+LF.TAGS['op.melt'] = ['severe', 'bold', 'mercy order'];
+LF.TAGS['op.film'] = ['severe order', 'severe', 'open'];
+LF.TAGS['op.tide'] = ['cautious', 'bold', 'severe order'];
+LF.TAGS['op.dust'] = ['severe', 'mercy'];
+LF.TAGS['op.spread'] = ['free open', 'order'];
+LF.TAGS['op.pad'] = ['open bold', 'cautious', 'severe bold'];
 LF.TAGS['op.shard'] = ['cautious', 'order closed', 'bold severe'];
-LF.TAGS['op.thaw'] = ['mercy bold', 'bold', 'order closed', 'severe order'];
-LF.TAGS['op.grey'] = ['severe cautious', 'bold', 'bold', 'bold severe'];
-LF.TAGS['op.burn'] = ['bold', 'cautious', 'severe bold'];
-LF.TAGS['op.listen'] = ['closed cautious', 'open', 'bold', 'bold closed'];
+LF.TAGS['op.thaw'] = ['mercy bold', 'bold', 'order closed'];
+LF.TAGS['op.grey'] = ['severe cautious', 'bold', 'bold severe'];
+LF.TAGS['op.burn'] = ['bold', 'cautious'];
+LF.TAGS['op.listen'] = ['closed cautious', 'open', 'bold'];
 LF.TAGS['op.sky'] = ['open', 'free'];
 LF.TAGS['op.plan'] = ['free bold', 'order'];
 LF.TAGS['op.ground'] = ['bold', 'cautious', 'severe bold'];
-LF.TAGS['op.broken'] = ['bold', 'cautious', 'mercy', 'bold severe'];
+LF.TAGS['op.broken'] = ['bold', 'cautious', 'mercy'];
 LF.TAGS['op.flight'] = ['cautious', 'bold open'];
-LF.TAGS['op.key'] = ['order severe', 'free', 'order'];
+LF.TAGS['op.key'] = ['order severe', 'free'];
 LF.TAGS['op.herd'] = ['bold', 'cautious'];
 LF.TAGS['op.lessons'] = ['open', 'free'];
-LF.TAGS['op.hold'] = ['mercy bold', 'severe order', 'severe order'];
 LF.TAGS['op.spares'] = ['bold', 'cautious'];
 LF.TAGS['op.camp'] = ['order closed', 'free open'];
 LF.TAGS['op.ward'] = ['mercy', 'cautious'];
-LF.TAGS['op.lathe'] = ['bold severe', 'mercy', 'severe order'];
+LF.TAGS['op.lathe'] = ['bold severe', 'mercy'];
 LF.TAGS['op.trays'] = ['bold', 'cautious'];
 LF.TAGS['op.rover'] = ['open bold', 'cautious', 'bold severe'];
 LF.TAGS['op.fuel'] = ['bold', 'cautious'];
 LF.TAGS['op.yard'] = ['closed order', 'mercy'];
-LF.TAGS['op.rations'] = ['', '', 'severe order'];
-LF.TAGS['op.samples'] = ['', '', 'severe closed'];
+LF.TAGS['op.rations'] = ['', ''];
+LF.TAGS['op.samples'] = ['', ''];
 })();

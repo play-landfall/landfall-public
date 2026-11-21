@@ -26,7 +26,12 @@ function h32(str, seed) {
 }
 const hex = n => n.toString(16).padStart(8, '0');
 const CACHE = {};
-LF.uid = function (key) {
+/* The deck (2026-11-21): the catalogue was cut to three options a card, so most option positions moved, and the start of the
+   game is other cards. Every card, option and outcome id carries the deck's number, so the sheet's counts from the old deck
+   are never read as answers to the new one ("the other colonies"). Raise it only when positions move wholesale again. */
+LF.DECK = 2;
+LF.uid = function (key0) {
+  const key = /^(card|opt|out):/.test(key0) ? `deck${LF.DECK}/${key0}` : key0;
   if (CACHE[key]) return CACHE[key];
   const a = hex(h32(key, 0x9e3779b9)), b = hex(h32(key, 0x7f4a7c15)), c = hex(h32(key, 0x94d049bb)), d = hex(h32(key, 0x2545f491));
   const v = (parseInt(c.slice(0, 1), 16) & 0x3 | 0x8).toString(16);

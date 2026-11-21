@@ -223,7 +223,8 @@ const SCENES = new Set(LF.SCENES || []);
 const libPool = p => (LF.SCENES || []).filter(k => k.startsWith(p) && !k.endsWith('_hollow') && !k.includes('@'));
 const BORROW = { plan: () => libPool('lib_group_00'), done: () => libPool('lib_building_'), 'plan.harvest': () => libPool('lib_crop_'),
   // crossing incidents with no picture of their own borrow the nearest one
-  'voy.dead': () => libPool('voy_cryo'), 'voy.petition': () => libPool('voy_wake'), 'voy.spine': () => libPool('voy_plan'), 'voy.dust': () => libPool('voy_plan'),
+  'voy.scram': () => libPool('voy_bearing'), 'voy.vault': () => libPool('voy_mould'), 'voy.array': () => libPool('voy_drift'), 'voy.hold': () => libPool('voy_ledger'), 'voy.count': () => libPool('voy_mould'), 'voy.pass': () => libPool('voy_dust'),
+  'setup.load': () => libPool('setup_sys'),   // the lander's load (2026-11-21): the first-flight picture until its own is painted
   away: () => libPool('lib_landscape_').concat(libPool('lib_group_06')),
   // the quiet ship's boarding (2026-11-16): until each has its own picture
   'qs.deep': () => libPool('qs_board'), 'qs.walk': () => libPool('qs_board'), 'qs.count': () => libPool('sleep_cryo'), 'qs.cups': () => libPool('ship_cabin'), 'qs.late': () => libPool('qs_silent'), 'qs.blame': () => libPool('qs_board'), 'qs.answer': () => libPool('qs_silent'), 'qs.kettle': () => libPool('qs_silent'), 'qs.collar': () => libPool('lander_pad'), 'qs.ridge': () => libPool('away_ridge'), 'qs.kin': () => libPool('lander_grounded'), 'qs.nest': () => libPool('qs_board'), 'qs.tune': () => libPool('fall_night'), 'qs.keeper': () => libPool('ship_orbit'), 'qs.salvage': () => libPool('rst_ship'), 'qs.fall': () => libPool('late_fall'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
@@ -295,7 +296,7 @@ function talkHTML(text) {
     return `<div class="talk${cls}">${talkFace(w)}<div><div class="who">${esc(w.name)}${w.post ? `<span>${esc(w.post)}</span>` : ''}</div><div class="bub">${esc(b.lines.join('\n'))}</div></div></div>`; }).join('');
 }
 function cardHTML() {
-  const def = LF.view(s), limb = limbCard(), pic = limb ? null : sceneOf(s.cur);
+  const def = LF.view(s), limb = false, pic = sceneOf(s.cur);
   let h = `<div class="card${reveal ? ' enter' : ''}" id="card">${limb ? `<img class="scene" src="art/pieces/limb_${s.world.type}.webp" alt="" decoding="async">` : pic ? `<img class="scene" src="art/scenes/${pic}.webp" alt="" decoding="async">` : ''}<div class="lbl tone">${esc((LF.byId[s.cur.id] || {}).kicker || def.tone || '')}${s.cur.phase === 'choose' && since ? ` · ${daysWord(since).toLowerCase()}` : ''}</div>${LF.storyLine(s) ? `<div class="story">${esc(LF.storyLine(s))}</div>` : ''}<h2>${esc(def.title)}</h2>`;
   if (s.cur.phase === 'choose') {
     h += talkHTML(def.text);
@@ -470,21 +471,20 @@ function siteHTML() { const w = s.world;
       return `<button class="opt site" data-act="site" data-v="${k}"><b>${esc(cap1(T.site))}</b><small>${esc(T.gives)} ${esc(T.costs)}</small></button>`; }).join('')}`;
 }
 function adriftHTML() {
+  // Lachlan, 2026-11-21: the planet is chosen on a little data. A blurry picture and the array's error bars, and that is all:
+  // no blurb for the kind of world, no confidence figures, no table of what the burn costs.
   const a = s.adrift, n = a.cands.length;
   let h = `<div class="banner"><img class="scene" src="art/adrift.webp" alt=""></div><div class="card"><div class="lbl tone">Forty-one years out</div><h2>Adrift</h2>
     <p>${esc((LF.PREMISES[s.premise] || LF.PREMISES.dead).text(a.ship))}
 
-There is reaction mass for one more burn. The long-range array has found ${['', 'one', 'two', 'three', 'four', 'five', 'six'][n]} stars within reach, each with one world that might do. They have catalogue numbers and no names. Nothing better than this ship's own telescope has ever looked at any of them.</p>
-    <p class="note" style="padding:0">Each bar is the array's estimate, with its confidence: the chance the truth lies inside the bar. The truth is rarely in the middle. A longer burn costs sleepers, stores and machine life. The real survey waits until you arrive, and so does a name.</p></div>
+There is reaction mass for one more burn. The long-range array has found ${['', 'one', 'two', 'three', 'four', 'five', 'six'][n]} stars within reach, each with one world that might do.</p>
+    <p class="note" style="padding:0">This is all the array can see. Each bar is its best guess at a reading, and the truth may lie outside it. The further the star, the worse the picture and the harder the crossing.</p></div>
     <h3>${ic('array', 'h3i')}Stars in reach</h3>`;
-  // Every reading on every candidate, straight away: opening them one by one was only button clicking.
-  a.cands.forEach((c, i) => { const R = LF.transitRisk(c), W = LF.WORLDS && LF.WORLDS[c.kind];
-    h += `<div class="box cand"><div class="ch">${ic('world')}<span class="t"><b>${esc(c.star)}</b><small>${c.ly.toFixed(1)} light-years · ${c.years} years at the engine's rating</small></span></div>
-      <div class="scan">${c.kind ? `<figure class="scope"><canvas class="scope" width="${scopePx(c)}" height="${scopePx(c)}" data-src="${scopeSrc(c)}" data-seed="${c.seed}" aria-label="The array's picture of the planet"></canvas><figcaption>${esc(W.name)}</figcaption></figure>` : ''}
+  a.cands.forEach((c, i) => {
+    h += `<div class="box cand"><div class="ch">${ic('world')}<span class="t"><b>${esc(c.star)}</b><small>${c.ly.toFixed(1)} light-years · ${c.years} years</small></span></div>
+      <div class="scan">${c.kind ? `<figure class="scope"><canvas class="scope" width="${scopePx(c)}" height="${scopePx(c)}" data-src="${scopeSrc(c)}" data-seed="${c.seed}" aria-label="The array's picture of the planet"></canvas></figure>` : ''}
       <div class="mini">${c.readings.map(r => { const D = LF.PROPS[r.k];
-        return `<div><span>${r.k === 'tech' ? 'Tech' : D.name.split(' ').pop()} <em>${LF.fmt(r.k, r.lo)} to ${LF.fmt(r.k, r.hi)}${D.unit.trim()} · ${r.conf}%</em></span>${errBar(r)}</div>`; }).join('')}</div></div>
-      ${W ? `<small class="burn">${esc(W.blurb)}</small>` : ''}
-      <small class="burn">The burn, at its rated pace: ${R.lo} to ${R.hi}% of the sleepers lost, ${R.wear} wear on every machine${c.j > 0.25 ? ', a few of the watch' : ''}. How the ship crosses is decided once it is under way.</small>
+        return `<div><span>${r.k === 'tech' ? 'Tech' : D.name.split(' ').pop()} <em>${LF.fmt(r.k, r.lo)} to ${LF.fmt(r.k, r.hi)}${D.unit.trim()}</em></span>${errBar(r)}</div>`; }).join('')}</div></div>
       ${burnHTML(c, i)}</div>`; });
   return h;
 }
@@ -510,7 +510,7 @@ function arrivalHTML() {
       <div class="rd"><div class="rh">${ic('water')}<b>Water</b></div><small>${esc(R.water)}</small></div>
       <div class="rd"><div class="rh">${ic('danger')}<b>Weather</b><span>${R.weather.conf}% sure</span></div><small>${esc(R.weather.text)}</small></div>
       ${LF.anomaly(s) ? `<div class="rd"><div class="rh">${ic('unknown')}<b>The anomaly</b></div><small>${esc(LF.anomaly(s).charAt(0).toUpperCase() + LF.anomaly(s).slice(1))}. Orbit cannot say what it is.</small></div>` : ''}
-      <div class="rd"><div class="rh">${ic('lander')}<b>Landing zones</b></div>${R.zones.map(z => `<small><b>${esc(z.name.charAt(0).toUpperCase() + z.name.slice(1))}</b>: ${esc(z.see)}.</small>`).join('')}</div>
+      <div class="rd"><div class="rh">${ic('lander')}<b>Landing ground</b></div>${[R.zones[LF.groundOf ? LF.groundOf(s) : 0]].filter(Boolean).map(z => `<small><b>${esc(z.name.charAt(0).toUpperCase() + z.name.slice(1))}</b>: ${esc(z.see)}.</small>`).join('')}</div>
       <div class="rd"><div class="rh">${ic('array')}<b>Big enough to name</b></div>${R.features.map(f => `<small><b>${esc(f.name.charAt(0).toUpperCase() + f.name.slice(1))}</b>: ${esc(f.see)}.</small>`).join('')}</div></div>` : ''}`;
   return `<div class="lbl vname">Orbit over ${esc(w.planet)}</div>
     <div class="seg arrtabs">${[['world', 'The world'], ['report', 'Orbital report']].map(([k, n]) => `<button data-act="arrtab" data-v="${k}" class="${k === arrTab ? 'on' : k === 'report' ? 'hot' : ''}">${n}</button>`).join('')}</div>
@@ -928,15 +928,12 @@ function wallHTML() {
   return (dead.length ? `<h3>On the wall</h3><div class="box">${dead.slice(-6).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.died || 0)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : '')
     + (left.length ? `<h3>Gone from the colony</h3><div class="box">${left.slice(-4).map(p => `<div class="entry" style="opacity:.6"><span class="lbl">${esc(LF.title(p))} · ${LF.dateStr(p.left)}</span><b>${esc(p.name)}</b>: ${esc(p.cause || 'gone')}</div>`).join('')}</div>` : '');
 }
-// Choosing the site (Lachlan, 2026-11-19): the lander has not gone down, so the card shows the world from orbit, not the
-// landing, and the orbit view below drops its own copy of that picture.
-const limbCard = () => !!(s.cur && s.cur.id === 'landfall.site' && s.cur.phase === 'choose' && s.world && LF.aloft(s));
 /* Before landfall: under way, or in orbit with the lander still aboard. */
 function aloftHTML() {
   const w = s.world, t = w.transit, V = s.voyage || {};
-  if (underWay()) return `<div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('array')}<div class="t"><b>${esc(w.star)}</b><small>${t.ly.toFixed(1)} light-years · ${t.years} years${V.mode && LF.CROSSING && LF.CROSSING[V.mode] ? ' · ' + LF.CROSSING[V.mode].short : ''}</small></div></div>
+  if (underWay()) return `<div class="lbl vname">Under way</div><div class="box"><div class="row">${ic('array')}<div class="t"><b>${esc(w.star)}</b><small>${t.ly.toFixed(1)} light-years · ${t.years} years</small></div></div>
     <div class="row">${ic('people')}<div class="t"><b>The ${esc(w.ship)}</b><small>${s.sleepers} asleep in the cryo banks</small></div></div></div>`;
-  return `<div class="lbl vname">In orbit</div>${limbCard() ? '' : `<div class="banner"><img class="scene" src="art/pieces/limb_${w.type}.webp" alt=""></div>`}
+  return `<div class="lbl vname">In orbit</div><div class="banner"><img class="scene" src="art/pieces/limb_${w.type}.webp" alt=""></div>
     <div class="box"><div class="row">${ic('world')}<div class="t"><b>${esc(w.planet)}</b><small>${w.catalogue && w.catalogue !== w.planet ? esc(w.catalogue) + ' · ' : ''}${t.years} years from the last star</small></div></div>
     <div class="row">${ic('lander')}<div class="t"><b>The ${esc(w.ship)}</b><small>The lander has not gone down. ${s.sleepers} asleep in the cryo banks.</small></div></div></div>`;
 }
@@ -1062,10 +1059,11 @@ function act(a, v, el) {
   else if (a === 'attach') { if (!hold) LF.attach(s, v); }
   else if (a === 'pick') { LF.pickToggle(s, +v); }
   else if (a === 'pz') { if (hold || review) return; const snd = LF.pzMove(s, v); if (!snd) return; if (window.LFSound && LFSound.play) LFSound.play(snd); save(); }
-  else if (a === 'pickgo') { if (!LF.pickConfirm(s)) return; }
+  else if (a === 'pickgo') { const landing = s.cur && s.cur.id === 'setup.load' && s.cur.phase === 'choose';
+    if (!LF.pickConfirm(s)) return;
+    if (landing && window.LFIntro) cutscene(LFIntro.descent(s, s.world.zone));   // the lander goes down as the load is confirmed (2026-11-21: there is no card for the landing ground)
+  }
   else if (a === 'choose' && s.cur && s.cur.phase === 'choose') { if (hold || review) return;
-    // the landing site is chosen: the lander goes down while the choice resolves underneath
-    if (s.cur.id === 'landfall.site' && window.LFIntro && LF.zone) cutscene(LFIntro.descent(s, (LF.zone(s, +v) || {}).name));
     startHold(+v); }
   else if (a === 'dismiss' && s.cur && s.cur.phase === 'result') {
     if (!s.adrift && !LF.aloft(s)) { lastCard = cardHTML().replace(/<button class="opt go" data-act="dismiss">[\s\S]*?<\/button>/, '').replace(' id="card"', '').replace(' enter', ''); try { localStorage.setItem('landfall.lastcard', lastCard); } catch (e) {} }

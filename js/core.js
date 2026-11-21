@@ -2,7 +2,7 @@
    No DOM in this file: it runs unchanged in the browser and in tools/sim.js. */
 (function (G) {
 'use strict';
-const LF = G.LF = { storylets: [], byId: {}, reports: [], VERSION: 14 };
+const LF = G.LF = { storylets: [], byId: {}, reports: [], VERSION: 15 };
 // A tick is a third of a day or so of fiction; what the player sees is months. One decision a month (LF.MONTH ticks),
 // three months a season, twelve a year, then the year's recap (council.js).
 const YEAR = LF.YEAR = 120, SEASON = LF.SEASON = 30, MONTH = LF.MONTH = 10;
@@ -420,7 +420,7 @@ LF.land = function (s) {
   s.machines[hurt].hp = 60; s.machines[hurt].cap = 82; s.world.landingDamage = hurt;
   // the wreck: what the salvage crews can cut from the pods and the lander's fairings before they must look further (LF.matIn)
   s.wreck = (LF.ARCHETYPES[s.world.type] || {}).wreck || 320;   // a hard site's salvage (world.js)
-  // Only the reactor goes down with the first flight for certain; the rest wait aboard (setup.sys picks one more).
+  // Only the reactor goes down with the first flight for certain; the rest wait aboard (setup.load can bring the hydroponics bay or the autodoc).
   for (const id in s.machines) if (id !== 'reactor' && id !== 'lander') s.machines[id].up = true;
   s.fuel = 2;   // two flights after landfall, then the digester (Lachlan, 2026-11-16)
   LF.makeOfficers(s);   // the six (officers.js)
@@ -430,11 +430,11 @@ LF.land = function (s) {
     LF.log(s, `So did the ${LF.MACHINES[h2].name}. It had been running too long before it ever saw a gravity well.`, 'bad'); }
   if (LF.societyInit) LF.societyInit(s);
   if (LF.plot && !s.world.siteOpen) LF.plot(s);   // which story threads this world holds (threads.js); a site still to choose deals them then (LF.pickSite)
-  // Before the descent: who is woken first, and what goes in the hold (content-setup.js). Then the landing site.
+  // Before the descent: who goes down first, and what rides with the reactor (content-setup.js: setup.wake1, setup.load).
   // First the crossing, if this game has one to play (s.voyage, set by LF.embark), then orbit and a name for the world.
-  const first = LF.byId['setup.wake1'] && LF.makeSlate && LF.makeSlate(s) ? 'setup.wake1' : 'landfall.site';
-  if (s.voyage && LF.byId['voy.plan']) { s.voyage.next = first; LF.fire(s, 'voy.plan'); }
-  else { LF.orbitChron(s); LF.fire(s, first); }
+  if (LF.makeSlate) LF.makeSlate(s);
+  if (s.voyage && LF.crossing) { s.voyage.next = 'setup.wake1'; LF.crossing(s); }   // two incidents on the way, then orbit (content-setup.js)
+  else { LF.orbitChron(s); LF.fire(s, 'setup.wake1'); }
 };
 LF.orbitChron = s => LF.chron(s, `After ${s.world.transit.years} more years under way, the ${s.world.ship} made orbit over ${s.world.planet}. ${s.pop} were woken and ${s.sleepers} left asleep.`);
 const STRIKE = ['in the hills, close enough to rattle the pods', 'on the far side of the ridge', 'in the river, which ran brown for the rest of the month'];

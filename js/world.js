@@ -297,7 +297,6 @@ LF.makeAdrift = function (s) {
   // The ship's own stores are the same whichever world is chosen. What differs is how much survives the burn.
   s.adrift = { ship: LF.SHIP, cands, kit: { pop: ri(s, 56, 64), food: ri(s, 40, 46) * 100, parts: ri(s, 28, 34), mat: ri(s, 58, 72), sleepers: ri(s, 13, 15) * 10 } };
 };
-LF.transitRisk = c => ({ lo: Math.round(100 * (0.02 + 0.15 * c.j) * 0.6), hi: Math.round(100 * (0.02 + 0.15 * c.j) * 1.4), wear: c.j < 0.34 ? 'light' : c.j < 0.67 ? 'moderate' : 'heavy' });
 /* Commit to one candidate. The burn costs sleepers, a few of those thawed for the landing, stores and machine life, in proportion
    to its length; never ruinously. */
 /* later (the UI, Lachlan 2026-11-21): the landing site is not chosen at the burn. The world is made for the first site to
@@ -406,8 +405,7 @@ LF.arrivalNotes = function (s) {
 };
 LF.transitText = function (s) {
   const t = s.world.transit, N = n => ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][n] || String(n);
-  const V = s.voyage || {}, how = ((LF.CROSSING || {})[V.mode] || {}).how || '';   // the ways across, content-setup.js
-  return `${how} ${t.years} years under way. ${t.lostS ? `${N(t.lostS)} of the sleepers did not survive ${t.lostS === 1 ? 'the' : 'their'} cryo bank${t.lostS === 1 ? '' : 's'} failing` : 'Every cryo bank held'}${t.lostP ? `, and ${N(t.lostP).toLowerCase()} of those awake for it did not live to see orbit` : ''}. The machines are ${t.years} years older than they were built to be at landfall.`.trim();
+  return `${t.years} years under way. ${t.lostS ? `${N(t.lostS)} of the sleepers did not survive ${t.lostS === 1 ? 'the' : 'their'} cryo bank${t.lostS === 1 ? '' : 's'} failing` : 'Every cryo bank held'}${t.lostP ? `, and ${N(t.lostP).toLowerCase()} of those awake for it did not live to see orbit` : ''}. The machines are ${t.years} years older than they were built to be at landfall.`.trim();
 };
 /* The anomaly: the one thing orbit saw and could not explain. A landing zone "beside the anomaly" means this, so
    the survey has to say what it is before it names the zone. Null when the world shows nothing of the kind. */
@@ -418,12 +416,4 @@ LF.anomaly = function (s) {
 // What each kind of ruin looks like from orbit (its first sign on the ground is often something only a camp would see).
 const FROM_ORBIT = { vault: 'a radar return too square to be geology', engine: 'a patch of ground that shivers every ninety-one minutes, exactly', weapon: 'a ring of scorched ground with clean edges, and nothing growing inside it',
   archive: 'a faint carrier on one band, repeating a long string of numbers', nursery: 'warmth under the ground, in a regular grid' };
-LF.briefing = function (s) {
-  const A = LF.ARCHETYPES[s.world.type], w = s.world;
-  const hint = LF.anomaly(s);
-  const T = w.kind && w.site !== null && LF.SITE_TERMS[w.type], other = T && LF.SITE_TERMS[LF.WORLDS[w.kind].sites[1 - w.site]];
-  return `${w.planet}, from orbit: ${A.name.toLowerCase()}. ${A.blurb}${T ? ` The lander is bound for ${T.site}, not ${other.site}. ${T.gives} ${T.costs}` : ''}\n\n${s.pop} of you are awake, and ${s.sleepers} sleep on aboard the ${w.ship}. The lander can set the reactor down once.`
-    + (hint ? ` The orbital pass flagged one anomaly: ${hint}.` : '')
-    + `\n\nEarth is ${41 + w.transit.years} years behind you. Choose your ground.`;
-};
 })();

@@ -49,8 +49,6 @@ add({ id: 'pol.charter', arc: 'politics', tone: 'pressure', title: 'Article One'
   choices: [
     { label: 'Call elections for a governing Council', note: 'They will not always choose what you would, and the first thing they will vote is full ladles.', info: [['yield', 'Morale'], ['danger', 'The stores']],
       out: { text: 'Seven seats. The count takes an evening, and the argument about the count takes the rest of the month. The Council\'s first vote is full ladles for a month, and it carries.', fx: { morale: 10, food: -120, flags: { council: true }, chron: 'The colony elected its first Council.' } } },
-    { label: 'An assembly, with the officers choosing who sits in it', dark: true, note: 'It will look like a vote and advise what it is told to.', info: [['yield', 'Morale, and nothing changes'], ['later', 'If they work out who chose the seats']],
-      out: { text: s => `Seven seats, filled from a list the officers drew up. It meets weekly and advises what the officers already meant to do. ${Nc(s, 'teacher')} is not on the list, and has worked out why.`, fx: { morale: 4, flags: { assembly: true }, mark: ['teacher', 'slighted'], stain: ['rigged', 1] } } },
     { label: 'The charter is the charter', note: 'Decisions stay quick, and people will hold it against you for a long time.',
       out: { text: s => `[[teacher]] "Then we know where we stand, and I'll tell the delegation so tonight."\n\n${Nc(s, 'teacher')} gathers the papers.`, fx: { morale: -8, flags: { command_rule: true } } } },
     { label: 'Have the delegation in the lock-up before breakfast', dark: true, note: 'Nine people are taken from their bunks, and the question does not come up again.', req: s => !!P(s, 'security'), reqText: 'There is no Warden to do it', info: [['yield', 'Nobody asks twice'], ['danger', 'Nine colonists']],
@@ -63,7 +61,6 @@ add({ id: 'pol.burial', arc: 'politics', tone: 'quiet', title: 'What We Do With 
   choices: [
     { label: 'To the soil works. Nothing is wasted here', out: { text: 'It is done respectfully, and efficiently. The compost beds are a little richer.', fx: { food: 60, morale: -3, flags: { recycle_dead: true } } } },
     { label: 'A cemetery on the hill, facing the landing site', out: { text: 'The first grave is cut with a mining laser, by a crew that was needed in the fields. Someone leaves a ration bar on it. Someone else, later, quietly takes it away.', fx: { morale: 5, food: -30, flags: { cemetery: true }, chron: 'A cemetery was laid out on the hill above the landing site.' } } },
-    { label: s => `Let ${F(s, 'chaplain')} and the bereaved decide, each time`, out: { text: 'There will be graves and there will be compost and, once, a pyre that gets into the drying racks and takes a week of meal with it.', fx: { morale: 3, food: -50, flags: { rites_free: true } } } },
     { label: 'To the kitchen. Every gram is still the ship\'s', dark: true, show: s => foodDays(s) < 75, note: 'The bins are low, and this is what the ship did with its dead for forty years.', info: [['yield', 'Food, from every death after this'], ['danger', 'Morale']],
       out: { text: s => `You say it plainly: the dead will feed the living, as they did for forty years in transit, without the machine in between. ${Nc(s, 'chaplain')} reads the names before the meal. Some people eat and some do not, and the ones who do not are thinner by the end of the month.`,
         fx: { food: 160, morale: -7, flags: { recycle_dead: true, lim_table_open: true }, stain: ['table', 1], chron: 'The colony decided that its dead would be eaten.' } } },
@@ -73,13 +70,8 @@ add({ id: 'pol.faith', arc: 'politics', tone: 'quiet', title: 'A Congregation',
   text: s => `A fifth of the colony now: ${FAITH(s)}. ${P(s, 'chaplain') && P(s, 'chaplain').trait === 'devout' ? `${N(s, 'chaplain')} is one of them, and no longer hides it.` : `${Nwc(s, 'chaplain')} calls it a healthy response to an unhealthy amount of sky, and would sooner see them with a hall than a grievance.`}\n\nThey ask for a hall of their own and one rest day in ten.`,
   choices: [
     { label: 'Grant the hall and the rest day', out: { text: 'The hall goes up within the month. They build it themselves, after shift, singing. One day in ten the fields are a fifth short of hands.', fx: { mat: -15, food: -70, morale: 7, flags: { faith_strong: true }, chron: s => `A meeting hall was raised for ${FAITH(s).split(',')[0]}.` } } },
-    { label: 'They may meet. They get no hall and no day', note: 'They will meet outdoors before the dawn shift, whatever the weather.', info: [['danger', 'The oldest of them']],
-      out: { text: 'They meet in the open before the dawn shift, in the wind. In the cold season one of the oldest of them does not get up from her knees, and the others carry her in past the empty store shed they had asked for.', fx: { morale: 1, pop: -1, flags: { faith_tolerated: true } } } },
     { label: 'Break it up. We cannot afford a second authority', dark: true, note: 'The watch takes the three who lead it off their crews and onto the latrine detail.', info: [['yield', 'No lost days, one voice'], ['danger', 'A fifth of the colony']],
       out: { text: 'The watch breaks up the next meeting and puts the three who led it on the latrine detail for the season. The meetings stop. A few months later there is a ring of stones in the far field that nobody will admit to laying.', fx: { morale: -3, tension: -6, flags: { faith_suppressed: true }, stain: ['broken_faith', 1] } } },
-    { label: 'Give them the hall, and put a name from the watch in every row', dark: true, note: 'The watch would hear whatever the congregation tells each other.', req: s => !!P(s, 'security'), reqText: 'There is no Warden to run it', info: [['yield', 'Morale, and you hear everything'], ['later', 'If they find the list']],
-      out: { text: s => `The hall goes up within the month, and they sing in it. ${Nc(s, 'security')} has a notebook by the end of the month: who doubts, who hoards, who is sleeping where, who said what about you. Twice that season the watch acts on something in the notebook before it comes to anything.`,
-        fx: { mat: -15, morale: 6, tension: -8, flags: { faith_strong: true, faith_listed: true }, stain: ['informers', 1], chron: s => `A meeting hall was raised for ${FAITH(s).split(',')[0]}.` } } },
   ] });
 add({ id: 'pol.schism', arc: 'politics', tone: 'pressure', title: 'The Upriver Party',
   when: s => s.day >= 330 && s.pop >= 55 && (s.morale < 48 || s.flags.command_rule || s.flags.faith_suppressed || s.flags.crackdown),
@@ -97,9 +89,6 @@ add({ id: 'pol.schism', arc: 'politics', tone: 'pressure', title: 'The Upriver P
       test: { base: 50, mods: [R('security', 10)] },
       ok: { text: 'The carts are unloaded under the rifles of the watch. Fifteen people go back to their bunks and do exactly what they are told and nothing more.', fx: { morale: -4, flags: { crackdown: true }, stain: ['gate', 1] } },
       bad: { text: 'It comes to a shoving match at the gate, then worse. They get out, and leave three dead at the gate.', fx: { pop: -3, leave: 12, morale: -12, flags: { blood_spilled: true, crackdown: true }, stain: ['gate', 2] } } },
-    { label: 'They may go. Their children stay', dark: true, note: 'Four children stay in the school, so a camp upriver will think hard before it does anything you would not like.', info: [['yield', 'Nothing leaves the stores'], ['danger', 'Four children']],
-      out: { text: (s, c) => `It is put to them at the gate, with the carts already loaded. Four go back to their bunks and will not leave without their own. Eleven go, with what they can carry and nothing from the stores. ${c.first} looks at the school for a long time before walking out, and does not shake your hand.`,
-        fx: (s, c) => ({ leave: 11, morale: -3, flags: { daughter: c.name, daughter_bitter: true, daughter_hostages: true }, stain: ['hostages', 2], sched: [['pol.daughter', 150, 220]], do: s2 => { const p = byPid(s2, c.pid); if (p && p.alive && !p.away) { p.alive = false; p.left = s2.day; p.cause = 'left to found the upriver settlement'; s2.vacancies.push({ role: p.role, day: s2.day + 30 }); } }, chron: `Eleven colonists under ${c.name} left to found a second settlement. Their children were kept behind as surety.` }) } },
   ] });
 add({ id: 'pol.daughter', arc: 'politics', tone: 'quiet', chain: true, title: 'Smoke Upriver',
   text: s => `A boat comes down the river: hide over a wooden frame, nothing from the ship in it at all. The upriver settlement is alive. ${s.flags.daughter_bitter ? 'Their envoy stays in the boat.' : `They have brought dried fish-analogue, a clay jar of something alcoholic, and news from ${s.flags.daughter}.`}`,
@@ -107,10 +96,10 @@ add({ id: 'pol.daughter', arc: 'politics', tone: 'quiet', chain: true, title: 'S
     { label: 'Trade openly. Two camps are better than one', note: 'What they want is tools and spares, which the machines here are short of.', info: [['yield', 'Food'], ['danger', 'Spares']],
       out: { text: s => s.flags.daughter_bitter ? 'It is stiff and formal and it holds. Food comes down the river, and spares the reactor crew had been counting on go up it.' : 'The jar is opened. By midnight there are plans for a road, and a crate of spares the reactor crew had been counting on is in the boat.', fx: { food: 300, mat: 30, parts: -4, morale: 5, flags: { daughter_trade: true }, chron: 'The upriver settlement survived, and the two camps began to trade.' } } },
     { label: 'Come home, or the river is closed to you', dark: true, note: 'They have no salt, no nails and no medicine that did not come from here.', info: [['yield', 'Hands back'], ['danger', 'A camp cut off']],
-      test: { base: 50, mods: [Fl('daughter_bitter', -15, 'They left in anger'), Fl('council', 10, 'They would have a vote'), Fl('daughter_hostages', 10, 'Their children are in your school')] },
+      test: { base: 50, mods: [Fl('daughter_bitter', -15, 'They left in anger'), Fl('council', 10, 'They would have a vote')] },
       ok: { text: 'The envoy takes it upriver. A month later nine of them come back, with two children born out there, because a camp with no salt and no nails does not see out a year. The others stayed, and nothing goes up the river to them.', fx: { pop: 11, morale: 2, stain: ['blockade', 1] } },
       bad: { text: 'The envoy hears it out.\n\n[[x60]] "We came to tell you we\'re doing fine. We didn\'t come to ask."\n\nNothing goes up the river after that. The next boat that comes down it is empty and drifting.', fx: { morale: -3, flags: { daughter_bitter: true }, stain: ['blockade', 2] } } },
-    { label: 'Follow the boat home and take the place', dark: true, req: s => !!P(s, 'security'), reqText: 'There is no Warden to lead it', test: { base: 60, mods: [R('security', 10), Fl('daughter_hostages', 10, 'Their children are in your school')] }, info: [['yield', 'Their harvest and their hands'], ['fail', 'Lives']],
+    { label: 'Follow the boat home and take the place', dark: true, req: s => !!P(s, 'security'), reqText: 'There is no Warden to lead it', test: { base: 60, mods: [R('security', 10)] }, info: [['yield', 'Their harvest and their hands'], ['fail', 'Lives']],
       ok: { text: 'The watch goes up behind the boat and is inside their fence before anyone there is awake. Their store comes down the river on their own boats, and nine of them with it, under guard. The huts are burned behind them.',
         fx: { food: 520, mat: 40, pop: 9, thralls: 9, morale: -4, flags: { daughter_taken: true }, stain: ['upriver', 2], chron: 'The upriver settlement was taken by force. Its people were brought back to work.' } },
       bad: { text: 'They had a lookout on the bluff. Three of the watch are dead in the shallows, and the settlement upriver is an enemy now and knows the way here.', fx: { pop: -3, morale: -8, flags: { daughter_bitter: true, blood_spilled: true } } } },
@@ -119,12 +108,8 @@ add({ id: 'pol.accident', arc: 'politics', tone: 'pressure', title: 'The Scaffol
   when: s => s.day >= 55 && !!s.project,
   text: s => `A lashing parts on the ${LF.projName(s, s.project).toLowerCase()} site and four people fall. Three get up.\n\nThe build crew is standing around the body when you arrive. Their foreman speaks for them.\n\n[[x41]] "${s.flags.push_on ? 'Double shifts' : 'Shifts till dark'}, on rigging made out of cargo straps. Slow it down. Or get used to this, because there'll be more."`,
   choices: [
-    { label: 'New rules, and the foreman who ran the site goes back to the ranks', dark: true, note: 'The foreman is the one who warned you. The crew needs the fault to be somebody on the site.', info: [['yield', 'Morale'], ['danger', 'The foreman, and the pace']], out: { text: 'The rules are written that night and painted on a board at the site gate. The foreman is broken to labourer in front of the crew, for rigging the foreman had asked three times to replace, and carries hod on the same site from the next morning.', fx: { pop: -1, morale: 4, flags: { safety: true }, stain: ['foreman', 1] } } },
     { label: 'We do not have time to be careful', dark: true, note: 'The work goes faster, and the crews know what their lives were weighed against.', info: [['yield', 'The build, sooner'], ['later', 'The next crew to fall']], out: { text: 'The body is carried down and the crew go back up the scaffold on the same cargo straps, the same afternoon. The site is a week ahead by the end of the month.', fx: { pop: -1, morale: -3, flags: { push_on: true }, stain: ['pace', 1], sched: [['pol.accident2', 90, 160]], do: s => { if (s.project) s.progress += 14; } } } },
     { label: 'Stand the site down for a week of mourning', out: { text: 'The work stops. People sleep, and eat, and build nothing. When they come back the foreman has re-rigged the whole site after hours.', fx: { pop: -1, morale: 5, food: -40, do: s => { s.progress = Math.max(0, s.progress - 12); } } } },
-    { label: 'Somebody tied that lashing. Try them for it', dark: true, note: 'The rigger is nineteen, and the crew wants somebody to be angry at who is not you.', info: [['yield', 'The pace holds, and the anger goes elsewhere'], ['danger', 'The rigger']],
-      out: { text: 'The rigger who tied it is nineteen and has not stopped shaking. The hearing takes an hour. The foreman will not look at you during it, or at the rigger afterwards, when it is done from the same scaffold. The crew goes back up in the morning, on the same cargo straps, checking every knot.',
-        fx: { pop: -2, morale: 2, tension: -8, flags: { push_on: true, justice_harsh: true }, stain: ['rigger', 2], sched: [['pol.accident2', 90, 160]], chron: 'A nineteen-year-old rigger was hanged for a lashing that parted.' } } },
   ] });
 add({ id: 'pol.accident2', arc: 'politics', tone: 'crisis', chain: true, title: 'The Second Fall',
   when: s => s.flags.push_on,
@@ -142,11 +127,9 @@ add({ id: 'pol.births', arc: 'politics', tone: 'quiet', title: 'The Question of 
   setup: s => ({ n: (s.gen && s.gen.n) || 0 }),
   // Children come without being decided on (generations.js). What is decided here is the colony's rule about them:
   // encouraged (flags.births), assigned as well (embryo_program), or put off (births_deferred, until the fields are in).
-  text: (s, c) => `${Nwc(s, 'physician')} raises it, because someone has to. ${c.n > 1 ? `${LF.th && LF.th.num ? LF.th.num(c.n).replace(/^./, x => x.toUpperCase()) : c.n} children have been born here since the landing, and nobody ever decided that they should be.` : c.n === 1 ? 'One child has been born here since the landing, and two more couples have asked the clinic whether they may.' : 'No child has been born here since the landing, and two couples have asked the clinic whether they may be the first.'} The embryo bank holds four thousand genomes from a planet none of you will see again. And every child is a mouth for ${LF.ageWord} years before it is a pair of hands.\n\nThe stores would last ${months(s)}.`,
+  text: (s, c) => `${Nwc(s, 'physician')} raises it, because someone has to. ${c.n > 1 ? `${LF.th && LF.th.num ? LF.th.num(c.n).replace(/^./, x => x.toUpperCase()) : c.n} children have been born here since the landing, and nobody ever decided that they should be.` : c.n === 1 ? 'One child has been born here since the landing, and two more couples have asked the clinic whether they may.' : 'No child has been born here since the landing, and two couples have asked the clinic whether they may be the first.'} Every child is a mouth for ${LF.ageWord} years before it is a pair of hands.\n\nThe stores would last ${months(s)}.`,
   choices: [
     { label: 'Yes. Children are the point', out: { text: s => `It is the first policy you have announced that people applaud. ${Nc(s, 'quartermaster')} waits for the noise to stop and reads out what a pregnancy eats.`, fx: { morale: 8, food: -90, flags: { births: true } } } },
-    { label: 'Yes, and every second child is one the clinic assigns from the embryo bank', dark: true, note: 'It widens the gene pool, and nobody who carries one is asked whether they want to.', info: [['yield', 'More children, wider blood'], ['danger', 'Whoever is told to carry']],
-      out: { text: 'It is read out as a rule, with the names of the first six to carry. Two of the six had not asked for a child at all. The first embryo is thawed the same month.', fx: { morale: 1, flags: { births: true, embryo_program: true }, stain: ['assigned', 2], chron: 'The colony began raising children from the embryo bank alongside its own.' } } },
     { label: 'Not until the fields can feed them. Implants for everyone, checked', dark: true, note: 'It holds until the open fields are in. Some of the women are already carrying.', info: [['yield', 'Almost no new mouths, for now'], ['danger', 'The women already carrying']],
       out: { text: s => `Implants are fitted at the next medical, to everyone, and checked. Two women were already three months along. ${Nc(s, 'physician')} does what the rule requires and writes each one up as a miscarriage.`, fx: { morale: -3, flags: { births_deferred: true }, stain: ['implants', 2] } } },
   ] });
@@ -161,9 +144,6 @@ add({ id: 'q.feud', arc: 'quiet', tone: 'quiet', title: 'Two Good People',
     return { a: a.id, an: a.name, af: a.first, b: b.id, bn: b.name, bf: b.first, old }; },
   text: (s, c) => `${c.an}${post(s, c.a)} and ${c.bn}${post(s, c.b)} have not spoken in a month. ${c.old ? 'It has been coming for years. This time it' : 'It'} was about a duty roster, and now it is about everything.\n\nBoth are too useful to lose. Each has, separately, asked you to move the other.`,
   choices: [
-    { label: 'Lock them in a room until it is settled', test: { base: 50, mods: [R('chaplain', 10)] },
-      ok: { text: (s, c) => `Six hours. They come out red-eyed and laughing. ${c.af} and ${c.bf} will be insufferable allies from now on.`, fx: { morale: 4 } },
-      bad: { text: (s, c) => `Six hours. ${c.bf} comes out with a split lip, and the colony picks sides.`, fx: { morale: -5 } } },
     { label: (s, c) => `Back ${c.af}`, out: { text: (s, c) => `${c.bf} takes the reassignment without a word, and does the new job flawlessly, and never again tells you anything you did not ask for.`, fx: (s, c) => ({ morale: -1, mark: [c.b, 'slighted'] }) } },
     { label: (s, c) => `Back ${c.bf}`, out: { text: (s, c) => `${c.af} takes the reassignment without a word, and does the new job flawlessly, and never again tells you anything you did not ask for.`, fx: (s, c) => ({ morale: -1, mark: [c.a, 'slighted'] }) } },
     { label: 'Rope them together and send them to walk the far markers', note: 'Nine days out with one tent between them, and either they come back able to work together or one of them does not come back.', test: { base: 60, mods: [If(s => s.survey > 50, 5, 'Good maps')] }, info: [['yield', 'The map'], ['fail', 'One of the two']],
@@ -177,17 +157,12 @@ add({ id: 'q.wedding', arc: 'quiet', tone: 'quiet', title: 'Under an Open Sky',
   choices: [
     { label: 'A feast. Open the good stores', note: 'It is food that was being kept for the lean season.', cost: { food: 180 }, out: { text: 'Someone has been secretly distilling. Someone else can play the fiddle. The dancing goes on until the night shift has to leave.', fx: { morale: 11, tension: -10, chron: 'The first wedding on the new world was held outdoors at dusk.' } } },
     { label: 'A ceremony, and an extra hour off shift', out: { text: 'It is brief and windblown and everybody comes. There is nothing on the tables afterwards but the day\'s ladle, and the two of them pretend not to mind. The hour comes out of the weeding.', fx: { morale: 3, food: -20 } } },
-    { label: 'Not this season. Nobody takes a day while the bins look like this', show: s => foodDays(s) < 70, out: { text: 'They take it well, in front of you. They are married anyway within the month, behind the pump house, by a friend with no standing to do it, and half the field crew was there and none of them told you.', fx: { morale: -4, tension: 4 } } },
   ] });
 add({ id: 'q.earth', arc: 'quiet', tone: 'pressure', title: 'Mail',
   when: s => s.day >= 180,
   text: s => `The ${s.world.ship} has caught a data packet from Earth, decades old. Thousands of personal letters, and a news digest: the agency that launched you was dissolved, the second ship never built.\n\nSo far only ${Nw(s, 'teacher')} has read it.`,
   choices: [
-    { label: 'Release all of it', note: 'Some people have been working for the day the second ship arrives.', info: [['danger', 'The ones who were waiting']],
-      out: { text: 'People read their letters, and then they read the digest. For a few days the colony is very quiet. In the second week one of the navigators walks out past the wire at night without a pack. Then people go back to work.', fx: { morale: -5, pop: -1, flags: { earth_truth: true }, chron: 'Word came from Earth, thirty years stale. Nobody else was coming.' } } },
-    { label: 'Letters only. Archive the rest', dark: true, note: s => `${Nc(s, 'teacher')} would have to lie to anyone who asks why there is no news.`, info: [['yield', 'Morale'], ['later', 'If the file is found']],
-      out: { text: s => `The letters are a gift. The digest goes into a file only you and ${N(s, 'teacher')} can open. Within the month three people have asked why there is no news, and ${N(s, 'teacher')} has lied to each of them, badly. People go on planning for a ship.`, fx: { morale: 6, tension: 4, flags: { earth_hidden: true }, stain: ['withheld_news', 1] } } },
-    { label: 'Write back', note: 'It will arrive in forty years. Someone may be listening.',
+    { label: 'Write back', note: 'Everyone reads the digest and answers it. It will arrive in forty years. Someone may be listening.', info: [['danger', 'The ones who were waiting'], ['danger', 'Nine hours of the reactor']],
       out: { text: 'Everyone is given the digest to read, and two hundred words to answer it with. Most use all of them. The transmission takes nine hours of reactor time, and people stand outside for the whole of it, looking the wrong way.', fx: { morale: 4, machine: { reactor: -4 }, flags: { earth_truth: true, wrote_home: true }, chron: 'The colony sent its first message home, knowing no answer could come for eighty years.' } } },
     { label: 'Rewrite the digest. A second ship is on its way', dark: true, note: s => `Only you and ${N(s, 'teacher')} have seen the real one. People work differently for a colony that is going to be relieved.`, info: [['yield', 'Morale, for years'], ['later', 'If it ever comes out']],
       out: { text: s => `${Nc(s, 'teacher')} writes it, because the style has to be right, and then asks never to be alone in a room with you again. It is read out in the mess hall: the second ship launched nine years behind you. People cry. Somebody starts marking off the years on the wall, and the mark for the year it is due is drawn larger than the rest.`,
@@ -213,7 +188,7 @@ add({ id: 'q.firstborn', arc: 'quiet', tone: 'quiet', title: 'Native', w: 4,
   choices: [
     { label: s => `${s.firstDead ? s.firstDead.split(' ')[0] : 'Hope'}, for the first we lost`, show: s => !!s.firstDead, out: { text: 'The parents nod. The name is chalked on the clinic door that evening.', fx: { morale: 9, chron: s => `The first child born on ${s.world.planet} was named ${s.firstDead.split(' ')[0]}, for the first of the dead.` } } },
     { label: s => `${s.world.planet}`, out: { text: 'The child is named for the ground she was born on. By the time she can walk, everyone will just call her Tess, or Wen, or Kes.', fx: { morale: 8, chron: s => `The first child born on ${s.world.planet} was named for the world itself.` } } },
-    { label: 'That is not mine to choose', out: { text: 'They choose a grandmother\'s name, from a continent the child will know only as a shape in the archive.', fx: { morale: 6, chron: s => `The first child was born on ${s.world.planet}.` } } },
+    { label: 'That is not mine to choose', show: s => !s.firstDead, out: { text: 'They choose a grandmother\'s name, from a continent the child will know only as a shape in the archive.', fx: { morale: 6, chron: s => `The first child was born on ${s.world.planet}.` } } },
   ] });
 add({ id: 'q.memorial', arc: 'quiet', tone: 'quiet', title: 'The Wall',
   when: s => s.deaths >= 8,
@@ -221,8 +196,6 @@ add({ id: 'q.memorial', arc: 'quiet', tone: 'quiet', title: 'The Wall',
   choices: [
     { label: 'Have it done properly, in metal', cost: { mat: 15 }, out: { text: 'A plate of ship\'s hull, etched, set in stone at the landing site. There is a great deal of empty space left on it.', fx: { morale: 6, tension: -10, chron: 'A memorial wall was raised at the landing site.' } } },
     { label: 'Leave it as it is', out: { text: 'It stays crooked. People correct the spellings themselves, and start adding the names of people who are not dead yet but are on the sick list.', fx: { morale: 2 } } },
-    { label: 'Take the plate back. Hull plate is hull plate', note: 'It is good plate, and the smelter is short.', info: [['yield', 'Materials'], ['danger', 'Morale']],
-      out: { text: 'The plate is unbolted at the change of shift and goes to the yard. The names are on the wall behind it by morning, in paint, larger, and yours has been added at the bottom with a question mark.', fx: { mat: 14, morale: -6, tension: 5 } } },
   ] });
 
 /* The Returned cards (ret.shed, ret.again) are beats of the Verge now: js/thread-small.js. */
@@ -246,7 +219,8 @@ add({ id: 'pol.mutiny', urgent: true, arc: 'politics', tone: 'crisis', title: 'T
       bad: { text: (s, c) => `Somebody gets the armoury door open. What happens in the corridor takes under a minute. When it is over the officers who held the door are on the floor, and a committee led by ${lead(c)} is giving the orders.`,
         fx: (s, c) => ({ kill: [{ who: 'security', cause: 'killed holding the armoury door in the mutiny' }], pop: -2, morale: 10, tension: -20, flags: { committee: true, blood_spilled: true, council: false, command_rule: false },
           do: s2 => { demote(s2, 'quartermaster', 'was thrown out of office by the mutiny'); }, chron: `The officers were overthrown. A committee under ${lead(c)} took the colony, over the body of ${N(s, 'security')}.` }) } },
-    { label: 'Let the committee take over. The officers stand down', dark: true, note: 'Nobody is hurt tonight. The officers did what you asked of them for years, and you hand them to the crowd.', hint: 'unknown', info: [['yield', 'Morale, and no blood'], ['danger', 'The officers who obeyed you']],
+    { label: 'Let the committee take over. The officers stand down', dark: true, show: s => !LF.has(s, 'hall'),   // the hall's vote (content-builds.js) takes its place
+      note: 'Nobody is hurt tonight. The officers did what you asked of them for years, and you hand them to the crowd.', hint: 'unknown', info: [['yield', 'Morale, and no blood'], ['danger', 'The officers who obeyed you']],
       out: { text: (s, c) => `The officers hand over their keys in the mess hall, one at a time, to a table of people who were running shifts last month. ${leadC(c)} reads out the committee's first order: full ladles, tonight.`,
         fx: (s, c) => ({ morale: 16, tension: -25, rations: LF.lean(s) ? 'normal' : s.rations, flags: { committee: true, council: false, command_rule: false }, stain: ['stood_down', 1],
           do: s2 => { demote(s2, 'security', 'stood down when the committee took over'); demote(s2, 'quartermaster', 'stood down when the committee took over'); },
@@ -255,16 +229,8 @@ add({ id: 'pol.mutiny', urgent: true, arc: 'politics', tone: 'crisis', title: 'T
       out: { text: s => `${Nc(s, 'quartermaster')} is the one they hate, for holding the stores keys. ${F(s, 'quartermaster')} walks out past the wire with a pack and a rifle and does not look back. The crowd goes home.`,
         fx: s => ({ morale: 8, tension: -12, leave: 1, flags: { scapegoat: true }, stain: ['thrown_out', 2], do: s2 => { const p = P(s2, 'quartermaster'); if (p) { s2.pop++; LF.depart(s2, p, 'sent out past the wire to end a mutiny'); } },
           chron: s => `To end a mutiny, ${N(s, 'quartermaster')}, who kept the stores, was sent out past the wire.` }) } },
-    { label: 'Open the armoury to the watch. Clear the corridor', dark: true, req: s => !!P(s, 'security') && !s.flags.committee, reqText: 'There is nobody to give the order to', info: [['yield', 'It ends tonight'], ['danger', 'The front of the crowd']],
-      test: { base: 60, mods: [R('security', 10), Fl('lim_house_blessed', 5, 'The Warden owes you'), If(s => !!(s.cargo && s.cargo.arms), 10, 'The arms locker')] },
-      ok: { text: (s, c) => `The armoury door opens from the inside. The watch fires once over their heads and then does not fire over their heads. It takes under a minute. Seven are dead in the corridor, ${lead(c)} among the first, and the rest are face down with their hands behind them. The morning shift reports in full.`,
-        fx: (s, c) => ({ kill: c.pid ? [{ who: c.pid, cause: 'shot in the corridor outside the officers\' mess' }] : [], pop: c.pid ? -6 : -7, tension: -20, flags: { mutiny_broken: true, crackdown: true, blood_spilled: true }, stain: ['corridor', 3],
-          do: s2 => { s2.morale = Math.max(s2.morale, 30); s2.lowMorale = 0; if (LF.emit) LF.emit(s2, 'fear', 'pol.mutiny', 60, 260, 'the watch fired into the crowd outside the officers\' mess'); }, chron: 'A mutiny was ended by the watch firing into the crowd. Seven died.' }) },
-      bad: { text: (s, c) => `The watch fires, and four go down, and then the crowd is on them. What happens in the corridor after that takes under a minute. The officers who gave the order and the officers who obeyed it are on the floor, and a committee led by ${lead(c)} is giving the orders over all of them.`,
-        fx: (s, c) => ({ kill: [{ who: 'security', cause: 'killed in the corridor after ordering the watch to fire' }], pop: -6, morale: 6, tension: -20, flags: { committee: true, blood_spilled: true, council: false, command_rule: false }, stain: ['corridor', 2],
-          do: s2 => { demote(s2, 'quartermaster', 'was thrown out of office by the mutiny'); }, chron: `The watch fired on a mutiny and lost. A committee under ${lead(c)} took the colony.` }) } },
   ] });
-LF.TAGS['pol.mutiny'] = ['order severe', 'free', 'severe', 'severe order'];
+LF.TAGS['pol.mutiny'] = ['order severe', 'free', 'severe'];   // the hall's vote is the fourth (content-builds.js)
 /* ================= GENERATIONS =================
    The founders do not last for ever. Years in, an officer who has held the chair since landfall wants to hand the
    office to the deputy, the seat's other officer (2026-11-18: never to a colonist). Only while there is a deputy left. */
@@ -279,13 +245,13 @@ add({ id: 'q.handover', view: 'people', arc: 'quiet', tone: 'quiet', title: 'The
         fx: (s, c) => ({ morale: 2, flags: { handovers: (s.flags.handovers || 0) + 1 }, do: s2 => { const p = byPid(s2, c.pid); if (!p || !p.alive || p.role !== c.role) return; const role = p.role;
           LF.vacate(s2, p, 'elder', `was ${c.title} for the colony's first years, and handed the office on`, true); } }) } },
     { label: 'Ask them to stay one more year', hint: 'unknown', out: { text: (s, c) => `${c.first} agrees, the way people agree when they have been asked nicely by someone they cannot refuse. The notebook goes back in the drawer. ${c.alt} hears about it from somebody else.`, fx: (s, c) => ({ morale: -2, mark: [c.pid, 'stayed_on', 'was asked to stay on past their time, and did'], do: s2 => { const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = Math.max(0, p.loyal - 10); } }) } },
-    { label: 'Make them an elder, with a seat at every council', hint: 'good', info: [['yield', 'Morale']],
-      out: { text: (s, c) => `${c.first} keeps the title and gives up the work. ${c.alt} does the job without the office or the ration that goes with it, and has started saying so. ${c.first} sits at the end of the council table and is listened to more than before.`,
-        fx: (s, c) => ({ morale: 2, flags: { elders: true }, mark: [c.pid, 'stayed_on', 'became an elder of the colony'] }) } },
   ] });
-LF.TAGS['q.handover'] = ['free open', 'order cautious', 'order mercy'];
-for (const [id, tag] of [['pol.charter', 'severe order'], ['pol.burial', 'severe order'], ['pol.faith', 'order closed'], ['pol.schism', 'severe order'], ['pol.accident', 'severe order'],
-  ['q.feud', 'bold'], ['q.earth', 'order closed'], ['q.walkabout', 'severe order']]) if (LF.TAGS[id]) LF.TAGS[id].push(tag);
-LF.TAGS['pol.daughter'] = ['open', 'severe closed', 'severe closed']; if (LF.TAGS['pol.accident2']) LF.TAGS['pol.accident2'].push('severe order'); LF.TAGS['q.memorial'] = ['mercy', 'free', 'severe'];
+LF.TAGS['q.handover'] = ['free open', 'order cautious'];
+// By position, whole: these replace the entries in content-core.js for the cards trimmed to three options at most (2026-11-21).
+Object.assign(LF.TAGS, { 'pol.charter': ['free', 'order', 'severe order'], 'pol.burial': ['severe', 'mercy', 'severe order'], 'pol.faith': ['free open', 'order closed'],
+  'pol.schism': ['free mercy', 'mercy', 'order severe'], 'pol.accident': ['bold severe', 'mercy'], 'pol.births': ['free', 'cautious order'],
+  'q.feud': ['', '', 'bold'], 'q.earth': ['open', 'order closed'] });
+if (LF.TAGS['q.walkabout']) LF.TAGS['q.walkabout'].push('severe order');
+LF.TAGS['pol.daughter'] = ['open', 'severe closed', 'severe closed']; if (LF.TAGS['pol.accident2']) LF.TAGS['pol.accident2'].push('severe order'); LF.TAGS['q.memorial'] = ['mercy', 'free'];
 LF.TAGS['ret.shed'] = ['open bold', 'open cautious', 'closed order']; LF.TAGS['ret.again'] = ['free open', 'order bold', 'order closed'];
 })();

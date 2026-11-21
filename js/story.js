@@ -180,7 +180,7 @@ function derive(s) {
   const grudges = s.people.filter(p => p.alive && (p.marks.grudge || p.marks.slighted)).length;
   if (grudges) put('resentment', 'grudges', 15 * grudges, grudges === 1 ? 'someone with a name bears you a grudge' : 'several people with names bear you grudges');
   if (fl.command_rule && !fl.council) put('resentment', 'charter', 20, 'nobody voted for the Administrator');
-  if (fl.earth_hidden || fl.fever_hidden) put('suspicion', 'secret', 30, 'there are things the officers have not told anyone');
+  if (fl.earth_hidden) put('suspicion', 'secret', 30, 'there are things the officers have not told anyone');
   if (fl.crackdown) put('suspicion', 'watch', 25, 'the watch keeps lists');
   if (fl.faith_strong) put('zeal', 'faith', 45, 'the faithful are many and sure of themselves');
   const docs = Object.keys(s.val).filter(ax => LF.doctrine(s, ax)).length;
@@ -233,7 +233,6 @@ const SEED_FLAG = {
   promise_orbit:  'a promise was made to the sleepers still in orbit',
   sleepers_traded:'thirty sleepers were traded while they slept',
   earth_hidden:   'the truth about Earth was kept from the colony',
-  fever_hidden:   'the fever\'s cause was kept quiet',
   cure_debt:      'a cure was bought, and has not been paid for',
   oth_debt_us:    'the Reach owe the colony',
   oth_owes:       'the colony owes the Reach',
