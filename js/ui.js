@@ -85,8 +85,9 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     <button class="opt go" data-act="pre" data-v="seat0">Choose the command crew</button>
     <button class="opt go" data-act="pre" data-v="random">Randomise</button>
     <button class="pbtn back" data-act="pre" data-v="ship">Back to the ship</button></div>`;
-  if (st === 'legend') return legendHTML(`<button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
-    <button class="pbtn back" data-act="pre" data-v="review">Back to the crew</button>`);
+  if (st.startsWith('legend')) { const n = +st.slice(6) || 0, last = n === LEGEND.length - 1;
+    return legendHTML(n, true, `<button class="opt go" data-act="pre" data-v="${last ? 'go' : 'legend' + (n + 1)}">${last ? 'Begin the voyage' : 'Next'}</button>
+    <button class="pbtn back" data-act="pre" data-v="${n ? 'legend' + (n - 1) : 'review'}">${n ? 'Back' : 'Back to the crew'}</button>`); }
   if (st === 'review') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)} · crew file</div><h2>Your command crew</h2>
     ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0], d = LF.CAST[k][1 - (pre.picks[k] || 0)]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].lead)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(LF.SEATS[k].second)}: ${esc(d.first)} ${esc(d.last)}</span>${edgeHTML(c.key)}</div></div>`; }).join('')}
     <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
@@ -111,20 +112,31 @@ const LEGEND_ROWS = [
   ['people', 'A party goes out', 'How many go, with the months they are away and how dangerous the trip is.'],
   ['time', 'How long', 'Months of work or travel.'],
   ['star', 'Cuts a cord', 'One step closer to a colony that no longer needs the ship.']];
-const legendHTML = btn => `<div class="card enter dossier legend"><div class="lbl tone">Before the voyage</div><h2>How to read a card</h2>
-  <p>Every month brings one decision. Some options are sure: what it says is what you get. Others are a roll.</p>
-  <div class="lgx"><div class="lbl">A roll</div>
-    <div class="opt roll">${ic('unknown')}<span class="b"><span class="l">Send a team down the ravine</span><em>Gold edge and gold title: this one is decided by chance.</em><span class="tips"><span>${ic('difficulty')}55% · Fair</span></span><div class="mods"><span>50% to start</span><span class="up">+5% the Chief Engineer, there in person</span></div></span></div>
-    <small>The percentage is the chance it goes your way. The line under it shows how it was worked out. Sending an officer adds to the odds, but they can be hurt or killed, and rest two months after.</small></div>
-  <div class="lgx"><div class="lbl">Sure</div>
-    <div class="opt">${ic('good')}<span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em><span class="tips"><span>${ic('good')}Materials</span><span class="hot">${ic('danger')}Morale</span></span></span></div>
-    <small>What it says happens. What comes of it later may still surprise you.</small></div>
-  <div class="lgx"><div class="lbl">The marks</div><div class="box">${LEGEND_ROWS.map(([i, b, t]) => `<div class="row">${ic(i)}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>
-  <p class="ask">You can read this again from the menu.</p>${btn}</div>`;
+const LEGEND = [
+  { lbl: 'Why you are here', h: 'The goal', body: () => `<p>The colony lives off the ${esc(s && s.adrift ? s.adrift.ship : 'Ariadne')}'s machines, and every one of them is wearing out. Nothing can be sent from Earth to replace them.</p>
+    <p>You win by cutting the cords: building something on the ground to do each machine's work before it fails.</p>
+    <div class="lgx"><div class="box">${LEGEND_CORDS.map(([b, t]) => `<div class="row">${ic('star')}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>
+    <p>Cut all five and the colony can outlive the ship. You can keep playing after that, and it can still fail.</p>
+    <p>You lose if the colony falls to eight people. Hunger, sickness, accidents and whatever lives out there all count. The cords are in the Colony view, under How the colony stands.</p>` },
+  { lbl: 'Every month', h: 'Rolls and sure things', body: () => `<p>Every month brings one decision. Some options are sure: what it says is what you get. Others are a roll.</p>
+    <div class="lgx"><div class="lbl">A roll</div>
+      <div class="opt roll">${ic('unknown')}<span class="b"><span class="l">Send a team down the ravine</span><em>Gold edge and gold title: this one is decided by chance.</em><span class="tips"><span>${ic('difficulty')}55% · Fair</span></span><div class="mods"><span>50% to start</span><span class="up">+5% the Chief Engineer, there in person</span></div></span></div>
+      <small>The percentage is the chance it goes your way. The line under it shows how it was worked out. Sending an officer adds to the odds, but they can be hurt or killed, and rest two months after.</small></div>
+    <div class="lgx"><div class="lbl">Sure</div>
+      <div class="opt">${ic('good')}<span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em><span class="tips"><span>${ic('good')}Materials</span><span class="hot">${ic('danger')}Morale</span></span></span></div>
+      <small>What it says happens. What comes of it later may still surprise you.</small></div>` },
+  { lbl: 'On every option', h: 'The marks', body: () => `<div class="lgx"><div class="box">${LEGEND_ROWS.map(([i, b, t]) => `<div class="row">${ic(i)}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>` }];
+const LEGEND_CORDS = [['Food', 'Fields, once there are crops that grow in this soil. Replaces the hydroponics bay.'],
+  ['Water', 'Wells and sand filters. Replaces the water reclaimer.'], ['Energy', 'A turbine field. Replaces the fusion reactor.'],
+  ['Industry', 'A machine shop, which needs a smelter and ore. Replaces the fabricator.'],
+  ['People', 'A school and clinic, and a hundred colonists. Replaces the autodoc and the sleepers.']];
+const legendHTML = (n, first, btn) => { const L = LEGEND[n];
+  return `<div class="card${first ? ' enter' : ''} dossier legend"><div class="lbl tone">${esc(L.lbl)} · ${n + 1} of ${LEGEND.length}</div><h2>${esc(L.h)}</h2>
+  ${L.body()}${n === LEGEND.length - 1 ? '<p class="ask">You can read these again from the menu.</p>' : ''}${btn}</div>`; };
 const legendSeen = () => { try { return localStorage.getItem('landfall.legend') === '1'; } catch (e) { return true; } };
 function preGo(v) { pre = pre || { step: 'ship', picks: {} };
-  if (v === 'go' && pre.step !== 'legend' && !legendSeen()) { pre.step = 'legend'; window.scrollTo(0, 0); return render(); }
-  if (v === 'go' && pre.step === 'legend') try { localStorage.setItem('landfall.legend', '1'); } catch (e) {}
+  if (v === 'go' && !pre.step.startsWith('legend') && !legendSeen()) { pre.step = 'legend0'; window.scrollTo(0, 0); return render(); }
+  if (v === 'go' && pre.step.startsWith('legend')) try { localStorage.setItem('landfall.legend', '1'); } catch (e) {}
   if (v.startsWith('sel')) { const k = LF.SEAT_ORDER[+pre.step.slice(4)], i = +v.slice(3), S = LF.SEATS[k]; pre.sel = pre.sel || {}; pre.sel[k] = i;
     // a tile tapped: swap the titles and the button in place, so nothing replays its entrance or scrolls
     document.querySelectorAll('#view .file.pick').forEach(el => { const on = el.dataset.v === v; el.classList.toggle('on', on); el.setAttribute('aria-pressed', on); el.querySelector('.lbl').textContent = on ? S.lead : S.second; });
@@ -967,12 +979,14 @@ function render() {
 function menu(open, page) {
   const sh = $('sheet'), opening = sh.hidden; sh.hidden = !open; if (!open) return;
   sh.classList.toggle('in', opening);
-  if (page === 'legend') { sh.innerHTML = legendHTML('<button class="opt go" data-act="menu">Close</button>').replace(' enter', '').replace('<div class="lbl tone">Before the voyage</div>', '').replace(/<p class="ask">[^<]*<\/p>/, ''); sh.scrollTop = 0; return; }
+  if (page !== undefined) { const n = +page || 0, last = n === LEGEND.length - 1;
+    sh.innerHTML = legendHTML(n, false, `<button class="opt go" data-act="${last ? 'menu' : 'legend'}" data-v="${n + 1}">${last ? 'Close' : 'Next'}</button>${n ? `<button class="pbtn back" data-act="legend" data-v="${n - 1}">Back</button>` : ''}`).replace(/<p class="ask">[^<]*<\/p>/, '');
+    const c = sh.firstElementChild; if (c) c.scrollTop = 0; return; }
   sh.innerHTML = `<div class="box"><h3 style="margin-top:0">Landfall</h3>
     <div class="row"><div class="t"><b>Music</b><small>Quiet score and sound that follow how the colony is doing.</small></div><button class="pbtn" data-act="music">${window.LFMusic && LFMusic.on ? 'On' : 'Off'}</button></div>
     <div class="row" style="border:0;padding-bottom:2px"><div class="t"><b>Colours</b><small>${LFTheme.THEMES[LFTheme.current].name}</small></div></div>
     <div class="sws">${Object.entries(LFTheme.THEMES).map(([k, t]) => `<button data-act="theme" data-v="${k}" class="${k === LFTheme.current ? 'on' : ''}" style="background:${t.paper}" aria-label="${t.name}"><i style="background:${t.rust}"></i></button>`).join('')}</div>
-    <div class="row"><div class="t"><b>How to read a card</b><small>The marks on the options, and which ones are a roll.</small></div><button class="pbtn" data-act="legend">Open</button></div>
+    <div class="row"><div class="t"><b>How to play</b><small>The goal, the rolls, and the marks on the options.</small></div><button class="pbtn" data-act="legend">Open</button></div>
     <div class="row"><div class="t"><b>New colony</b><small>Abandon this one. The same ship, different candidates.</small></div><button class="pbtn" data-act="new">Start</button></div>
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
@@ -999,7 +1013,7 @@ function act(a, v, el) {
     if (v === 'decide' && review && review.ready) return bringCard();   // the rust tab: the card comes up
     peek = v; window.scrollTo(0, 0); }
   else if (a === 'menu') return menu($('sheet').hidden);
-  else if (a === 'legend') return menu(true, 'legend');
+  else if (a === 'legend') return menu(true, v || 0);
   else if (a === 'theme') { LFTheme.set(v); menu(true); }
   else if (a === 'music') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); menu(true); }
   else if (a === 'odds') { showOdds = !showOdds; try { localStorage.setItem('landfall.odds', showOdds ? '1' : '0'); } catch (e) {} menu(true); }
