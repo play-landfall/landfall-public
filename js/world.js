@@ -277,12 +277,13 @@ LF.PREMISES = {
 };
 LF.premiseOf = seed => { const k = Object.keys(LF.PREMISES); let h = 2166136261; for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return k[(h >>> 0) % k.length]; };
 LF.makeAdrift = function (s) {
-  // three candidates, always the same three kinds of world (LF.WORLDS), shuffled, nearest first; names, stars and distances per game
+  // three candidates, always the same three kinds of world (LF.WORLDS), in a shuffled order, each at its own random distance
+  // (Lachlan, 2026-11-21: not nearest first, and not one near, one middling and one far); names, stars and distances per game
   const types = Object.keys(LF.WORLDS), names = PLANETS.slice(), n = 3, cands = [];
   for (let i = types.length - 1; i > 0; i--) { const q = ri(s, 0, i); [types[i], types[q]] = [types[q], types[i]]; }
   for (let i = 0; i < n; i++) {
     const W = LF.WORLDS[types[i]];
-    const j = clamp((i + 0.15 + 0.7 * rand(s)) / n, 0, 1), ly = Math.round((1.9 + 7.4 * j) * 10) / 10;
+    const j = clamp(0.05 + 0.9 * rand(s), 0, 1), ly = Math.round((1.9 + 7.4 * j) * 10) / 10;
     const c = { kind: types[i], sites: W.sites.slice(), type: W.sites[0], j, ly, years: Math.round(ly * 4.4), adj: ri(s, -1, 1), seed: (rand(s) * 2147483647) | 0, name: (names.splice(ri(s, 0, names.length - 1), 1), LF.planetName(`${s.seed}/${i}`, cands.map(x => x.name))) };
     c.star = LF.starName(`${s.seed}/${i}`, cands.map(x => x.star)); c.desig = `${c.star} ${'bcde'[c.seed & 3]}`;   // a catalogue number is all anyone has until the ship is in orbit and somebody names the place
     // the telescope sees the whole planet: each reading is of both sites together, and the gravity is the planet's
@@ -299,8 +300,11 @@ LF.makeAdrift = function (s) {
 LF.transitRisk = c => ({ lo: Math.round(100 * (0.02 + 0.15 * c.j) * 0.6), hi: Math.round(100 * (0.02 + 0.15 * c.j) * 1.4), wear: c.j < 0.34 ? 'light' : c.j < 0.67 ? 'moderate' : 'heavy' });
 /* Commit to one candidate. The burn costs sleepers, a few of those thawed for the landing, stores and machine life, in proportion
    to its length; never ruinously. */
-LF.embark = function (s, i, site) {
+/* later (the UI, Lachlan 2026-11-21): the landing site is not chosen at the burn. The world is made for the first site to
+   carry the crossing, the threads are not dealt, and LF.pickSite makes it again for the site chosen in orbit. */
+LF.embark = function (s, i, site, later) {
   const c0 = s.adrift.cands[i], k = s.adrift.kit, j = c0.j, si = c0.sites ? (site ? 1 : 0) : null;   // site: 0 the easy one, 1 the hard one
+  if (!c0.sites) later = false;
   const c = Object.assign({}, c0, si === null ? {} : { type: c0.sites[si], site: si }), A = LF.ARCHETYPES[c.type];
   s.rng = c.seed; LF.makeWorld(s, c);
   const w = s.world; w.ship = s.adrift.ship; w.readings = c.readings; w.hydro = 0.96 - 0.05 * j;
@@ -311,9 +315,28 @@ LF.embark = function (s, i, site) {
   w.secondWound = j > 0.7 && rand(s) < 0.6;
   // The crossing is played, not rolled: s.voyage holds how the ship is crossing and what met it on the way
   // (content-setup.js, voy.*). s.arrival is set when the ship makes orbit, and cleared when the world has a name.
+  if (later) { w.siteOpen = true; w.cand = c0; }
   s.adrift = null; s.voyage = { mode: null, inc: null };
   LF.land(s);
   orbitalReport(s);
+};
+/* The landing site, chosen in orbit after the crossing (LF.embark with later): the world is made again from the same
+   candidate and seed for that site, keeping everything the burn and the crossing did to it; the stores, salvage and
+   yield move by the difference between the two sites; then the orbital report and the run's threads. */
+LF.pickSite = function (s, si) {
+  const w0 = s.world; if (!w0 || !w0.siteOpen) return;
+  const c0 = w0.cand, c = Object.assign({}, c0, { type: c0.sites[si ? 1 : 0], site: si ? 1 : 0 });
+  const A0 = LF.ARCHETYPES[w0.type], A = LF.ARCHETYPES[c.type], yb = s.yieldBonus, r = s.rng;
+  delete s.flags.no_native;
+  s.rng = c.seed; LF.makeWorld(s, c);
+  const made = new Set(Object.keys(s.world));
+  for (const k in w0) if (!made.has(k) && !['report', 'siteOpen', 'cand'].includes(k)) s.world[k] = w0[k];
+  s.yieldBonus = yb + A.yield - A0.yield;
+  s.res.mat = Math.max(0, s.res.mat + A.mat - A0.mat);
+  s.wreck = Math.max(0, (s.wreck || 0) + (A.wreck || 320) - (A0.wreck || 320));
+  orbitalReport(s);
+  s.rng = r;
+  if (LF.plot) LF.plot(s);
 };
 /* Not on the ground yet: under way, or in orbit before the lander goes down. The views have nothing to show. */
 LF.aloft = s => !!s.adrift || !(s.world && s.world.zone);

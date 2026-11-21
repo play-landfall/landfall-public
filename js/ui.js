@@ -435,9 +435,8 @@ function readingHTML(r, reveal) {
    planet's own picture (scope_<kind>, or the easy site's orbit picture until that is painted); it is drawn into a canvas a few
    dozen pixels across, fewer the further the star, cut to a few levels a channel and dusted with sensor noise, then shown large
    with image-rendering: pixelated. Seeded by the candidate, so it does not shimmer when the screen redraws. */
-let siteFor = -1;   // the planet whose two landing sites are open
 const scopeSrc = c => { const W = LF.WORLDS && LF.WORLDS[c.kind], sc = W && W.scope; return (LF.SCENES || []).includes(sc) ? sc : `orbit_${c.type}`; };
-const scopePx = c => Math.round(40 - 16 * c.j);
+const scopePx = c => Math.round(54 - 18 * c.j);   // a little sharper (Lachlan, 2026-11-21): 36 to 54 pixels across
 function scopes() {
   document.querySelectorAll('canvas.scope[data-src]').forEach(cv => {
     const img = new Image(), n = cv.width, seed = +cv.dataset.seed || 1;
@@ -445,8 +444,8 @@ function scopes() {
       g.imageSmoothingEnabled = true; g.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, n, n);
       let d; try { d = g.getImageData(0, 0, n, n); } catch (e) { cv.classList.add('lit'); return; }   // opened from file://: the picture is tainted, so it stays blocky but unquantised
       const px = d.data; let x = seed >>> 0;
-      const rnd = () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; }, lv = 5, q = v => Math.round(v / 255 * (lv - 1)) / (lv - 1) * 255;
-      for (let i = 0; i < px.length; i += 4) { const nz = (rnd() - 0.5) * 34, dead = rnd() < 0.012;
+      const rnd = () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; }, lv = 6, q = v => Math.round(v / 255 * (lv - 1)) / (lv - 1) * 255;
+      for (let i = 0; i < px.length; i += 4) { const nz = (rnd() - 0.5) * 26, dead = rnd() < 0.008;
         for (let c = 0; c < 3; c++) px[i + c] = dead ? 0 : Math.max(0, Math.min(255, q(px[i + c] + nz))); }
       g.putImageData(d, 0, 0); cv.classList.add('lit'); };
     img.src = window.LFBoot && LFBoot.scene ? LFBoot.scene(cv.dataset.src) : `art/scenes/${cv.dataset.src}.webp`;
@@ -455,12 +454,20 @@ function scopes() {
 /* One reading as an error bar: whiskers at the two ends of the array's range, a tick at its middle. */
 const errBar = r => { const D = LF.PROPS[r.k], pc = v => Math.max(0, Math.min(100, 100 * (v - D.min) / (D.max - D.min)));
   return `<div class="eb err"><i style="left:${pc(r.lo)}%;width:${Math.max(2, pc(r.hi) - pc(r.lo))}%"></i></div>`; };
-function siteHTML(c, i) {
-  if (!c.sites) return `<button class="opt go" data-act="embark" data-v="${i}">Burn for ${esc(c.star)}</button>`;
-  if (siteFor !== i) return `<button class="opt go" data-act="sites" data-v="${i}">Burn for ${esc(c.star)}</button>`;
-  return `<div class="sites"><p class="note">Two places on it would take a colony. Where the lander goes down decides what the colony lives on.</p>${c.sites.map((t, k) => { const T = LF.SITE_TERMS[t];
-    return `<button class="opt site" data-act="embark" data-v="${i}:${k}"><b>${esc(T.site.charAt(0).toUpperCase() + T.site.slice(1))}</b><span class="tag">${k ? 'Hard' : 'Easy'}</span><small>${esc(T.gives)} ${esc(T.costs)}</small></button>`; }).join('')}
-    <button class="opt back" data-act="sites" data-v="-1">Another star</button></div>`;
+/* The burn (Lachlan, 2026-11-21): the same wait as a decision, then the crossing. The landing sites are not shown here:
+   they are chosen in orbit (siteHTML), and never labelled easy or hard. */
+const burnHTML = (c, i) => hold && hold.burn === i ? procHTML() : `<button class="opt go" data-act="embark" data-v="${i}"${hold ? ' disabled' : ''}>Burn for ${esc(c.star)}</button>`;
+function startBurn(i) {
+  hold = { burn: i, ms: 3000, t0: performance.now(), say: 'The drive lights' }; render(); requestAnimationFrame(fillBar);
+  holdTimer = setTimeout(() => { hold = null; LF.embark(s, i, 0, true); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }, hold.ms);
+}
+const cap1 = x => x.charAt(0).toUpperCase() + x.slice(1);
+function siteHTML() { const w = s.world;
+  return `<div class="card enter"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Closing on ${esc(w.planet)}</h2>
+    <p>Two places on it would take a colony. Where the lander goes down decides what the colony lives on.</p>
+    <p>Choose where the colony will stand.</p></div>
+    ${w.cand.sites.map((t, k) => { const T = LF.SITE_TERMS[t];
+      return `<button class="opt site" data-act="site" data-v="${k}"><b>${esc(cap1(T.site))}</b><small>${esc(T.gives)} ${esc(T.costs)}</small></button>`; }).join('')}`;
 }
 function adriftHTML() {
   const a = s.adrift, n = a.cands.length;
@@ -469,7 +476,7 @@ function adriftHTML() {
 
 There is reaction mass for one more burn. The long-range array has found ${['', 'one', 'two', 'three', 'four', 'five', 'six'][n]} stars within reach, each with one world that might do. They have catalogue numbers and no names. Nothing better than this ship's own telescope has ever looked at any of them.</p>
     <p class="note" style="padding:0">Each bar is the array's estimate, with its confidence: the chance the truth lies inside the bar. The truth is rarely in the middle. A longer burn costs sleepers, stores and machine life. The real survey waits until you arrive, and so does a name.</p></div>
-    <h3>${ic('array', 'h3i')}Stars in reach · nearest first</h3>`;
+    <h3>${ic('array', 'h3i')}Stars in reach</h3>`;
   // Every reading on every candidate, straight away: opening them one by one was only button clicking.
   a.cands.forEach((c, i) => { const R = LF.transitRisk(c), W = LF.WORLDS && LF.WORLDS[c.kind];
     h += `<div class="box cand"><div class="ch">${ic('world')}<span class="t"><b>${esc(c.star)}</b><small>${c.ly.toFixed(1)} light-years · ${c.years} years at the engine's rating</small></span></div>
@@ -478,7 +485,7 @@ There is reaction mass for one more burn. The long-range array has found ${['', 
         return `<div><span>${r.k === 'tech' ? 'Tech' : D.name.split(' ').pop()} <em>${LF.fmt(r.k, r.lo)} to ${LF.fmt(r.k, r.hi)}${D.unit.trim()} · ${r.conf}%</em></span>${errBar(r)}</div>`; }).join('')}</div></div>
       ${W ? `<small class="burn">${esc(W.blurb)}</small>` : ''}
       <small class="burn">The burn, at its rated pace: ${R.lo} to ${R.hi}% of the sleepers lost, ${R.wear} wear on every machine${c.j > 0.25 ? ', a few of the watch' : ''}. How the ship crosses is decided once it is under way.</small>
-      ${siteHTML(c, i)}</div>`; });
+      ${burnHTML(c, i)}</div>`; });
   return h;
 }
 /* The arrival (Lachlan, 2026-11-19): first the crossing report alone, then two tabs, the world (its picture and what the
@@ -487,6 +494,7 @@ let arrStep = 0, arrTab = 'world', arrSeen = false;   // arrSeen: the orbital re
 const ORBIT_PIC = { barren: 'lib_planet_05', ice: 'lib_planet_01', drowned: 'lib_planet_02', jungle: 'lib_planet_04', garden: 'lib_planet_09', ruin: 'lib_planet_10' };
 function arrivalHTML() {
   const w = s.world, R = w.report;
+  if (w.siteOpen) return siteHTML();
   const head = `<div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2>`;
   if (arrStep === 0) return `${head}<p>${esc(LF.transitText(s))}</p><p>The ship makes one full survey from orbit before anyone goes down. After this, what the colony learns it learns on foot.</p></div>
     <button class="opt go" data-act="arrnext">Next</button>`;
@@ -1021,8 +1029,10 @@ function menu(open, page) {
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
 function act(a, v, el) {
-  if (a === 'sites' && s.adrift) { siteFor = +v; return render(); }
-  if (a === 'embark' && s.adrift) { const [ci, si] = String(v).split(':'); siteFor = -1; LF.embark(s, +ci, +si || 0); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years${s.world.kind ? `, ${s.world.kind} world, ${s.world.site ? 'hard' : 'easy'} site (${s.world.type})` : ''}` }); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
+  if (a === 'embark' && s.adrift) { if (hold) return; return startBurn(+v); }
+  if (a === 'site' && s.world && s.world.siteOpen) { LF.pickSite(s, +v);
+    log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years${s.world.kind ? `, ${s.world.kind} world, ${s.world.site ? 'hard' : 'easy'} site (${s.world.type})` : ''}` });
+    save(); window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'arrnext') { arrStep = 1; arrTab = 'world'; window.scrollTo(0, 0); return render(); }
   else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; if (arrTab === 'report') arrSeen = true; return render(); }
@@ -1061,7 +1071,7 @@ function act(a, v, el) {
     mark = s.day; LF.dismiss(s); since = 0; save();
     if (s.adrift) return proGo();   // the voyage out: the next card, or the long sleep
     // the crossing is over: the ship makes orbit, and the survey is read before the world is named
-    if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }
+    if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro && !s.world.siteOpen) cutscene(LFIntro.arrival(s)); return; }   // a site still to choose: the film after it
     return s.cur ? arrive(true) : proceed(); }
   else if (a === 'continue') { s.over.cont = true; log('continue'); save(); return proceed(); }
   render();

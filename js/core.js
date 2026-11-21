@@ -429,7 +429,7 @@ LF.land = function (s) {
   if (s.world.secondWound) { const h2 = LF.pick(s, ids.filter(i => i !== hurt)); s.machines[h2].hp = 66; s.machines[h2].cap = 86;
     LF.log(s, `So did the ${LF.MACHINES[h2].name}. It had been running too long before it ever saw a gravity well.`, 'bad'); }
   if (LF.societyInit) LF.societyInit(s);
-  if (LF.plot) LF.plot(s);   // which story threads this world holds (threads.js)
+  if (LF.plot && !s.world.siteOpen) LF.plot(s);   // which story threads this world holds (threads.js); a site still to choose deals them then (LF.pickSite)
   // Before the descent: who is woken first, and what goes in the hold (content-setup.js). Then the landing site.
   // First the crossing, if this game has one to play (s.voyage, set by LF.embark), then orbit and a name for the world.
   const first = LF.byId['setup.wake1'] && LF.makeSlate && LF.makeSlate(s) ? 'setup.wake1' : 'landfall.site';

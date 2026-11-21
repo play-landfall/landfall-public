@@ -84,7 +84,9 @@ function opening(s, rest) {
   const reveal = Object.assign({ line: PM.intro }, REVEAL[s.premise] || REVEAL.dead);
   if (!FILMS) return first.concat([layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }]).concat(keys.slice(0, 3).map(k => POOL[k](s, r)), [reveal]);
   // the long years are the crossing film (the watch, the amber lights and the porthole are in it); one more of the pool, then why she is adrift
-  const stills = [layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }];
+  // if the film cannot play, the stills carry all of its lines, the first one included
+  const stills = [{ pic: castPic(s, 'intro_window', 'scientist'), move: 'push', line: rest ? first[0].line : 'The long years. Two awake at a time, and everyone else in the cold.' },
+    layered('cruise', `The ${ship}, forty-one years out.`), { pic: 'sleep_manifest', move: 'push', line: asleep }];
   const rest1 = keys.filter(k => k === 'array' || k === 'reactor').slice(0, 1).map(k => POOL[k](s, r));
   return (rest ? [] : first.slice(0, 1)).concat([
     reel('crossing', [rest ? 'Then the long years. Two awake at a time, and everyone else in the cold.' : 'The long years. Two awake at a time, and everyone else in the cold.',
