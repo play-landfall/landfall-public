@@ -102,16 +102,15 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
 /* How to read a card (Lachlan, 2026-11-21): the option icons and chips, and a sure choice against a roll. Once per device
    before the first voyage (landfall.legend), and from the menu any time. The examples are drawn with the card's own classes. */
 const LEGEND_ROWS = [
-  ['good', 'Looks promising', 'The mark beside an option is a guess at how it will go. The world is not obliged.'],
-  ['bad', 'Looks costly', 'Expect it to hurt something: stores, morale, machines or people.'],
-  ['unknown', 'Hard to say', 'Could go either way, or what it costs is not the kind of thing a number shows.'],
-  ['difficulty', 'A roll', 'The chance it comes off, then Easy, Fair, Hard or Desperate.'],
-  ['good', 'What it can gain', 'Under an option, beside a word: materials, food, repairs.'],
-  ['danger', 'What it puts at risk', 'In red: lives, morale, a machine, or whoever does the work.'],
-  ['mat', 'What it costs', 'Stores spent up front, the moment you choose. Food, materials and spares have their own marks.'],
-  ['people', 'A party goes out', 'How many go, with the months they are away and how dangerous the trip is.'],
-  ['time', 'How long', 'Months of work or travel.'],
-  ['star', 'Cuts a cord', 'One step closer to a colony that no longer needs the ship.']];
+  [() => rollTip(80), 'A roll', 'The chance it goes your way. Green is likely (70% or more), yellow could go either way, red is a long shot (under 30%).'],
+  [() => infoTip(['yield', 'Gain']), 'What it can gain', 'Stores, repairs, safety: whatever the option is for.'],
+  [() => infoTip(['danger', 'Morale']), 'What it costs', 'A red arrow is something lost: morale, stores, a machine, your standing.'],
+  [() => infoTip(['danger', 'Lives']), 'Who it hurts', 'A red skull is people: lives, or the named few who pay for it.'],
+  [() => '<span class="k">If it fails</span>', 'If a roll fails', 'What a roll costs when it goes wrong. A party\'s roll is made when it comes home.'],
+  [() => '<span class="k">Later</span>', 'Later', 'A risk that may come down the line, not straight away.'],
+  [() => `<span>${mk('mat')}\u221220</span>`, 'Spent up front', 'Stores used the moment you choose. Food, materials and spares each have their own mark.'],
+  [() => `<span>${mk('people')}12 go</span><span>${mk('time')}2 months</span>`, 'A party goes out', 'How many go and how long they are away.'],
+  [() => `<span>${mk('star')}Cuts a cord</span>`, 'Cuts a cord', 'One step closer to a colony that no longer needs the ship.']];
 const LEGEND = [
   { lbl: 'Why you are here', h: 'The goal', body: () => `<p>The colony lives off the ${esc(s && s.adrift ? s.adrift.ship : 'Ariadne')}'s machines, and every one of them is wearing out. Nothing can be sent from Earth to replace them.</p>
     <p>You win by cutting the cords: building something on the ground to do each machine's work before it fails.</p>
@@ -120,12 +119,15 @@ const LEGEND = [
     <p>You lose if the colony falls to eight people. Hunger, sickness, accidents and whatever lives out there all count. The cords are in the Colony view, under How the colony stands.</p>` },
   { lbl: 'Every month', h: 'Rolls and sure things', body: () => `<p>Every month brings one decision. Some options are sure: what it says is what you get. Others are a roll.</p>
     <div class="lgx"><div class="lbl">A roll</div>
-      <div class="opt roll">${ic('unknown')}<span class="b"><span class="l">Send a team down the ravine</span><em>Gold edge and gold title: this one is decided by chance.</em><span class="tips"><span>${ic('difficulty')}55% · Fair</span></span><div class="mods"><span>50% to start</span><span class="up">+5% the Chief Engineer, there in person</span></div></span></div>
-      <small>The percentage is the chance it goes your way. The line under it shows how it was worked out. Sending an officer adds to the odds, but they can be hurt or killed, and rest two months after.</small></div>
+      <div class="opt roll"><span class="b"><span class="l">Patch the loop while it runs</span><em>Gold edge and gold title: this one is decided by chance.</em>${tipsHTML([rollTip(80)], [['fail', 'Lives']])}<div class="mods"><span>55% to start</span><span class="up">+20% the Chief Engineer, there in person</span><span class="up">+5% the machine shop</span></div></span></div>
+      <small>The percentage is the chance it goes your way, and the line under it shows how it was worked out. Under "If it fails" is what going wrong costs. Sending an officer adds to the odds, but they can be hurt or killed, and they rest two months after.</small></div>
+    <div class="lgx"><div class="lbl">A party</div>
+      <div class="opt roll"><span class="b"><span class="l">Send twelve to walk the ridge</span><em>A party is a roll too.</em>${tipsHTML([rollTip(60, 'Everyone back'), `<span>${mk('people')}12 go</span>`, `<span>${mk('time')}2 months</span>`, `<span>${mk('food')}\u2212120 food</span>`], [], [infoTip(['danger', 'Lives'])])}<span class="tips fail"><span class="k">Rolled when they come home</span></span></span></div>
+      <small>The chance is that everyone comes back. You find out when they do.</small></div>
     <div class="lgx"><div class="lbl">Sure</div>
-      <div class="opt">${ic('good')}<span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em><span class="tips"><span>${ic('good')}Materials</span><span class="hot">${ic('danger')}Morale</span></span></span></div>
-      <small>What it says happens. What comes of it later may still surprise you.</small></div>` },
-  { lbl: 'On every option', h: 'The marks', body: () => `<div class="lgx"><div class="box">${LEGEND_ROWS.map(([i, b, t]) => `<div class="row">${ic(i)}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>` }];
+      <div class="opt"><span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em>${tipsHTML([infoTip(['yield', 'Materials']), infoTip(['danger', 'Morale'])], [['later', 'Whoever builds with it']])}</span></div>
+      <small>What it says happens. A cost on a sure option is part of the deal. Under "Later" is a risk that may still come of it.</small></div>` },
+  { lbl: 'On every option', h: 'The marks', body: () => `<div class="lgx"><div class="box">${LEGEND_ROWS.map(([m, b, t]) => `<div class="row lgr"><div class="t"><span class="tips">${m()}</span><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>` }];
 const LEGEND_CORDS = [['Food', 'Fields, once there are crops that grow in this soil. Replaces the hydroponics bay.'],
   ['Water', 'Wells and sand filters. Replaces the water reclaimer.'], ['Energy', 'A turbine field. Replaces the fusion reactor.'],
   ['Industry', 'A machine shop, which needs a smelter and ore. Replaces the fabricator.'],
@@ -185,7 +187,23 @@ function renderChrome() {
 }
 
 /* ---------- the dilemma card ---------- */
-const DIFF = p => p >= 75 ? 'Easy' : p >= 55 ? 'Fair' : p >= 40 ? 'Hard' : 'Desperate';
+/* The marks under an option (Lachlan, 2026-11-21; DESIGN.md "Reading an option"): no overall mark. A roll is a dice and its
+   chance, in three bands by colour and word; a gain is a green up arrow; a loss is a red down arrow, or a skull when it is
+   people. 'fail' is what a roll costs if it fails, 'later' a risk that may come down the line; both get their own row. */
+const CHANCE = p => p >= 70 ? ['Likely', 'lk'] : p >= 30 ? ['Even', 'ev'] : ['Long shot', 'ls'];
+const DICE = '<svg class="dice" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="5.2" cy="5.2" r="1.3" fill="currentColor"/><circle cx="10.8" cy="10.8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>';
+const rollTip = (p, pre) => { const [w, c] = CHANCE(p); return `<span class="ch ${c}">${DICE}${pre ? esc(pre) + ' ' : ''}${p}% · ${w}</span>`; };
+// a loss that is a thing (stores, a machine, morale, standing) is an arrow; anything else on a loss chip is people, and a skull
+const THING = /^(morale|a department|the stores?|the reserve|stores|supper|half|a quarter|two spare parts|the plate|the record|your word|your standing|what is left of your standing|your own months|nothing (in it|held back)|no gear|everything still aboard|a season|the harvest|the next sowing|the far row|the home wall|the outer huts|the settlement|the lock-up|the ward|the clinic|the autodoc|the clerks|hands|unknown|whether anyone|the officers' nerve|hard on the lander|the lander|the hauler|the reactor|repairs)/i;
+// a mark under an option: the icon's shape flat in the text colour (#ink-flat, set by js/theme.js), red on a loss (#ink-loss)
+const mk = n => `<img class="mk" src="art/icons/${n}.png" alt="">`;
+const isThing = t => THING.test(t) || Object.values(LF.MACHINES).some(m => t.toLowerCase() === ('the ' + m.name).toLowerCase());
+const lossTip = t => isThing(t) ? `<span class="dn"><i class="ar">\u25BC</i>${esc(t)}</span>` : `<span class="dn">${mk('danger')}${esc(t)}</span>`;
+const infoTip = ([k, t]) => k === 'yield' ? `<span class="upx"><i class="ar">\u25B2</i>${esc(t)}</span>` : k === 'danger' || k === 'fail' || k === 'later' ? lossTip(t) : `<span>${mk(INFO[k] || 'unknown')}${esc(t)}</span>`;
+// the tips under an option: the main row, then "If it fails" and "Later" rows when it has them
+const tipsHTML = (main, info, failRow) => { const f = (info || []).filter(x => x[0] === 'fail').map(infoTip).concat(failRow || []), l = (info || []).filter(x => x[0] === 'later').map(infoTip);
+  return (main.length ? `<span class="tips">${main.join('')}</span>` : '') + (f.length ? `<span class="tips fail"><span class="k">${failRow && failRow.length && !(info || []).some(x => x[0] === 'fail') ? 'If it goes wrong' : 'If it fails'}</span>${f.join('')}</span>` : '')
+    + (l.length ? `<span class="tips fail"><span class="k">Later</span>${l.join('')}</span>` : ''); };
 const DANGER = ['', 'Low', 'Moderate', 'High', 'Severe', 'Extreme'];
 const COST = { food: 'food', mat: 'materials', parts: 'spares' };
 const INFO = { time: 'time', yield: 'good', danger: 'danger', people: 'people', cord: 'star' };
@@ -287,11 +305,14 @@ function cardHTML() {
     if (g.length) h += `<div class="stock">${g.map(x => `<span class="${x.lv === 0 ? 'hot' : ''}">${ic(x.k)}${esc(x.w)}</span>`).join('')}</div>`;
     const pk = LF.byId[s.cur.id] && !s.cur.gen ? LF.byId[s.cur.id].pick : 0, picked = s.cur.picked || [];
     for (const o of opts) {
-      const tips = [];
-      for (const [k, t] of o.info || []) tips.push(`<span class="${k === 'danger' ? 'hot' : ''}">${ic(INFO[k] || 'unknown')}${esc(t)}</span>`);
-      if (o.odds) tips.push(`<span class="${o.odds.p < 40 ? 'hot' : ''}">${ic('difficulty')}${o.odds.p}% · ${DIFF(o.odds.p)}</span>`);
-      if (o.send) tips.push(`<span>${ic('people')}${o.send.n} go${o.send.lead ? ', led' : ''}</span>`, `<span>${ic('time')}${o.send.months} month${o.send.months > 1 ? 's' : ''}</span>`, `<span class="${o.send.danger >= 4 ? 'hot' : ''}">${ic('danger')}${DANGER[o.send.danger]}</span>`);
-      const cost = o.cost || o.ch.cost; if (cost) for (const k in cost) tips.push(`<span class="${cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${ic(k)}${esc(LF.amount(s, k, -cost[k]))}</span>`);
+      const tips = [], failRow = [];
+      if (o.odds) tips.push(rollTip(o.odds.p));
+      // a party is a roll too, made when it comes home: the chance that everyone does (LF.awayHome, js/gen.js)
+      const home = o.send && !o.odds && LF.awayHome ? LF.awayHome(s, { n: o.send.n, danger: o.send.danger, ret: (o.ch.send && o.ch.send.ret) || '', fid: s.cur.fid }) : null;
+      if (home !== null) { tips.push(rollTip(home, 'Everyone back')); failRow.push(lossTip('Lives')); }
+      for (const x of o.info || []) if (x[0] !== 'fail' && x[0] !== 'later') tips.push(infoTip(x));
+      if (o.send) tips.push(`<span>${mk('people')}${o.send.n} go${o.send.lead ? ', led' : ''}</span>`, `<span>${mk('time')}${o.send.months} month${o.send.months > 1 ? 's' : ''}</span>`);
+      const cost = o.cost || o.ch.cost; if (cost) for (const k in cost) tips.push(`<span class="${cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${mk(k)}${esc(LF.amount(s, k, -cost[k]))}</span>`);
       // how the figure is made, in percentage points that add up to it: the base, then every line (DESIGN.md "The odds")
       // who is worth sending, before anyone is: each department the test names and what its officer would add (DESIGN.md "The odds")
       const roles = o.odds ? (s.cur.gen ? (o.ch.roles || []) : ((o.ch.test && o.ch.test.mods) || []).filter(m => m.k === 'role')) : [], best = {};
@@ -303,8 +324,8 @@ function cardHTML() {
       const mods = mods0 + sendHint;
       const st = pk ? (picked.includes(o.i) ? ' on' : picked.length >= pk ? ' full' : '') : !hold ? '' : hold.i === o.i ? ' picked' : ' gone';
       const face = pk && o.ch.pid ? faceOf(LF.h.byPid(s, o.ch.pid(s))) : null;
-      h += `<button class="opt${st}${o.odds ? ' roll' : ''}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ic(LF.tenor(s, o))}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`
-        + (tips.length ? `<span class="tips">${tips.join('')}</span>` : '') + mods
+      h += `<button class="opt${st}${o.odds || home !== null ? ' roll' : ''}" data-act="${pk ? 'pick' : 'choose'}" data-v="${o.i}" ${o.lock || hold ? 'disabled' : ''}>${face || ''}<span class="b"><span class="l">${esc(o.label)}</span>${o.note ? `<em${o.ch && o.ch.officer ? ' class="who"' : ''}>${said(o.note)}</em>` : ''}`
+        + tipsHTML(tips, o.info, failRow) + (home !== null ? '<span class="tips fail"><span class="k">Rolled when they come home</span></span>' : '') + mods
         + (o.against && !o.lock ? `<span class="why">Against the colony's ${esc(o.against.toLowerCase())} character</span>` : '')
         + (o.lock ? `<span class="why">${esc(o.lock)}</span>` : '') + `</span></button>`;
       if (hold && hold.i === o.i) h += procHTML();
@@ -619,7 +640,7 @@ function ordersHTML(v, title, bare) {
 }
 function ordRowHTML(o) {
     const open = ordOpen === o.key && !o.lock, busy = ordHold && ordHold.key === o.key;
-    const tips = (o.info || []).map(([k, x]) => `<span class="${k === 'danger' ? 'hot' : ''}">${ic(INFO[k] || 'unknown')}${esc(x)}</span>`);
+    const tips = (o.info || []).map(infoTip);
     if (o.cost) for (const k in o.cost) if (o.cost[k]) tips.push(`<span class="${o.cost[k] > s.res[k] * 0.4 ? 'hot' : ''}">${ic(k)}${esc(LF.amount(s, k, -o.cost[k]))}</span>`);
     return `<button class="opt ord${open ? ' open' : ''}" data-act="ord" data-v="${esc(o.key)}" ${o.lock || ordHold ? 'disabled' : ''}>${ic(o.lock ? 'unknown' : 'good')}<span class="b"><span class="l">${esc(o.label)}</span>`
       + (open || o.lock ? (o.note && open ? `<em>${esc(o.note)}</em>` : '') : '') + (tips.length && (open || !o.lock) ? `<span class="tips">${tips.join('')}</span>` : '')
@@ -677,7 +698,7 @@ function shipView() {
    it with the council's voice and the orders that fit (start or switch, queue). Confirming runs the same hold bar. */
 const yardRows = () => LF.orders(s, 'colony').filter(o => (LF.ORDERS[o.id] || {}).panel === 'yard');
 function yardTips(o, id) {
-  const tips = (o ? o.info : []).map(([k, x]) => `<span class="${k === 'danger' ? 'hot' : ''}">${ic(INFO[k] || 'unknown')}${esc(x)}</span>`);
+  const tips = (o ? o.info : []).map(infoTip);
   const c = o && o.cost; if (c) for (const k in c) if (c[k]) tips.push(`<span class="${c[k] > s.res[k] ? 'hot' : ''}">${ic(k)}${esc(LF.amount(s, k, -c[k]))}</span>`);
   return tips.length ? `<span class="tips">${tips.join('')}</span>` : '';
 }

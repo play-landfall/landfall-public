@@ -530,7 +530,13 @@ const STRANGER = {
 };
 /* What comes back, rolled: the return table, weighted by the danger, the size, who leads and who went. The player's own
    parties roll it a month early (orders.js), so a return that needs a card keeps its outcome while it waits for one. */
-LF.awayRoll = function (s, a) {
+LF.awayRoll = function (s, a) { const W = LF.awayWeights(s, a);
+  let r = rand(s) * Object.values(W).reduce((x, y) => x + y, 0), out = 'success';
+  for (const k in W) { r -= W[k]; if (r <= 0) { out = k; break; } }
+  return out;
+};
+/* The return table's weights, without the roll: the UI shows a party as a roll from these (Lachlan, 2026-11-21). */
+LF.awayWeights = function (s, a) {
   const f = a.fid && s.factors.find(x => x.id === a.fid), big = a.n >= 6, d = a.danger;
   const ins = f ? f.insight : s.survey / 4, L = leaderOf(s, a), met = ['natives', 'humans', 'reach', 'drummers'].includes(a.ret);
   const W = { triumph: Math.max(2, 10 + (big ? 5 : 0) + ins / 6 - d * 1.5), success: Math.max(6, 32 - d * 2 + (big ? 6 : 0)), partial: 10 + d * 3.5,
@@ -546,10 +552,13 @@ LF.awayRoll = function (s, a) {
   for (const p of members(s, a)) for (const pk of p.perks) { const m = LF.PERKS[pk].w || {}; for (const k in m) if (W[k]) W[k] *= m[k]; }
   if (s.flags.returned && W.silence) W.silence *= 0.8;          // the returned know something about coming back
   if (LF.has(s, 'comms') && W.silence) W.silence *= 0.5;      // the signals room: a party in trouble can call in
-  let r = rand(s) * Object.values(W).reduce((x, y) => x + y, 0), out = 'success';
-  for (const k in W) { r -= W[k]; if (r <= 0) { out = k; break; } }
-  return out;
+  return W;
 };
+/* The returns in which somebody does not come home: the chance shown on a party's option is everything else. */
+LF.AWAY_LOSS = ['silence', 'partial', 'weather', 'stayed', 'late'];
+LF.awayHome = function (s, a) { const W = LF.awayWeights(s, a), all = Object.values(W).reduce((x, y) => x + y, 0);
+  const lost = LF.AWAY_LOSS.reduce((x, k) => x + (W[k] || 0), 0);
+  return all ? Math.max(5, Math.min(95, Math.round(100 * (1 - lost / all) / 5) * 5)) : 50; };
 /* Returns that need nobody to decide anything: everyone home, with what was expected or more, or a long party's lesser
    failures with nobody lost. A player's party that comes back so is a Meanwhile line, not a card (orders.js). */
 LF.AWAY_QUIET = ['triumph', 'success', 'short', 'astray'];

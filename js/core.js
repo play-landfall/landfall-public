@@ -752,7 +752,7 @@ LF.choices = function (s) {
   // A loss every option carries (a death already told in the card) is not part of the choice: drop that read-off chip.
   const autos = list.filter(o => o.auto);
   if (autos.length > 1) for (const [k, t] of autos[0].info || []) {
-    if (k !== 'danger' || !autos.every(o => (o.info || []).some(([k2, t2]) => k2 === k && t2 === t))) continue;
+    if ((k !== 'danger' && k !== 'fail') || !autos.every(o => (o.info || []).some(([k2, t2]) => k2 === k && t2 === t))) continue;
     for (const o of autos) { o.info = o.info.filter(([k2, t2]) => !(k2 === k && t2 === t)); if (!o.info.length) o.info = null; } }
   return seatLocks(s, list.map(o => { delete o.auto; return o; }));
 };
@@ -771,9 +771,11 @@ function autoInfo(s, ch, c) {
   const fxOf = o => { if (!o) return null; let fx = o.fx; if (typeof fx === 'function') { try { fx = fx(s, c); } catch (e) { fx = null; } } return fx || null; };
   const out = [], good = fxOf(ch.out || ch.ok), bad = ch.test ? fxOf(ch.bad) : ch.out ? good : null;
   if (good) { const y = YIELD.find(([k]) => good[k] > 0); if (y) out.push(['yield', y[1]]); else if (good.machine && Object.values(good.machine).some(v => v > 0)) out.push(['yield', 'Repairs']); }
-  if (bad) { if (bad.kill || bad.pop < 0 || bad.dead) out.push(['danger', 'Lives']);
-    else if (bad.machine && Object.entries(bad.machine).some(([, v]) => v < 0)) out.push(['danger', `The ${LF.MACHINES[Object.entries(bad.machine).find(([, v]) => v < 0)[0]].name}`]);
-    else if (ch.test && bad.morale < 0) out.push(['danger', 'Morale']); }
+  // on a roll the loss is what failing costs ('fail', drawn as "If it fails"); on a sure option it is part of the deal ('danger')
+  if (bad) { const dk = ch.test ? 'fail' : 'danger';
+    if (bad.kill || bad.pop < 0 || bad.dead) out.push([dk, 'Lives']);
+    else if (bad.machine && Object.entries(bad.machine).some(([, v]) => v < 0)) out.push([dk, `The ${LF.MACHINES[Object.entries(bad.machine).find(([, v]) => v < 0)[0]].name}`]);
+    else if (ch.test && bad.morale < 0) out.push([dk, 'Morale']); }
   return out.length ? out : null;
 }
 const h5 = v => Math.sign(v) * Math.max(5, Math.round(Math.abs(v) / 10) * 5);   // half a figure, in steps of 5 (the odds go in fives)

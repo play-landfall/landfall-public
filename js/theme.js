@@ -45,6 +45,8 @@ function set(key, keep) {
   root.style.setProperty('--sp-other', `color-mix(in oklab, ${t.light ? '#6c7078' : '#b4b9c2'} 80%, ${t.ink})`);
   // The key crew's name and post over their speech (Lachlan, 2026-11-19): gold, darkened on the light theme so it reads on cream.
   root.style.setProperty('--gold', t.light ? '#9a6f0e' : `color-mix(in oklab, ${SPEAK.command} 88%, ${t.ink})`);
+  // the middle band of a roll's chance, "Even" (Lachlan, 2026-11-21): a lemon yellow, apart from the roll's gold edge
+  root.style.setProperty('--even', t.light ? '#8a6d00' : '#ecd35c');
   // A colonist's portrait ground, and the blank of one not painted yet (white).
   root.style.setProperty('--face-col', '#bebcb6'); root.style.setProperty('--face-off', '#02223a'); root.style.setProperty('--face-blank', '#ffffff'); root.style.setProperty('--face-static', t.light ? '#42474e' : '#1a1d21');
   root.style.setProperty('--on', t.on || t.bg);
@@ -52,6 +54,8 @@ function set(key, keep) {
   root.style.colorScheme = t.light ? 'light' : 'dark';
   const m = (id, to) => { const el = document.getElementById(id); if (el) el.setAttribute('values', t.light ? SAME : matrix(to.map(rgb))); };
   m('ink-icon-m', [t.ink, t.rust, t.card]); m('ink-pic-m', [t.plate || t.card, t.rust, t.ink]);
+  // the marks under an option, flat in the text colour, or the loss colour (js/ui.js mk)
+  for (const [id, c] of [['ink-flat-c', t.ink], ['ink-loss-c', t.bad]]) { const el = document.getElementById(id); if (el) el.setAttribute('flood-color', c); }
   const meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.content = t.paper;
   if (keep !== false) try { localStorage.setItem(KEY, current); } catch (e) {}
 }

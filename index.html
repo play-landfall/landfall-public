@@ -20,6 +20,8 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <filter id="ink-icon" color-interpolation-filters="sRGB"><feColorMatrix id="ink-icon-m" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/></filter>
+  <filter id="ink-flat" color-interpolation-filters="sRGB"><feFlood id="ink-flat-c" flood-color="#e1d6b4"/><feComposite in2="SourceAlpha" operator="in"/></filter>
+  <filter id="ink-loss" color-interpolation-filters="sRGB"><feFlood id="ink-loss-c" flood-color="#e0704e"/><feComposite in2="SourceAlpha" operator="in"/></filter>
   <filter id="ink-pic" color-interpolation-filters="sRGB"><feColorMatrix id="ink-pic-m" type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"/></filter>
 </svg>
 <script src="js/theme.js"></script>

@@ -632,3 +632,16 @@ html.grim2 h2 { letter-spacing:.01em; }
 .legend .lgx .box { margin-top:8px; } .legend .lgx .row > img { width:28px; height:28px; flex:none; }
 .legend .ask { margin-top:14px; }
 #sheet > .card.legend { width:100%; max-width:540px; max-height:90dvh; overflow:auto; margin:0; border-radius:26px 26px 0 0; padding-bottom:calc(18px + env(safe-area-inset-bottom)); }
+
+/* Reading an option (js/ui.js rollTip, infoTip, tipsHTML; Lachlan, 2026-11-21): no overall mark; a roll's chance in three
+   bands, gains up in green, losses down in red, a skull where it is people, and rows for what failing and later may cost. */
+.opt > .b:first-child { padding:0 2px; }
+.tips .dice { width:15px; height:15px; flex:none; color:var(--ink); }
+.tips .ch.lk { color:var(--good); } .tips .ch.ev { color:var(--even); } .tips .ch.ls { color:var(--bad); }
+.tips .ar { font-style:normal; font-size:11px; line-height:1; }
+.tips .upx { color:var(--good); } .tips .dn { color:var(--bad); }
+.tips.fail { margin-top:4px; } .tips.fail .k { color:var(--dim); }
+.tips img.mk { width:16px; height:16px; flex:none; filter:url(#ink-flat); }
+.tips .dn img.mk, .tips .hot img.mk { filter:url(#ink-loss); }
+.legend .lgr .tips { margin:0 0 3px; }
+.legend .lgx .opt .tips .k { color:var(--dim); }
