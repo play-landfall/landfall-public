@@ -113,7 +113,7 @@
     'rst.plate': 'plate_crumble', 'rst.racks': 'workshop', 'rst.bench': 'jars', 'rst.spares': 'empty_bins', 'rst.bolts': 'bolt_ring', 'rst.housing': 'housing_scrape', 'rst.hands': 'questioning', 'rst.ship': 'radio',
     'rst.out': 'gate_bars', 'rst.choice': 'night_council', 'rst.gives': 'wire_brush', 'rst.truth': 'empty_shop',
     'smp.dish': 'jars', 'smp.sleeve': 'clinic', 'smp.pod': 'creep', 'smp.ducts': 'duct_fan', 'smp.culture': 'warm_jar', 'smp.water': 'water', 'smp.reached': 'ward_door',
-    'smp.choice': 'night_council', 'smp.door': 'weld_seam', 'smp.after': 'cold_room', 'smp.truth': 'empty_shop',
+    'smp.choice': 'night_council', 'smp.slow': 'night_council', 'smp.door': 'weld_seam', 'smp.after': 'cold_room', 'smp.truth': 'empty_shop',
     'inf.teeth': 'low_hum', 'inf.blood': 'clinic', 'inf.needle': 'drum_trace', 'inf.lost': 'sob', 'inf.facing': 'wind', 'inf.worst': 'sleepwalk', 'inf.reactor': 'energy',
     'inf.shaft': 'blast', 'inf.leave': 'cart_creak', 'inf.road': 'campfire', 'inf.still': 'cold_room', 'inf.truth': 'empty_shop',
     'so.lander': 'console', 'so.pod': 'pod_strike', 'so.voice': 'ship_voice', 'so.aboard': 'radio', 'so.banks': 'power_down', 'so.list': 'ship_voice', 'so.strike': 'pod_strike',

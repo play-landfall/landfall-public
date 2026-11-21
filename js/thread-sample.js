@@ -93,7 +93,7 @@ const jump = (s, id, back) => { if (!s.sched.some(e => e.id === id)) s.sched.pus
 const die = (s, t, n) => { const b = s.pop; LF.deaths(s, Math.min(n, Math.max(0, s.pop - 12))); t.toll += b - s.pop; return b - s.pop; };
 const nerve = (s, v) => { if (LF.shift) LF.shift(s, 'scientist', 'mind', v); };
 
-/* A measure taken against it, of a kind (fire, seal, air, wash, cut, heat, mind). What it does is settled by what it is.
+/* A measure taken against it, of a kind (fire, seal, air, wash, cut, heat, mind; each card offers three at most since 2026-11-21). What it does is settled by what it is.
    v: how hard the measure bears (1 a whole answer, less for a half measure). */
 function contain(s, t, kind, v) { v = v === undefined ? 1 : v; const k = t.truth.is, met = t.tried.includes(kind);
   if (!met) t.tried.push(kind);
@@ -185,7 +185,8 @@ LF.thread({ id: ID, name: 'The Sample', view: 'colony', dread: true,
       if (go('smp.ducts', 110)) { LF.phase(s, ID, 'water', 'The grey reached the water plant.'); t.creep = 0; t.reach = 3; LF.cue(s, 'smp.water', 0, 4); s.signs.push({ id: 'water_taint', d: s.day, src: SRC }); s.tension = clamp(s.tension + 5, 0, 100); } }
     else if (t.phase === 'water') { if (since('smp.water') >= 10 && t.toll >= 1) once('reached', 'smp.reached');
       if ((since('smp.water') >= 20 && (t.creep >= 1 || since('smp.reached') >= 8)) || age >= 100) { LF.phase(s, ID, 'choice'); t.reach = 4; jump(s, 'smp.choice', 20); } }
-    else if (t.phase === 'choice') { if (since('smp.choice') >= 20 || age >= 60) { LF.phase(s, ID, 'bill'); t.billId = t.inside && !t.inside.out ? 'smp.door' : 'smp.after'; jump(s, t.billId, 20); } }
+    else if (t.phase === 'choice') { const due = t.did.slow && since('smp.slow') < 0;   // the second card is owed: the bill waits for it
+      if ((!due && (since(t.did.slow ? 'smp.slow' : 'smp.choice') >= 20 || age >= 60)) || age >= 150) { LF.phase(s, ID, 'bill'); t.billId = t.inside && !t.inside.out ? 'smp.door' : 'smp.after'; jump(s, t.billId, 20); } }
     else if (t.phase === 'bill') { if (since(t.billId) >= 20 || age >= 70) return resolve(s, t); }
     if (s.day % 10 === 0) month(s, t);
     if (s.day % 5 === 0) { const late = ['water', 'choice', 'bill'].includes(t.phase);
@@ -194,7 +195,7 @@ LF.thread({ id: ID, name: 'The Sample', view: 'colony', dread: true,
       if (t.reach >= 2) LF.emit(s, 'fear', SRC, late ? 34 : 26, 8, 'the grey from the lab is in the ducts over the bunk rows');
       if (t.reach >= 2 && t.truth.is !== 'harmless') LF.emit(s, 'sickness', SRC, 24, 8, 'people are dying in the rows the grey has reached');
       if (t.shut && !t.unshut) LF.emit(s, 'scarcity', SRC, 30, 8, 'the water plant is shut on account of the grey');
-      if (t.cleared || t.crewIn || t.inside && !t.inside.out) LF.emit(s, 'confinement', SRC, 26, 8, t.inside && !t.inside.out ? 'somebody is welded into the lab pod with the grey' : 'people are shut away from the grey, or in with it'); }
+      if (t.cleared || t.inside && !t.inside.out) LF.emit(s, 'confinement', SRC, 26, 8, t.inside && !t.inside.out ? 'somebody is welded into the lab pod with the grey' : 'people are shut away from the grey, or in with it'); }
   },
   /* The masks, the taped seams, the boiling pots; and afterwards, what a burned lab costs. */
   press: (s, t, P) => { if (t.phase === 'latent') return;
@@ -221,9 +222,6 @@ B('sign', { id: 'smp.dish', tone: 'pressure', title: 'Something in the Dish',
     { label: 'Flame the dish, the bench top and what is left of the core', note: (s, c) => `A year of drilling goes into the kiln pit, and so does the only sample of whatever this is${c.spid ? `. ${c.Sf} will not forgive it quickly` : ''}.`,
       out: { text: 'The dish, the core boxes and the bench top go into the kiln pit. The lab smells of scorched agar for the rest of the month, and the drilling log is closed with a line under it.',
         fx: s => ({ off: [['scientist', 'mind', -5]], do: s2 => { const t = T(s2); contain(s2, t, 'fire'); t.did.flamed = true; } }) } },
-    { label: 'Say nothing outside the lab, and keep the core thawing', dark: true, note: 'The hall sleeps easy, and the lab crew works beside it without being told what it is.', info: [['yield', 'Morale'], ['danger', 'The lab crew']],
-      out: { text: 'The lab log calls it a contamination. The dish goes back in the incubator, the lab crew are told it is a mould, and the core goes on thawing in its box.',
-        fx: s => ({ morale: 2, stain: ['smp_quiet', 1], do: s2 => { const t = T(s2); t.did.quiet = true; wait(s2, t); t.creep += 0.25; LF.ease(s2, 'unexplained', 'smp.quiet', 12, 50); } }) } },
     { label: 'Put a drop of it on the forearm of one of the punishment detail, and watch the arm for a month', dark: true, note: 'It shows what it does to a person, on a person who was not asked.', info: [['yield', 'What it does to people'], ['danger', 'The one with the arm']],
       out: { text: (s, c) => `The drop goes on under a dressing in the clinic, with the detail standing at the door. ${SKIN[T(s).truth.is]} The one who wore it has scratched the arm raw and will not sleep in the row.`,
         fx: s => ({ stain: ['smp_skin', 2], do: s2 => { const t = T(s2), k = t.truth.is; learn(s2, t, 30, k); learn(s2, t, 12, k); t.did.skin = true; if (k === 'spore') t.creep += 0.3; } }) } },
@@ -240,16 +238,13 @@ B('lab', { id: 'smp.sleeve', view: 'people', tone: 'pressure', title: 'On a Slee
     { label: (s, c) => `Seal the lab pod with ${c.tf} inside it, until it is known`, dark: true, note: (s, c) => `${c.Tf} is shut in with whatever is on that sleeve, and so is the lab.`, info: (s, c) => [['yield', 'Nothing it touched comes out'], ['danger', c.Tf]],
       out: { text: (s, c) => `The pod door is dogged from outside with ${c.tf} and a cot inside. Food goes in through the sample hatch, and ${c.tf} knocks on the hatch at every change of watch, to say still here.`,
         fx: s => ({ stain: ['smp_shut', 2], do: s2 => { const t = T(s2); contain(s2, t, 'seal'); t.techIn = s2.day; t.did.techIn = true; } }) } },
-    { label: (s, c) => `Take ${c.tf}'s arm off at the elbow, before it goes further`, dark: true, note: (s, c) => `${c.Tf} loses a sound arm if it is nothing, and keeps the rest if it is something.`, info: (s, c) => [['yield', 'An end to it, if it is in the arm'], ['danger', c.Tf]],
-      out: { text: (s, c) => `${c.D} does it before noon${c.dv ? ', and writes in the clinic log that it was done on your order' : ''}. The arm goes into the kiln pit with the coverall. ${c.Tf} asks afterwards to see the sleeve, and is not shown it.`,
-        fx: s => ({ morale: -1, stain: ['smp_arm', 2], do: s2 => { const t = T(s2); contain(s2, t, 'cut'); t.did.arm = true; } }) } },
     { label: (s, c) => `Call it a reagent burn, and send ${c.tf} back to the bunk row`, note: (s, c) => `If it is anything, it goes to the bunk row on ${c.tf}'s sleeve, and the row is told nothing.`,
       out: { text: (s, c) => `${c.Tf} is given a salve and a clean coverall and walks back to the row for supper. The old sleeve goes in the wash with everyone else's.`,
         fx: s => ({ morale: 1, do: s2 => { const t = T(s2); t.creep += 0.35; t.did.sent = true; } }) } },
   ] });
 
 B('lab', { id: 'smp.pod', tone: 'crisis', title: 'The Lab Pod',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05) }); },
+  setup: s => crew(s),
   text: (s, c) => `${c.E} lifted the lab pod's ceiling panels to get at a fan that had stopped, and the backs of the panels are grey. It is in the cable runs, along the door seal and in the cabinet where the cores are kept, and the fan is clogged with it. The lab pod shares a wall with the clinic.\n\n${c.bv ? `[[engineer]] "The pod'll stand a month like that, a bit more if we keep the door shut." "The fan won't, she's clogged solid, and when she goes, whatever's in there goes wherever the air goes."\n\n` : `${c.E} says the fan will not last the month. `}${c.lean}`,
   choices: [
     { label: 'Tape every seam, pack the vents with filter cloth, and keep the door shut', cost: { mat: 8 }, note: 'The lab works on inside a sealed box, and the people in it breathe what the filters leave them.',
@@ -259,12 +254,6 @@ B('lab', { id: 'smp.pod', tone: 'crisis', title: 'The Lab Pod',
         fx: s => ({ mat: -10, off: [['scientist', 'mind', -4]], do: s2 => { const t = T(s2); contain(s2, t, 'fire'); t.did.podburn = true; for (const f of s2.factors) if (!f.res) f.insight = Math.round(f.insight * 0.85); } }) } },
     { label: 'Pin the doors back, pull the panels, and let the outside air through it for a month', note: 'The lab stands open to the weather with its instruments in it, and anything in there is free to walk out of the door.',
       out: { text: 'The doors are pinned back and the ceiling panels stacked in the yard. The wind goes through the pod day and night, and the lab crew work in coats at the far end.', fx: s => ({ morale: -1, parts: -2, do: s2 => { const t = T(s2); contain(s2, t, 'air'); t.did.podair = true; } }) } },
-    { label: 'Bar the lab crew in with it, and pass food through the hatch until it is known', dark: true, note: 'Nothing they have touched comes out, and four people live in the grey for as long as it takes.', info: [['yield', 'What they find out'], ['danger', 'The lab crew']],
-      out: { text: (s, c) => `The four are told at the door, and the door is barred behind them. They tape the seams themselves from inside. Their notes come out through the hatch with the empty bowls. ${ev('pod', c.ev, c)}`,
-        fx: (s, c) => ({ stain: ['smp_barred', 2], do: s2 => { const t = T(s2); learn(s2, t, 22, c.ev); contain(s2, t, 'seal'); t.crewIn = s2.day; t.did.barred = true; LF.emit(s2, 'confinement', 'smp.barred', 25, 80, 'the lab crew were barred in the lab pod with the grey'); } }) } },
-    { label: 'Keep the lab working as it is, and tell the clinic next door nothing', dark: true, note: 'The lab keeps its month, and the clinic\'s patients lie on the other side of the wall without being told.', info: [['yield', 'What the lab learns'], ['danger', 'The clinic\'s patients']],
-      out: { text: (s, c) => `The panels go back up and the lab crew work round them. ${ev('pod', c.ev, c)} The clinic is told the fan is being mended.`,
-        fx: (s, c) => ({ stain: ['smp_wall', 1], do: s2 => { const t = T(s2); learn(s2, t, 16, c.ev); wait(s2, t); t.creep += 0.3; t.did.wall = true; } }) } },
   ] });
 
 /* ======================= DUCTS: two pods away, and the Scientist's jar ======================= */
@@ -277,15 +266,9 @@ B('ducts', { id: 'smp.ducts', tone: 'crisis', title: 'Two Pods Away',
         fx: s => ({ morale: -2, do: s2 => { const t = T(s2); t.cleared = s2.day; t.did.cleared = true; LF.emit(s2, 'confinement', 'smp.cleared', 22, 120, 'a bunk row sleeps on the mess floor to keep clear of the grey'); } }) } },
     { label: 'Blow the ducts through with outside air, every fan run backwards, for a week of nights', note: 'Whatever is in the ducts goes out of them into the yard, and through every other row on the way.',
       out: { text: 'The fans are rewired to run backwards and the outer grilles are opened. For a week the rows sleep in the cold with the night air going through the trunking over their heads.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); contain(s2, t, 'air'); t.did.blown = true; } }) } },
-    { label: 'Pour lye through the trunking, a row at a time', note: 'The ducts are scoured, and the rows under them breathe the fumes for a month.', test: { base: 50, kind: ['fix'], mods: [R('engineer', 10), R('physician', 5)] },
-      ok: { text: (s, c) => `${c.E} has the lye go through in a day a row, with the row out in the yard. ${ev('duct', c.ev, c)}`, fx: (s, c) => ({ mat: -6, do: s2 => { const t = T(s2); learn(s2, t, 18, c.ev); contain(s2, t, 'wash'); } }) },
-      bad: { text: 'A seam lets go over the third row and the lye comes down on the bunks. One of the sleepers is blind in one eye, and one is dead of the fumes by morning.', fx: s => ({ mat: -6, pop: -1, do: s2 => { const t = T(s2); t.toll++; t.panic++; contain(s2, t, 'wash', 0.5); } }) } },
     { label: 'Send the punishment detail into the ducts with scrapers and sacks', dark: true, note: 'The ducts are cleared by hand, by people crawling through the grey who were not asked.', info: [['yield', 'Clean ducts'], ['danger', 'The detail']],
       out: { text: (s, c) => `The detail goes in at the lab end with lamps and sacks and comes out at the far end of the row. They clear the run inside the month. ${ev('duct', c.ev, c)} Two of the detail are in the clinic by the end of it with a cough that will not shift.`,
         fx: (s, c) => ({ stain: ['smp_crawl', 2], do: s2 => { const t = T(s2); learn(s2, t, 16, c.ev); contain(s2, t, 'cut'); t.did.crawl = true; } }) } },
-    { label: 'Move the officers and the clinic out of the row tonight, and tell the rest it is the drains', dark: true, note: 'The people who decide sleep somewhere clean, and the row they left is told nothing.', info: [['yield', 'Morale'], ['danger', 'The row']],
-      out: { text: 'The officers\' bunks are carried out after lamp-down and set up in the stores. The row is told the drains are being dug, and goes on sleeping under the grille.',
-        fx: s => ({ morale: 1, stain: ['smp_moved', 2], do: s2 => { const t = T(s2); t.did.moved = true; t.creep += 0.2; } }) } },
   ] });
 
 const WARD = {
@@ -306,10 +289,6 @@ B(['ducts', 'water'], { id: 'smp.culture', view: 'people', tone: 'pressure', tit
     { label: (s, c) => `Let ${c.sf} try it on the ward, on patients who will not last the month`, dark: true, note: 'It shows what it does to people, on people too weak to refuse.', info: [['yield', 'What it does to people'], ['danger', 'The dying on the ward']],
       out: { text: (s, c) => `${c.D} ${c.dv ? 'will not hold the door, and says so in front of the ward' : 'is told after'}. ${c.Sf} does it at night with a dropper. ${WARD[T(s).truth.is]}`,
         fx: (s, c) => ({ stain: ['smp_ward', 3], off: [['ctx', 'native', 6], ['ctx', 'mind', -4]], pop: is(s, 'harmless') ? 0 : -1, do: s2 => { const t = T(s2), k = t.truth.is; learn(s2, t, 30, k); learn(s2, t, 12, k); if (k !== 'harmless') t.toll++; t.did.ward = true; } }) } },
-    { label: (s, c) => `Relieve ${c.sf}, and tell the hall it was ${c.sf} who let it out`, dark: true, note: (s, c) => `The hall gets somebody to blame, and it is the one person who knows most about it.`, info: (s, c) => [['yield', 'Morale'], ['danger', c.Sf]],
-      out: { text: (s, c) => `${c.Sf} is read off the roster at muster for breach of the lab's seals, and the jar is taken. ${c.Sf} does not argue. The hall is quieter that night.`,
-        fx: (s, c) => ({ morale: 3, tension: -5, stain: ['smp_blamed', 2], do: s2 => { const t = T(s2), p = byPid(s2, c.pid); if (p) LF.vacate(s2, p, 'blamed', 'was relieved of Science and named as the one who let the Sample out'); t.did.blamed = c.sci; contain(s2, t, 'fire', 0.3); },
-          chron: (s2, c2) => `${c2.sci} was relieved and blamed for letting the Sample out.` }) } },
   ] });
 
 /* ======================= WATER: the plant, and the rows it reached ======================= */
@@ -324,12 +303,6 @@ B('water', { id: 'smp.water', tone: 'crisis', title: 'The Water Plant',
     { label: 'Dose the tanks with chlorine until it can be tasted', note: 'The water is scoured, and the old and the sick drink it with everyone else.',
       out: { text: (s, c) => `${c.E} doses the tanks at dusk, a drum at a time. In the morning the water tastes of the clinic. By the end of the month the cramps have gone through the colony, and one of the oldest on the ward has died of them.`,
         fx: s => ({ pop: -1, do: s2 => { const t = T(s2); t.toll++; if (t.truth.is === 'harmless') t.panic++; contain(s2, t, 'wash'); } }) } },
-    { label: 'Keep the plant running, tell the hall nothing, and have the officers drink from the sealed stores', dark: true, note: 'The colony drinks what it always has, and the people who know better drink something else.', info: [['yield', 'Morale'], ['danger', 'Everyone at the outlet']],
-      out: { text: 'The filter beds are washed and put back. The officers\' water is drawn from the sealed drums in the stores and carried round in covered cans, and the hall goes on queueing at the outlet.',
-        fx: s => ({ morale: 1, stain: ['smp_cups', 2], do: s2 => { const t = T(s2); t.did.cups = true; t.creep += 0.2; } }) } },
-    { label: 'Shut the outlet to the rows it came through, and give their water to the work crews', dark: true, note: 'The crews keep working on full cups, and the rows nearest it go thirsty on a guess.', info: [['yield', 'The work crews'], ['danger', 'The rows it came through']],
-      out: { text: 'The watch stands at the outlet with the list. The rows by the lab draw a half cup at noon from a drum in their own yard. The crews draw what they need.',
-        fx: s => ({ pop: -1, stain: ['smp_thirst', 2], do: s2 => { const t = T(s2); t.toll++; t.did.thirst = true; } }) } },
   ] });
 
 B(['water', 'choice'], { id: 'smp.reached', view: 'people', tone: 'pressure', title: 'The Rows It Reached',
@@ -342,9 +315,6 @@ B(['water', 'choice'], { id: 'smp.reached', view: 'people', tone: 'pressure', ti
       bad: { text: 'The cold room\'s compressor has been off for a day, and what is on the table can be read for very little. The families hear before morning.', fx: s => ({ morale: -2, do: s2 => learn(s2, T(s2), 5) }) } },
     { label: 'Bury them tonight, and burn their bedding with them', note: 'The families get their night, and whatever was in them goes into the ground unread.',
       out: { text: 'The graves are dug by lamplight and the bedding burns in a drum at the end of the row. The families stand at the drum until it is out.', fx: s => ({ morale: 2, do: s2 => { const t = T(s2); contain(s2, t, 'fire', 0.3); LF.ease(s2, 'grief', 'smp.buried', 12, 60); } }) } },
-    { label: 'Open these two, and everyone it kills from now on, without asking the families', dark: true, note: 'The clinic learns from every death, and every family in those rows gets its dead back sewn up.', info: [['yield', 'What they died of'], ['danger', 'The families']],
-      out: { text: (s, c) => `The order goes on the clinic door. ${ev('body', c.ev, c)} The families are given the dead back in sheets, and one of them pulls the sheet back in the yard.`,
-        fx: (s, c) => ({ morale: -2, stain: ['smp_opened', 2], do: s2 => { const t = T(s2); learn(s2, t, 30, c.ev); t.did.opened = true; LF.emit(s2, 'resentment', 'smp.opened', 26, 150, 'the dead from the grey rows are opened without asking the families'); } }) } },
     { label: 'Put the sick from those rows into the lab pod with it, so the clinic stays clean', dark: true, note: 'The clinic stays open to everyone else, and the sick lie in the place it came from.', info: [['yield', 'A clean clinic'], ['danger', 'The sick from the rows']],
       out: { text: 'The sick are carried over on their cots after dark and the lab pod door is shut on them. Food goes in through the sample hatch, and a clinic hand goes in once a day in a mask.',
         fx: s => ({ morale: 1, stain: ['smp_pod', 3], do: s2 => { const t = T(s2); t.sickIn = s2.day; t.did.sickIn = true; contain(s2, t, 'seal', 0.5); } }) } },
@@ -352,12 +322,17 @@ B(['water', 'choice'], { id: 'smp.reached', view: 'people', tone: 'pressure', ti
 
 /* ======================= CHOICE: the ways to end it ======================= */
 const GONE = { orbit: c => 'the one who should be doing it is still aboard the ship', away: c => `${c.sci} is out past the wire with a party`, empty: c => 'nobody holds the Science seat' };
-B('choice', { id: 'smp.choice', tone: 'crisis', title: 'Ways to End It',
-  setup: s => { const t = T(s), c = crew(s), st = LF.seatState(s, 'scientist'), p = LF.officer(s, 'scientist'), off = !!(p && (st === 'here' || st === 'hurt'));
+/* Ways to End It is two cards since 2026-11-21 (three options at most). There are five answers and four truths, each truth wanting a
+   different one, and they would not fold into three without losing an ending. smp.choice holds the two that cannot be taken back (vent,
+   burn) and a refusal; the refusal deals smp.slow at once, with the three slower ways (seal somebody in to go on working, open every
+   pod, hold). The second card uses the first one's scene and sound. */
+const endCtx = s => { const t = T(s), c = crew(s), st = LF.seatState(s, 'scientist'), p = LF.officer(s, 'scientist'), off = !!(p && (st === 'here' || st === 'hurt'));
     const hand = off ? null : t.tech && t.tech.pid && byPid(s, t.tech.pid) && byPid(s, t.tech.pid).alive ? t.tech : who(someone(s));
     return Object.assign(c, { off, opid: off ? p.id : null, sci: p ? p.name : nm(s, 'xenobio'), sf: off ? p.first : null, Sf: off ? cap(p.first) : null, gone: off ? '' : (GONE[st] || GONE.empty)({ sci: p ? p.name : '' }),
-      hand: hand ? hand.name : 'the senior lab hand', hpid: hand ? hand.pid : null, inN: LF.sri(s, 3, 5), soillab: !!s.built.soillab }); },
-  text: (s, c) => `It has been in the lab, the ducts and the water. ${c.Cm} wants the module the lab stands in vented: the inner doors dogged on whoever is inside, the outer hatches opened and the fans run backwards until there is nothing in there but this world's air. ${c.E} wants the lab burned, with every sample and every page of where the cores were cut, so nobody drills there again. ${c.off ? `${c.Sf} wants to be sealed in with it and go on working.` : `${cap(c.hand)} has offered to be sealed in with it and go on working, since ${c.gone}.`}\n\n${c.lean} The rows have been told there will be an order tonight.`,
+      hand: hand ? hand.name : 'the senior lab hand', hpid: hand ? hand.pid : null, inN: LF.sri(s, 3, 5), soillab: !!s.built.soillab }); };
+B('choice', { id: 'smp.choice', tone: 'crisis', title: 'Ways to End It',
+  setup: endCtx,
+  text: (s, c) => `It has been in the lab, the ducts and the water. ${c.Cm} wants the module the lab stands in vented: the inner doors dogged on whoever is inside, the outer hatches opened and the fans run backwards until there is nothing in there but this world's air. ${c.E} wants the lab burned, with every sample and every page of where the cores were cut, so nobody drills there again.\n\n${c.lean} The rows have been told there will be an order tonight.`,
   choices: [
     { label: 'Vent the module with the shift still inside it', dark: true, note: (s, c) => `The ${num(c.inN)} on shift inside are not let out first, so that nothing comes out with them.`, info: (s, c) => [['yield', 'An end to it, if this air kills it'], ['danger', `The ${num(c.inN)} inside`]],
       out: { text: (s, c) => `The inner doors are dogged at the change of shift. The outer hatches go at midnight, and the fans run until dawn. ${cap(num(c.inN))} people were inside, and the module is as cold as the yard when the doors are opened.`,
@@ -368,6 +343,15 @@ B('choice', { id: 'smp.choice', tone: 'crisis', title: 'Ways to End It',
         fx: (s, c) => ({ mat: -15, stain: ['smp_burn', 3], off: [['scientist', 'mind', -12]], do: s2 => { const t = T(s2); t.finalNew = !t.tried.includes('fire'); contain(s2, t, 'fire', 1.5); if (t.truth.is === 'spore') t.grown = 0; t.did.burn = true; s2.flags.smp_lab_burned = s2.day;
           for (const f of s2.factors) if (!f.res) f.insight = Math.round(f.insight * 0.5); },
           chron: 'The colony burned its lab with every sample and every record, to kill the thing from the core sample.' }) } },
+    { label: 'Neither, tonight', note: 'Nobody is vented and nothing is burned on a guess, and the grey keeps the rows for as long as a slower way takes.',
+      out: { text: 'You say no to both. The torches go back on their hooks and the outer hatches stay shut. The rows are still waiting for an order.', fx: s => ({ do: s2 => { const t = T(s2); t.did.slow = s2.day; jump(s2, 'smp.slow', 40); } }) } },
+  ] });
+
+B('choice', { id: 'smp.slow', tone: 'crisis', title: 'The Slower Ways', scene: 'smp_choice',
+  when: (s, t) => !!t.did.slow,
+  setup: endCtx,
+  text: (s, c) => `Nothing was vented and nothing was burned. ${c.off ? `${c.Sf} wants to be sealed in with it and go on working.` : `${cap(c.hand)} has offered to be sealed in with it and go on working, since ${c.gone}.`} The other way to let this world's air at it is slow: every pod open for a season, and the rows sleeping cold.\n\n${c.lean} The rows are still waiting for an order.`,
+  choices: [
     { label: (s, c) => c.off ? `Seal ${c.sf} in with it, and weld the door` : `Seal ${c.hand} in with it, and weld the door`, dark: true, note: (s, c) => `If anything can stay ahead of it, it is somebody in the room with it, and ${c.off ? c.sf : c.hand} does not come out until it is over.`, info: (s, c) => [['yield', 'Somebody working on it day and night'], ['danger', c.off ? c.Sf : cap(c.hand)]],
       out: { text: (s, c) => `${c.off ? c.Sf : cap(c.hand)} walks into the lab pod with a cot, a lamp and a crate of notebooks. ${c.E} welds the door at the seams and leaves the sample hatch on its hinges. The first page comes out through it before morning.`,
         fx: (s, c) => ({ stain: ['smp_sealed', 3], do: s2 => { const t = T(s2), p = byPid(s2, c.off ? c.opid : c.hpid); t.finalNew = true; contain(s2, t, 'mind'); t.did.seal = true;
@@ -417,16 +401,13 @@ B('bill', { id: 'smp.after', tone: 'pressure', title: 'A Month On',
       out: { text: 'Nothing is changed. The sheet goes on, and the rows stop asking what it shows.', fx: s => ({ morale: -1, do: s2 => { T(s2).did.held = true; } }) } },
     { label: 'Burn the bunk row it reached first, with the bedding and kit of everyone who slept there', note: 'Nobody is inside, and the row loses everything it owned and its roof.',
       out: { text: 'The row is emptied by noon and fired at dusk. The people who lived in it watch from the mess door with what they could carry, and sleep on the mess floor after.', fx: s => ({ mat: -10, morale: -3, do: s2 => { const t = T(s2); contain(s2, t, 'fire', 0.7); if (t.truth.is === 'spore') t.grown *= 0.6; t.did.row = true; } }) } },
-    { label: 'Put everyone who slept under the grey ducts in the cold store until the season turns', dark: true, note: 'Nothing they carry goes anywhere, and they spend the season in the cold with the meat.', info: [['yield', 'Nothing they carry goes further'], ['danger', 'The rows under the ducts']],
-      out: { text: 'The watch walks them over at dusk with their blankets. The cold store is cleared to the back wall and the compressor turned down as far as it will go. The door is locked from outside.',
-        fx: s => ({ pop: -1, stain: ['smp_cold', 2], do: s2 => { const t = T(s2); t.toll++; contain(s2, t, 'cold'); t.did.cold = true; LF.emit(s2, 'confinement', 'smp.cold', 30, 120, 'the rows under the grey ducts are locked in the cold store'); } }) } },
     { label: 'Log the dead as fever, and close the matter', dark: true, note: 'The hall gets an end to it on paper, and the rows go on sleeping under whatever is still in the ducts.', info: [['yield', 'Morale'], ['danger', 'The rows']],
       out: { text: 'The clinic log is written up again with fever for a cause, and the sheet comes off the clinic wall. The masks are handed in. The rows are glad of it.', fx: s => ({ morale: 3, tension: -4, stain: ['smp_fever', 1], do: s2 => { const t = T(s2); t.did.fever = true; t.creep += 0.2; } }) } },
   ] });
 
 /* ======================= AFTER: what it was ======================= */
 const WAS = {
-  learns: 'It was alive and it kept account. Whatever was done to it once, it found its way round by the next month: the tape, the lye, the cold, the fire. It learned faster than the lab did, and only something it had never been shown could stop it.',
+  learns: 'It was alive and it kept account. Whatever was done to it once, it found its way round by the next month: the tape, the chlorine, the open air, the fire. It learned faster than the lab did, and only something it had never been shown could stop it.',
   harmless: 'It was a mat of threads that lives in the deep ice on nothing, and it does nothing to anyone. It came out of the dish because the dish was warm, and it went where the warm air went. It never touched a person or a bolt.',
   spore: 'It was a seed. What thawed in the dish was the resting stage of something that grows up in a warm wet place with people in it, and what grew out of it in the ducts and the water was the thing to fear. In the dish, a match would have done.',
   air: 'It was a thing of the deep ice that this world\'s air kills in a season. It lived in the dish because the dish was sealed, and then in the lab pod, the ducts and the tanks for the same reason. Every room the colony shut against it was a room it could live in.',
@@ -440,26 +421,23 @@ function reckon(s, t) {
   if (d.burn) add(t.finalNew ? 'Burning the lab ended it, because it had never been shown fire.' : 'The lab burned, with everything in it, and it had met fire in the dish.', 'The lab, its samples and every record of this world were burned for nothing.', 'Burning the lab was the answer, and it cost every record the colony had made.', 'Burning the lab killed what was in the lab, which the air would have done.');
   if (d.seal) add(t.inside && t.inside.dead ? 'Whoever was sealed in with it stayed ahead of it, and did not come out.' : 'Whoever was sealed in with it stayed ahead of it, and came out with the answer.', 'Whoever was welded in with it was welded in with nothing.', 'Whoever was welded in with it was welded in with the grown thing.', 'Whoever was welded into the pod was welded into the one kind of room it could live in.');
   if (d.open) add(t.finalNew ? 'Opening the pods to the air ended it.' : 'It had met the open air in the ducts, and opening the pods did nothing.', 'The colony slept cold for a season for nothing.', 'Opening the pods let the shed of it into every row.', 'Opening the pods to the air was the whole of the cure.');
-  if (d.techIn || d.barred || d.sickIn || d.cold) add('The people shut in with it were shut in with something that went round doors.', 'The people shut in with it were shut in with nothing.', 'The people shut in with it breathed what it was shedding.', 'The people shut in with it were shut in the one kind of place it could live.');
-  if (d.arm) L.push(k === 'harmless' ? 'The arm taken off at the elbow was sound.' : 'The arm taken off at the elbow had it on the skin, and nowhere else.');
-  if (d.blamed) L.push(`${d.blamed} let nothing out on purpose, and was blamed for it.`);
-  if (d.cups || d.moved) L.push('The officers drank and slept clean while the rows did not, and the rows know it.');
+  if (d.techIn || d.sickIn) add('The people shut in with it were shut in with something that went round doors.', 'The people shut in with it were shut in with nothing.', 'The people shut in with it breathed what it was shedding.', 'The people shut in with it were shut in the one kind of place it could live.');
   const out = L.filter(Boolean).slice(0, 5);
   return out.length ? out.join(' ') : 'Nobody was vented, burned or sealed in on account of it, and there is nothing of that kind to answer for.';
 }
 B('after', { id: 'smp.truth', tone: 'quiet', title: 'What the Sample Was',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { end: t.end, toll: Math.max(0, t.toll), burned: !!t.did.burn }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { end: t.end, toll: Math.max(0, t.toll) }); },
   text: (s, c) => { const t = T(s), tail = TAIL[c.end] ? ' ' + TAIL[c.end] : ''; return `${WAS[t.truth.is]}${tail}\n\n${reckon(s, t)}${c.toll ? ` ${Num(c.toll)} colonist${c.toll === 1 ? '' : 's'} died of it, or of what was done about it.` : ''}`; },
   choices: [
     { label: 'Enter what was done in the record, with the names', note: 'Everyone who gave an order about it, or carried one out, has to live beside the page.',
       out: { text: 'It goes into the colony record in full, in your hand, with who ordered what. People read it. Some of the rows stop greeting you, and one or two start.', fx: s => ({ morale: -2, chron: 'The colony wrote down what it had done about the thing from the core sample, with the names.' }) } },
     { label: 'Enter it as a fever, put down in good time', dark: true, note: 'The colony gets an account with nobody in it, and every order given about the grey goes unanswered.', info: [['yield', 'Morale']],
       out: { text: 'The record says a fever went through the rows in the first years and was dealt with by the clinic. The lab is not mentioned. It is the version the children will be taught.', fx: s => ({ morale: 3, stain: ['smp_record', 1], chron: 'The record says a fever went through the colony, and that it was dealt with.' }) } },
-    { label: 'Make it a standing rule: nothing is thawed again outside a cold box, ever', note: (s, c) => c.burned ? 'There is nothing left to thaw, and the rule keeps the next drill crew from starting again.' : 'The lab gives up whatever is still in the ice, for good.',
-      out: { text: 'The rule goes up on the lab door in large letters. The cold boxes are padlocked, and the drill string is cut into lengths for the yard.', fx: s => ({ mat: 10, morale: 1, do: s2 => LF.ease(s2, 'fear', 'smp.rule', 15, 200) }) } },
   ] });
 
-/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). */
+/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). smp_quiet, smp_arm, smp_barred, smp_wall, smp_moved,
+   smp_blamed, smp_cups, smp_thirst, smp_opened and smp_cold have had no option since the cut to three (2026-11-21): their phrases stay
+   for saved games that already carry the stain. */
 Object.assign(LF.DEEDS || {}, {
   smp_quiet: 'the thing in the dish, logged as a mould and left thawing',
   smp_skin: 'the drop of it put on the arm of one of the punishment detail',
@@ -485,17 +463,18 @@ Object.assign(LF.DEEDS || {}, {
   smp_record: 'the account of the grey that called it a fever',
 });
 
-LF.TAGS['smp.dish'] = ['cautious open', 'severe bold', 'closed order', 'severe bold'];
-LF.TAGS['smp.sleeve'] = ['mercy open', 'severe closed', 'severe bold', 'open'];
-LF.TAGS['smp.pod'] = ['cautious closed', 'bold', 'open', 'severe closed', 'closed order'];
-LF.TAGS['smp.ducts'] = ['cautious mercy', 'bold open', 'cautious order', 'severe order', 'closed order'];
-LF.TAGS['smp.culture'] = ['open', 'severe order', 'severe bold', 'severe closed'];
-LF.TAGS['smp.water'] = ['cautious', 'cautious order', 'bold', 'closed order', 'severe order'];
-LF.TAGS['smp.reached'] = ['bold open', 'mercy', 'severe open', 'severe closed'];
-LF.TAGS['smp.choice'] = ['severe bold', 'severe closed', 'severe bold', 'bold open', 'cautious'];
+LF.TAGS['smp.dish'] = ['cautious open', 'severe bold', 'severe bold'];
+LF.TAGS['smp.sleeve'] = ['mercy open', 'severe closed', 'open'];
+LF.TAGS['smp.pod'] = ['cautious closed', 'bold', 'open'];
+LF.TAGS['smp.ducts'] = ['cautious mercy', 'bold open', 'severe order'];
+LF.TAGS['smp.culture'] = ['open', 'severe order', 'severe bold'];
+LF.TAGS['smp.water'] = ['cautious', 'cautious order', 'bold'];
+LF.TAGS['smp.reached'] = ['bold open', 'mercy', 'severe closed'];
+LF.TAGS['smp.choice'] = ['severe bold', 'severe closed', 'cautious'];
+LF.TAGS['smp.slow'] = ['severe bold', 'bold open', 'cautious'];
 LF.TAGS['smp.door'] = ['mercy open', 'severe closed', 'severe closed'];
-LF.TAGS['smp.after'] = ['cautious', 'bold', 'severe closed', 'closed order'];
-LF.TAGS['smp.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['smp.after'] = ['cautious', 'bold', 'closed order'];
+LF.TAGS['smp.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

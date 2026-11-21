@@ -135,7 +135,8 @@ function finish(s, t, end, chron) { if (t.end) return; LF.endThread(s, ID, end, 
 const atGate = (s, t) => t.list.filter(e => e.fate === 'out' && !e.pid);
 function close(s, t, end, chron) { if (t.end) return; if (atGate(s, t).length && s.used['bt.out'] === undefined) { t.pend = { end, chron }; LF.phase(s, ID, 'bill'); jump(s, 'bt.out', 20); return; } finish(s, t, end, chron); }
 
-/* What the drastic answers do, by what it is. how: burn, out, alone, pyre, calm. es: the people it is done to (ctx). */
+/* What the drastic answers do, by what it is. how: burn, out, alone, pyre (the list torn up and the dead burned: the old calm is
+   folded into it, 2026-11-21). es: the people it is done to (ctx). */
 function deed(how, es, extra) { return (s, c) => {
   const t = T(s), k = t.truth.is, v = c[es] || [], named = v.filter(x => x.pid), n = v.length - named.length, ex = (typeof extra === 'function' ? extra(s, c) : extra) || {}, fin = ex.then, fx = Object.assign({}, ex); delete fx.then;
   if (how === 'burn') { fx.kill = named.map(x => ({ who: x.pid, cause: 'burned at the wire for failing the blood test' })); if (n) fx.dead = n; }
@@ -144,7 +145,7 @@ function deed(how, es, extra) { return (s, c) => {
   // alone: whoever carries it shows it, alone in a pod, and is burned in it. Nobody else is touched.
   if (how === 'alone' && k === 'spread') { const iv = c.inf, inn = iv.filter(x => x.pid); fx.kill = inn.map(x => ({ who: x.pid, cause: 'found changed, alone in a pod, and burned in it' })); if (iv.length - inn.length) fx.dead = iv.length - inn.length; }
   const after = { burn: { spread: c.night && restInf ? 3 : 0, dead: c.night && c.risen ? 1 : 0, fever: 0, faking: 0 }, out: { spread: c.night && restInf ? 3 : 0, dead: c.night && c.risen ? 1 : 0, fever: 0, faking: 0 },
-    alone: { spread: 0, dead: c.risen ? 2 : 0, fever: 2, faking: 0 }, pyre: { spread: 3, dead: 0, fever: 1, faking: 0 }, calm: { spread: 3, dead: c.risen ? 2 : 0, fever: 0, faking: 0 } }[how][k];
+    alone: { spread: 0, dead: c.risen ? 2 : 0, fever: 2, faking: 0 }, pyre: { spread: 3, dead: 0, fever: 0, faking: 0 } }[how][k];
   if (after) fx.pop = (fx.pop || 0) - after;
   fx.do = s2 => { const t2 = T(s2);
     for (const x of v) { const e = byK(t2, x.k); if (e) e.fate = how === 'burn' ? 'burned' : 'out'; }
@@ -153,7 +154,6 @@ function deed(how, es, extra) { return (s, c) => {
     if (how === 'alone' && k === 'spread') { for (const x of c.inf) { const e = byK(t2, x.k); if (e) e.fate = 'burned'; } count(t2, c.inf.length); }
     if (how === 'alone') { t2.alone = s2.day; t2.did.alone = (t2.did.alone || 0) + 1; }
     if (how === 'pyre') { t2.pyre = true; t2.did.pyre = true; }
-    if (how === 'calm') t2.did.calm = true;
     count(t2, after);
     if (fin) fin(s2, t2, c); }; return fx; }; }
 
@@ -268,25 +268,16 @@ B('cart', { id: 'bt.cart', view: 'colony', tone: 'pressure', title: 'What Came B
     { label: 'Shut the six in the pump house for the month, and tell them neither why nor for how long', dark: true, note: 'Whatever they carry stays behind one door, and six people who came home tired are locked up without a word.', info: [['yield', 'The colony kept from them'], ['danger', 'The six']],
       out: { text: (s, c) => `The watch walks the six to the pump house at supper and drops the bar. ${c.Lead} asks through the door what they've done, and keeps asking until lamp-down. The cart goes into the cold room as it is, tarpaulin and all.`,
         fx: (s, c) => ({ morale: 1, tension: -4, stain: ['bt_pen', 1], do: s2 => { const t = T(s2); t.held = s2.day; t.kept = true; t.did.pen = true; for (const k of c.keys) { const e = byK(t, k); if (e) { e.held = true; sour(s2, e.pid, 10, 'was locked in the pump house without a word, back from the cut'); } } } }) } },
-    { label: (s, c) => c.what === 'body' ? 'Bury the hauler by the wire tonight, and log a fall from the cart' : 'Butcher it for the galley, and say it came out of the snares', dark: true,
-      note: (s, c) => c.what === 'body' ? 'The colony is spared a death nobody can explain, and the family is told a lie at the graveside.' : 'The stores get a calf\'s weight of fresh meat, and the whole colony eats whatever it died of.',
-      info: (s, c) => c.what === 'body' ? [['yield', 'Morale'], ['danger', 'The family, and whoever digs the grave']] : [['yield', 'Meat'], ['later', 'Everyone who eats']],
-      out: { text: (s, c) => c.what === 'body' ? 'It\'s done before the bell by four of the watch. The log says a fall from the cart, with the date. The family stands at the grave in the morning and believes it, and the six say nothing.' : 'The cook has it jointed and in the pot by midnight. The mess eats well for the first time in a month and says so. The six eat with the rest, and two of them leave half.',
-        fx: (s, c) => c.what === 'body' ? { morale: 2, tension: -4, stain: ['bt_lie', 1], do: s2 => { T(s2).did.lied = true; } }
-          : { food: 40, morale: 2, stain: ['bt_meat', 1], do: s2 => { const t = T(s2); t.did.meat = true; if (t.truth.is === 'spread') for (let i = 0; i < 2; i++) add(s2, t, { inf: true }); if (t.truth.is === 'fever') for (const e of t.list) if (LF.srand(s2) < 0.3) e.fev = true; } } } },
   ] });
 
 /* ======================= WRONG: the first one who is slightly wrong ======================= */
 B(['wrong', 'test'], { id: 'bt.wrong', tone: 'pressure', title: 'A Beat Late',
-  setup: s => { const t = T(s), e = t.list.find(x => here(s, x)) || t.list[0]; return Object.assign(crew(s), who(s, e), { ev: pickK(s, t), ev2: pickK(s, t, -0.05) }); },
+  setup: s => { const t = T(s), e = t.list.find(x => here(s, x)) || t.list[0]; return Object.assign(crew(s), who(s, e), { ev: pickK(s, t) }); },
   text: (s, c) => `${c.Name} came back from the cut with the rest and went to work the next morning like the rest. Something is off. ${c.First} eats alone at the end of the long table, answers a beat late when spoken to, and sleeps with the lamp lit. The other five noticed first, and have moved their bunks to the far end of the row.${c.wv ? `\n\n[[security]] "Who sat with ${c.first} at the long table before the cut, and who'd swear it was any different then? Nobody can, so it could be nothing, and it could be that's always been the way of it and nobody ever looked." "Funny how nobody remembers a thing about anyone until they've a reason to, and now the whole row's got one."` : ''}`,
   choices: [
     { about: true, label: (s, c) => `Have ${c.first} looked over properly`, note: (s, c) => `${c.Name} is examined in front of whoever is in the clinic, and the row hears what was looked for.`, test: { base: 50, mods: [R('physician', 10)] },
       ok: { text: (s, c) => `${cap(LF.sentName(s, 'physician'))} takes an hour over it. ${ev('wrong', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: (s, c) => `${cap(LF.sentName(s, 'physician'))} finds a temperature and a cough and writes them down. ${c.Name} walks back to the row knowing what the clinic was looking for, and so does the row.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 5) }) } },
-    { label: (s, c) => `Ask ${c.first}'s bunkmate to watch and report to you each morning`, dark: true, note: (s, c) => `You learn what ${c.first} does at night, and the row learns that it reports to you.`, info: (s, c) => [['yield', 'What happens at night'], ['danger', `${c.Name}, and the bunkmate`]],
-      out: { text: (s, c) => `The bunkmate comes to your door at first light with a few lines in pencil. ${ev('wrong', c.ev2, c)} ${c.Name} hasn't been told, and works it out before the month is out.`,
-        fx: (s, c) => ({ tension: -2, stain: ['bt_informer', 1], do: s2 => { learn(s2, T(s2), 18, c.ev2); T(s2).did.informer = true; sour(s2, c.pid, 10, 'had a bunkmate set to watch them'); } }) } },
     { label: (s, c) => `Move ${c.first} to the pump house, and say it's for a cough`, dark: true, note: (s, c) => `The row sleeps without ${c.first} in it, and ${c.name} is locked up for a cough nobody has.`, info: (s, c) => [['yield', 'The row calm'], ['danger', c.Name]],
       out: { text: (s, c) => `${c.Name} carries a bedroll to the pump house at supper and doesn't argue. The row sleeps better. At breakfast people ask kindly after the cough.`,
         fx: (s, c) => ({ morale: 1, tension: -3, stain: ['bt_lie', 1], do: s2 => { const t = T(s2), e = byK(t, c.k); if (e) e.held = true; t.held = t.held || s2.day; t.did.lied = true; } }) } },
@@ -307,9 +298,6 @@ B('test', { id: 'bt.test', tone: 'crisis', title: 'A Drop of Blood',
     { label: 'The wire, and anyone who fails goes into the pump house that night with no hearing', dark: true, note: 'The hall sleeps knowing the failures are behind a bar, and the failures are barred in on a drop of blood.', info: [['yield', 'The rows calm'], ['danger', 'Whoever fails']],
       out: { text: (s, c) => `The wire goes round the table in front of the hall. Each one who fails is walked straight across the yard to the pump house, still holding a thumb.\n\n${resLine(s, T(s), c.rw)}`,
         fx: (s, c) => ({ morale: 1, tension: -5, stain: ['bt_pen', 1], do: s2 => { const t = T(s2); t.test = 'wire'; apply(s2, t, c.rw); t.held = s2.day; t.did.pen = true; for (const k in c.rw) if (c.rw[k] === 'fail') { const e = byK(t, k); if (e) e.held = true; } } }) } },
-    { label: 'Run the assay, and tell the hall they all passed, whatever it shows', dark: true, note: 'The colony stops looking at the names on the list, and only you and the clinic know who failed.', info: [['yield', 'Morale'], ['later', 'The rows, if the sheet is right']],
-      out: { text: (s, c) => `The sheet comes to you and nobody else, and the hall is told the list is clean. Everyone on it goes back to the long table. What the sheet says:\n\n${resLine(s, T(s), c.ra)}`,
-        fx: (s, c) => ({ morale: 2, tension: -6, stain: ['bt_lie', 1], do: s2 => { const t = T(s2); t.test = 'assay'; apply(s2, t, c.ra); t.did.lied = true; } }) } },
   ] });
 
 /* The refusal: the next name on the list will not hold out an arm. */
@@ -326,9 +314,6 @@ B(['test', 'second'], { id: 'bt.refuse', tone: 'pressure', title: 'Will Not Blee
     { label: (s, c) => `Have the watch hold ${c.first} down and take it`, dark: true, note: (s, c) => `The colony gets its result, and ${c.name} is held face down on a mess table to give it.`, info: (s, c) => [['yield', 'A result'], ['danger', c.Name]],
       out: { text: (s, c) => `It takes four of the watch, and ${c.first} doesn't stop fighting until the needle is out. ${c.Name} ${c.rr === 'fail' ? 'failed' : 'passed'}. The row heard all of it through the wall.`,
         fx: (s, c) => ({ morale: 1, tension: -3, stain: ['bt_held', 2], do: s2 => { const t = T(s2); const e = add(s2, t, { pid: c.pid, lab: c.pid ? null : c.name, inf: c.inf, fev: c.fev }); if (e) apply(s2, t, { [e.k]: c.rr }); learn(s2, t, 8, c.ev); t.did.held = true; sour(s2, c.pid, 20, 'was held down for the needle'); } }) } },
-    { label: (s, c) => `Bar ${c.first} in the pump house until the arm comes out`, dark: true, note: (s, c) => `Nobody lays a hand on ${c.name}, who sits behind a bar on water until willing.`, info: (s, c) => [['yield', 'A result'], ['danger', c.Name]],
-      out: { text: (s, c) => `${c.Name} holds out for most of the month on water and the noise of the pump, then knocks on the door and holds out an arm. ${c.Name} ${c.rr === 'fail' ? 'failed' : 'passed'}.`,
-        fx: (s, c) => ({ tension: -2, stain: ['bt_pen', 1], do: s2 => { const t = T(s2); const e = add(s2, t, { pid: c.pid, lab: c.pid ? null : c.name, inf: c.inf, fev: c.fev }); if (e) apply(s2, t, { [e.k]: c.rr }); learn(s2, t, 6, c.ev); t.did.pen = true; sour(s2, c.pid, 12, 'was barred in the pump house until willing to bleed'); } }) } },
     { label: (s, c) => `Let ${c.first} bleed in private, with only you to see the wire`, note: 'The hall has to take your word for the result, and some of it won\'t.',
       out: { text: (s, c) => `${c.Name} holds out an arm in your quarters with the door shut, and watches the wire as closely as you do. You tell the hall ${c.first} ${c.rr === 'fail' ? 'failed' : 'passed'}. Some of the hall believes you.`,
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); const e = add(s2, t, { pid: c.pid, lab: c.pid ? null : c.name, inf: c.inf, fev: c.fev }); if (e) apply(s2, t, { [e.k]: c.rr }); learn(s2, t, 6, c.ev); LF.emit(s2, 'suspicion', 'bt.private', 22, 90, 'a result was given out that only the commander saw'); } }) } },
@@ -347,9 +332,6 @@ B(['test', 'second'], { id: 'bt.cold', tone: 'pressure', title: 'On the Slab',
     { label: 'Burn the cold room with it inside, and the meat with it', note: 'The colony loses its cold store and every hook of meat in it, to burn something nobody has looked at.',
       out: { text: (s, c) => `The cold room burns for an hour, and the smell of the meat hangs over the colony at supper. When it is cool enough ${c.e} rakes it out. There is nothing left to say what was on the slab.`,
         fx: s => ({ food: -30, mat: -10, morale: -1, do: s2 => { const t = T(s2); t.pyre = true; t.did.coldburn = true; } }) } },
-    { label: 'Keep the door shut, and put the punishment detail on it through the night', dark: true, note: 'The door is watched, and the ones watching it are people the colony has decided it can spare.', info: [['yield', 'The door watched'], ['danger', 'The detail']],
-      out: { text: s => T(s).truth.is === 'dead' ? 'The detail sits on the step in a row with two lamps. Toward dawn one of them goes in, against orders, to see why the lamp inside went out, and is found by the slab in the morning.' : 'The detail sits on the step in a row with two lamps until first light, and nothing comes through the door. The detail is told it will sit there every night until this is over.',
-        fx: s => Object.assign(T(s).truth.is === 'dead' ? { pop: -1 } : {}, { tension: -3, stain: ['bt_door', 1], do: s2 => { const t = T(s2); if (t.truth.is === 'dead') { count(t, 1); learn(s2, t, 10, 'dead'); } t.did.door = true; } }) } },
     { label: (s, c) => `Shut ${c.subj} in the cold room with it for a night, and see what each of them does`, dark: true, show: (s, c) => !!c.subj, note: (s, c) => `The colony learns something, and ${c.subj} spends a night at two degrees beside it to teach it.`, info: (s, c) => [['yield', 'What it does'], ['danger', c.Subj]],
       out: { text: (s, c) => `${c.Subj} is shut in at lamp-down with a lamp and a blanket, and the bar goes across. In the morning ${c.subj} comes out grey with cold and won't speak to anyone. ${ev('cold', c.ev2, c)}`,
         fx: (s, c) => ({ tension: -2, stain: ['bt_cold', 2], do: s2 => { const t = T(s2); learn(s2, t, 28, c.ev2); t.did.coldnight = c.subj; sour(s2, c.spid, 20, 'was shut in the cold room for a night with what came back from the cut'); } }) } },
@@ -358,19 +340,14 @@ B(['test', 'second'], { id: 'bt.cold', tone: 'pressure', title: 'On the Slab',
 /* ======================= SECOND: the list grows ======================= */
 B('second', { id: 'bt.second', tone: 'crisis', title: 'The Second List',
   setup: s => { const t = T(s), f = failed(s, t), L = onList(s, t), tg = byK(t, t.target), fk = byK(t, t.faker);
-    return Object.assign(crew(s), { n: L.length, shown: t.list.filter(e => !e.hid).length, list: listText(s, t), fail: vic(s, f), all: vic(s, L), inf: vic(s, infected(s, t)), nf: f.length, ev: pickK(s, t), risen: t.kept && !t.pyre && t.truth.is === 'dead',
+    return Object.assign(crew(s), { n: L.length, shown: t.list.filter(e => !e.hid).length, list: listText(s, t), fail: vic(s, f), inf: vic(s, infected(s, t)), nf: f.length, ev: pickK(s, t), risen: t.kept && !t.pyre && t.truth.is === 'dead',
       target: tg ? nm(s, tg) : 'one of the six', faker: fk ? nameOf(s, fk) : 'One of the six', fakerFirst: fk ? firstOf(s, fk) : 'that one', self: t.how === 'self' }); },
   text: (s, c) => `The second round is done. The list has the six on it, and now the ones who bunk beside them and the ones who carried the cart in: ${num(c.shown)} names in ${c.w}'s hand, on a sheet pinned to the mess door.\n\n${c.list}\n\n${c.lean}`,
   choices: [
-    { label: 'Everyone back to work, and the ones who failed under watch', note: 'Whoever failed eats and works with a rifle at their back, and sleeps in the same rows as everyone else.',
-      out: { text: 'Each name that failed gets a watch of its own, two hands off the wall in turns. The rows sleep. The ones being watched don\'t.', fx: s => ({ morale: -1, tension: 3, do: s2 => { T(s2).did.watched = true; } }) } },
     { label: 'New hands on the needle: test them all again, and test whoever drew the blood', note: 'The work stops again for the testing, and whoever has been drawing the blood goes on the list.',
       out: { text: (s, c) => T(s).truth.is === 'faking' ? `The needle goes to two of the watch, and everyone who has handled a sample sits down to be tested with the rest. This time the samples are drawn and carried by hands that never touched the old ones, and ${c.self ? `${c.target} passes` : `${c.target} passes, and so does everyone else`}. ${c.self ? `${cap(c.target)} sits very still when it's read out.` : `When the watch goes through ${c.fakerFirst}'s bunk they find a vial of the clinic's spirit and a list of names in the same order as the sheet on the mess door.`}`
         : `The needle changes hands and every one of them bleeds again. The sheet comes out much as it did the first time. ${ev('blood', c.ev, c)}`,
         fx: (s, c) => ({ progress: -0.05, do: s2 => { const t = T(s2); if (t.truth.is === 'faking') { t.did.needle = true; close(s2, t, 'caught', 'The one faking the signs was caught when the needle changed hands.'); } else learn(s2, t, 15, c.ev); } }) } },
-    { label: 'Burn the ones who failed, tonight, at the wire', dark: true, show: (s, c) => c.nf > 0, note: (s, c) => `If the wire is right it ends here, and the ${num(c.nf)} who failed burn on its word.`, info: (s, c) => [['yield', 'An end to it, if the wire is right'], ['danger', `The ${num(c.nf)} who failed`]],
-      out: { text: (s, c) => `It is done at the wire at lamp-down. ${cap(names(c.fail))} go to the pyre, some walking and some carried. The rest of the colony watches from the yard, and the list on the mess door gets a line through ${c.nf === 1 ? 'a name' : 'every name that failed'}.`,
-        fx: deed('burn', 'fail', { morale: 2, tension: -10, stain: ['bt_burned', 3], chron: 'The colony burned the people who had failed the blood test.', then: (s2, t, c) => { if (t.truth.is === 'spread' && !infected(s2, t).length) close(s2, t, 'burned', 'The colony burned the people who failed the blood test, and it stopped.'); } }) } },
     { label: 'Put the ones who failed outside the wire with a tent and a month of food', dark: true, show: (s, c) => c.nf > 0, cost: { food: 20 }, note: 'The rows are clear of them, and the ones put out live or die past the wire on one drop of blood.', info: (s, c) => [['yield', 'The rows clear of them'], ['danger', `The ${num(c.nf)} put out`]],
       out: { text: (s, c) => `${cap(names(c.fail))} go out through the gate at noon with a tent, a month of food and nothing else. The bar goes down behind them. By dusk they have the tent up on the far side of the open ground, where the wall can see it.`,
         fx: deed('out', 'fail', { morale: 1, tension: -6, stain: ['bt_out', 2], then: (s2, t, c) => { if (t.truth.is === 'spread' && !infected(s2, t).length) close(s2, t, 'outside', 'The colony put the people who failed the blood test outside the wire.'); } }) } },
@@ -390,9 +367,6 @@ B(['second', 'night'], { id: 'bt.fight', tone: 'crisis', title: 'In the Second R
     { label: (s, c) => `Cut ${c.first} loose, and put the whole row on the punishment detail`, note: (s, c) => `Twenty frightened people are punished for being frightened, and sleep beside ${c.name} again.`,
       out: { text: (s, c) => `${c.W} goes in with the watch and cuts the strap. The row puts the irons down when told. It's on the latrine pits for the season, and ${c.name} sleeps in the row again because there's nowhere else.`,
         fx: (s, c) => ({ morale: -2, tension: 4, do: s2 => { learn(s2, T(s2), 6, c.ev); LF.emit(s2, 'resentment', 'bt.row', 26, 120, 'a bunk row was punished for tying up somebody it was afraid of'); } }) } },
-    { label: (s, c) => `Leave ${c.first} tied until it's over, with a hand to feed ${c.first}`, dark: true, note: (s, c) => `The row is calm, and ${c.name} lives strapped to a bed frame for having been suspected.`, info: (s, c) => [['yield', 'The row calm'], ['danger', c.Name]],
-      out: { text: (s, c) => `${c.Name} stays strapped to the frame. A hand from the galley comes three times a day with a bowl and a bucket. The row sleeps, and ${c.name} doesn't.`,
-        fx: (s, c) => ({ morale: 1, tension: -5, stain: ['bt_tied', 1], do: s2 => { const t = T(s2), e = byK(t, c.k); if (e) e.held = true; learn(s2, t, 6, c.ev); t.did.tied = c.name; sour(s2, c.pid, 20, 'was left strapped to a bunk frame by the row'); } }) } },
     { label: (s, c) => `Take ${c.first} into the pump house yourself, and tell the row why`, note: (s, c) => `${c.Name} is locked up for having been accused, and the row learns that tying somebody up gets them taken away.`,
       out: { text: (s, c) => `You walk ${c.name} across the yard to the pump house with the strap still on one wrist. The row watches from the door. By morning another row has a name it wants walked across the yard.`,
         fx: (s, c) => ({ tension: -2, do: s2 => { const t = T(s2), e = byK(t, c.k); if (e) e.held = true; t.held = t.held || s2.day; learn(s2, t, 6, c.ev); } }) } },
@@ -421,9 +395,6 @@ B(['second', 'night'], { id: 'bt.officer', tone: 'pressure', title: 'Their Own S
     { label: (s, c) => `Say the plate was dirty, burn the sheet, and keep ${c.ofirst} at the bench`, dark: true, note: (s, c) => `The clinic keeps its hands, and everyone ${c.ofirst} treats is treated by somebody who failed.`, info: (s, c) => [['yield', 'Morale, and a clinic'], ['danger', `Everyone ${c.ofirst} treats`]],
       out: { text: (s, c) => `The sheet goes in the galley stove. ${c.Oname} goes back to the bench and keeps drawing blood, and the hall is told the plate was dirty.`,
         fx: (s, c) => ({ morale: 2, tension: -4, stain: ['bt_lie', 1], do: s2 => { const t = T(s2); add(s2, t, { pid: c.pid, lab: c.pid ? null : c.oname, inf: c.inf, fev: c.fev, res: ['fail', 'fail'], hid: true }); if (c.inf) t.clinic = true; t.did.lied = true; } }) } },
-    { label: (s, c) => `Keep ${c.ofirst} drawing blood under a rifle until the list is done`, dark: true, note: (s, c) => `The testing goes on and goes faster, and ${c.oname} does it with a rifle at the back.`, info: (s, c) => [['yield', 'The testing done fast'], ['danger', c.Oname]],
-      out: { text: (s, c) => `A hand from the watch stands behind ${c.oname} at the bench from then on, rifle slung, and walks ${c.ofirst} to the latrine and back. The testing goes twice as fast. ${c.Oname} speaks to nobody outside the work.`,
-        fx: (s, c) => ({ tension: -3, stain: ['bt_gun', 1], off: [['ctx', 'mind', -10]], do: s2 => { const t = T(s2); add(s2, t, { pid: c.pid, lab: c.pid ? null : c.oname, inf: c.inf, fev: c.fev, res: ['fail', 'fail'] }); learn(s2, t, 12); t.did.gun = c.oname; sour(s2, c.pid, 15, 'was kept at the bench under a rifle'); } }) } },
   ] });
 
 /* ======================= NIGHT: it comes to a head ======================= */
@@ -436,7 +407,8 @@ B('night', { id: 'bt.night', tone: 'crisis', title: 'The Night of the List',
     { label: 'Burn everyone who failed, tonight', dark: true, show: (s, c) => c.nf > 0, note: (s, c) => `The ${num(c.nf)} who failed go to the wire, and anyone who loved one of them watches.`, info: (s, c) => [['yield', 'An end to it, if the test is right'], ['danger', `The ${num(c.nf)} who failed`]],
       out: { text: (s, c) => `${cap(names(c.fail))} are taken to the wire at midnight. It is quick for some of them. ${({ spread: c.inf.every(x => c.fail.some(y => y.k === x.k)) ? 'The rows sleep after that, and nobody on them is found in the morning, then or later.' : 'Before the month is out a bunk in the second row is empty, and its neighbour was on nobody\'s list.', dead: c.risen ? 'The month after is quiet, except in the cold room, where the hand on the door asks to be moved and is found inside it.' : 'The month after is quiet.', fever: 'The hall goes on being hot and sure of itself for a month, and then the fever goes round the rest of the colony and leaves it.', faking: `${cap(c.target)} was among them${c.self ? '' : `, and ${c.fakerFirst} sleeps better since`}.` })[T(s).truth.is]}`,
         fx: deed('burn', 'fail', { morale: 2, tension: -12, stain: ['bt_burned', 3], chron: 'The colony burned everyone who had failed the blood test.', then: (s2, t, c) => { const k = t.truth.is; if (k === 'spread') t.did.restInf = !c.inf.every(x => c.fail.some(y => y.k === x.k)); close(s2, t, k === 'spread' && t.did.restInf ? 'ran' : k === 'dead' && c.risen ? 'risen' : 'burned', 'The colony burned everyone on the list who had failed.'); } }) } },
-    { label: 'Put everyone on the list outside the wire, with tents and a month of food', dark: true, cost: { food: 30 }, note: 'Everyone named on the mess door goes out through the gate, failed or passed, and the colony sleeps without them.', info: (s, c) => [['yield', 'The colony clear of it, if it is on the list'], ['danger', `The ${num(c.n)} named`]],
+    // Three on screen (2026-11-21): the whole list put out takes the burning's place when nobody on the list stands failed (opposite shows).
+    { label: 'Put everyone on the list outside the wire, with tents and a month of food', dark: true, show: (s, c) => c.nf === 0, cost: { food: 30 }, note: 'Everyone named on the mess door goes out through the gate, failed or passed, and the colony sleeps without them.', info: (s, c) => [['yield', 'The colony clear of it, if it is on the list'], ['danger', `The ${num(c.n)} named`]],
       out: { text: (s, c) => `The ${num(c.n)} named on the mess door go out through the gate at first light with tents, food and their bedrolls, ${names(c.all, 4)} among them. The bar goes down. ${({ spread: c.inf.every(x => c.all.some(y => y.k === x.k)) ? 'The rows are quiet after that.' : 'Inside the month a bunk in the second row is empty, and its neighbour was on nobody\'s list.', dead: c.risen ? 'The rows are quiet after that, apart from the cold room.' : 'The rows are quiet after that.', fever: 'The fever goes round the rest of the colony anyway, a month later, and leaves it.', faking: 'The rows are quiet after that.' })[T(s).truth.is]}`,
         fx: deed('out', 'all', { morale: 1, tension: -8, stain: ['bt_out', 2], chron: 'The colony put everyone on the blood-test list outside the wire.', then: (s2, t, c) => close(s2, t, t.truth.is === 'dead' && c.risen ? 'risen' : t.truth.is === 'spread' && !c.inf.every(x => c.all.some(y => y.k === x.k)) ? 'ran' : 'outside', 'The colony put everyone on the list outside the wire.') }) } },
     { label: 'Lock everyone in alone, one to a pod, until it shows itself', note: 'The colony stops working for a month and is fed through hatches, and every child spends it alone in a room.',
@@ -445,12 +417,11 @@ B('night', { id: 'bt.night', tone: 'crisis', title: 'The Night of the List',
           fever: 'The whole colony goes into pods one to a door, children too. Alone in the dark the hot ones get hotter and frightened past anything a hatch can talk down. Two are dead in their pods before the doors open.',
           faking: `The whole colony goes into pods one to a door. Alone, nobody gets sick: not ${c.target}, not anyone. ${c.self ? `${cap(c.target)} asks for the bar to be lifted on the second day and says why, to you, through the hatch.` : `The watch searches every pod and finds a vial of the clinic's spirit in ${c.fakerFirst}'s bedroll.`}` })[T(s).truth.is],
         fx: deed('alone', 'none', { food: -40, morale: -3, then: (s2, t, c) => { const k = t.truth.is; close(s2, t, { spread: 'shown', dead: c.risen ? 'risen' : 'quiet', fever: 'dark', faking: 'caught' }[k], { spread: 'Locked in alone, the ones who carried it showed it.', dead: 'The colony locked itself in alone, and nothing showed.', fever: 'The colony locked itself in alone, and the fever got worse in the dark.', faking: 'Locked in alone, nobody could fake anything, and the one who had been was found out.' }[k]); } }) } },
-    { label: (s, c) => c.kept ? 'Burn the cold room with what\'s in it, and everyone buried since the cart came home' : 'Dig up everyone buried since the cart came home, and burn them', note: 'The families watch their dead dug up and burned, and the list is left to look after itself.',
-      out: { text: (s, c) => `${c.kept ? 'The cold room goes up first, then the new graves, one at a time.' : 'The new graves are opened one at a time.'} The families stand at the wire with the watch between. ${({ spread: 'The list goes on as it was, and the bunk rows go on emptying.', dead: 'When the last of them is ash the cold weather goes out of the mess wall.', fever: 'It changes nothing, and the fever goes round the colony and out again in its own time.', faking: 'It changes nothing on the list.' })[T(s).truth.is]}`,
-        fx: deed('pyre', 'none', (s, c) => ({ mat: -10, morale: -2, food: c.kept ? -20 : 0, then: (s2, t) => close(s2, t, { spread: 'ran', dead: 'pyre', fever: 'passed', faking: 'quiet' }[t.truth.is], 'The colony burned its dead.') })) } },
-    { label: 'Tear up the list, and let the clinic treat everyone with a temperature', note: 'Whoever on the list carries anything goes back into the rows with nobody watching.',
-      out: { text: (s, c) => `The list comes off the mess door and goes in the stove. The clinic opens to anyone with a temperature, and there is a line. ${({ spread: 'Inside the month the second row is three short, and the third is starting.', dead: c.risen ? 'The cold-room door is found open from inside a month later, and two of the night watch further down the yard.' : 'The hall eats at one table again.', fever: 'Nursed and cooled and told nobody is on any list, the hot ones come down, and the hall eats at one table again.', faking: 'With no list, there is nothing to fake on, and the sick stop being sick.' })[T(s).truth.is]}`,
-        fx: deed('calm', 'none', { morale: 1, then: (s2, t, c) => close(s2, t, { spread: 'ran', dead: c.risen ? 'risen' : 'quiet', fever: 'broke', faking: 'quiet' }[t.truth.is], 'The list came off the mess door.') }) } },
+    // The fold (2026-11-21, three options at most): burning the dead (right under dead) and tearing up the list (right under fever) were two
+    // answers that both leave the living alone. They are one option now, and its outcome reads the truth.
+    { label: (s, c) => c.kept ? 'Tear up the list, and burn the cold room and everyone buried since the cart came home' : 'Tear up the list, and dig up and burn everyone buried since the cart came home', note: 'The families watch their dead burned, and whoever on the list carries anything goes back into the rows with nobody watching.',
+      out: { text: (s, c) => `The list comes off the mess door and goes in the stove. ${c.kept ? 'The cold room goes up next, then the new graves, one at a time.' : 'Then the new graves are opened one at a time.'} The families stand at the wire with the watch between. ${({ spread: 'Inside the month the second row is three short, and the third is starting.', dead: c.risen ? 'When the last of them is ash the cold weather goes out of the mess wall, and the hall eats at one table again.' : 'When the last of them is ash the hall eats at one table again.', fever: 'The clinic opens to anyone with a temperature, and there is a line. Nursed and cooled and told nobody is on any list, the hot ones come down, and the hall eats at one table again.', faking: 'With no list, there is nothing to fake on, and the sick stop being sick.' })[T(s).truth.is]}`,
+        fx: deed('pyre', 'none', (s, c) => ({ mat: -10, morale: -1, food: c.kept ? -20 : 0, then: (s2, t) => close(s2, t, { spread: 'ran', dead: 'pyre', fever: 'broke', faking: 'quiet' }[t.truth.is], 'The colony tore up the list and burned its dead.') })) } },
   ] });
 
 /* ======================= BILL: the ones put out, at the gate ======================= */
@@ -466,9 +437,6 @@ B(['second', 'night', 'bill'], { id: 'bt.out', tone: 'pressure', title: 'At the 
     { label: 'Keep the gate shut, and throw food over the wire', cost: { food: 20 }, note: 'They live or die out there on what the colony throws them, in sight of the wall.',
       out: { text: 'The wall throws sacks over the wire at noon. They sit by the gate for a while and eat, and then walk away together toward the cut.',
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); for (const k of c.back) { const e = byK(t, k); if (e) e.fate = 'gone'; } if (t.phase === 'bill') finish(s2, t, t.pend ? t.pend.end : 'quiet', t.pend && t.pend.chron); } }) } },
-    { label: 'Fire over their heads until they go', dark: true, note: 'The gate stays shut without a word said, and people the colony fed last month are run off by its rifles.', info: [['yield', 'The gate shut'], ['danger', 'The ones at the gate']],
-      out: { text: 'The wall fires a volley over the gate, and then another. They go back across the open ground at a walk, not running, and one of them turns at the far side and waits until the wall has stopped watching.',
-        fx: (s, c) => ({ tension: -3, stain: ['bt_gate', 1], do: s2 => { const t = T(s2); for (const k of c.back) { const e = byK(t, k); if (e) e.fate = 'gone'; } t.did.gate = true; if (t.phase === 'bill') finish(s2, t, t.pend ? t.pend.end : 'quiet', t.pend && t.pend.chron); } }) } },
     { label: 'Fire at them', dark: true, note: 'If they carry it, it ends at the gate, and the wall shoots people it knows by name.', info: [['yield', 'An end to it, if they carry it'], ['danger', 'The ones at the gate']],
       out: { text: (s, c) => `The wall fires on the third call to go. ${Num(c.n)} are lying at the gate when the smoke clears, and the wall has to go out and burn them where they lie.`,
         fx: (s, c) => ({ tension: -6, stain: ['bt_shot', 3], chips: [[`${cap(num(c.n))} shot at the gate`, false]], do: s2 => { const t = T(s2); for (const k of c.back) { const e = byK(t, k); if (e) e.fate = 'shot'; } t.did.shot = c.n; if (t.phase === 'bill') finish(s2, t, t.pend ? t.pend.end : 'quiet', t.pend && t.pend.chron); } }) } },
@@ -501,10 +469,7 @@ function reckon(s, t) {
     G(d.burned, 'burned at the wire', 'was healthy.', 'were healthy.'), G(d.burned, 'burned at the wire', 'had a fever.', 'had a fever.'), G(d.burned, 'burned at the wire', 'was', 'were') + ' burned for somebody else\'s reason.');
   if (d.out) add2(G(d.out, 'put out through the gate', 'was', 'were') + ' put out on a drop of blood.', G(d.out, 'put out through the gate', 'was', 'were') + ' never at risk of anything.', G(d.out, 'put out through the gate', 'had a fever, or had been near somebody who did.', 'had a fever, or had been near somebody who did.'), G(d.out, 'put out through the gate', 'was', 'were') + ' never sick.');
   if (d.shot) L.push(G(d.shot, 'shot at the gate', 'had', 'had') + ' come home to be let in.');
-  if (d.meat) add2('The meat in the pot carried it to the long table.', 'The meat in the pot was only meat.', 'The meat in the pot carried the fever to the long table.', 'The meat in the pot was only meat.');
   if (d.coldnight) add2(`${cap(d.coldnight)} spent a night in the cold room for nothing that could be learned there.`, `${cap(d.coldnight)} spent a night in the cold room beside the one thing that was dangerous.`, `${cap(d.coldnight)} spent a night at two degrees beside a dead animal for a fever.`, `${cap(d.coldnight)} spent a night at two degrees beside a dead animal for a lie.`);
-  if (d.tied) L.push(`${cap(d.tied)} was strapped to a bunk frame by the row, and ${k === 'spread' ? 'the row had reason to be afraid' : 'carried nothing'}.`);
-  if (d.gun) L.push(`${cap(d.gun)} drew the colony's blood under a rifle.`);
   if (d.pen) L.push('The ones barred in the pump house were barred on what the wire said.');
   if (d.lied) L.push('What the hall was told, and what the sheet said, are in the log side by side.');
   if (d.alone && k === 'fever') L.push('The ones who died alone in the pods died of the fever and the dark.');
@@ -521,11 +486,10 @@ B('after', { id: 'bt.truth', tone: 'quiet', title: 'What Was in the Blood',
     { label: 'Enter it in the record as a sickness from the cut, met and ended', dark: true, note: 'The colony gets an account it can live beside, and the names on the list are left out of it.', info: [['yield', 'Morale']],
       out: { text: 'The record says that a sickness came back from the far cut in the first years and was contained. The entry is three lines long, and no colonist is named in it. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['bt_record', 1], chron: 'The record says that a sickness from the cut was contained.' }) } },
-    { label: 'Keep the test for good: everyone who comes in from past the wire bleeds at the gate', note: 'The colony goes on living as if it were still out there, and every party home from the field waits at the gate for a hot wire.',
-      out: { text: 'A plate and a wire are kept in a box by the gate. Every party in from the field holds out a thumb before the bar goes up. In time the children do it at the door of the school without being asked.',
-        fx: s => ({ morale: -1, do: s2 => { LF.emit(s2, 'suspicion', 'bt.gate', 16, 250, 'everyone who comes in from past the wire bleeds at the gate'); } }) } },
   ] });
 
+/* bt_meat, bt_informer, bt_door, bt_tied, bt_gun and bt_gate have had no option since the cut to three (2026-11-21): their phrases stay
+   for saved games that already carry the stain. */
 Object.assign(LF.DEEDS || {}, {
   bt_pen: 'the people barred in the pump house on a drop of blood', bt_meat: 'the sick animal served at the long table', bt_lie: 'what the hall was told about the blood test',
   bt_informer: 'the bunkmate set to report on the bunk beside', bt_held: 'the one held face down on a mess table for the needle', bt_door: 'the punishment detail set on the cold-room door',
@@ -534,17 +498,17 @@ Object.assign(LF.DEEDS || {}, {
   bt_record: 'the three lines in the record about the sickness from the cut',
 });
 
-LF.TAGS['bt.cart'] = ['cautious open', 'cautious order', 'severe closed', 'bold closed'];
-LF.TAGS['bt.wrong'] = ['mercy open', 'closed order', 'closed order', 'free'];
-LF.TAGS['bt.test'] = ['open order', 'cautious', 'severe order', 'closed'];
-LF.TAGS['bt.refuse'] = ['free mercy', 'severe order', 'severe order', 'open'];
-LF.TAGS['bt.cold'] = ['bold open', 'cautious', 'severe order', 'severe bold'];
-LF.TAGS['bt.second'] = ['cautious', 'open', 'severe bold', 'severe order', 'cautious order'];
-LF.TAGS['bt.fight'] = ['order mercy', 'severe closed', 'cautious order', 'severe free'];
-LF.TAGS['bt.officer'] = ['open', 'cautious order', 'closed', 'severe order'];
-LF.TAGS['bt.night'] = ['severe bold', 'severe order', 'cautious order', 'bold', 'mercy open'];
-LF.TAGS['bt.out'] = ['mercy open', 'cautious', 'severe', 'severe bold'];
-LF.TAGS['bt.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['bt.cart'] = ['cautious open', 'cautious order', 'severe closed'];
+LF.TAGS['bt.wrong'] = ['mercy open', 'closed order', 'free'];
+LF.TAGS['bt.test'] = ['open order', 'cautious', 'severe order'];
+LF.TAGS['bt.refuse'] = ['free mercy', 'severe order', 'open'];
+LF.TAGS['bt.cold'] = ['bold open', 'cautious', 'severe bold'];
+LF.TAGS['bt.second'] = ['open', 'severe order', 'cautious order'];
+LF.TAGS['bt.fight'] = ['order mercy', 'cautious order', 'severe free'];
+LF.TAGS['bt.officer'] = ['open', 'cautious order', 'closed'];
+LF.TAGS['bt.night'] = ['severe bold', 'severe order', 'cautious order', 'mercy open'];
+LF.TAGS['bt.out'] = ['mercy open', 'cautious', 'severe bold'];
+LF.TAGS['bt.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

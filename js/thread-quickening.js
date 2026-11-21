@@ -128,13 +128,13 @@ const ODD = ['One of the mothers was found standing in the settling pond after l
 function month(s, t) {
   const k = t.truth.is, late = ['shut', 'term', 'rest'].includes(t.phase), cut = t.cut && (k === 'host' || k === 'sick');
   // new ones: the engine's own rate, held here
-  if (!t.early && !cut && t.carry < CAP) { t.acc += yearly(s) / 12 * (t.ban ? 0.1 : t.told || t.phase !== 'shown' ? 0.6 : 1);
+  if (!cut && t.carry < CAP) { t.acc += yearly(s) / 12 * (t.ban ? 0.1 : t.told || t.phase !== 'shown' ? 0.6 : 1);
     if (t.acc >= 1) { const n = Math.min(CAP - t.carry, Math.floor(t.acc)); t.acc -= n; t.carry += n; t.more += n;
       LF.log(s, n === 1 ? 'One more woman has come to the clinic carrying, and running fast like the rest.' : `${Num(n)} more women have come to the clinic carrying, and running fast like the rest.`, 'bad'); } }
   s.res.food = Math.max(0, s.res.food - 4 * t.carry);   // they eat half as much again
   if (!late || s.used['qk.door'] === undefined) return;
   if ((k === 'brood' || (k === 'sick' && !t.treated)) && t.carry > 2 && LF.srand(s) < RATE * (t.worked ? 1.6 : 1) * (t.rested ? 0.6 : 1) * (k === 'sick' && t.cut ? 0.4 : 1) && loseM(s, t, 1)) {
-    t.carry--; t.body = s.day; LF.log(s, LF.spick(s, DEAD[k]), 'bad'); LF.emit(s, 'grief', 'qk.dead', 15, 40, 'a mother died carrying, and nobody can say of what'); }
+    t.carry--; LF.log(s, LF.spick(s, DEAD[k]), 'bad'); LF.emit(s, 'grief', 'qk.dead', 15, 40, 'a mother died carrying, and nobody can say of what'); }
   if (k === 'host' && (t.odd || 0) < 2 && LF.srand(s) < 0.3) { t.odd = (t.odd || 0) + 1; LF.log(s, ODD[t.odd - 1]); LF.emit(s, 'unexplained', 'qk.pond', 25, 30, 'the mothers go to the water at night and do not remember it'); }
   if (!t.apart && LF.cv(s, 'fear') >= 45 && LF.srand(s) < 0.15) { s.morale = clamp(s.morale - 1, 0, 100); s.tension = clamp(s.tension + 3, 0, 100);
     LF.log(s, 'Somebody put a stone through the window of the second row last night. The mothers hung a blanket over the hole and sent out no complaint.', 'bad'); }
@@ -197,7 +197,7 @@ LF.thread({ id: ID, name: 'The Quickening', view: 'people', dread: true,
   sig: t => t.truth.is,
   ask: (s, t) => 'What are the mothers carrying?',
   chap: {
-    born: t => t.did.pen ? 'The children the colony was afraid of were born behind a barred door, and were children.' : 'The colony let the children it was afraid of be born, and they were children, made for this world.',
+    born: t => 'The colony let the children it was afraid of be born, and they were children, made for this world.',
     ended: t => ({ fine: 'The colony ended every pregnancy on the ground by order. They were children, and well.', host: 'The colony ended every pregnancy on the ground by order. None of them was a child.',
       brood: 'The colony ended every pregnancy on the ground by order, and it was the one thing that could have saved the mothers.', sick: 'The colony ended every pregnancy on the ground by order, for a sickness the clinic could have treated.' }[t.truth.is]),
     shot: t => 'What the mothers carried was not a child. The colony killed it as it was born, and the mothers lived.',
@@ -228,7 +228,7 @@ LF.thread({ id: ID, name: 'The Quickening', view: 'people', dread: true,
       if (t.end) return; if (t.carry <= 0) return finish(s, t, t.firstEnd || 'born', null); LF.phase(s, ID, 'rest'); jump(s, 'qk.rest', 20); } }
     else if (t.phase === 'rest' && (since('qk.rest') >= 12 || age >= 40)) return resolve(s, t);
     if (s.day % 10 === 0 && t.phase !== 'sign') month(s, t);
-    if (s.day % 5 === 0) { const calm = (t.lied && t.phase !== 'term' && t.phase !== 'rest' ? 10 : 0) + (t.apart ? 6 : 0) + (t.ban || t.early ? 5 : 0);
+    if (s.day % 5 === 0) { const calm = (t.lied && t.phase !== 'term' && t.phase !== 'rest' ? 10 : 0) + (t.apart ? 6 : 0) + (t.ban ? 5 : 0);
       if (t.phase === 'sign') LF.emit(s, 'unexplained', SRC, 32 - calm, 8, 'the women carrying are months further on than they can be');
       else LF.emit(s, 'fear', SRC, (({ shown: 28, shut: 38 }[t.phase] || 48) - calm) * FEAR, 8, 'nobody can say what the mothers are carrying');
       if (t.apart) LF.emit(s, 'confinement', SRC, 26, 8, 'the mothers are kept behind a barred door with the watch on it');
@@ -256,9 +256,6 @@ B('sign', { id: 'qk.first', tone: 'pressure', title: 'Too Far Along',
     { label: 'Tell the hall at supper, plainly', note: (s, c) => `Everyone knows by morning, and the ${num(c.n)} eat every meal after it with the hall looking at them.`,
       out: { text: (s, c) => `You say it in four sentences. Nobody cheers. ${c.M} is at the third table, and the people on either side have moved along the bench a hand's width before you have finished speaking.`,
         fx: (s, c) => ({ morale: -2, do: s2 => { const t = T(s2); t.told = s2.day; sour(s2, c.pid, 8, 'you told the hall what the tape said before you told them'); } }) } },
-    { label: 'Order every woman of an age to the clinic each month, willing or not', dark: true, note: 'The clinic will know of every one from its first month, and the order is carried out by the watch.', info: [['yield', 'Every case known early'], ['danger', 'Every woman in the colony']],
-      out: { text: (s, c) => `The order goes on the board with a list of names by row. The watch walks the ones who do not come. ${ev('tape', c.ev, c)} ${c.D} signs each page and has stopped saying good morning.`,
-        fx: (s, c) => ({ morale: -2, stain: ['qk_exams', 2], off: [['physician', 'mind', -4]], do: s2 => { const t = T(s2); t.exams = s2.day; t.forced++; t.did.exams = true; learn(s2, t, 26, c.ev); sour(s2, c.pid, 12, 'you had them walked to the clinic by the watch'); } }) } },
   ] });
 
 /* ======================= SHOWN: the pictures, and how well they are ======================= */
@@ -274,13 +271,10 @@ B('shown', { id: 'qk.scan', tone: 'pressure', title: 'The Pictures',
     { label: 'Give each mother her own picture', note: 'They have a right to them, and they will not come back to the clinic once they have them.',
       out: { text: (s, c) => `${c.M} looks at the picture for a long time.\n\n[[${c.pid || c.rk || 'x27'}]] "That's mine." "I don't care what your book's got."\n\nThe others take theirs without a word. None of them keeps the next appointment.`,
         fx: (s, c) => ({ do: s2 => { const t = T(s2); t.given = s2.day; learn(s2, t, 6); sour(s2, c.pid, -8); } }) } },
-    { label: 'Burn the pictures, and tell the mothers all is well', dark: true, note: (s, c) => `The clinic's waiting room is quiet again, and ${num(c.n)} women are lied to about their own bodies.`, info: [['yield', 'Morale'], ['danger', 'The mothers']],
-      out: { text: (s, c) => `The films go into the clinic stove. ${c.D} tells each mother that everything is as it should be, and is believed. The mess starts a list of names for the first one.`,
-        fx: s => ({ morale: 2, tension: -4, stain: ['qk_lied', 1], off: [['physician', 'mind', -5]], do: s2 => { const t = T(s2); t.lied = s2.day; t.did.lied = true; } }) } },
   ] });
 
 B(['shown', 'shut'], { id: 'qk.well', tone: 'pressure', title: 'Better Than Well',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05), ev2: pickK(s, t, 0.1) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05) }); },
   text: (s, c) => `The ${num(c.n)} are the best hands in the colony. ${c.M} has not missed a shift. They lift what two cannot, they have not caught the cough that is going through the rows, and the roster has begun putting them where the work is heaviest because it gets done. The galley says each one eats half as much again.\n\nThey have stopped coming to the clinic.${c.dv ? `\n\n[[doctor]] "I can't examine a patient who's stronger than my orderlies and won't sit down, and they've stopped coming because every time they do I look frightened, and they've noticed." "And don't you dare send the watch for them."` : ''}`,
   choices: [
     { label: 'Send someone from the work crews to eat with them and listen', note: 'It takes a month of suppers, and the mothers know who sent their guest.', test: { base: 50, mods: [R('botanist', 10), R('physician', 5)] },
@@ -292,14 +286,11 @@ B(['shown', 'shut'], { id: 'qk.well', tone: 'pressure', title: 'Better Than Well
     { label: 'Stand them down on full rations until it is over', cost: { food: 60 }, note: 'The rows that pick up their work can see who eats and does not lift.',
       out: { text: (s, c) => `They are taken off the roster and sit in the sun outside the second row. The plate gang is short. By the end of the month somebody has chalked a ladle on the bunkhouse wall.`,
         fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); t.rested = s2.day; sour(s2, c.pid, -6); LF.emit(s2, 'resentment', 'qk.rest', 22, 120, 'the mothers eat full and do not work'); } }) } },
-    { label: 'Have the watch bring them to the clinic for bloods, one at a time', dark: true, note: 'The clinic gets its look, and it gets it from women who said no.', info: [['yield', 'What their blood says'], ['danger', 'The mothers, and the clinic']],
-      out: { text: (s, c) => `They are fetched off shift between two of the watch, one a day, and walked through the yard. ${ev('well', c.ev2, c)} ${c.D} draws the blood and does not look at you when the report comes over.`,
-        fx: (s, c) => ({ morale: -1, stain: ['qk_exams', 2], off: [['physician', 'mind', -5]], do: s2 => { const t = T(s2); t.forced++; t.did.exams = true; learn(s2, t, 24, c.ev2); sour(s2, c.pid, 14, 'you had them walked to the clinic by the watch'); } }) } },
   ] });
 
 /* ======================= SHUT: the second row ======================= */
 B('shut', { id: 'qk.door', tone: 'crisis', title: 'The Second Row',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05), ev2: pickK(s, t, 0.1) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.05) }); },
   text: (s, c) => `The ${num(c.n)} have moved into the second bunkhouse together. They carried everyone else's bedding out into the yard, folded it, and barred the door from inside. Food goes in at the window. ${c.M} speaks for them through it.\n\n[[${c.pid || c.rk || 'x27'}]] "We're well. We're not coming out to be looked at." "Nobody's putting a tape round any of us again. Leave the pot on the step."\n\nThe row they turned out is sleeping in the mess and wants its bunks back.${c.wv ? `\n\n[[security]] "So the mothers have barred the second bunkhouse against me, and who gave them the bar? I'd like that name before I do anything else." "And I'd love to be told which regulation I use, because I've read the lot and there's nothing in it for this."` : ''}`,
   choices: [
     { label: 'Leave them the bunkhouse', note: 'The row they turned out sleeps on the mess floor, and nobody knows what goes on behind that door.',
@@ -311,16 +302,10 @@ B('shut', { id: 'qk.door', tone: 'crisis', title: 'The Second Row',
     { label: 'Bar the door from outside as well, and put the watch on it', dark: true, note: (s, c) => `Whatever happens in there stays in there, and ${num(c.n)} colonists who have broken no rule are prisoners.`, info: [['yield', 'The hall easier'], ['danger', 'The mothers']],
       out: { text: (s, c) => `${c.W} has a second bar fitted on the outside before dusk, and two of the watch stand on the step. The mothers watch it done through the window and say nothing. The hall sleeps better that night than it has all season.`,
         fx: (s, c) => ({ morale: 1, tension: -6, stain: ['qk_penned', 2], do: s2 => { const t = T(s2); t.apart = s2.day; t.did.barred = true; sour(s2, c.pid, 15, 'you had them barred in from outside'); } }) } },
-    { label: 'Break the door, and bring them to the clinic under guard', dark: true, note: 'The clinic gets all of them where it can see them, and the watch goes in against women at term.', info: [['yield', 'A look at every one'], ['danger', 'The mothers, and the watch']],
-      test: { base: 50, mods: [R('security', 10)] },
-      ok: { text: (s, c) => `The door goes in at first light. They do not fight. They walk to the clinic in a file between the watch, and the ward door is locked behind them. ${ev('scan', c.ev2, c)}`,
-        fx: (s, c) => ({ morale: -2, stain: ['qk_door', 2], do: s2 => { const t = T(s2); t.apart = s2.day; t.forced++; t.did.broke = true; learn(s2, t, 24, c.ev2); sour(s2, c.pid, 20, 'you had the door broken and them walked out under guard'); } }) },
-      bad: { text: (s, c) => `The door goes in at first light, and they are stronger than the watch was told. One of the watch has a broken arm. One of the mothers went down on the step under three people, and died in the clinic that night. The rest are back behind a door that no longer shuts.`,
-        fx: (s, c) => ({ dead: 1, morale: -3, stain: ['qk_door', 2], off: [['security', 'mind', -4]], do: s2 => { const t = T(s2); t.carry--; count(t, 1, true); t.body = s2.day; t.forced++; t.did.broke = true; learn(s2, t, 4); sour(s2, c.pid, 25, 'you had the door broken, and one of them died of it'); } }) } },
   ] });
 
 B('shut', { id: 'qk.source', tone: 'pressure', title: 'What They Share',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.1), ev2: pickK(s, t, 0.2), lean: lean(t) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.1), lean: lean(t) }); },
   text: (s, c) => `${c.Sc} has had the clinic's book for a month, looking for what the ${num(c.n)} have in common that nobody else has. It comes down to a short list: where they drew water, what they ate, where they worked, and when.${c.sv ? `\n\n[[scientist]] "It's the same in every one of them, isn't it, the same pace, the same size, the same everything, so it's one cause, one, and one cause is a thing you can find!" "So give me the pump house for a month, because I'd start with the water."` : ''}\n\n${c.lean}`,
   choices: [
     { label: 'Give the lab the pump house for the month', note: 'Water is carried by hand while the pump house is a laboratory.', test: { base: 50, mods: [R('xenobio', 10), R('physician', 5), If(s => LF.has(s, 'lab'), 10, 'The laboratory')] },
@@ -332,14 +317,11 @@ B('shut', { id: 'qk.source', tone: 'pressure', title: 'What They Share',
     { label: 'Put the last of the ship\'s antibiotics in the pot on their step, untold', dark: true, note: (s, c) => `If it is an infection it is treated without a fight, and ${num(c.n)} women at term are dosed by their own galley.`, info: [['yield', 'A cure, if it is a sickness'], ['danger', 'The mothers, and the medicine chest']],
       out: { text: (s, c) => `${c.D} measures it out and will not carry the pot. For a month the second row eats what the galley sends. The medicine chest has no more of it for anybody. ${c.M} says through the window that the stew has tasted of metal lately.`,
         fx: (s, c) => ({ stain: ['qk_dosed', 2], off: [['physician', 'mind', -4]], do: s2 => { const t = T(s2); t.treated = s2.day; t.did.dosed = true; if (t.truth.is === 'sick') learn(s2, t, 10); } }) } },
-    { label: 'Change nothing, and watch who it takes next', dark: true, note: 'The cause shows itself soonest that way, and it shows itself in more women.', info: [['yield', 'The cause, most likely'], ['danger', 'Whoever conceives this season']],
-      out: { text: (s, c) => `${c.Sc} keeps a sheet on every woman of an age: which standpipe, which table, which row. Two more are on the clinic's list before the month is out. ${ev('source', c.ev2, c)}`,
-        fx: (s, c) => ({ stain: ['qk_watched', 2], do: s2 => { const t = T(s2), n = Math.min(2, CAP - t.carry); t.carry += n; t.more += n; t.did.watched = true; learn(s2, t, 30, c.ev2); } }) } },
   ] });
 
 B('shut', { id: 'qk.kin', tone: 'pressure', title: 'Whose Say',
   when: (s, t) => t.carry >= 3,
-  setup: s => { const t = T(s), n = t.carry; return Object.assign(crew(s), { k: clamp(Math.round(n * 0.4), 1, n - 1), will: clamp(Math.round(n * 0.3), 1, n - 1), deadM: Math.round(n * EARLY) }); },
+  setup: s => { const t = T(s), n = t.carry; return Object.assign(crew(s), { will: clamp(Math.round(n * 0.3), 1, n - 1), deadM: Math.round(n * EARLY) }); },
   text: (s, c) => `Eleven people are standing in your office: partners of the ${num(c.n)}, two of their mothers, a brother. They have a paper. They want the pregnancies ended, all of them, now, while ${c.d} still thinks it can be done safely. They say the women in the second row are not in their right minds and cannot be asked.\n\n${c.M} has sent an answer out through the window, in writing.\n\n[[note:Passed out through the window]] "Nobody asked us anything when we were put on that ship asleep. You'll ask us this."${c.dv ? `\n\n[[doctor]] "They're my patients, and the families aren't, and neither are you, so that paper counts for about as much as one I'd write." "${c.Mf} says no, and I've got no test that says ${c.mf} doesn't mean it."` : ''}`,
   choices: [
     { label: 'It is each woman\'s own say, and that is the order', note: 'The families are told their paper counts for nothing, and whatever is coming comes.',
@@ -349,9 +331,6 @@ B('shut', { id: 'qk.kin', tone: 'pressure', title: 'Whose Say',
       ok: { text: (s, c) => `It takes four evenings. ${Num(c.will)} of them come out by the door and walk to the clinic with their own people. ${c.D} does what each one asks. The bar goes down again behind them.`,
         fx: (s, c) => ({ do: s2 => { const t = T(s2); t.carry -= c.will; t.willing = c.will; learn(s2, t, 6); } }) },
       bad: { text: (s, c) => `It takes four evenings, and nobody comes out. On the last one ${c.m} asks the families to stop coming to the window. They are sleeping in the yard outside it now.`, fx: s => ({ morale: -1, tension: 3 }) } },
-    { label: 'Any woman whose family signs for her is taken to the clinic', dark: true, note: (s, c) => `About ${num(c.k)} are ended on a relative's signature, by the watch, and the ones nobody signs for are left.`, info: [['yield', 'Fewer of them, and the hall easier'], ['danger', 'The ones signed for']],
-      out: { text: (s, c) => `${Num(c.k)} papers are signed. The watch takes those ${num(c.k)} out of the second row at first light, with their families standing in the yard. ${c.D} does it, because the other pair of hands on offer was the watch's medic. They are back in their own bunks within the month, and do not speak to whoever signed.`,
-        fx: (s, c) => ({ tension: -4, stain: ['qk_signed', 2], off: [['physician', 'mind', -6]], do: s2 => { const t = T(s2); t.carry -= c.k; t.ended += c.k; t.forced++; t.did.signed = c.k; t.scar = s2.day; sour(s2, c.pid, 18, 'you let their families sign for them'); } }) } },
     { label: 'Do as the paper asks: end them all now, by order', dark: true, note: (s, c) => `It is over before the first can come, and it is done to ${num(c.n)} women who said no in writing.`, info: (s, c) => [['yield', 'An end to it'], ['danger', `The ${num(c.n)}`]],
       out: { text: (s, c) => `The watch takes the second row a little after dark. ${c.D} works through the night behind a locked door with two orderlies. ${c.deadM ? `One of the ${num(c.n)} did not come through it.` : `All ${num(c.n)} came through it.`} The rest are in the cots. None of them looks up when the door opens.`,
         fx: (s, c) => Object.assign(c.deadM ? { dead: c.deadM } : {}, { morale: -3, tension: -8, stain: ['qk_ended', 3], off: [['physician', 'mind', -10]], chron: 'The colony ended every pregnancy on the ground in one night, by order.',
@@ -366,9 +345,6 @@ B('shut', { id: 'qk.hall', tone: 'council', title: 'No More of Them',
     { label: 'Implants for every woman of an age, fitted and checked', dark: true, note: 'It works, and it is done to every woman in the colony by order, the willing and the unwilling.', info: [['yield', 'No new ones'], ['danger', 'Every woman of an age']],
       out: { text: (s, c) => `The clinic fits them row by row, and the watch brings the ones who do not come. ${c.D} checks each a month later. The list of the carrying stops getting longer.`,
         fx: s => ({ morale: -2, tension: -6, stain: ['qk_ban', 2], off: [['physician', 'mind', -4]], do: s2 => { const t = T(s2); t.ban = s2.day; t.forced++; t.did.ban = true; } }) } },
-    { label: 'End any new one in its first month, as the clinic finds it', dark: true, note: 'Nothing new gets as far as the second row, and each month the clinic ends what it finds without asking.', info: [['yield', 'No new ones'], ['danger', 'Whoever conceives']],
-      out: { text: (s, c) => `Every woman of an age is seen each month, by order. What the clinic finds, it ends the same day. ${c.D} keeps the count in a separate book, and has locked the book in the dispensary.`,
-        fx: s => ({ morale: -1, tension: -4, stain: ['qk_early', 2], off: [['physician', 'mind', -6]], do: s2 => { const t = T(s2); t.early = s2.day; t.exams = s2.day; t.forced++; t.did.early1 = true; } }) } },
     { label: 'Men and women in separate bunkhouses, and the watch on the doors at night', note: 'Every couple in the colony is parted to stop a thing that most of them were not doing.',
       out: { text: 'The rows are re-drawn in an afternoon. Couples carry their bedding to opposite ends of the yard. The watch has orders for the doors at night, and before the month is out it has stopped enforcing them with any heart.',
         fx: s => ({ morale: -3, do: s2 => { const t = T(s2); t.told = s2.day; LF.emit(s2, 'confinement', 'qk.rows', 24, 120, 'couples sleep in separate bunkhouses by order'); } }) } },
@@ -381,23 +357,16 @@ const openFx = (ok, how) => (s, c) => Object.assign(ok ? {} : { dead: 1 }, { mor
   do: s2 => { const t = T(s2); t.carry--; t.ended++; if (!ok) count(t, 1, true); t.did.opened = how; t.opened = c.ev; if (how === 'force') t.forced++; learn(s2, t, 40, c.ev); sour(s2, c.pid, how === 'force' ? 22 : 10, 'you had one of them opened to see'); } });
 B('shut', { id: 'qk.one', tone: 'crisis', title: 'Behind the Clinic Door',
   when: (s, t) => t.carry >= 2,
-  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.4), ev2: pickK(s, t, 0.15), body: !!t.body, lean: lean(t) }); },
-  text: (s, c) => `${c.D} has gone as far as tape and pictures go. ${c.lean}\n\nThere is one way left to know before the first of them comes, and ${c.d} has put it in writing so that nobody can say it was not said: open one. The clinic can do it and most likely keep the mother alive. It cannot keep what she carries. None of the ${num(c.n)} will agree to it.${c.dv ? `\n\n[[doctor]] "I wrote it down because it's true, and I never said I'd do it." "You'll have to order me, and you'll say the name of the one you've chosen out loud when you do."` : ''}${c.body ? '\n\nOne of them is dead already. The second row has the body and will not give it up.' : ''}`,
+  setup: s => { const t = T(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.4), ev2: pickK(s, t, 0.15), lean: lean(t) }); },
+  text: (s, c) => `${c.D} has gone as far as tape and pictures go. ${c.lean}\n\nThere is one way left to know before the first of them comes, and ${c.d} has put it in writing so that nobody can say it was not said: open one. The clinic can do it and most likely keep the mother alive. It cannot keep what she carries. None of the ${num(c.n)} will agree to it.${c.dv ? `\n\n[[doctor]] "I wrote it down because it's true, and I never said I'd do it." "You'll have to order me, and you'll say the name of the one you've chosen out loud when you do."` : ''}`,
   choices: [
     { label: 'Order it: the watch brings one out, and the clinic door is locked', dark: true, note: 'It is the one sure look, and it is taken from a woman who said no.', info: [['yield', 'What it is, almost for certain'], ['danger', 'The one chosen']],
       test: { base: 60, mods: [R('physician', 10)] },
       ok: { text: (s, c) => `The watch brings out the one nearest the door. ${c.D} is behind the locked door for three hours and comes out with two pages. The mother is alive. ${ev('open', c.ev, c)}`, fx: openFx(true, 'force') },
       bad: { text: (s, c) => `The watch brings out the one nearest the door. ${c.D} is behind the locked door until dark and comes out with two pages. The mother died on the table. ${ev('open', c.ev, c)}`, fx: openFx(false, 'force') } },
-    { label: 'One of them is on a charge for striking the watch: offer it dropped for her consent', dark: true, note: 'The log will say she agreed, and she will have agreed with a cell door open behind her.', info: [['yield', 'What it is, almost for certain'], ['danger', 'The one on the charge']],
-      test: { base: 70, mods: [R('physician', 10)] },
-      ok: { text: (s, c) => `She signs in the lock-up, with the door open. ${c.D} is three hours behind the clinic door and comes out with two pages. The mother is alive, and free to go. ${ev('open', c.ev, c)}`, fx: openFx(true, 'bought') },
-      bad: { text: (s, c) => `She signs in the lock-up, with the door open. ${c.D} is behind the clinic door until dark and comes out with two pages. The mother died on the table, with the charge against her dropped. ${ev('open', c.ev, c)}`, fx: openFx(false, 'bought') } },
     { about: true, label: (s, c) => `Ask ${c.m} for a needle's worth of the fluid, and end nothing`, note: 'It is theirs to refuse, and a needle tells less than a knife.', test: { base: 40, mods: [R('physician', 10), If(s => !T(s).forced, 10, 'Nobody has laid a hand on them'), If(s => T(s).say === 'own', 10, 'Their say was upheld')] },
       ok: { text: (s, c) => `${c.M} thinks about it for a day and then holds an arm out of the window for ${c.d} to take, and walks to the clinic unescorted. ${ev('needle', c.ev2, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 28, c.ev2) }) },
       bad: { text: (s, c) => `[[${c.pid || c.rk || 'x27'}]] "No." "Ask again and we'll board the window up as well."`, fx: s => ({ do: s2 => learn(s2, T(s2), 2) }) } },
-    { label: 'Take the dead one from them, and open her', dark: true, show: (s, c) => c.body, note: 'The dead can be looked at without ending anything, and the watch has to take her from the women who are sitting with her.', info: [['yield', 'What it is, most likely'], ['danger', 'The second row']],
-      out: { text: (s, c) => `The watch goes in for the body and comes out with it, and two of them are bleeding from the face. ${c.D} is an hour behind the clinic door. ${ev('open', c.ev, c)}`,
-        fx: (s, c) => ({ morale: -2, stain: ['qk_body', 1], do: s2 => { const t = T(s2); t.forced++; t.did.body = true; t.opened = c.ev; learn(s2, t, 36, c.ev); sour(s2, c.pid, 15, 'you had the watch take their dead from them'); } }) } },
     { label: 'Leave them be, and wait for the first', note: 'Nobody is touched, and the colony meets whatever is born knowing no more than it does now.',
       out: { text: (s, c) => `${c.D} puts the paper in the stove. The clinic makes up one cot with clean linen and leaves a lamp trimmed beside it.`, fx: (s, c) => ({ do: s2 => { sour(s2, c.pid, -5); } }) } },
   ] });
@@ -419,15 +388,9 @@ const FIRST = {
     sick: (c, ok) => `The child is born dead before midnight, small, and long past helping. ${c.M} bleeds afterwards and ${c.d} cannot stop it. ${c.Mf} dies at first light. The two rifles stood against the wall all night with nothing to do.`,
     cured: (c, ok) => `${c.M} is delivered before midnight of a boy the size of a loaf, who cries at once. ${c.Mf} bleeds, and ${c.d} stops it. The watch carries its rifles out without being asked.`,
     half: (c, ok) => `The child is born dead before midnight. ${c.M} bleeds afterwards, and ${c.d} stops it. The two rifles stood against the wall all night with nothing to do.` },
-  door: { fine: c => `Nobody is let in and nobody comes out. A little before midnight the second row goes quiet, and then there is singing, low, several voices. In the morning ${c.m} holds something wrapped up to the window for as long as it takes to count three, and takes it away again.`,
-    host: c => `Nobody is let in and nobody comes out. A little before midnight something comes out under the eave at the back, quick and low, and the wall pair fires on it. It is dead in the yard at first light, and it is not a child. Inside, ${c.m} is shouting to be told what the shooting was.`,
-    brood: c => `Nobody is let in and nobody comes out. A little before midnight the second row goes quiet. Toward dawn there is a sound inside like rain on a tin roof, moving. At first light the others carry ${c.m} to the door in a blanket and lay the blanket on the step. They do not speak. ${c.D} looks, and comes away.`,
-    sick: c => `Nobody is let in and nobody comes out. At first light the others carry ${c.m} to the door in a blanket, with a smaller bundle laid on top, and let ${c.d} take both.`,
-    cured: c => `Nobody is let in and nobody comes out. A little before midnight a child cries in the second row, thin and angry. In the morning ${c.m} holds a boy up to the window, very small.`,
-    half: c => `Nobody is let in and nobody comes out. In the morning ${c.m} comes to the window alone and asks for a spade to be left on the step.` },
 };
 const firstKey = t => saved(t) || t.truth.is;
-/* The first one comes. how: clinic, rifles, door. Returns what the card's fx must take. */
+/* The first one comes. how: clinic, rifles. Returns what the card's fx must take. */
 function firstFx(s, c, how, ok) { const t = T(s), k = t.truth.is, key = firstKey(t), fx = {}, dies = key === 'brood' || key === 'sick';
   let killed = 0, loose = false, child = 0, shot = false;
   if (key === 'fine') { if (how === 'rifles' && !ok) shot = true; else child = 1; }
@@ -437,12 +400,11 @@ function firstFx(s, c, how, ok) { const t = T(s), k = t.truth.is, key = firstKey
   if (dies) { if (c.pid) fx.kill = [{ who: c.pid, cause: k === 'brood' ? 'died bearing what was not a child' : 'bled to death after a stillbirth' }]; else killed++; }
   if (killed) fx.dead = killed; if (dies || killed || shot) fx.morale = -3;
   if (how === 'rifles') { fx.stain = ['qk_rifles', shot ? 3 : 1]; if (shot) fx.off = [['physician', 'mind', -8], ['security', 'mind', -5]]; }
-  if (how === 'door') fx.stain = ['qk_penned', 2];
   fx.do = s2 => { const t2 = T(s2); t2.firstDone = s2.day; t2.firstHow = how; t2.firstKey = shot ? 'shot' : key; t2.carry--; count(t2, killed + (dies && c.pid ? 1 : 0)); if (dies) t2.lostM++;
     if (loose) t2.loose = s2.day; if (child) bear(s2, t2, 1); if (shot) { t2.did.shot = true; sour(s2, c.pid, 35, 'the watch you put in the room shot the child'); }
-    if (how === 'door') { t2.apart = t2.apart || s2.day; t2.did.barred = true; } if (how === 'rifles') t2.did.rifles = true;
+    if (how === 'rifles') t2.did.rifles = true;
     t2.firstEnd = key === 'fine' || key === 'cured' ? (key === 'fine' ? 'born' : 'cured') : k === 'host' ? 'shot' : key === 'half' ? 'cured' : 'lost';
-    const sure = !(how === 'door' && key === 'fine'); learn(s2, t2, sure ? 45 : 10, sure ? k : undefined); };
+    learn(s2, t2, 45, k); };
   return fx; }
 /* Nobody answered: it comes in the clinic, as a birth. */
 function firstCome(s, t) { const c = crew(s), fx = firstFx(s, c, 'clinic', true);
@@ -451,7 +413,7 @@ function firstCome(s, t) { const c = crew(s), fx = firstFx(s, c, 'clinic', true)
 
 B('term', { id: 'qk.term', tone: 'crisis', title: 'The First',
   when: (s, t) => !t.firstDone,
-  setup: s => { const t = T(s); return Object.assign(crew(s), { lean: lean(t), deadM: Math.max(t.carry >= 3 ? 1 : 0, Math.round(t.carry * LATE)) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { lean: lean(t) }); },
   text: (s, c) => `${c.Mf}'s time came at the evening meal${c.apart ? ', behind the barred door' : ''}. It is the first. ${c.n < 2 ? 'There is nobody behind it now.' : `By every sign ${others(c.n - 1)} ${c.n === 2 ? 'is' : 'are'} a few nights behind.`} The hall has stopped eating. ${c.W} has four rifles in the yard outside the second row and has not been told what they are for. ${c.D} has the clinic lit and a cot made up.\n\n${c.lean}${c.dv ? `\n\n[[doctor]] "${c.Mf}'s my patient and that's a birth, and the first thing that child hears isn't going to be a rifle." "Anybody who walks into my clinic with a rifle had better be in labour, and you can tell the watch I said so."` : ''}`,
   choices: [
     { label: 'Bring it into the clinic like any birth, and nobody armed', note: 'Whoever is in that room meets whatever it is with their bare hands.', info: [['later', 'The clinic, if it is not a child']],
@@ -459,17 +421,13 @@ B('term', { id: 'qk.term', tone: 'crisis', title: 'The First',
     { label: 'Into the clinic, with two rifles standing in the room', dark: true, note: 'The room can answer whatever comes, and two frightened people with rifles stand over a woman giving birth.', info: [['yield', 'An answer, if it is not a child'], ['fail', 'What is born']],
       test: { base: 60, mods: [R('security', 10), If(s => T(s).insight >= 50, 10, 'The watch has been told what to look for')] },
       ok: { text: (s, c) => FIRST.rifles[firstKey(T(s))](c, true), fx: (s, c) => firstFx(s, c, 'rifles', true) }, bad: { text: (s, c) => FIRST.rifles[firstKey(T(s))](c, false), fx: (s, c) => firstFx(s, c, 'rifles', false) } },
-    { label: (s, c) => c.apart ? 'Keep the door barred, and let it happen in there' : 'Bar the second row from outside, and let it happen in there', dark: true, note: 'Whatever is born is born behind a bar with the watch on the step, and no clinic.', info: [['yield', 'Nothing gets out'], ['danger', 'The mothers']],
-      out: { text: (s, c) => FIRST.door[firstKey(T(s))](c), fx: (s, c) => firstFx(s, c, 'door', true) } },
-    { label: 'End every pregnancy in the colony tonight, by order', dark: true, note: (s, c) => `Nothing is born at all, and at term the clinic will lose about ${num(c.deadM)} of the ${num(c.n)} doing it.`, info: (s, c) => [['yield', 'An end to it'], ['danger', `The ${num(c.n)}`]],
-      out: { text: (s, c) => END.all(c, { dead: c.deadM }), fx: settleFx('end', true, { morale: -4, tension: -8, stain: ['qk_ended', 3] }) } },
     { label: 'Put them out past the wire before it comes', dark: true, note: (s, c) => `Whatever is born is born out there, and ${num(c.n)} of the colony are put out to bear it alone.`, info: (s, c) => [['yield', 'Nothing born inside the wire'], ['danger', `The ${num(c.n)}`]],
       out: { text: (s, c) => END.out(c, {}), fx: settleFx('out', true, { morale: -3, tension: -6, stain: ['qk_out', 3] }) } },
   ] });
 
 /* ======================= REST: the others ======================= */
 const SAW = {
-  fine: (t, c) => t.firstHow === 'door' ? `Nobody outside the second row has seen what ${c.m} held up to the window, and nobody has heard it cry.` : `${c.M}'s daughter has not cried once. She follows a hand with her eyes already and holds up her own head. Half the colony has been to look at her, and came away quiet.`,
+  fine: (t, c) => `${c.M}'s daughter has not cried once. She follows a hand with her eyes already and holds up her own head. Half the colony has been to look at her, and came away quiet.`,
   shot: (t, c) => `The child the watch shot is in the cold store. ${c.D} has looked, and says there was nothing wrong with her that anybody could find.`,
   host: (t, c) => t.loose ? `What was born in the clinic is somewhere under the floors, and has not been found. The mother has been told that the child died.` : `What was born is in the cold store under a tarpaulin. It is not a child, and the mother has been told that the child died.`,
   brood: (t, c) => t.loose ? `The first of the mothers is dead, and what killed her is in the clinic wall. ${c.D} has moved the cots into the mess.` : `The first of the mothers is dead. What came out of her was killed, and the watch burned it.`,
@@ -487,16 +445,16 @@ B('rest', { id: 'qk.rest', tone: 'crisis', title: 'The Others',
   choices: [
     { label: (s, c) => c.seen ? 'Each in the clinic as it comes, with the watch in the room' : 'Each in the clinic as it comes', note: (s, c) => `The clinic takes them one at a time for a month, and meets ${num(c.n)} more of whatever the first was.`, info: [['danger', 'The mothers, and the clinic']],
       out: { text: (s, c) => { const t = T(s); return REST.clinic[restKey(t, 'clinic')](c, settle(s, t, 'clinic', true)); }, fx: settleFx('clinic', true, {}) } },
-    { label: 'Bring every one of them on now, in one night', note: 'It is over by morning, and the clinic takes all of them at once with two orderlies.', info: [['yield', 'Over by morning'], ['danger', 'The mothers, and the clinic']],
+    // Three on screen (2026-11-21): the clinic and the ending always, and a third by what the first one was, which the card has just said.
+    // Not a child (host, brood): the barred row under the rifles. A child, living or dead: all of them brought on in one night.
+    { label: 'Bring every one of them on now, in one night', show: (s, c) => !c.seen, note: 'It is over by morning, and the clinic takes all of them at once with two orderlies.', info: [['yield', 'Over by morning'], ['danger', 'The mothers, and the clinic']],
       test: { base: 50, mods: [R('physician', 10)] },
       ok: { text: (s, c) => { const t = T(s); return REST.induce[restKey(t, 'induce')](Object.assign({}, c, { D: cap(LF.sentName(s, 'physician')) }), settle(s, t, 'induce', true)); }, fx: settleFx('induce', true, {}) },
       bad: { text: (s, c) => { const t = T(s); return REST.induce[restKey(t, 'induce')](Object.assign({}, c, { D: cap(LF.sentName(s, 'physician')) }), settle(s, t, 'induce', false)); }, fx: settleFx('induce', false, { morale: -2 }) } },
-    { label: 'Keep them barred in under the rifles until the last is over', dark: true, note: (s, c) => `Nothing born in there gets out, and ${num(c.n)} women bear whatever it is with no clinic and a rifle on the step.`, info: [['yield', 'Nothing gets out'], ['danger', 'The mothers']],
+    { label: 'Keep them barred in under the rifles until the last is over', dark: true, show: (s, c) => !!c.seen, note: (s, c) => `Nothing born in there gets out, and ${num(c.n)} women bear whatever it is with no clinic and a rifle on the step.`, info: [['yield', 'Nothing gets out'], ['danger', 'The mothers']],
       out: { text: (s, c) => { const t = T(s); return REST.pen[restKey(t, 'pen')](c, settle(s, t, 'pen', true)); }, fx: settleFx('pen', true, { tension: -4, stain: ['qk_penned', 2] }) } },
     { label: 'End the rest tonight, by order', dark: true, note: (s, c) => `No more of them are born, and this late the clinic will lose about ${num(c.deadM)} of the ${num(c.n)} doing it.`, info: (s, c) => [['yield', 'An end to it'], ['danger', `The ${num(c.n)}`]],
       out: { text: (s, c) => END.all(c, { dead: c.deadM }), fx: settleFx('end', true, { morale: -4, tension: -8, stain: ['qk_ended', 3] }) } },
-    { label: 'Put them out past the wire tonight', dark: true, note: (s, c) => `Whatever the rest of them bear, they bear out there, alone.`, info: (s, c) => [['yield', 'Nothing more born inside the wire'], ['danger', `The ${num(c.n)}`]],
-      out: { text: (s, c) => END.out(c, {}), fx: settleFx('out', true, { morale: -3, tension: -6, stain: ['qk_out', 3] }) } },
   ] });
 
 /* ======================= AFTER: what they carried ======================= */
@@ -519,15 +477,13 @@ function reckon(s, t, c) {
   const d = t.did, k = t.truth.is, L = [], add = (f, h2, b, sk) => L.push({ fine: f, host: h2, brood: b, sick: sk }[k]);
   if (d.end) { const n = num(d.end); add(`The ${n} pregnancies ended by order were ${n} healthy children.`, `The ${n} pregnancies ended by order were none of them children, and the mothers would have lived through bearing them.`,
     `Ending the ${n} by order was the one thing that saved the mothers who lived${d.early ? ', and doing it early saved more' : ''}.`, `The ${n} pregnancies ended by order could have been treated out of the medicine chest.`); }
-  if (d.signed) add(`The ${num(d.signed)} signed for by their families lost healthy children to a relative's pen.`, `The ${num(d.signed)} signed for by their families were spared bearing what the others bore.`, `The ${num(d.signed)} signed for by their families are alive because of it, and do not speak to whoever signed.`, `The ${num(d.signed)} signed for by their families lost children the clinic could have saved.`);
   if (d.opened) add('The one opened to see was carrying a healthy girl.', 'The one opened to see was carrying what the rest were.', 'The one opened to see was the first to be saved, though nobody meant it so.', 'The one opened to see was carrying a living child that the medicine chest could have kept.');
   if (d.out) add(`The ${num(d.out)} put out past the wire were mothers, and no more than that.`, `The ${num(d.out)} put out past the wire bore it alone in the open, and lived.`, `The ${num(d.out)} put out past the wire died out there, one at a time, with nobody by.`, `The ${num(d.out)} put out past the wire died of a thing a month of medicine would have cured.`);
   if (d.pen || d.barred) add('The bar on the second row kept in nothing but women and their children.', 'The bar on the second row was what kept it out of the bunk rows.', 'The bar on the second row kept the clinic from mothers who could have been saved.', t.treated ? '' : 'The bar on the second row kept the clinic from mothers it could have treated.');
   if (d.rifles && !d.shot) add('The rifles in the clinic had nothing to shoot at, and the mother knows they were there.', 'The rifles in the clinic were the right thing to bring.', 'The rifles in the clinic killed what came, and did nothing for the mother.', t.firstKey === 'cured' ? 'The rifles in the clinic stood by while a small boy was born.' : 'The rifles in the clinic stood by at a stillbirth.');
-  if (d.ban || d.early1) add('The order against conceiving stopped children.', 'The order against conceiving kept more women out of the second row.', 'The order against conceiving kept more women alive.', 'The order against conceiving was aimed at the women, and the cause was in a filter bed.');
+  if (d.ban) add('The order against conceiving stopped children.', 'The order against conceiving kept more women out of the second row.', 'The order against conceiving kept more women alive.', 'The order against conceiving was aimed at the women, and the cause was in a filter bed.');
   if (d.worked) add('', '', 'The double shifts were worked by women who were being eaten.', 'The double shifts were worked by women with a fever.');
   if (d.dosed && k !== 'sick') L.push('The antibiotics in their stew did nothing, and the chest is empty of them.');
-  if (d.watched) L.push('Two women joined the list while the colony watched to see who would be next.');
   if (d.lied) L.push('The book still says eight weeks against each name.');
   const out = L.filter(Boolean).slice(0, 5);
   return out.length ? out.join(' ') : 'Nobody was held, opened or ended on account of it.';
@@ -555,7 +511,9 @@ B('after', { id: 'qk.truth', tone: 'quiet', title: 'What They Carried',
       out: { text: (s, c) => RULED.ban, fx: s => ({ morale: -2, tension: -6, stain: ['qk_ban', 2], do: s2 => { T(s2).rule = 'ban'; }, chron: 'The colony forbade conception on the ground until its clinic could promise a child.' }) } },
   ] });
 
-/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). */
+/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). qk_exams, qk_door, qk_watched, qk_signed, qk_early,
+   qk_bought and qk_body have had no option since the cut to three (2026-11-21): their phrases stay for saved games that already carry
+   the stain. */
 Object.assign(LF.DEEDS || {}, {
   qk_lied: 'what the mothers were told about their own pictures', qk_exams: 'the women walked to the clinic by the watch', qk_worked: 'the mothers worked double at term',
   qk_penned: 'the mothers barred into the second row under the rifles', qk_door: 'the door broken on women at term', qk_dosed: 'the medicine put in the mothers\' stew, untold',
@@ -565,16 +523,16 @@ Object.assign(LF.DEEDS || {}, {
   qk_out: 'the mothers put out past the wire at term', qk_screen: 'the monthly examination of every woman, by order',
 });
 
-LF.TAGS['qk.first'] = ['cautious open', 'closed order', 'open', 'severe order'];
-LF.TAGS['qk.scan'] = ['cautious open', 'cautious', 'free mercy', 'closed order'];
-LF.TAGS['qk.well'] = ['mercy open', 'severe bold', 'mercy cautious', 'severe order'];
-LF.TAGS['qk.door'] = ['free', 'mercy open', 'severe closed', 'severe bold'];
-LF.TAGS['qk.source'] = ['cautious open', 'cautious order', 'closed order', 'severe bold'];
-LF.TAGS['qk.kin'] = ['free', 'mercy open', 'severe order', 'severe order'];
-LF.TAGS['qk.hall'] = ['severe order', 'severe order', 'closed order', 'free open'];
-LF.TAGS['qk.one'] = ['severe bold', 'severe closed', 'mercy open', 'severe order', 'cautious free'];
-LF.TAGS['qk.term'] = ['mercy open', 'cautious order', 'severe closed', 'severe order', 'severe closed'];
-LF.TAGS['qk.rest'] = ['mercy open', 'bold', 'severe closed', 'severe order', 'severe closed'];
+LF.TAGS['qk.first'] = ['cautious open', 'closed order', 'open'];
+LF.TAGS['qk.scan'] = ['cautious open', 'cautious', 'free mercy'];
+LF.TAGS['qk.well'] = ['mercy open', 'severe bold', 'mercy cautious'];
+LF.TAGS['qk.door'] = ['free', 'mercy open', 'severe closed'];
+LF.TAGS['qk.source'] = ['cautious open', 'cautious order', 'closed order'];
+LF.TAGS['qk.kin'] = ['free', 'mercy open', 'severe order'];
+LF.TAGS['qk.hall'] = ['severe order', 'closed order', 'free open'];
+LF.TAGS['qk.one'] = ['severe bold', 'mercy open', 'cautious free'];
+LF.TAGS['qk.term'] = ['mercy open', 'cautious order', 'severe closed'];
+LF.TAGS['qk.rest'] = ['mercy open', 'bold', 'severe closed', 'severe order'];
 LF.TAGS['qk.truth'] = ['free open', 'severe order', 'severe closed'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
