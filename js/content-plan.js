@@ -106,7 +106,7 @@ add({ id: 'plan.prospect', view: 'world', arc: 'plan', tone: 'council', title: '
     { key: 'send', label: s => `Send a long party into ${oreTo(s)}`, hint: 'unknown', info: [['yield', 'An ore body, if it is there']],
       send: { n: 6, days: [50, 80], danger: 3, to: 'the interior', ret: 'ore' }, show: s => s.world.oreBody === 'far',
       out: { text: s => `Six go, with two months of food and a map that is mostly guesses. ${Nc(s, 'geologist')} walks them to the last marker.`, fx: {} } },
-    { key: 'fly', label: 'Fly the lander along the ridges with a magnetometer', info: [['danger', 'Hard on the lander']],
+    { key: 'fly', label: 'Fly the lander along the ridges with a magnetometer', fly: 1, info: [['danger', 'Hard on the lander']],
       req: s => !s.machines.lander.lost && s.machines.lander.hp > 25, reqText: 'Needs a flightworthy lander',
       test: { base: 50, mods: [R('geologist', 10), R('pilot', 5), If(s => s.world.oreBody === 'far', -15, 'Far inland'), If(s => s.world.oreBody === 'near', 15, 'Close by')] },
       ok: { text: s => `Three passes, low enough to rattle the pods. On the third the needle swings and stays swung. ${Nc(s, 'geologist')} marks the spot with a smoke flare and is on the ground there within the month.`, fx: { machine: { lander: -8 }, survey: 12, flags: { ore_found: true }, poi: { key: 'plan.ore', kind: 'ore', name: 'Where the needle swung', dist: 'far', state: 'visited', danger: 1, known: 'Marked from the air with a smoke flare: a workable ore body, close to the surface.' }, chron: 'Ore was found from the air, and the colony began to plan a smelter.' } },

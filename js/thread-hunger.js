@@ -106,8 +106,8 @@ function resolve(s, t) {
     { water: 'The colony learned that it could not live on its own food here without what grows in this ground.', gut: 'The colony scoured out of itself the thing that had been eating its meals.', seed: 'The colony burned a crop that fed nobody, and sowed again from the vault.', fear: 'The colony stopped starving at a full table.' }[k]);
   // Nothing reached it. It runs its course, and stops for a reason of its own.
   const n = clamp(Math.round(s.pop * { water: 0.07, gut: 0.05, seed: 0.05, fear: 0.03 }[k] * (t.open ? 0.6 : 1)), 2, 7);
-  t.last = die(s, t, n, true); s.morale = clamp(s.morale - 5, 0, 100);
-  LF.log(s, `${Num(Math.max(1, t.last))} more died of the wasting before the scales turned. Nobody in the colony can say what turned them.`, 'bad');
+  t.lastDead = die(s, t, n, true); s.morale = clamp(s.morale - 5, 0, 100);
+  LF.log(s, `${Num(Math.max(1, t.lastDead))} more died of the wasting before the scales turned. Nobody in the colony can say what turned them.`, 'bad');
   if (k === 'water') LF.emit(s, 'changed', SRC, 40, 300, 'the ones who lived are the ones who took to eating what grows here');
   finish(s, t, 'ran', 'The wasting ran its course through the colony, and stopped.');
 }
@@ -434,7 +434,7 @@ function reckon(s, t, c, doubt) {
   return out.length ? out.join(' ') : doubt ? 'Nobody was put out, cut or held down on account of it.' : 'Nobody was put out, cut or held down on account of it, and there is nothing of that kind to answer for.';
 }
 B('after', { id: 'wst.truth', tone: 'quiet', title: 'What the Wasting Was',
-  setup: s => { const t = T(s); return Object.assign(base(s, t), { k: t.truth.is, end: t.end, doubt: t.end === 'ran' && t.insight < 30, last: Math.max(1, t.last || 0), told: t.did.force !== 'right', toll: Math.max(0, t.toll), feud: t.feud }); },
+  setup: s => { const t = T(s); return Object.assign(base(s, t), { k: t.truth.is, end: t.end, doubt: t.end === 'ran' && t.insight < 30, last: Math.max(1, t.lastDead || (typeof t.last === 'number' ? t.last : 0)), told: t.did.force !== 'right', toll: Math.max(0, t.toll), feud: t.feud }); },
   text: (s, c) => { const t = T(s);
     if (c.doubt) return `The scale turned in the end, and nobody can say why. ${Num(c.last)} more died first. The sheet on the mess door has gone up a little every month since, and people have stopped reading it.\n\n${reckon(s, t, c, true)} Nothing was ever found that could say whether any of it was needed.${c.toll ? ` In all, the wasting cost ${num(c.toll)} colonists.` : ''}`;
     return `${WAS[c.k](c)} ${TAIL[c.end](c)}\n\n${reckon(s, t, c, false)}${c.toll ? ` In all, the wasting cost ${num(c.toll)} colonists${c.feud ? `, ${num(Math.min(c.feud, c.toll))} of them killed by their neighbours` : ''}.` : ''}`; },

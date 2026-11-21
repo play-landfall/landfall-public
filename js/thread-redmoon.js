@@ -135,8 +135,9 @@ const NIGHT = {
   tide: ['Two of the low rows were found at dawn face down in the drain, where the water is a hand deep.', 'The pump house crew were found asleep on the floor at first light, and one of them did not wake.'],
   fear: ['A bunk row fought in the dark over who had looked and who had not, and one of them went down with a cracked skull.', 'Somebody shut in for the week broke a door down on the fifth night, and somebody on the other side of it was standing too close.'],
   sight: ['The struck stood at the windows all week, facing the same way, and said the same few things to anyone who would stop.'] };
+const redDay = t => t.redDay || (typeof t.last === 'number' ? t.last : 0);   // a save from before 2026-11-21 kept it in t.last
 function pass(s, t) {
-  const k = t.truth.is, n = ++t.n, prep = t.prep; t.last = s.day;
+  const k = t.truth.is, n = ++t.n, prep = t.prep; t.redDay = s.day;   // not t.last: the engine keeps the last decision there
   check(s, t);
   let m = EXPO[k][prep] * RATE;
   if (k === 'fear') m += (t.ward ? 0.3 : 0) + (t.shoot ? 0.3 : 0) + (t.chain ? 0.3 : 0) + (t.watch === 'rows' ? 0.2 : 0);
@@ -224,7 +225,7 @@ LF.thread({ id: ID, name: 'The Red Month', view: 'colony', dread: true,
     if (t.phase === 'first' && since('rm.first') >= 5) { LF.phase(s, ID, 'between'); once('date', 'rm.date', 55); }
     if (t.phase === 'between' && toGo <= 20 && since('rm.date') >= 0) once('watch', 'rm.watch');
     if (t.phase === 'struck' && t.n === 2) { if (since('rm.after') >= 5) once('ward', 'rm.ward'); if (toGo <= 20 && (since('rm.ward') >= 0 || toGo <= 10)) once('out', 'rm.out'); }
-    if (t.phase === 'struck' && t.n === 3) { if (since('rm.said') >= 5 || s.day - t.last >= 12) once('eyes', 'rm.eyes', 30); if (toGo <= 25) once('before', 'rm.before', 55); }
+    if (t.phase === 'struck' && t.n === 3) { if (since('rm.said') >= 5 || s.day - redDay(t) >= 12) once('eyes', 'rm.eyes', 30); if (toGo <= 25) once('before', 'rm.before', 55); }
     if (s.day % 10 === 0) month(s, t);
     if (s.day % 5 === 0) { const tot = total(s, t), near = toGo <= 15;
       LF.emit(s, 'fear', SRC, near ? 34 : 22, 8, 'the red moon comes round again on the date chalked on the mess door');
@@ -274,7 +275,7 @@ B(['first', 'between'], { id: 'rm.first', tone: 'pressure', title: 'The Red Week
     { label: 'Lock the struck in the pump house until they\'re themselves again', dark: true, note: 'The rows sleep without them, and they sit behind a bar for having looked up.', info: [['yield', 'The rows calm'], ['danger', 'The struck']],
       out: { text: 'The watch walks them to the pump house at supper. None of them argues. In the night they stand at the one high window, all of them, facing east, though the moon is long gone.',
         fx: (s, c) => ({ morale: 1, tension: -4, stain: ['rm_pen', 1], do: s2 => { const t = T(s2); t.ward = true; t.did.pen = true; sour(s2, c.pid0, 10, 'was locked in the pump house for looking at the moon'); } }) } },
-    { label: 'Tell the colony it\'s want of sleep, and put them back on full shifts', dark: true, note: 'The work gets its hands back, and the struck are worked as if nothing happened to them.', info: [['yield', 'Hands'], ['danger', 'The struck, and whoever works beside them']],
+    { label: 'Tell the colony it\'s want of sleep, and put them back on full shifts', dark: true, note: 'The work gets its hands back, and the struck are worked as if nothing happened to them.', info: [['yield', 'Hands'], ['danger', 'The struck']],
       out: { text: 'The hall is told it was a week of lost sleep and nothing more. The struck go back on the shift lists. They work slowly and well, and at the end of each shift they turn and face east before they put the tools down.',
         fx: (s, c) => ({ morale: 1, progress: 0.03, stain: ['rm_lie', 1], do: s2 => { const t = T(s2); t.did.lie = true; t.shifted = true; } }) } },
   ] });
@@ -305,7 +306,7 @@ B(['between', 'struck', 'last'], { id: 'rm.watch', tone: 'pressure', title: 'Who
 
 /* ======================= STRUCK: the morning after ======================= */
 B(['struck', 'last'], { id: 'rm.after', tone: 'pressure', title: 'The Morning After', view: 'people', repeat: 25, max: 2, when: (s, t) => total(s, t) > 0,
-  setup: s => { const t = T(s), y = t.says.length ? t.says[t.says.length - 1] : null, fresh = y && y.d === t.last;
+  setup: s => { const t = T(s), y = t.says.length ? t.says[t.says.length - 1] : null, fresh = y && y.d === redDay(t);
     return Object.assign(crew(s), { ev: pickK(s, t), nw: t.lastNew, tot: total(s, t), who: names(s, t), say: fresh ? sayTxt(y) : null, sayer: fresh ? y.who : null, sayPid: fresh ? y.pid : null, sayRk: fresh ? y.rk : null }); },
   text: (s, c) => `The red moon went down this morning on the seventh night, on the day it was chalked for. ${c.nw ? `${Num(c.nw)} more of the colony ${c.nw === 1 ? 'is' : 'are'} moon-struck${c.tot >= c.nw ? `, ${num(c.tot)} in all` : c.tot ? `, and ${num(c.tot)} of the struck are left in the colony` : ', and none of the struck from before are left in the colony'}. ${ev('after', c.ev, c)}` : c.tot ? `Nobody new is struck. ${c.tot === 1 ? 'There is one' : `There are ${num(c.tot)}`} from before.` : 'Nobody new is struck, and none of the struck from before are left in the colony.'}${c.say ? `\n\n${cap(c.sayer)}, one of the struck, has said one thing since dawn, to anyone who stops.\n\n[[${c.sayPid || c.sayRk || 'x26'}]] "${c.say}"` : ''}`,
   choices: [

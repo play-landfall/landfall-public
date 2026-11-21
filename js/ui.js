@@ -196,14 +196,14 @@ const CHANCE = p => p >= 70 ? ['Likely', 'lk'] : p >= 30 ? ['Even', 'ev'] : ['Lo
 const DICE = '<svg class="dice" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="5.2" cy="5.2" r="1.3" fill="currentColor"/><circle cx="10.8" cy="10.8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></svg>';
 const rollTip = (p, pre) => { const [w, c] = CHANCE(p); return `<span class="ch ${c}">${DICE}${pre ? esc(pre) + ' ' : ''}${p}% · ${w}</span>`; };
 // a loss that is a thing (stores, a machine, morale, standing) is an arrow; anything else on a loss chip is people, and a skull
-const THING = /^(morale|a department|a food|the stores?|the reserve|stores|supper|half|a quarter|two spare parts|the plate|the record|your word|your standing|what is left of your standing|your own months|nothing (in it|held back)|no gear|everything still aboard|a season|the harvest|the next sowing|the far row|the home wall|the outer huts|the settlement|the lock-up|the ward|the clinic|the autodoc|the clerks|hands|unknown|whether anyone|the officers' nerve|hard on the lander|the lander|the hauler|the reactor|repairs)/i;
+const THING = /^(morale|a department|the trays|a food|(the )?(first|every|next) harvest|every harvest|a third of|a week of|the work$|the seed stock|all of the wheat|the country|the yard|the stores?|the reserve|stores|supper|half|a quarter|two spare parts|the plate|the record|your word|your standing|what is left of your standing|your own months|nothing (in it|held back)|no gear|everything still aboard|a season|the harvest|the next sowing|the far row|the home wall|the outer huts|the settlement|the lock-up|the ward|the clinic|the autodoc|the clerks|hands|unknown|whether anyone|the officers' nerve|hard on the lander|the lander|the hauler|the reactor|repairs)/i;
 // a mark under an option: the icon's shape flat in the text colour (#ink-flat, set by js/theme.js), red on a loss (#ink-loss)
 const mk = n => `<img class="mk" src="art/icons/${n}.png" alt="">`;
 // the party a sure option's outcome sends (fx.away), read without applying it; null if it sends none
 const awayOf = (s, o) => { const out = o.ch && o.ch.out; if (!out || !out.fx) return null; let fx = out.fx;
   if (typeof fx === 'function') { const r0 = s.rng; try { fx = fx(s, s.cur.ctx); } catch (e) { fx = null; } s.rng = r0; }   // the fx may draw on the dice: put them back
   return fx && fx.away && fx.away.n ? fx.away : null; };
-const isThing = t => THING.test(t) || Object.values(LF.MACHINES).some(m => t.toLowerCase() === ('the ' + m.name).toLowerCase());
+const isThing = t => THING.test(t) || Object.values(LF.SEATS || {}).some(x => t === x.name) || Object.values(LF.MACHINES).some(m => t.toLowerCase() === ('the ' + m.name).toLowerCase());
 const lossTip = t => isThing(t) ? `<span class="dn"><i class="ar">\u25BC</i>${esc(t)}</span>` : `<span class="dn">${mk('danger')}${esc(t)}</span>`;
 const infoTip = ([k, t]) => k === 'yield' ? `<span class="upx"><i class="ar">\u25B2</i>${esc(t)}</span>` : k === 'danger' || k === 'fail' || k === 'later' ? lossTip(t) : `<span>${mk(INFO[k] || 'unknown')}${esc(t)}</span>`;
 // the tips under an option: the main row, then "If it fails" and "Later" rows when it has them
@@ -498,7 +498,8 @@ function arrivalHTML() {
   const head = `<div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2>`;
   if (arrStep === 0) return `${head}<p>${esc(LF.transitText(s))}</p><p>The ship makes one full survey from orbit before anyone goes down. After this, what the colony learns it learns on foot.</p></div>
     <button class="opt go" data-act="arrnext">Next</button>`;
-  const pic = (LF.SCENES || []).includes(`orbit_${w.type}`) ? `orbit_${w.type}` : ORBIT_PIC[w.type] || 'lib_planet_09';
+  const pw = LF.WORLDS && w.kind && LF.WORLDS[w.kind], has = id => (LF.SCENES || []).includes(id);   // the planet itself, not the site (Lachlan, 2026-11-21)
+  const pic = pw && has(pw.scope) ? pw.scope : has(`orbit_${w.type}`) ? `orbit_${w.type}` : ORBIT_PIC[w.type] || 'lib_planet_09';
   const tab = arrTab === 'world'
     ? `<div class="banner"><img class="scene planet" src="art/scenes/${pic}.webp" alt=""></div>
       ${LF.planetStory ? `<h3>${ic('world', 'h3i')}What the survey saw</h3><div class="card">${LF.planetStory(s).map(p => `<p>${esc(p)}</p>`).join('')}</div>` : ''}`

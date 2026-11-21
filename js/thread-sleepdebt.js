@@ -99,12 +99,12 @@ function lastNight(s, t, how, unseen) {
     return finish(s, t, 'kept', 'The night shift went on, and the colony stopped being afraid of it.');
   }
   if (k === 'sick') {
-    if (how === 'wake') { d = die(s, t, clamp(Math.round(n * 0.06), 0, 3)); t.last = hurt + d; return finish(s, t, 'woken', 'The night shift was woken by force on the night it would not have woken by itself.'); }
-    d = die(s, t, clamp(Math.round(t.n * (t.cut ? 0.25 : 0.4)), 2, 16)); t.last = hurt + d; s.morale = clamp(s.morale - 5, 0, 100);
+    if (how === 'wake') { d = die(s, t, clamp(Math.round(n * 0.06), 0, 3)); t.lastDead = hurt + d; return finish(s, t, 'woken', 'The night shift was woken by force on the night it would not have woken by itself.'); }
+    d = die(s, t, clamp(Math.round(t.n * (t.cut ? 0.25 : 0.4)), 2, 16)); t.lastDead = hurt + d; s.morale = clamp(s.morale - 5, 0, 100);
     LF.emit(s, 'grief', SRC, 50, 300, 'the night shift lay down and did not wake');
     return finish(s, t, 'slept', `${Num(hurt + d)} of the night shift lay down on one night and did not wake.`);
   }
-  d = how === 'let' ? die(s, t, up ? clamp(Math.round(n * 0.15), 2, 6) : 2) : 0; t.last = hurt + d; drive(s, t);
+  d = how === 'let' ? die(s, t, up ? clamp(Math.round(n * 0.15), 2, 6) : 2) : 0; t.lastDead = hurt + d; drive(s, t);
 }
 /* ship: nothing done to the sleepers ends it. It runs until somebody reads the plate, and it is paid for until then. */
 function drive(s, t) { const d = die(s, t, clamp(Math.round(t.n * 0.1), 2, 5)); t.late = d; s.morale = clamp(s.morale - 3, 0, 100);
@@ -157,7 +157,7 @@ LF.thread({ id: ID, name: 'The Night Shift', view: 'people', dread: true,
     held: t => 'Something used the colony\'s sleepers to build a frame nobody had drawn, and on the last night the colony kept them from it.',
     kept: t => 'People here stopped dreaming and worked in their sleep, rested, and it did them no harm. The colony let it be.',
     lost: t => 'People here had stopped dreaming and worked in their sleep, rested. The colony woke them by force, and nobody has worked asleep since.',
-    slept: t => `It was a sickness that ended in a sleep nobody came up from. ${Num(Math.max(1, (t.gone || 0) + (t.last || 0)))} died of it.`,
+    slept: t => `It was a sickness that ended in a sleep nobody came up from. ${Num(Math.max(1, (t.gone || 0) + (t.lastDead || (typeof t.last === 'number' ? t.last : 0))))} died of it.`,
     woken: t => 'It was a sickness that ended in a sleep nobody came up from, and the colony kept its people awake through it.',
     silenced: t => 'The ship had been working the colony in its sleep, on a tone. The relay\'s night feed was pulled, and it stopped.',
     driven: t => 'The ship had been working the colony in its sleep, on a tone, and it went on until somebody read the drawing.',

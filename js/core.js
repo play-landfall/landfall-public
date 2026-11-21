@@ -741,6 +741,7 @@ LF.choices = function (s) {
     if (ch.show && !ch.show(s, c)) return null;
     let lock = ''; const cc = typeof ch.cost === 'function' ? ch.cost(s, c) : ch.cost;   // a cost may depend on what the card is about
     if (ch.req && !ch.req(s, c)) lock = LF.upLock(s, (typeof ch.reqText === 'function' ? ch.reqText(s, c) : ch.reqText) || 'Not possible');
+    else if (ch.fly && !LF.canFly(s, ch.fly)) lock = LF.flyWhy(s, ch.fly) || 'The lander cannot fly';   // fly: n, 2026-11-21
     else if (cc) for (const k in cc) if (s.res[k] < cc[k]) lock = `Not enough ${RES[k]}: it needs ${Math.round(cc[k])}, the colony holds ${Math.round(s.res[k])}`;
     // A hand-written choice can send a party too: send: { n, days: [min, max], danger, to, ret }.
     let send = null, cost = cc;
@@ -813,7 +814,10 @@ LF.workKinds = function (test) { const k = [].concat(test.kind || []);
 LF.buildMods = function (s, test) {
   if (!s.world || !s.built || test.aboard || s.adrift || (LF.aloft && LF.aloft(s))) return [];
   const k = LF.workKinds(test);
-  return LF.BUILD_WORK.filter(b => k.includes(b[1]) && LF.has(s, b[0])).map(b => ({ label: b[3], v: b[2] }));
+  // a building the card already counts in its own mods (same label), or one the card names in test.nobuild (it can only be
+  // there when the building stands, so the line would always be on), is not counted again (2026-11-21)
+  const own = new Set((test.mods || []).map(m => typeof m.label === 'string' ? m.label : null).filter(Boolean)), skip = test.nobuild || [];
+  return LF.BUILD_WORK.filter(b => k.includes(b[1]) && LF.has(s, b[0]) && !own.has(b[3]) && !skip.includes(b[0])).map(b => ({ label: b[3], v: b[2] }));
 };
 const ARC_PERK = { crops: 'observer', machines: 'fixer', fever: 'medic', politics: 'speaker', flare: 'survivor', winter: 'survivor', storm: 'survivor', builders: 'touched', hive: 'speaker', others: 'speaker', understory: 'observer', sleepers: 'pathfinder' };
 const RES = { food: 'food', mat: 'materials', parts: 'spare parts' };
@@ -846,6 +850,8 @@ LF.choose = function (s, i) {
   // Text is rendered before effects, so "X goes in" still names X when the effect kills them.
   res.text = typeof o.text === 'function' ? o.text(s, c) : o.text;
   let fx = typeof o.fx === 'function' ? o.fx(s, c) : o.fx;
+  // a choice marked fly: n takes the lander up whatever comes of it: the flights are spent unless the outcome already spends them
+  if (ch.fly && !(fx && fx.fly)) fx = Object.assign({}, fx || {}, { fly: ch.fly });
   if (ch.dark && LF.numb) fx = LF.numb(s, fx);   // a colony that has done such things before minds the next one less (content-limits.js)
   res.text = LF.tollText(s, res.text, fx);       // past LF.SCALE the dead are more than the words say
   LF.apply(s, fx, chips, c);

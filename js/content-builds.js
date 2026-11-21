@@ -263,7 +263,7 @@ line('fer.raid', s => has(s, 'watch') ? ' The towers rang the moment the first o
 /* --- the meeting hall --- */
 opt('pol.mutiny', { label: 'Open the hall. Everyone in, the officers on the floor, and a vote', show: s => has(s, 'hall'), hint: 'unknown',
   note: 'They get their say and their vote, in the room they built. The officers stand there and take it, and might lose.', info: [['yield', 'An answer they agreed to'], ['fail', 'The officers, if the vote goes against them']],
-  test: { base: 40, mods: [R('command', 10), If(s => !!s.flags.council, 5, 'There is a lawful Council')] },
+  test: { base: 45, nobuild: ['hall'], mods: [R('command', 10), If(s => !!s.flags.council, 5, 'There is a lawful Council')] },
   ok: { text: (s, c) => `The hall is packed to the walls. ${c.name} speaks first and the officers answer, one at a time, for four hours. The vote is close. The officers keep their posts, and ${c.first} sits on the rota committee from next week.`, fx: (s, c) => ({ morale: 6, tension: -12, flags: { council: true }, do: s2 => { s2.lowMorale = 0; } }) },
   bad: { text: (s, c) => `Four hours in the hall, and the vote goes against them. The officers hand over their keys on the raised end, in front of everyone, and walk out through the middle. ${c.name}'s committee runs the colony from the morning.`,
     fx: (s, c) => ({ morale: 8, tension: -18, flags: { committee: true, council: false, command_rule: false }, off: [['security', 'mind', -10], ['crew', 'mind', -8]], do: s2 => { s2.lowMorale = 0; } }) } }, 'free open');

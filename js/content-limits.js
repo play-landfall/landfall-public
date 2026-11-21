@@ -519,7 +519,7 @@ add({ id: 'lim.count', urgent: true, arc: 'lim.hunger', view: 'colony', tone: 'c
     { label: 'Feed the ones who dig. The rest get what is left', dark: true, info: [['yield', 'The work gets done'], ['danger', 'The ones who cannot dig']],
       out: { text: 'The field crews get the heavy ladle. The clerks, the medics, the old and the children get what is left. Three graves are dug within the month by people who ate well that morning. One is for a woman who had been giving half of every bowl to a child.',
         fx: { rations: 'tight', morale: -7, pop: -3, stain: ['ladle', 2], flags: { ration_by_work: true }, chron: 'In the first month the colony fed its diggers first. The first graves were for people who did not dig.' } } },
-    { label: 'Send twelve back up into the cold', dark: true, req: s => ok(s, 'lander'), reqText: 'Needs the Lander', note: 'Twelve fewer mouths until the harvest. Going under a second time kills about one in ten.', info: [['yield', 'Twelve fewer mouths'], ['danger', 'One of the twelve'], ['danger', 'The Lander']],
+    { label: 'Send twelve back up into the cold', fly: 1, dark: true, req: s => ok(s, 'lander'), reqText: 'Needs the Lander', note: 'Twelve fewer mouths until the harvest. Going under a second time kills about one in ten.', info: [['yield', 'Twelve fewer mouths'], ['danger', 'One of the twelve'], ['danger', 'The Lander']],
       out: { text: s => `Twelve names are read out, chosen by ${N(s, 'quartermaster')} for what they cannot do this season. They are back in the pods nine days after waking. One of the pods shows a flat line before the lander has undocked.`,
         fx: { sleepers: 11, machine: { lander: -8 }, morale: -4, chips: [['12 colonists back in the cold', false], ['1 dead', false]],
           do: s => { s.pop = Math.max(0, s.pop - 12); s.deaths += 1; s.grief = Math.min(40, s.grief + 2); stain(s, 'refreeze', 1); }, chron: 'Nine days after landing, twelve colonists were put back into the cold to save the stores. One died of it.' } } },
@@ -574,7 +574,7 @@ add({ id: 'lim.straws', urgent: true, arc: 'lim.hunger', view: 'colony', tone: '
       out: { text: (s, c) => `${Nc(s, 'quartermaster')} already had the list. The old, the two with crushed legs, the blind, the ones the fever left slow. They are told in their bunks, at night, so that the crews will not have to watch.`,
         fx: (s, c) => ({ pop: -c.n, morale: -7, flags: { ration_by_work: true }, chips: [[`+${days(s, c.n * 60)} days of food`, true]],
           do: s2 => { s2.res.food += c.n * 60; stain(s2, 'cull', 2); }, chron: `In the famine ${num(c.n)} colonists who could not work were killed and eaten.` }) } },
-    { label: 'The sleepers. Nobody down here has to be chosen', dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 15, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Food']],
+    { label: 'The sleepers. Nobody down here has to be chosen', fly: 1, dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 15, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Food']],
       out: { text: s => `${Nwc(s, 'pilot')} flies it alone and will not let anyone help unload. Fifteen pods, opened on the pad before the thaw could begin. Nobody who was eaten ever knew there had been a famine.`,
         fx: { sleepers: -15, food: 900, machine: { lander: -12 }, morale: -5, do: s => stain(s, 'larder', 2), chron: 'Fifteen sleepers were brought down from orbit and eaten.' } } },
     { label: 'Nobody is chosen. Whoever starves, starves', info: [['danger', 'The weakest, slowly']],
@@ -699,7 +699,7 @@ add({ id: 'lim.harness2', chain: true, arc: 'lim.yoke', view: 'colony', tone: 'o
       out: { text: s => `Eight go into the autodoc over the month: thieves, two who struck the watch, three who had stopped turning out for shift. ${Nwc(s, 'security')} draws up the list, and it is longer than eight. Everybody turns out for shift now.`,
         fx: { morale: -9, chips: [['Eight colonists harnessed', false]], sched: [['lim.harness3', 110, 190]],
           do: s => { take(s, 8); s.flags.servitors = sv(s) + 8; stain(s, 'harness_many', 2); fear(s, 'lim.harness', 55, 260, 'the watch has a list of who goes into a harness next'); }, chron: 'Eight colonists were harnessed as punishment, and for the work.' } } },
-    { label: 'The sleepers. They have never been awake here', dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 10, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Hands that never stop']],
+    { label: 'The sleepers. They have never been awake here', fly: 1, dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 10, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Hands that never stop']],
       out: { text: 'Ten pods come down and go straight into the autodoc bay. None of the ten opens their eyes on this world as a person. The colony finds that easier, as you thought it would.',
         fx: { sleepers: -10, machine: { lander: -10 }, morale: -3, sched: [['lim.harness3', 110, 190]], do: s => { s.flags.servitors = sv(s) + 10; stain(s, 'harness_many', 2); }, chron: 'Ten sleepers were brought down and harnessed without being woken.' } } },
     { label: 'Buy them from the dying, for rations to their families', dark: true, info: [['yield', 'Hands that never stop'], ['later', 'What hungry families will sell']],
@@ -1007,7 +1007,7 @@ add({ id: 'lim.organ', arc: 'lim.knife', view: 'people', tone: 'crisis', title: 
   setup: s => { const a = s.people.filter(p => p.alive && !p.away && p.role && !['pilot', 'physician'].includes(p.role)); return ctxOf(LF.pick(s, a)); },
   text: (s, c) => `${c.name} went under a slipped load an hour ago and is bleeding inside. The autodoc can hold ${c.first} for a day. It cannot print a liver.\n\nThe cryo index has a match: pod sixty-one, a hydrologist, twenty-nine years old, asleep. ${Nwc(s, 'pilot')} can have the pod on the pad in six hours. ${Nwc(s, 'physician')} points out that the hydrologist does not wake up afterwards, and asks you to say that out loud before you decide.`,
   choices: [
-    { label: 'Fly. Take it', dark: true, info: [['danger', 'A sleeper']],
+    { label: 'Fly. Take it', fly: 1, dark: true, info: [['danger', 'A sleeper']],
       out: { text: (s, c) => `The pod comes down sealed and goes into the autodoc bay sealed. ${c.name} is on light duties within the month. ${c.merciful ? `${c.first} finds out whose liver it is from the cryo index, and does not thank you.` : `${c.first} asks once whose it was, nods, and goes back to work.`}`,
         fx: (s, c) => ({ sleepers: -1, machine: { lander: -8 }, mark: [c.pid, 'liver', 'carries a liver taken from a sleeper in pod sixty-one'], do: s2 => { stain(s2, 'organ', 1); regard(s2, c.pid, c.merciful ? -18 : 10); } }) } },
     { label: (s, c) => `Order a living match from the crews onto the table beside ${c.first}`, dark: true, about: true, test: { base: 50, mods: [R('physician', 10), M('medbay', 10)] }, info: [['yield', 'Nobody has to die'], ['fail', 'Two lives on one table']],
@@ -1126,14 +1126,14 @@ add({ id: 'lim.page', arc: 'lim.soul', view: 'people', tone: 'quiet', title: 'Th
 
 /* ============================== OLD CARDS, NEW OPTIONS ============================== */
 { const st = LF.byId['state.unrest']; if (st) { const n = s => Math.max(2, Math.round(LF.sized(s) / 10));
-  st.choices.push({ label: 'One in ten', dark: true, note: 'Counted off down the benches by the watch.', req: s => !s.flags.committee && !!P(s, 'security'), reqText: 'There is nobody to do the counting', info: [['yield', 'The work starts again'], ['danger', 'One in ten']],
+  st.choices.push({ label: 'One in ten', dark: true, note: 'Counted off down the benches by the watch.', req: s => !s.flags.committee && !!P(s, 'security'), reqText: s => s.flags.committee ? 'The committee will not order it' : 'There is nobody to do the counting', info: [['yield', 'The work starts again'], ['danger', 'One in ten']],
     out: { text: s => `The watch counts off down the benches. Every tenth is taken out to the yard: ${num(n(s))} people, some of whom had not wanted the stoppage. It takes less than an hour. The morning shift reports in full, in silence, and goes on reporting.`,
       fx: s => ({ pop: -n(s), flags: { crackdown: true, blood_spilled: true }, do: s2 => { stain(s2, 'tenth', 2); s2.morale = Math.max(s2.morale, 32); s2.lowMorale = 0; fear(s2, 'lim.tenth', 60, 260, 'one in ten were taken out of the mess hall'); }, chron: `A work stoppage was ended by killing one striker in ten: ${num(n(s))} people.` }) } });
   const clear = st.choices.find(c => c.label === 'Clear the hall'); if (clear) clear.test.mods.push(Fl('lim_house_blessed', 10, 'The watch owes you for the annex')); } }
 { const st = LF.byId['pol.theft']; if (st) st.choices.push({ label: 'Take the hand', dark: true,
     out: { text: (s, c) => `It is done in the clinic, so that it is done cleanly. ${c.first} is back at work in a month on lighter duties, and the stores are not touched again. People look at the sleeve.`,
       fx: (s, c) => ({ morale: 1, flags: { justice_harsh: true }, mark: [c.pid, 'hand', 'lost a hand for nine kilos of meal'], do: s2 => { stain(s2, 'hand', 1); regard(s2, c.pid, -30); } }) } }); }
-{ const st = LF.byId['state.famine']; if (st) st.choices.push({ label: 'Fly the ten pods now', dark: true, show: s => !!s.flags.lim_herd_held && !s.flags.lim_herd, req: s => ok(s, 'lander') && s.sleepers >= 10, reqText: 'Needs the Lander and sleepers in orbit',
+{ const st = LF.byId['state.famine']; if (st) st.choices.push({ label: 'Fly the ten pods now', fly: 1, dark: true, show: s => !!s.flags.lim_herd_held && !s.flags.lim_herd, req: s => ok(s, 'lander') && s.sleepers >= 10, reqText: 'Needs the Lander and sleepers in orbit',
     out: { text: 'The line ruled under the column is crossed through. Ten pods are on the pad by the next evening, and the kitchen works through the night.',
       fx: { sleepers: -10, food: 600, machine: { lander: -8 }, morale: -3, do: s => stain(s, 'larder', 1) } } }); }
 

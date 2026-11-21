@@ -122,7 +122,7 @@ function went(s, t, id, n) { if (!WENT[id] || !bare(s, id) || t.went[id]) return
 function ran(s, t, share) {
   lose(s, t, 'mat', s.res.mat * 0.3 * share); lose(s, t, 'parts', s.res.parts * 0.35 * share); if (s.wreck > 0) s.wreck = Math.round(s.wreck * (1 - 0.5 * share));
   const id = alive(s, t.in) ? t.in : target(s);
-  if (id) { LF.hurt(s, id, -17 * share, -13 * share); const m = s.machines[id]; t.last = id; t.lastLost = m.lost;
+  if (id) { LF.hurt(s, id, -17 * share, -13 * share); const m = s.machines[id]; t.lastIn = id; t.lastLost = m.lost;
     LF.log(s, m.lost ? `${cap(MW[id])} is finished: ${PART[id]} went to grey powder under load.` : `${cap(PART[id])} of ${MW[id]} has been cut back to half its plate to save the rest. It will not run at full load again.`, 'bad');
     if (m.lost || m.hp < 30) went(s, t, id, clamp(Math.round(s.pop * 0.04 * share), 1, 4)); }
   s.morale = clamp(s.morale - 4, 0, 100);
@@ -475,7 +475,7 @@ function reckon(s, t) {
   return out.length ? out.join(' ') : 'Nothing was burned, buried or put out on account of it, and there is nothing of that kind to answer for.';
 }
 B('after', { id: 'rst.truth', tone: 'quiet', title: 'What the Rust Was',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { end: t.end, toll: Math.max(0, t.toll), mat: Math.round(t.ate.mat / 10) * 10, last: t.last ? MW[t.last] : null, lastLost: !!t.lastLost, still: !!(t.quar || t.did.gang) }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { end: t.end, toll: Math.max(0, t.toll), mat: Math.round(t.ate.mat / 10) * 10, last: (t.lastIn || (typeof t.last === 'string' ? t.last : null)) ? MW[t.lastIn || t.last] : null, lastLost: !!t.lastLost, still: !!(t.quar || t.did.gang) }); },
   text: (s, c) => { const t = T(s), tail = c.end === 'ran' ? (c.last ? ` Before it was done it ${c.lastLost ? 'took' : 'crippled'} ${c.last}.` : '') : c.end === 'fed' ? ' The cart still goes out to the stage every month.' : c.end === 'kept' || c.end === 'weather' || c.end === 'needless' ? ' It has not stopped, and will not.' : '';
     return `${WAS[t.truth.is]}${tail}\n\n${reckon(s, t)}${c.mat >= 20 ? ` In all, it took something like ${c.mat} loads of plate out of the yard.` : ''}${c.toll ? ` ${Num(c.toll)} colonist${c.toll === 1 ? '' : 's'} died of what was done about it, or of what it took.` : ''}${c.still ? ' The salvage crew is still outside the wire.' : ''}`; },
   choices: [
