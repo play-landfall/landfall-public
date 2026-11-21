@@ -630,6 +630,7 @@ html.grim2 h2 { letter-spacing:.01em; }
 .legend .lgx > small { display:block; margin:8px 2px 0; font-size:14px; line-height:1.4; color:var(--dim); text-wrap:pretty; }
 .legend .lgx .box { margin-top:8px; } .legend .lgx .row > img { width:28px; height:28px; flex:none; }
 .legend .ask { margin-top:14px; }
+.legend .row.lgc { padding-top:7px; padding-bottom:7px; } .legend .row.lgc .t b { display:inline; margin-right:6px; } .legend .row.lgc .t small { display:inline; }
 #sheet > .card.legend { width:100%; max-width:540px; max-height:90dvh; overflow:auto; margin:0; border-radius:26px 26px 0 0; padding-bottom:calc(18px + env(safe-area-inset-bottom)); }
 
 /* Reading an option (js/ui.js rollTip, infoTip, tipsHTML; Lachlan, 2026-11-21): no overall mark; a roll's chance in three

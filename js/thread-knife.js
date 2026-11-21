@@ -40,10 +40,8 @@ B('cut', { id: 'knf.cut', chain: true, tone: 'pressure', title: 'Cut Line',
       out: { text: 'The guards start that night. The work crews are six short every shift, and people notice who gets guarded and who doesn\'t.', fx: s => ({ morale: -2, do: s2 => { T(s2).guard = s2.day; LF.emit(s2, 'resentment', 'th.knife', 25, 160, 'the officers walk about with guards and nobody else does'); next(s2); } }) } },
     { label: 'Round up everyone who has lost family to one of your orders', dark: true, note: 'It\'s somebody with a reason. You know who has a reason.', hint: 'unknown', info: [['yield', 'Whoever did it, probably among them'], ['danger', 'Everyone who already lost someone to you']],
       out: { text: s => `${cap1(watch(s))} has the list by the afternoon. Eleven people are taken out of the fields and put in the store pod under guard while their bunks are searched. Nothing is found. They're let out after nine days and none of them looks at you again.`, fx: s => ({ morale: -5, stain: ['rounded_up', 1], do: s2 => { LF.emit(s2, 'resentment', 'th.knife', 50, 260, 'the families of the colony\'s dead were locked up for nothing'); next(s2); } }) } },
-    { label: 'Call it an accident', note: 'Lines fray. Nobody needs to be frightened.', hint: 'unknown', info: [['yield', 'Calm'], ['later', 'Whoever is next']],
-      out: { text: 'It goes in the log as wear. The line is replaced, and so is every line on the gantry. Whoever cut it reads the log too.', fx: s => ({ do: s2 => { T(s2).ignored = 1; next(s2, 10, 25); } }) } },
   ] });
-const next = (s, a, b) => { LF.phase(s, ID, 'note'); LF.cue(s, 'knf.note', a || 25, b || 50); };
+const next = s => { LF.phase(s, ID, 'note'); LF.cue(s, 'knf.note', 25, 50); };
 
 B('note', { id: 'knf.note', chain: true, tone: 'pressure', title: 'For What You Did',
   setup: s => ({ why: 'someone is making the officers pay for what the colony has done', deed: LF.worst ? LF.worst(s) : 'the things that were done' }),
@@ -58,8 +56,6 @@ B('note', { id: 'knf.note', chain: true, tone: 'pressure', title: 'For What You 
       test: { base: 50, mods: [R('security', 5)] },
       ok: { text: s => `The list is longer than anyone expected. Fourteen people lose their ration grade and are moved to the far pods. Three are put out past the wire. One of the three was the person who wrote the note. Nobody will ever know which.`, fx: s => ({ leave: 3, morale: -6, tension: -12, stain: ['purge', 2], do: s2 => { if (T(s2).truth.is !== 'officer') LF.endThread(s2, ID, 'purged', 'The colony purged its critics, and the attacks on the officers stopped.'); else strike(s2); } }) },
       bad: { text: s => `The list is longer than anyone expected. Fourteen people lose their ration grade and are moved to the far pods. Three are put out past the wire, and none of them wrote the note. The hand that did is still inside, and has watched you do it.`, fx: s => ({ leave: 3, morale: -6, tension: -12, stain: ['purge', 2], do: s2 => { strike(s2); } }) } },
-    { label: 'Let it be known that the note points somewhere else', dark: true, note: s => { const o = Object.keys(s.threads || {}).find(id => id !== ID && s.threads[id].on && !s.threads[id].end && LF.THREADS[id].called && LF.THREADS[id].called(s, s.threads[id])); return o ? `Blame it on ${LF.THREADS[o].called(s, s.threads[o])}. People are frightened of that already.` : 'Blame it on whatever people are already frightened of.'; }, hint: 'unknown', info: [['yield', 'Nobody looks at you'], ['later', 'Whoever really did it, still here']],
-      out: { text: 'A story goes round the mess hall that the note was written by someone who isn\'t right in the head, someone touched by what\'s out there. It\'s believed. It explains everything and changes nothing.', fx: s => ({ stain: ['cover_story', 1], do: s2 => { LF.emit(s2, 'fear', 'th.knife', 40, 200, 'people believe whatever is out there has got inside someone'); strike(s2); } }) } },
   ] });
 const strike = s => { LF.phase(s, ID, 'strike'); LF.cue(s, 'knf.strike', 20, 45); };
 
@@ -76,6 +72,7 @@ B('strike', { id: 'knf.strike', chain: true, tone: 'crisis', title: 'The Knife',
       out: { text: s => `The officers sleep behind the armoury door for a month. In the third week the stores clerk who keeps the armoury key is found in the yard with their throat cut, and the key is gone.`, fx: s => ({ pop: -1, morale: -5, do: s2 => { LF.emit(s2, 'fear', 'th.knife', 50, 180, 'the knife killed the armoury clerk when it couldn\'t reach the officers'); found(s2); } }) } },
   ] });
 const found = s => { LF.phase(s, ID, 'found'); LF.cue(s, 'knf.hand', 10, 30); };
+const pit = s => LF.has(s, 'smelter');   // the deep pit is the smelter's ore working: no pit to send anyone down before it stands
 
 B('found', { id: 'knf.hand', chain: true, tone: 'crisis', title: 'Whose Hand',
   setup: s => { const t = T(s), m = t.mole && h.byPid(s, t.mole), is = t.truth.is === 'officer' && m && m.alive ? 'officer' : t.truth.is === 'officer' ? 'kin' : t.truth.is;
@@ -86,7 +83,8 @@ B('found', { id: 'knf.hand', chain: true, tone: 'crisis', title: 'Whose Hand',
       : c.is === 'cell' ? `It's five of them. ${c.name} speaks for the rest.\n\n[[${c.pid || 'x44'}]] "We drew lots for who'd do it. We'd do it again. Ask them about ${c.deed} and see if they sleep."`
       : `It's ${c.name}. Someone in ${c.first}'s family died because of ${c.deed}.\n\n[[${c.pid || 'x44'}]] "I wasn't going to stop at one. I want you to know that. I wanted all of you."`),
   choices: [
-    { label: (s, c) => c.is === 'cell' ? 'Hang the five' : `Hang ${c.first}`, dark: true, note: (s, c) => c.is === 'officer' ? `${LF.SEATS[c.seat].name} loses its officer.` : 'At the pad, at dawn, in front of everyone. Nobody will try it again.', hint: 'unknown', info: (s, c) => [['yield', 'It ends'], ['danger', c.is === 'officer' ? 'Your own officer' : c.is === 'cell' ? 'Five people' : 'One person']],
+    // Four answers, three on screen: the killing one is the rope until the smelter stands, and the ore pit under it after (pit).
+    { label: (s, c) => c.is === 'cell' ? 'Hang the five' : `Hang ${c.first}`, dark: true, show: s => !pit(s), note: (s, c) => c.is === 'officer' ? `${LF.SEATS[c.seat].name} loses its officer.` : 'At the pad, at dawn, in front of everyone. Nobody will try it again.', hint: 'unknown', info: (s, c) => [['yield', 'It ends'], ['danger', c.is === 'officer' ? 'Your own officer' : c.is === 'cell' ? 'Five people' : 'One person']],
       out: { text: (s, c) => `${c.is === 'cell' ? 'Five ropes' : 'One rope'} at the pad at dawn. The whole colony is there. Nobody says anything, before or after.`, fx: (s, c) => ({ kill: c.pid ? { who: c.pid, cause: 'hanged for the knife' } : null, pop: c.is === 'cell' ? -4 : c.pid ? 0 : -1, tension: -15, morale: -2, stain: ['hanged_knife', c.is === 'cell' ? 2 : 1], do: s2 => LF.endThread(s2, ID, 'hanged', 'The one who had been killing the officers was hanged.') }) } },
     { label: (s, c) => c.is === 'cell' ? 'Put the five out past the wire' : `Put ${c.first} out past the wire`, note: 'With nothing. If they come back, they come back with whatever\'s out there.', hint: 'unknown', info: (s, c) => [['yield', 'It ends, probably'], ['danger', 'Whoever is put out'], ['later', 'Whoever they find']],
       out: { text: (s, c) => `${c.is === 'cell' ? 'They walk' : `${cap1(c.first)} walks`} out at noon without looking back. For a while there are tracks along the wire at night.`, fx: (s, c) => ({ depart: c.pid && c.is === 'officer' ? { who: c.pid, cause: 'put out past the wire for the knife' } : null, leave: c.is === 'cell' ? 5 : c.is === 'officer' ? 0 : 1, morale: -2, do: s2 => { LF.emit(s2, 'watched', 'th.knife', 30, 200, 'someone the colony put out is walking the wire at night'); LF.endThread(s2, ID, 'exiled', 'The one who had been killing the officers was put out past the wire.'); } }) } },
@@ -94,12 +92,12 @@ B('found', { id: 'knf.hand', chain: true, tone: 'crisis', title: 'Whose Hand',
       test: { base: 30, mods: [h.R('command', 10), h.If((s, c) => !!(T(s) && T(s).owned), 15, 'You owned what was done, in front of everyone')] },
       ok: { text: (s, c) => `You say it in the mess hall: they were right, and you were wrong, and nobody hangs for it. It's the quietest the hall has been in a year. Afterwards people come up to shake your hand, and some of them are crying.`, fx: s => ({ morale: 8, tension: -20, do: s2 => LF.endThread(s2, ID, 'pardoned', 'The one who had been killing the officers was pardoned, and the colony was quiet after.') }) },
       bad: { text: (s, c) => `The pardon is heard as weakness. Within the month there's a second note on the mess door, in a different hand.`, fx: s => ({ morale: -4, do: s2 => { LF.emit(s2, 'resentment', 'th.knife', 45, 260, 'the officers can be killed and the killer let off'); LF.endThread(s2, ID, 'pardoned', 'The one who had been killing the officers was pardoned, and others took note.'); } }) } },
-    { label: 'Work them to death in the deep pit', dark: true, note: 'Slower than a rope, and useful. The colony needs the ore.', hint: 'unknown', info: [['yield', 'Materials, and an example'], ['danger', 'Whoever is sent down']],
+    { label: 'Work them to death in the deep pit', dark: true, show: s => pit(s), note: 'Slower than a rope, and useful. The colony needs the ore.', hint: 'unknown', info: [['yield', 'Materials, and an example'], ['danger', 'Whoever is sent down']],
       out: { text: (s, c) => `${c.is === 'cell' ? 'The five go' : `${cap1(c.first)} goes`} down the pit in chains and doesn't come up except to sleep. The ore comes up steadily. Before the year is out the chains are on somebody else.`, fx: (s, c) => ({ mat: c.is === 'cell' ? 140 : 50, kill: c.pid ? { who: c.pid, cause: 'worked to death in the pit for the knife' } : null, pop: c.is === 'cell' ? -4 : c.pid ? 0 : -1, morale: -3, stain: ['worked_out', 2], do: s2 => LF.endThread(s2, ID, 'worked', 'The ones who had been killing the officers were worked to death in the pit.') }) } },
   ] });
 
-LF.TAGS['knf.cut'] = ['order', 'cautious order', 'severe order closed', 'closed'];
-LF.TAGS['knf.note'] = ['open mercy', 'order', 'severe order closed', 'closed'];
+LF.TAGS['knf.cut'] = ['order', 'cautious order', 'severe order closed'];
+LF.TAGS['knf.note'] = ['open mercy', 'order', 'severe order closed'];
 LF.TAGS['knf.strike'] = ['bold', 'severe', 'cautious'];
 LF.TAGS['knf.hand'] = ['severe order', 'severe', 'mercy open', 'severe order'];
 Object.assign(LF.DEEDS || {}, { rounded_up: 'the families locked up because they had reason to hate you', hanged_knife: 'the hanging for the knife' });

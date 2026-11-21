@@ -139,7 +139,7 @@ LF.stlTick = function (s) {
     if (s.day >= t.up && !t.raised) { t.raised = s.day; LF.log(s, `${t.name} is roofed and lived in: ${LF.num(t.n)} people, ${an(LF.kindWord(s, t))} ${LF.lex(s, 'out')}.`, 'good'); }
     t.room = roomOf(s, t);
     if (s.day < t.up) continue;
-    const want = Math.min(t.room * 0.9, hd * (t.far ? 0.1 : 0.07) * (t.who === 'young' ? 0.8 : 1));
+    const want = Math.min(t.room * 0.9, hd * (t.far ? 0.1 : 0.07) * (t.who === 'young' ? 0.8 : 1));   // 'young': only a save from before 2026-11-21, when stl.who could send the eldest children
     t.n = Math.max(5, Math.round(t.n + (want - t.n) * 0.15));
     if (working(s, t) && t.kind === 'mine') s.res.mat += 6; }
   // never more than 45% of the colony lives out
@@ -203,27 +203,19 @@ add({ id: 'stl.found', arc: 'stl', tone: 'opportunity', title: 'A Second Wire', 
 
 /* 2. Who goes. */
 add({ id: 'stl.who', arc: 'stl', tone: 'pressure', title: 'Who Goes', chain: true, repeat: 1, gap: 0, city: true, view: 'people',
-  setup: s => { const t = LF.stlById(s, s.flags.stl_new) || LF.settlements(s).slice(-1)[0], C = LF.children(s);
-    return Object.assign(t ? ctxOf(s, t) : { name: 'the new settlement', n: 40, kind: 'township' }, { young: C.born >= 20 && C.eldest >= 9, lock: Math.max(4, Math.round(LF.sized(s) * 0.05)) }); },
+  setup: s => { const t = LF.stlById(s, s.flags.stl_new) || LF.settlements(s).slice(-1)[0];
+    return Object.assign(t ? ctxOf(s, t) : { name: 'the new settlement', n: 40, kind: 'township' }, { lock: Math.max(4, Math.round(LF.sized(s) * 0.05)) }); },
   text: (s, c) => `${c.name} needs about ${num(round(c.n))} people to hold it through its first year. More names are down for it than there are places, and nearly all of them are young${LF.children(s).eldest >= LF.AGE ? ', many of them born here' : ''}. The founding households have put down almost none.\n\nWhoever goes will live out of sight of the wall. The list is yours to settle.`,
   choices: [
     { label: 'Let the ones who asked go', note: 'The young and the able leave the yard and the field crews, which are short of exactly them.',
       info: [['yield', 'A settlement that wants to be there'], ['danger', 'Hands, for a year']],
       out: { text: (s, c) => `The list is read out as it stands. They leave in one column with handcarts, and half the mess walks with them as far as the last marker. The yard is short on every shift for the rest of the year.`,
         fx: s => ({ morale: 2, do: s2 => { s2.flags.stl_drain = s2.day + YEAR; const t = LF.stlById(s2, s2.flags.stl_new); if (t) t.who = 'vol'; } }) } },
-    { label: 'Draw lots across every household', note: 'It is even-handed, and it sends out people who never asked to leave their street.',
-      info: [['danger', 'Morale']],
-      out: { text: (s, c) => `Every household draws. Some who wanted to go stay, and some who did not are given a month to pack. Two families trade their lots at night, for a price, and nobody stops them.`,
-        fx: s => ({ morale: -3, tension: 3, do: s2 => { const t = LF.stlById(s2, s2.flags.stl_new); if (t) t.who = 'lot'; } }) } },
     { label: 'Send the lock-up, the short-rationed and the names the watch keeps', dark: true, note: (s, c) => `The colony is quieter within the month. ${c.name} is founded by people who were made to go.`,
       info: [['yield', 'A quieter colony'], ['danger', 'The ones sent, and what they make of it']],
       out: { text: (s, c) => `The watch reads the list at the gate, and it is the list everybody expected. They go out under escort with their households and what they can carry. The escort comes back the same month. The lock-up is empty and the mess is calmer.`,
         fx: s => ({ morale: 1, tension: -10, stain: ['stl_exiled', 2], do: s2 => { const t = LF.stlById(s2, s2.flags.stl_new); if (t) { t.who = 'out'; t.sour = 3; } },
           chron: (s2, c) => `${c.name} was settled with the people the colony wanted rid of.` }) } },
-    { label: 'Send the eldest children, with a few of the grown to mind them', dark: true, show: (s, c) => c.young, note: 'Every working adult stays at a crew, and children too young for the work roster raise a settlement.',
-      info: [['yield', 'No hands lost'], ['danger', 'The children sent']],
-      out: { text: (s, c) => `The eldest classes are marched out behind two carts, with a teacher and a few of the grown. They raise the frames in the first month, badly, and raise them again. One child is under a frame when it goes over.`,
-        fx: s => ({ pop: -1, morale: -2, stain: ['stl_children', 2], do: s2 => { const t = LF.stlById(s2, s2.flags.stl_new); if (t) t.who = 'young'; } }) } },
   ] });
 
 /* 3. A council of its own. */
@@ -243,10 +235,6 @@ add({ id: 'stl.council', arc: 'stl', tone: 'pressure', title: 'A Table of Their 
       out: { text: (s, c) => `The watch goes out at night and is back by morning with three people on a cart. They are held in the long store without a charge, since nobody can find one. ${c.name} sends its carts in on time, with nobody riding on them who will speak to the gate.`,
         fx: (s, c) => ({ tension: -6, stain: ['stl_five', 2], do: s2 => { const t = T_(s2, c); if (t) t.ruled = s2.day; sour(s2, c, 2); },
           chron: `The three people ${c.name} elected were arrested and brought in.` }) } },
-    { label: 'Stop their carts of flour and spares until the table is dissolved', dark: true, note: 'Nobody is arrested. The settlement is starved into voting the table away, and the smallest go short first.',
-      info: (s, c) => [['yield', 'One table'], ['danger', `Perhaps ${num(c.dead)} of the weakest`]],
-      out: { text: (s, c) => `No cart goes out along ${c.road} for the season. ${c.name} holds a second vote before the end of it and dissolves its table on a show of hands. By then ${num(c.dead)} are dead there, the old and the newborn, and the clinic's round finds the rest thin.`,
-        fx: (s, c) => ({ morale: -1, stain: ['stl_starved', 2], do: s2 => { const t = T_(s2, c); if (t) { t.ruled = s2.day; LF.stlHurt(s2, t, c.dead, true); } sour(s2, c, 2); } }) } },
   ] });
 
 /* 4. A settlement stops sending its share. */
@@ -269,10 +257,6 @@ add({ id: 'stl.share', arc: 'stl', tone: 'pressure', title: 'The Carts Come In L
       out: { text: (s, c) => `${cap(c.w)} goes out with rifles and empty carts. A storekeeper bars the door and is shot through it. The carts come back full, and are unloaded by people who do not ask how.`,
         fx: (s, c) => ({ food: c.what === 'ore' ? 20 : 50, mat: c.what === 'ore' ? 25 : 0, stain: ['stl_levy', 2], do: s2 => { const t = T_(s2, c); if (t) LF.stlHurt(s2, t, 1, true); sour(s2, c, 2); },
           chron: `The watch took ${c.name}'s share by force, and shot a storekeeper to get it.` }) } },
-    { label: 'Stop the doctor\'s round and the relay spares until the carts come in full', dark: true, note: 'Nobody is touched. The settlement pays, or its sick and its newborn do.',
-      info: (s, c) => [['yield', 'The share, after a season'], ['danger', `Perhaps ${num(c.dead)} of their sick`]],
-      out: { text: (s, c) => `The round stops at the last marker. ${c.name} holds out for most of the season and then sends the carts in heaped, with ${c.dead === 1 ? 'one name' : `a list of ${num(c.dead)} names`} pinned to the first of them and no note.`,
-        fx: (s, c) => ({ food: c.what === 'ore' ? 0 : 30, mat: c.what === 'ore' ? 15 : 0, stain: ['stl_withheld', 2], do: s2 => { const t = T_(s2, c); if (t) LF.stlHurt(s2, t, c.dead, true); sour(s2, c, 2); } }) } },
   ] });
 
 /* 5. A settlement asks for the watch. */
@@ -288,10 +272,6 @@ add({ id: 'stl.watch', arc: 'stl', tone: 'pressure', title: 'They Ask for the Wa
     { label: 'Send them rifles, and let them keep their own watch', cost: { mat: 15, parts: 2 }, note: 'Rifles leave the armoury for people who answer to their own table first.',
       out: { text: (s, c) => `Eight rifles go out under canvas with a sergeant to teach the drill. The sergeant is back within the season. ${c.name} posts its own sentries now, and they challenge the colony's carts like anybody else's.`,
         fx: (s, c) => ({ tension: 3, do: s2 => { const t = T_(s2, c); if (t) t.armed = s2.day; } }) } },
-    { label: 'Refuse: they hold their ground or they come in', note: 'The ones who can leave do, and the ones who stay know what the colony thinks they are worth.',
-      info: [['danger', 'Morale']],
-      out: { text: (s, c) => `The answer goes out on the next cart. ${Num(Math.max(2, c.back))} of them come in over the season and are found bunks in the rows. The rest stay at ${c.name}, bar their doors at dusk, and stop writing.`,
-        fx: (s, c) => ({ morale: -2, do: s2 => { const t = T_(s2, c); if (t) t.n = Math.max(5, t.n - c.back); sour(s2, c, 1); } }) } },
     { label: 'Send six of the watch, with orders to search every house', dark: true, note: 'The colony thinks the thief lives there. Somebody will be made to answer for it in front of the rest.',
       info: [['yield', 'An end to it'], ['danger', 'Whoever the search settles on']],
       out: { text: (s, c) => c.inside ? `The watch turns out every house in ${c.name} and finds the stores under a floor. The householder is hanged from the cart crane by the sergeant before any word can come from the council. The thefts stop.`
@@ -300,10 +280,10 @@ add({ id: 'stl.watch', arc: 'stl', tone: 'pressure', title: 'They Ask for the Wa
   ] });
 
 LF.TAGS['stl.found'] = ['cautious order', 'bold open', 'cautious closed'];
-LF.TAGS['stl.who'] = ['free open', 'order', 'severe closed', 'severe order'];
-LF.TAGS['stl.council'] = ['free open', 'cautious order', 'severe closed', 'severe order'];
-LF.TAGS['stl.share'] = ['mercy open', 'cautious order', 'severe order', 'severe closed'];
-LF.TAGS['stl.watch'] = ['cautious order', 'free open', 'closed order', 'severe order'];
+LF.TAGS['stl.who'] = ['free open', 'severe closed'];
+LF.TAGS['stl.council'] = ['free open', 'cautious order', 'severe closed'];
+LF.TAGS['stl.share'] = ['mercy open', 'cautious order', 'severe order'];
+LF.TAGS['stl.watch'] = ['cautious order', 'free open', 'severe order'];
 Object.assign(LF.DEEDS || {}, {
   stl_exiled: 'the settlement founded with the people the colony wanted rid of',
   stl_children: 'the children sent out to raise a town',

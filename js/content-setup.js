@@ -519,8 +519,22 @@ add({ id: 'arrive.name', arc: 'setup', view: 'world', tone: 'council', chain: tr
     return { names, cat: w.planet }; },
   text: (s, c) => `The survey is in. The catalogue lists this world as ${c.cat}.\n\nThe crew have put forward names, and three are still on the board. Pick one.`,
   choices: [0, 1, 2].map(i => ({ label: (s, c) => c.names[i].n, note: (s, c) => `${c.names[i].from}.`,
-    out: { then: s => V(s).next || 'setup.wake1', text: (s, c) => c.names[i].cat ? `The world keeps its catalogue designation, ${c.names[i].n}, and it goes into the log as the name.` : `${c.names[i].n}. It goes into the log, and by the end of the watch it is the only name in use.`,
+    out: { then: s => s.world.siteOpen ? 'setup.site' : V(s).next || 'setup.wake1', text: (s, c) => c.names[i].cat ? `The world keeps its catalogue designation, ${c.names[i].n}, and it goes into the log as the name.` : `${c.names[i].n}. It goes into the log, and by the end of the watch it is the only name in use.`,
       fx: (s, c) => ({ do: s2 => { s2.world.catalogue = c.cat; s2.world.planet = c.names[i].n; s2.arrival = false; LF.orbitChron(s2); } }) } })) });
+/* ---- the landing site (Lachlan, 2026-11-21: "you've got the landing site selection way too early. It should be just before you
+   configure the lander"). The planet's two sites, as a card, after the name and before the two lander cards. Until now the
+   world has been made for the first site (LF.embark with later); the choice makes it again for the site taken (LF.pickSite),
+   deals the threads, and the outcome carries what orbit says of that site (LF.siteReport), since the outcome's own text is
+   drawn before any effect. A game whose site was fixed at the burn (the headless tools) skips the card. ---- */
+const siteT = (s, k) => LF.SITE_TERMS[((s.world.cand || {}).sites || [s.world.type, s.world.type])[k]] || {};
+add({ id: 'setup.site', view: 'world', arc: 'setup', tone: 'council', chain: true, title: 'Where the Lander Goes Down',
+  text: s => `Two places on ${s.world.planet} would take a colony. Where the lander goes down decides what the colony lives on.`,
+  choices: [0, 1].map(k => ({ label: s => { const n = siteT(s, k).site || 'the site'; return n.charAt(0).toUpperCase() + n.slice(1); },
+    note: s => `${siteT(s, k).gives || ''} ${siteT(s, k).costs || ''}`.trim(),
+    out: { then: s => V(s).next || 'setup.wake1', text: s => `The lander's course is laid in for ${siteT(s, k).site || 'the site'}, and the ship's survey is turned on it for the last orbits before the drop.` } })),
+  after: s => { const m = s.memo['setup.site'], r = s.cur && s.cur.result; if (!m || !s.world.siteOpen) return;
+    LF.pickSite(s, m.i); if (r) r.text += '\n\n' + LF.siteReport(s); } });
+
 /* ---- what is said at the ramp (Lachlan, 2026-11-17): an officer lost on the crossing (p.fell) is spoken for at landfall,
    by one of the others, in that officer's own voice (VOICES.md). Two lines are written for each of the six, by different
    people, so there is somebody left to say one. One who is still aboard says it over the lander's radio. ---- */

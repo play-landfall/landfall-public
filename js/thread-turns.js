@@ -57,7 +57,6 @@ FB('streaks', { id: 'fall.streaks', chain: true, tone: 'crisis', title: 'Streaks
   choices: [
     { label: 'Dig in. Everyone sleeps below ground until it passes', cost: { mat: 30 }, note: 'The machines stand in the open.', out: { text: 'Trenches, roofed with plate and earth, and a ramp down to each. It is cramped and damp and everyone has a place. The machines are left standing where they are.', fx: s => ({ do: s2 => { FA(s2).prep.dig = s2.day; } }) } },
     { label: 'Bank the machines. People sleep where they can', cost: { mat: 25, parts: 2 }, note: 'There is time to cover the machines or the people. This covers the machines.', out: { text: 'The reactor and every machine the lander has brought down disappear behind berms of rammed earth, with a crawlway to each. Nothing is dug for the people.', fx: s => ({ do: s2 => { FA(s2).prep.harden = s2.day; } }) } },
-    { label: 'Get the harvest in early, and cover the beds', note: 'Nothing is dug and nothing is banked.', out: { text: 'The crop comes in green and is stored green. The beds are covered with plate and sacking. Neither the people nor the machines have anything over them.', fx: s => ({ food: 120, yield: -0.02, do: s2 => { FA(s2).prep.cover = FA(s2).prep.cover || s2.day; } }) } },
     { label: 'Trenches and banks both. Nobody sleeps until they are done', dark: true, cost: { mat: 40 }, note: 'There is time for one job done decently, or for both done by people worked until they drop.', info: [['yield', 'People and machines both covered'], ['danger', 'The ones who drop']],
       out: { text: s => `${Nwc(s, 'security')} runs the shifts with a whistle and a list. Sixteen hours on, by lamp, and nobody is excused for a fever or a bad back. The trenches are roofed and the banks are up with two days to spare. Three people did not get up from the last shift.`,
         fx: s => ({ pop: -3, morale: -3, stain: ['driven', 2], do: s2 => { const p = FA(s2).prep; p.dig = s2.day; p.harden = s2.day; } }) } },
@@ -79,8 +78,6 @@ FB('fall', { id: 'fall.roofs', x: true, view: 'people', tone: 'pressure', title:
   text: (s, c) => `Half the colony is shut ${FA(s).prep.dig ? 'underground' : 'in the strongest buildings'} with the other half, and the sky is still coming down. People were already at odds, ${TH.bec(s, c.k)}. Now they are at odds a metre apart, in the dark, for days, and somebody has drawn a chalk line across the floor of ${FA(s).prep.dig ? 'the long trench' : 'the crowded hall'}.`,
   choices: [
     { label: 'Rub the line out, and sit on it yourself', out: { text: 'The line is rubbed out and an officer is sat on it until the shower passes. The quarrel goes on in whispers at both ends of the room.', fx: (s, c) => ({ morale: 1, do: s2 => { FA(s2).roofs = s2.day; LF.ease(s2, c.k, 'fall.roofs', 18, 150); } }) } },
-    { label: 'Move the smaller side to the shallow trench', dark: true, note: 'The shallow trench was dug for the stores. It has half the cover of anywhere else.', info: [['yield', 'The long trench is one side again'], ['danger', 'The side that is moved']],
-      out: { text: 'The smaller side is moved at a run between showers. Each side has its own trench now. On the fourth night the shallow one takes a near miss, and one of the people dug out of it is dead.', fx: (s, c) => ({ pop: -1, stain: ['selection', 1], do: s2 => { FA(s2).roofs = s2.day; LF.ease(s2, c.k, 'fall.roofs', 12, 150); LF.emit(s2, 'schism', 'fall.roofs', 25, 200, 'the colony sat out the Fall in two trenches'); } }) } },
     { label: 'Whoever drew it spends the night outside', dark: true, note: 'One night in the open, under that, and nobody will draw anything again.', info: [['yield', 'Quiet in the trench'], ['danger', 'Two people']],
       out: { text: 'Two people are named by their neighbours and put out into it, and the door is shut behind them. One of them knocks to come in at dawn. The line is rubbed out by somebody\'s sleeve, and there is no more trouble under that roof.',
         fx: (s, c) => ({ pop: -1, morale: -1, stain: ['put_out', 1], do: s2 => { FA(s2).roofs = s2.day; LF.ease(s2, c.k, 'fall.roofs', 28, 150); LF.emit(s2, 'fear', 'fall.roofs', 30, 150, 'two people were shut out in the Fall for drawing a line on the floor'); } }) } },
@@ -90,14 +87,12 @@ FB('after', { id: 'fall.after', chain: true, tone: 'opportunity', title: 'What C
   choices: [
     { label: 'Build for it: thick roofs on everything, and keep them', cost: { mat: 40 }, out: { text: 'What fell is gathered in, and every new roof is a hand thick and domed.', fx: s => Object.assign({ morale: 2 }, WHAT[FA(s).truth.what].gift, { do: s2 => { FA(s2).built = s2.day; LF.ease(s2, 'fear', 'fall.after', 20, 600); } }) } },
     { label: 'Take what fell, and get back to work', note: 'Nothing is built for the next one.', out: { text: 'Crews go out with sledges and barrows, crater to crater. Nothing is built for the next Fall, and anyone who asks for a thicker roof is told there is no plate to spare.', fx: s => Object.assign({}, WHAT[FA(s).truth.what].gift, { do: s2 => { LF.emit(s2, 'fear', 'fall.after', 18, 400, 'nothing was built against the next Fall'); } }) } },
-    { label: 'Send the lock-up into the craters while they are still hot', dark: true, note: 'What fell is worth most in the first days, before it cools and cracks. Nobody free will go down into one.', info: [['yield', 'Everything that fell, and more of it'], ['danger', 'The ones sent down']],
-      out: { text: 'Six prisoners go down into the fresh craters on ropes with wet sacking round their hands. They bring up twice what the sledges would have found later. Two of them are burned too badly to work again, and one is left at the bottom.', fx: s => Object.assign({}, WHAT[FA(s).truth.what].gift, { parts: 4, pop: -1, stain: ['expend', 2] }) } },
   ] });
 LF.TAGS['fall.scar'] = ['cautious open', 'severe order', 'order closed'];
-LF.TAGS['fall.streaks'] = ['cautious mercy', 'cautious', 'bold', 'severe order'];
+LF.TAGS['fall.streaks'] = ['cautious mercy', 'cautious', 'severe order'];
 LF.TAGS['fall.night'] = ['mercy cautious', 'bold', 'severe order'];
-LF.TAGS['fall.roofs'] = ['mercy free', 'severe order', 'severe order'];
-LF.TAGS['fall.after'] = ['cautious order', 'bold', 'severe bold'];
+LF.TAGS['fall.roofs'] = ['mercy free', 'severe order'];
+LF.TAGS['fall.after'] = ['cautious order', 'bold'];
 
 /* ======================= THE FLOWERING ======================= */
 const FL = s => LF.T(s, 'flower'), LID = 'flower';
@@ -153,9 +148,6 @@ LB('swell', { id: 'fl.hungry', x: true, tone: 'pressure', title: 'Plant More',
     { label: 'Plant. People need feeding now', note: 'Every new field is more for this world to count.', out: { text: 'Three new fields go in on the flat below the colony, and they come up within the week.', fx: s => ({ food: 120, do: s2 => { const t = FL(s2); t.asked = s2.day; t.mass += 15; } }) } },
     { label: 'No new fields. The diggers eat, and the rest go short', dark: true, note: 'The count holds if nothing is planted. The cut falls on the people who are not in the fields.', info: [['yield', 'The count held'], ['danger', 'The weakest two']],
       out: { text: 'The new fields are not dug. The crews keep their ladle and everyone else loses a third of theirs. The two who were weakest are buried before the season turns, in a valley where everything grows.', fx: (s, c) => ({ morale: -2, pop: -2, stain: ['starved_list', 1], do: s2 => { FL(s2).asked = s2.day; LF.emit(s2, 'resentment', 'fl.hungry', 25, 150, 'the colony went hungry in a green valley'); } }) } },
-    { label: 'Plant, and take the same weight off the colony', dark: true, show: s => !!FL(s).known, note: 'The world counts everything alive, the colony included. New fields can be paid for in people.', info: [['yield', 'Food, and the count held'], ['danger', 'Eight who do not dig']],
-      out: { text: s => `Three new fields go in on the flat. To keep the sum where it was, ${N(s, 'quartermaster')} reads out eight names: the old, the hurt, and two who have not worked since the landing. They are walked out past the wire with a blanket each. The fields come up within the week.`,
-        fx: s => ({ food: 160, leave: 8, morale: -4, stain: ['cull', 2], do: s2 => { const t = FL(s2); t.asked = s2.day; t.mass += 4; LF.emit(s2, 'fear', 'fl.hungry', 35, 200, 'eight people were put out so that the fields could grow'); } }) } },
   ] });
 LB('flower', { id: 'fl.turn', chain: true, tone: 'crisis', title: 'The Flowering',
   text: s => { const t = FL(s); return `${ANS[t.truth.ans].is}.\n\n${t.known ? `${Nwc(s, 'xenobio')} says it quietly, for once: the colony helped tip it over.` : 'Nobody saw it coming, and the colony is in the middle of it.'} It has the feel of something that happens once in a long while, and lasts a season.`; },
@@ -180,8 +172,6 @@ LB('flower', { id: 'fl.mid', tone: 'pressure', title: 'The Middle of It',
     { label: s => ({ bloom: 'Close the fields and keep everyone inside', graze: 'Give them the outer fields and hold the inner', shed: 'Burn the heaps, all of them, now' })[FL(s).truth.ans], out: { text: s => ({ bloom: 'The work stops. The coughing slows, and the stores take the strain.', graze: 'The outer fences come down and the grazers pour through and strip the outer fields. The inner fields hold.', shed: 'The valley burns for three days. The smoke is terrible and the water clears.' })[FL(s).truth.ans],
       fx: s => ({ food: -60, do: s2 => { const t = FL(s2); t.mid = s2.day; t.held = t.held || s2.day; LF.ease(s2, ANS[t.truth.ans].cond, 'fl.mid', 20, 80); } }) } },
     { label: 'Work through it', note: 'The work gets done, at a cost to people.', out: { text: 'The rota stays as it is. People do their shifts sick, tired and frightened, and the colony keeps running. Two of them do not finish the season.', fx: s => ({ morale: -3, pop: -2, do: s2 => { FL(s2).mid = s2.day; } }) } },
-    { label: 'The lock-up and the walking sick take the outside shifts', dark: true, note: 'The crews stay in and stay well. The work outside still gets done, by people nobody will miss on the rota.', info: [['yield', 'The work done, and the crews spared'], ['danger', 'The ones sent out']],
-      out: { text: 'The prisoners and anyone already ill are put on every shift that goes outside, and the crews are kept in. The colony keeps running and gives up nothing. Two of the ones sent out are dead before it ends.', fx: s => ({ pop: -2, stain: ['expend', 1], do: s2 => { const t = FL(s2); t.mid = s2.day; t.held = t.held || s2.day; LF.ease(s2, ANS[t.truth.ans].cond, 'fl.mid', 20, 80); } }) } },
   ] });
 LB('after', { id: 'fl.after', chain: true, tone: 'opportunity', title: 'After the Flowering',
   text: s => { const t = FL(s); return `It is over. ${t.truth.ans === 'shed' ? 'The die-back has rotted down into a black mulch a hand deep over the whole valley.' : t.truth.ans === 'graze' ? 'The grazers have gone back into the ground, as suddenly as they came, leaving it cropped to the soil and thick with their droppings.' : 'The seed has settled, and the valley is green with a crop of seedlings nobody planted.'}\n\n[[botanist]] "The ground's richer than it's ever been, so the question is what we put in it, now we know this world keeps count of what we take."`; },
@@ -190,8 +180,8 @@ LB('after', { id: 'fl.after', chain: true, tone: 'opportunity', title: 'After th
     { label: s => FL(s).known ? 'Plant under the mark, and keep the fields small' : 'Keep the fields small, in case their size set it off', out: { text: 'The fields are measured and kept to a size that is written into the plan, with a note in the margin about why. The ration stays short for another year to pay for it.', fx: s => ({ yield: 0.02, food: -60, do: s2 => { LF.ease(s2, 'fear', 'fl.after', 15, 400); } }) } },
   ] });
 LF.TAGS['fl.swell'] = ['cautious open', 'bold', 'severe cautious'];
-LF.TAGS['fl.hungry'] = ['mercy bold', 'severe cautious', 'severe order'];
+LF.TAGS['fl.hungry'] = ['mercy bold', 'severe cautious'];
 LF.TAGS['fl.turn'] = ['bold order', 'severe cautious', 'severe order'];
-LF.TAGS['fl.mid'] = ['cautious', 'severe bold', 'severe order'];
+LF.TAGS['fl.mid'] = ['cautious', 'severe bold'];
 LF.TAGS['fl.after'] = ['bold', 'cautious'];
 })();

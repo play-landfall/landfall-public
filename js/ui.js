@@ -103,37 +103,25 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
 /* How to read a card (Lachlan, 2026-11-21): the option icons and chips, and a sure choice against a roll. Once per device
    before the first voyage (landfall.legend), and from the menu any time. Once seen, the crew review offers it beside
    Launch your ship (Lachlan, 2026-11-21); until then Launch goes to it first. The examples are drawn with the card's own classes. */
+/* Trimmed 2026-11-21 (Lachlan: "I shouldn't have to scroll down... collapse or trim a lot of the icon legend parts, they are more
+   obvious now"): each page fits a phone screen. One roll and one sure option as examples, and four marks, not nine. */
 const LEGEND_ROWS = [
-  [() => rollTip(80), 'A roll', 'The chance it goes your way. Green is likely (70% or more), yellow could go either way, red is a long shot (under 30%).'],
-  [() => infoTip(['yield', 'Gain']), 'What it can gain', 'Stores, repairs, safety: whatever the option is for.'],
-  [() => infoTip(['danger', 'Morale']), 'What it costs', 'A red arrow is something lost: morale, stores, a machine, your standing.'],
-  [() => infoTip(['danger', 'Lives']), 'Who it hurts', 'A red skull is people: lives, or the named few who pay for it.'],
-  [() => '<span class="k">If it fails</span>', 'If a roll fails', 'What a roll costs when it goes wrong. A party\'s roll is made when it comes home.'],
-  [() => '<span class="k">Later</span>', 'Later', 'A risk that may come down the line, not straight away.'],
-  [() => `<span>${mk('mat')}\u221220</span>`, 'Spent up front', 'Stores used the moment you choose. Food, materials and spares each have their own mark.'],
-  [() => `<span>${mk('people')}12 go</span><span>${mk('time')}2 months</span>`, 'A party goes out', 'How many go and how long they are away.'],
-  [() => `<span>${mk('star')}Cuts a cord</span>`, 'Cuts a cord', 'One step closer to a colony that no longer needs the ship.']];
+  [() => rollTip(80), 'A roll', 'The chance it goes your way: green likely, yellow either way, red a long shot.'],
+  [() => infoTip(['yield', 'Gain']) + infoTip(['danger', 'Morale']), 'Gained and lost', 'A green arrow is gained, a red arrow lost.'],
+  [() => infoTip(['danger', 'Lives']), 'Who it hurts', 'A red skull is people.'],
+  [() => '<span class="k">If it fails</span><span class="k">Later</span>', 'If it fails, and later', 'What a failed roll costs, and a risk that may come down the line.']];
 const LEGEND = [
-  { lbl: 'Why you are here', h: 'The goal', body: () => `<p>The colony lives off the ${esc(s && s.adrift ? s.adrift.ship : 'Ariadne')}'s machines, and every one of them is wearing out. Nothing can be sent from Earth to replace them.</p>
-    <p>You win by cutting the cords: building something on the ground to do each machine's work before it fails.</p>
-    <div class="lgx"><div class="box">${LEGEND_CORDS.map(([b, t]) => `<div class="row">${ic('star')}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>
-    <p>Cut all five and the colony can outlive the ship. You can keep playing after that, and it can still fail.</p>
-    <p>You lose if the colony falls to eight people. Hunger, sickness, accidents and whatever lives out there all count. The cords are in the Colony view, under How the colony stands.</p>` },
-  { lbl: 'Every month', h: 'Rolls and sure things', body: () => `<p>Every month brings one decision. Some options are sure: what it says is what you get. Others are a roll.</p>
-    <div class="lgx"><div class="lbl">A roll</div>
-      <div class="opt roll"><span class="b"><span class="l">Patch the loop while it runs</span><em>Gold edge and gold title: this one is decided by chance.</em>${tipsHTML([rollTip(80)], [['fail', 'Lives']])}<div class="mods"><span>55% to start</span><span class="up">+20% the Chief Engineer, there in person</span><span class="up">+5% the machine shop</span></div></span></div>
-      <small>The percentage is the chance it goes your way, and the line under it shows how it was worked out. Under "If it fails" is what going wrong costs. Sending an officer adds to the odds, but they can be hurt or killed, and they rest two months after.</small></div>
-    <div class="lgx"><div class="lbl">A party</div>
-      <div class="opt roll"><span class="b"><span class="l">Send twelve to walk the ridge</span><em>A party is a roll too.</em>${tipsHTML([rollTip(60, 'Everyone back'), `<span>${mk('people')}12 go</span>`, `<span>${mk('time')}2 months</span>`, `<span>${mk('food')}\u2212120 food</span>`], [], [infoTip(['danger', 'Lives'])])}<span class="tips fail"><span class="k">Rolled when they come home</span></span></span></div>
-      <small>The chance is that everyone comes back. You find out when they do.</small></div>
-    <div class="lgx"><div class="lbl">Sure</div>
-      <div class="opt"><span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em>${tipsHTML([infoTip(['yield', 'Materials']), infoTip(['danger', 'Morale'])], [['later', 'Whoever builds with it']])}</span></div>
-      <small>What it says happens. A cost on a sure option is part of the deal. Under "Later" is a risk that may still come of it.</small></div>` },
+  { lbl: 'Why you are here', h: 'The goal', body: () => `<p>The colony lives off the ${esc(s && s.adrift ? s.adrift.ship : 'Ariadne')}'s machines, and every one of them is wearing out. You win by cutting the cords: building something on the ground to do each machine's work before it fails.</p>
+    <div class="lgx"><div class="box">${LEGEND_CORDS.map(([b, t]) => `<div class="row lgc">${ic('star')}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>
+    <p>You lose if the colony falls to eight people.</p>` },
+  { lbl: 'Every month', h: 'Rolls and sure things', body: () => `<p>Every month brings one decision. Some options are a roll, and the rest are sure.</p>
+    <div class="lgx"><div class="opt roll"><span class="b"><span class="l">Patch the loop while it runs</span>${tipsHTML([rollTip(80)], [['fail', 'Lives']])}<div class="mods"><span>55% to start</span><span class="up">+20% the Chief Engineer, in person</span><span class="up">+5% the machine shop</span></div></span></div>
+      <small>A gold edge is a roll. The percentage is the chance it goes your way, with how it was worked out under it. An officer sent in person adds to it, can be hurt, and rests two months after. A party sent out is a roll too, made when it comes home.</small></div>
+    <div class="lgx"><div class="opt"><span class="b"><span class="l">Strip the wreck for parts</span>${tipsHTML([infoTip(['yield', 'Materials']), infoTip(['danger', 'Morale'])], [])}</span></div>
+      <small>No gold edge, no dice: what it says is what happens.</small></div>` },
   { lbl: 'On every option', h: 'The marks', body: () => `<div class="lgx"><div class="box">${LEGEND_ROWS.map(([m, b, t]) => `<div class="row lgr"><div class="t"><span class="tips">${m()}</span><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>` }];
-const LEGEND_CORDS = [['Food', 'Fields, once there are crops that grow in this soil. Replaces the hydroponics bay.'],
-  ['Water', 'Wells and sand filters. Replaces the water reclaimer.'], ['Energy', 'A turbine field. Replaces the fusion reactor.'],
-  ['Industry', 'A machine shop, which needs a smelter and ore. Replaces the fabricator.'],
-  ['People', 'A school and clinic, and a hundred colonists. Replaces the autodoc and the sleepers.']];
+const LEGEND_CORDS = [['Food', 'Fields of a crop that grows here.'], ['Water', 'Wells.'], ['Energy', 'A turbine field.'],
+  ['Industry', 'A machine shop, a smelter and ore.'], ['People', 'A school, a clinic and a hundred colonists.']];
 const legendHTML = (n, first, btn) => { const L = LEGEND[n];
   return `<div class="card${first ? ' enter' : ''} dossier legend"><div class="lbl tone">${esc(L.lbl)} · ${n + 1} of ${LEGEND.length}</div><h2>${esc(L.h)}</h2>
   ${L.body()}${n === LEGEND.length - 1 ? '<p class="ask">You can read these again from the menu.</p>' : ''}${btn}</div>`; };
@@ -224,7 +212,7 @@ const libPool = p => (LF.SCENES || []).filter(k => k.startsWith(p) && !k.endsWit
 const BORROW = { plan: () => libPool('lib_group_00'), done: () => libPool('lib_building_'), 'plan.harvest': () => libPool('lib_crop_'),
   // crossing incidents with no picture of their own borrow the nearest one
   'voy.scram': () => libPool('voy_bearing'), 'voy.vault': () => libPool('voy_mould'), 'voy.array': () => libPool('voy_drift'), 'voy.hold': () => libPool('voy_ledger'), 'voy.count': () => libPool('voy_mould'), 'voy.pass': () => libPool('voy_dust'),
-  'setup.load': () => libPool('setup_sys'),   // the lander's load (2026-11-21): the first-flight picture until its own is painted
+  'setup.load': () => libPool('setup_sys'), 'setup.site': () => libPool('arrive_name'),   // the lander's load (2026-11-21): the first-flight picture until its own is painted
   away: () => libPool('lib_landscape_').concat(libPool('lib_group_06')),
   // the quiet ship's boarding (2026-11-16): until each has its own picture
   'qs.deep': () => libPool('qs_board'), 'qs.walk': () => libPool('qs_board'), 'qs.count': () => libPool('sleep_cryo'), 'qs.cups': () => libPool('ship_cabin'), 'qs.late': () => libPool('qs_silent'), 'qs.blame': () => libPool('qs_board'), 'qs.answer': () => libPool('qs_silent'), 'qs.kettle': () => libPool('qs_silent'), 'qs.collar': () => libPool('lander_pad'), 'qs.ridge': () => libPool('away_ridge'), 'qs.kin': () => libPool('lander_grounded'), 'qs.nest': () => libPool('qs_board'), 'qs.tune': () => libPool('fall_night'), 'qs.keeper': () => libPool('ship_orbit'), 'qs.salvage': () => libPool('rst_ship'), 'qs.fall': () => libPool('late_fall'), 'qs.air': () => libPool('qs_board'), 'qs.glass': () => libPool('qs_board'), 'qs.guests': () => libPool('qs_board'), 'qs.lights': () => libPool('qs_silent'), 'qs.second': () => libPool('qs_silent') };
@@ -456,20 +444,13 @@ function scopes() {
 const errBar = r => { const D = LF.PROPS[r.k], pc = v => Math.max(0, Math.min(100, 100 * (v - D.min) / (D.max - D.min)));
   return `<div class="eb err"><i style="left:${pc(r.lo)}%;width:${Math.max(2, pc(r.hi) - pc(r.lo))}%"></i></div>`; };
 /* The burn (Lachlan, 2026-11-21): the same wait as a decision, then the crossing. The landing sites are not shown here:
-   they are chosen in orbit (siteHTML), and never labelled easy or hard. */
+   they are chosen in orbit (the card setup.site, after the name), and never labelled easy or hard. */
 const burnHTML = (c, i) => hold && hold.burn === i ? procHTML() : `<button class="opt go" data-act="embark" data-v="${i}"${hold ? ' disabled' : ''}>Burn for ${esc(c.star)}</button>`;
 function startBurn(i) {
   hold = { burn: i, ms: 3000, t0: performance.now(), say: 'The drive lights' }; render(); requestAnimationFrame(fillBar);
-  holdTimer = setTimeout(() => { hold = null; LF.embark(s, i, 0, true); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }, hold.ms);
+  holdTimer = setTimeout(() => { hold = null; LF.embark(s, i, 0, true); naming = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }, hold.ms);
 }
 const cap1 = x => x.charAt(0).toUpperCase() + x.slice(1);
-function siteHTML() { const w = s.world;
-  return `<div class="card enter"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Closing on ${esc(w.planet)}</h2>
-    <p>Two places on it would take a colony. Where the lander goes down decides what the colony lives on.</p>
-    <p>Choose where the colony will stand.</p></div>
-    ${w.cand.sites.map((t, k) => { const T = LF.SITE_TERMS[t];
-      return `<button class="opt site" data-act="site" data-v="${k}"><b>${esc(cap1(T.site))}</b><small>${esc(T.gives)} ${esc(T.costs)}</small></button>`; }).join('')}`;
-}
 function adriftHTML() {
   // Lachlan, 2026-11-21: the planet is chosen on a little data. A blurry picture and the array's error bars, and that is all:
   // no blurb for the kind of world, no confidence figures, no table of what the burn costs.
@@ -488,33 +469,19 @@ There is reaction mass for one more burn. The long-range array has found ${['', 
       ${burnHTML(c, i)}</div>`; });
   return h;
 }
-/* The arrival (Lachlan, 2026-11-19): first the crossing report alone, then two tabs, the world (its picture and what the
-   survey saw) and the orbital report (the readings against the truth, and what orbit can say). Both end on the name. */
-let arrStep = 0, arrTab = 'world', arrSeen = false;   // arrSeen: the orbital report has been opened, so the name can be given (Lachlan, 2026-11-19)
+/* The arrival (tightened 2026-11-21, Lachlan): one screen. What the crossing cost, the planet itself, and the array's readings
+   against the truth, then the name. The landing site is not chosen here any more: it is a card (setup.site) after the name,
+   just before the lander is loaded, and what orbit says of that site comes with its outcome. No tabs and nothing to open first. */
 const ORBIT_PIC = { barren: 'lib_planet_05', ice: 'lib_planet_01', drowned: 'lib_planet_02', jungle: 'lib_planet_04', garden: 'lib_planet_09', ruin: 'lib_planet_10' };
 function arrivalHTML() {
-  const w = s.world, R = w.report;
-  if (w.siteOpen) return siteHTML();
-  const head = `<div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2>`;
-  if (arrStep === 0) return `${head}<p>${esc(LF.transitText(s))}</p><p>The ship makes one full survey from orbit before anyone goes down. After this, what the colony learns it learns on foot.</p></div>
-    <button class="opt go" data-act="arrnext">Next</button>`;
-  const pw = LF.WORLDS && w.kind && LF.WORLDS[w.kind], has = id => (LF.SCENES || []).includes(id);   // the planet itself, not the site (Lachlan, 2026-11-21)
+  const w = s.world;
+  const pw = LF.WORLDS && w.kind && LF.WORLDS[w.kind], has = id => (LF.SCENES || []).includes(id);   // the planet itself, not a site
   const pic = pw && has(pw.scope) ? pw.scope : has(`orbit_${w.type}`) ? `orbit_${w.type}` : ORBIT_PIC[w.type] || 'lib_planet_09';
-  const tab = arrTab === 'world'
-    ? `<div class="banner"><img class="scene planet" src="art/scenes/${pic}.webp" alt=""></div>
-      ${LF.planetStory ? `<h3>${ic('world', 'h3i')}What the survey saw</h3><div class="card">${LF.planetStory(s).map(p => `<p>${esc(p)}</p>`).join('')}</div>` : ''}`
-    : `<h3>${ic('array', 'h3i')}The readings, and the truth</h3><div class="box">${w.readings.map(r => readingHTML(r, true)).join('')}</div>
+  return `<div class="banner"><img class="scene planet" src="art/scenes/${pic}.webp" alt=""></div>
+    <div class="card"><div class="lbl tone">${w.transit.ly.toFixed(1)} light-years later</div><h2>Orbit over ${esc(w.planet)}</h2><p>${esc(LF.transitText(s))}</p></div>
+    <h3>${ic('array', 'h3i')}The readings, and the truth</h3><div class="box">${w.readings.map(r => readingHTML(r, true)).join('')}</div>
     ${LF.arrivalNotes(s).map(t => `<div class="note">${esc(t)}</div>`).join('')}
-    ${R ? `<h3>${ic('world', 'h3i')}The orbital report</h3><div class="box">
-      <div class="rd"><div class="rh">${ic('parts')}<b>Metal</b><span>${R.ore.conf}% sure</span></div><small>${esc(R.ore.text)}</small></div>
-      <div class="rd"><div class="rh">${ic('water')}<b>Water</b></div><small>${esc(R.water)}</small></div>
-      <div class="rd"><div class="rh">${ic('danger')}<b>Weather</b><span>${R.weather.conf}% sure</span></div><small>${esc(R.weather.text)}</small></div>
-      ${LF.anomaly(s) ? `<div class="rd"><div class="rh">${ic('unknown')}<b>The anomaly</b></div><small>${esc(LF.anomaly(s).charAt(0).toUpperCase() + LF.anomaly(s).slice(1))}. Orbit cannot say what it is.</small></div>` : ''}
-      <div class="rd"><div class="rh">${ic('lander')}<b>Landing ground</b></div>${[R.zones[LF.groundOf ? LF.groundOf(s) : 0]].filter(Boolean).map(z => `<small><b>${esc(z.name.charAt(0).toUpperCase() + z.name.slice(1))}</b>: ${esc(z.see)}.</small>`).join('')}</div>
-      <div class="rd"><div class="rh">${ic('array')}<b>Big enough to name</b></div>${R.features.map(f => `<small><b>${esc(f.name.charAt(0).toUpperCase() + f.name.slice(1))}</b>: ${esc(f.see)}.</small>`).join('')}</div></div>` : ''}`;
-  return `<div class="lbl vname">Orbit over ${esc(w.planet)}</div>
-    <div class="seg arrtabs">${[['world', 'The world'], ['report', 'Orbital report']].map(([k, n]) => `<button data-act="arrtab" data-v="${k}" class="${k === arrTab ? 'on' : k === 'report' ? 'hot' : ''}">${n}</button>`).join('')}</div>
-    ${tab}${arrSeen ? '<button class="opt go" data-act="arrive">Give it a name</button>' : ''}`;
+    <button class="opt go" data-act="arrive">Give it a name</button>`;
 }
 
 /* ---------- the three views ---------- */
@@ -1028,12 +995,7 @@ function menu(open, page) {
 }
 function act(a, v, el) {
   if (a === 'embark' && s.adrift) { if (hold) return; return startBurn(+v); }
-  if (a === 'site' && s.world && s.world.siteOpen) { LF.pickSite(s, +v);
-    log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years${s.world.kind ? `, ${s.world.kind} world, ${s.world.site ? 'hard' : 'easy'} site (${s.world.type})` : ''}` });
-    save(); window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }
-  else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
-  else if (a === 'arrnext') { arrStep = 1; arrTab = 'world'; window.scrollTo(0, 0); return render(); }
-  else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; if (arrTab === 'report') arrSeen = true; return render(); }
+  if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
   else if (a === 'pre') return preGo(v);
@@ -1067,10 +1029,11 @@ function act(a, v, el) {
     startHold(+v); }
   else if (a === 'dismiss' && s.cur && s.cur.phase === 'result') {
     if (!s.adrift && !LF.aloft(s)) { lastCard = cardHTML().replace(/<button class="opt go" data-act="dismiss">[\s\S]*?<\/button>/, '').replace(' id="card"', '').replace(' enter', ''); try { localStorage.setItem('landfall.lastcard', lastCard); } catch (e) {} }
+    if (s.cur.id === 'setup.site' && s.world) log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years${s.world.kind ? `, ${s.world.kind} world, ${s.world.site ? 'hard' : 'easy'} site (${s.world.type})` : ''}` });   // the site is chosen: the game's world is known
     mark = s.day; LF.dismiss(s); since = 0; save();
     if (s.adrift) return proGo();   // the voyage out: the next card, or the long sleep
     // the crossing is over: the ship makes orbit, and the survey is read before the world is named
-    if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro && !s.world.siteOpen) cutscene(LFIntro.arrival(s)); return; }   // a site still to choose: the film after it
+    if (surveying()) { window.scrollTo(0, 0); render(); if (window.LFIntro) cutscene(LFIntro.arrival(s)); return; }
     return s.cur ? arrive(true) : proceed(); }
   else if (a === 'continue') { s.over.cont = true; log('continue'); save(); return proceed(); }
   render();

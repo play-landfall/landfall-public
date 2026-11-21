@@ -162,7 +162,7 @@
     'hsh.first': 'relay_tick', 'hsh.empty': 'empty_shop', 'hsh.calling': 'radio', 'hsh.log': 'roster_print', 'hsh.walker': 'gate_plea', 'hsh.second': 'two_lists',
     'hsh.choice': 'night_council', 'hsh.crowd': 'mess_floor', 'hsh.near': 'gate_bars', 'hsh.truth': 'dead_hill',
     'seat.down': 'console', 'ship.cargo': 'machine_wake',   // asked before the drop: no landing sound yet (Lachlan, 2026-11-16)
-     'ship.orbit': 'alarm', 'ship.cabin': 'whisper', 'ship.pods': 'cryo', 'ship.dry': 'hiss', 'setup.load': 'machine_wake', 'setup.wake1': 'cryo', 'off.break': 'whisper', 'off.sick': 'clinic',
+     'ship.orbit': 'alarm', 'ship.cabin': 'whisper', 'ship.pods': 'cryo', 'ship.dry': 'hiss', 'setup.load': 'machine_wake', 'setup.site': 'radar', 'setup.wake1': 'cryo', 'off.break': 'whisper', 'off.sick': 'clinic',
     'voy.cryo': 'cryo', 'voy.patch': 'workshop', 'voy.bearing': 'console', 'voy.mould': 'creep', 'voy.pursuit': 'radar',
     'voy.drift': 'console', 'voy.wake': 'cryo', 'voy.rock': 'hull_hit', 'voy.fab': 'workshop',
     'voy.fire': 'fire', 'voy.count': 'empty_bins', 'voy.spine': 'alarm', 'voy.sick': 'clinic', 'voy.dust': 'hull_hit', 'voy.dead': 'cold_room',

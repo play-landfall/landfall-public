@@ -1,0 +1,11 @@
+{
+  "id": "setup_site",
+  "kind": "scene",
+  "size": "wide",
+  "subject_in": "tools/scenes.py STORY",
+  "card": "setup.site (js/content-setup.js): which of the planet's two landing sites the lander goes down on",
+  "setting": "ship",
+  "officers": [],
+  "notes": "The landing site is a card now, after the name and just before the lander is loaded. The planet must read as any of the three (water, green, barren): if one picture cannot, paint a ~water, ~green and ~barren set by planet kind and say so in docs/officer-art-sync.md. Until it lands the card borrows arrive_name.",
+  "requested": "2026-11-21, claude/keen-pasteur-7s87kc"
+}

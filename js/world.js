@@ -328,6 +328,7 @@ LF.pickSite = function (s, si) {
   const A0 = LF.ARCHETYPES[w0.type], A = LF.ARCHETYPES[c.type], yb = s.yieldBonus, r = s.rng;
   delete s.flags.no_native;
   s.rng = c.seed; LF.makeWorld(s, c);
+  s.world.planet = w0.planet;   // the world is named before the site is chosen (2026-11-21): the name is kept
   const made = new Set(Object.keys(s.world));
   for (const k in w0) if (!made.has(k) && !['report', 'siteOpen', 'cand'].includes(k)) s.world[k] = w0[k];
   s.yieldBonus = yb + A.yield - A0.yield;
@@ -394,6 +395,10 @@ const CAUSE = {
 LF.arrivalNotes = function (s) {
   const w = s.world, out = [], miss = w.readings.filter(r => r.actual < r.lo || r.actual > r.hi);
   if (miss.length) out.push(`${miss.map(r => LF.PROPS[r.k].name).join(' and ')}: outside what the array allowed for.`);
+  // The site is not chosen yet (2026-11-21: it is chosen after the name, just before the lander is loaded), so only what is
+  // true of the whole planet is said here: the readings and its gravity. The site's own report comes with the choice (LF.siteReport).
+  if (w.siteOpen) { if (w.grav >= 1.15) out.push(`At ${w.grav.toFixed(2)} g, every job will take longer and every bearing will wear faster.`);
+    else if (w.grav <= 0.85) out.push(`At ${w.grav.toFixed(2)} g, the work will be lighter than anyone trained for.`); return out; }
   if (w.type === 'ruin') out.push('Somebody built across this whole world. The survey finds nobody living in any of it.');
   if (CAUSE[w.techCause]) out.push(CAUSE[w.techCause]);
   if (w.truth.haz >= 45) out.push(w.hazKind === 'flare' ? 'The star flares. The hull counters have been climbing since the ship crossed the heliopause.' : 'The orbit is dirty: rock and ice in crossing paths, some of it certain to come down.');
@@ -402,6 +407,14 @@ LF.arrivalNotes = function (s) {
   if (w.grav >= 1.15) out.push(`At ${w.grav.toFixed(2)} g, every job will take longer and every bearing will wear faster.`);
   else if (w.grav <= 0.85) out.push(`At ${w.grav.toFixed(2)} g, the work will be lighter than anyone trained for.`);
   return out;
+};
+/* What orbit says of the landing site once it is chosen (setup.site, content-setup.js): the ground, where the metal probably
+   is, water, weather, the one thing the survey cannot explain, and where on the site the lander will set down. */
+LF.siteReport = function (s) {
+  const w = s.world, R = w.report, A = LF.ARCHETYPES[w.type]; if (!R) return '';
+  const z = R.zones[LF.groundOf ? LF.groundOf(s) : 0], an = LF.anomaly(s);
+  return `${A.blurb}\n\nThe survey of the site: ${R.ore.text} ${R.water} ${R.weather.text}${an ? ` One thing it cannot explain: ${an}.` : ''}`
+    + (z ? `\n\nThe lander will set down on ${z.name}: ${z.see}.` : '');
 };
 LF.transitText = function (s) {
   const t = s.world.transit, N = n => ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][n] || String(n);
