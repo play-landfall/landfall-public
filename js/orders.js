@@ -239,7 +239,7 @@ const R_TEXT = {
   tight: 'The ladle is cut to half. People take it without a word, which is worse than complaining.',
   normal: 'The full ladle comes back. The mess hall is loud again.',
   generous: 'The ladle comes up heavier. Somebody cheers in the queue, and everyone laughs at them.' };
-const R_INFO = { tight: [['danger', 'Morale, every month'], ['danger', 'Accidents']], normal: [], generous: [['yield', 'Morale, every month']] };
+const R_INFO = { tight: [['danger', 'Morale, every month'], ['later', 'Accidents']], normal: [], generous: [['yield', 'Morale, every month']] };
 const monthsAt = (s, k) => s.res.food / Math.max(1, LF.mouths(s) * LF.RATIONS[k].eat * MONTH);
 LF.rationsDir = 0;   // the last change, for its sound (sounds.js): below zero a cut. Not state.
 LF.addOrder({ id: 'rations', view: 'people', once: 'month', argsAll: STEP.slice(), onceText: 'The rations were changed this month',
@@ -563,7 +563,7 @@ LF.addOrder({ id: 'send', view: 'world', panel: 'place', hold: 2200, once: 'mont
     const lead = x.L ? ` ${x.L.name} leads. ${((LF.PARTY_LEAD || {})[x.L.role] || {}).n || ''} Whatever comes of it, ${first(x.L)} will not be fit to go out again for two months or more.` : '';
     return `${x.q.size === 'small' ? 'Quicker and safer, and they bring back less.' : 'Slower, and they bring back more.'} ${cap(LF.monthsWord(x.mo))} there and back, with ${x.food} food on their backs.${x.p.state === 'rumoured' ? ' Nobody has seen it close: it may not be where the word puts it.' : ''}${dim(s) ? ' It is the Dim, and the going is worse.' : ''}${lead}`.replace(/\s+/g, ' ').trim(); },
   info: (s, arg) => { const x = LF.partyPlan(s, arg); if (!x.p) return [];
-    return [['time', cap(LF.monthsWord(x.mo))], ['people', `${cap(num(x.n))} away`], ['danger', dangerWord(x.danger)]]; },
+    return [['time', cap(LF.monthsWord(x.mo))], ['people', `${cap(num(x.n))} away`], ['fail', dangerWord(x.danger)]]; },
   cost: (s, arg) => { const x = LF.partyPlan(s, arg); return x.p ? { food: x.food } : null; },
   can: (s, arg) => { const x = LF.partyPlan(s, arg), p = x.p;
     if (!p) return 'Nobody knows the way there now';
@@ -619,7 +619,7 @@ LF.addOrder({ id: 'redirect', view: 'world', hold: 1800,
   rows: s => { const out = []; for (const a of s.away) if (a.poi && !a.redir && !a.silent && !a.recalled) for (const q of nearTo(s, a)) out.push(`${a.id}|${q.id}`); return comms(s) ? out : out.slice(0, 1); },
   label: (s, arg) => { const x = redir(s, arg); return x.a && x.p ? `Send party ${partyNo(s, x.a)} on to ${toWord(x.p.name)}` : 'Send a party on'; },
   note: (s, arg) => { const x = redir(s, arg); return x.a && x.p ? `They go on from ${x.a.to} and come home by way of it: about ${LF.monthsWord(x.extra)} more out, and ${x.food} food more off the store's account.` : ''; },
-  info: (s, arg) => { const x = redir(s, arg); return x.a && x.p ? [['time', `${cap(LF.monthsWord(x.extra))} more`], ['danger', dangerWord(Math.max(x.a.danger || 0, LF.partyDanger(s, x.p, x.a.size, byPid(s, x.a.lead))))]] : []; },
+  info: (s, arg) => { const x = redir(s, arg); return x.a && x.p ? [['time', `${cap(LF.monthsWord(x.extra))} more`], ['fail', dangerWord(Math.max(x.a.danger || 0, LF.partyDanger(s, x.p, x.a.size, byPid(s, x.a.lead))))]] : []; },
   cost: (s, arg) => { const x = redir(s, arg); return x.a ? { food: x.food } : null; },
   can: (s, arg) => { const x = redir(s, arg); return outWhy(s, x.a) || (!x.p || !fresh(x.p) ? 'Nobody knows the way there now' : goingTo(s, x.p.id) ? 'A party is already on the way there' : x.a.redir ? 'They have been sent on once already' : foodWhy(s, x.food)); },
   act: (s, arg) => { const x = redir(s, arg), a = x.a, p0 = placeOf(s, a.poi), r = LF.placeRet(s, x.p);

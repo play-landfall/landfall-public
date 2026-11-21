@@ -300,7 +300,7 @@ B(['second', 'test'], { id: 'nm.book', tone: 'pressure', title: 'The Book of Bir
     { label: 'Strike the complaints from the book, and enter the doubting mothers as unwell', dark: true, note: 'The book is right again by its own pages, and every doubting parent is on record as ill.', info: [['yield', 'A clean book'], ['danger', 'The doubting parents']],
       out: { text: (s, c) => `The clerk rules a line through each complaint and writes the same words in the margin beside each.\n\n[[note:In the margin of the clinic's book]] "Unwell, under the clinic."\n\nNobody can say from the book that anything happened. The doubting parents are asked about their health in the mess.`,
         fx: s => ({ morale: 1, tension: -3, stain: ['nm_struck', 1], do: s2 => { T(s2).did.struck = true; } }) } },
-    { label: 'Tell the households the book has been checked and is right, without checking it', dark: true, note: 'The rows get an answer this week, and nobody looks at the book at all.', info: [['yield', 'Morale'], ['danger', 'The doubting households, if they are right']],
+    { label: 'Tell the households the book has been checked and is right, without checking it', dark: true, note: 'The rows get an answer this week, and nobody looks at the book at all.', info: [['yield', 'Morale'], ['later', 'The doubting households, if they are right']],
       out: { text: 'The word goes round the rows from your office: the book has been checked, and every child is where it should be. The rows want to believe it, and most of them do.',
         fx: s => ({ morale: 2, tension: -4, stain: ['nm_lie', 1], do: s2 => { T(s2).did.lied = true; } }) } },
   ] });

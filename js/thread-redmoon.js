@@ -256,7 +256,7 @@ const PREPS = {
   high: { label: 'Everyone up to the high ground for the red week, in tents', note: 'The colony sleeps under canvas for seven nights, and the pens, the fields and the low rows are left to a skeleton watch.' },
   holds: { label: 'Everyone below in the windowless holds for the week, children too, every time it comes', dark: true, note: 'Nobody sees the sky for seven nights, and the colony stops dead every time the moon comes round.', info: [['yield', 'Nobody under the moon'], ['danger', 'Everyone, a week in the dark']] },
   none: { label: 'Change nothing: whoever wants to watch it watches, and everyone else sleeps', note: 'Whoever looks takes their chances, and the frightened are told there\'s nothing to be done.' },
-  shoot: { label: 'Shutters and a curfew, and the wall shoots anyone outside after dark', dark: true, note: 'Nobody walks out to the moon, and the first who does is shot by people who know them.', info: [['yield', 'Nobody out under it'], ['danger', 'Whoever walks out']] } };
+  shoot: { label: 'Shutters and a curfew, and the wall shoots anyone outside after dark', dark: true, note: 'Nobody walks out to the moon, and the first who does is shot by people who know them.', info: [['yield', 'Nobody out under it'], ['later', 'Whoever walks out']] } };
 const prepFx = { shutters: { mat: -6 }, high: { mat: -4, food: -10 }, holds: { morale: 1, tension: -5, stain: ['rm_holds', 1] }, none: {}, shoot: { mat: -6, tension: -6, stain: ['rm_shoot', 2] } };
 const prepChoice = (key, over) => Object.assign({}, PREPS[key], { out: { text: PREP_OUT[key], fx: setPrep(key, { fx: prepFx[key] }) } }, over || {});
 
@@ -290,7 +290,7 @@ B(['between', 'struck', 'last'], { id: 'rm.watch', tone: 'pressure', title: 'Who
   setup: s => Object.assign(crew(s), { tot: total(s, T(s)) }),
   text: (s, c) => `Whatever the colony does with its windows, the wall can't be left empty for a week of nights, and the wall faces east. Whoever stands it will have the red moon in front of them till dawn.${c.wv ? `\n\n[[security]] "I'll stand the first night myself, and after that I want an order, not volunteers." "Because the ones who volunteer to stare at a red moon all week are exactly the ones I don't want on my wall."` : ''}`,
   choices: [
-    { label: 'Draw lots every night from the whole watch roster', note: 'Anyone on the roster can come off the wall struck, and nobody knows who until the lot is drawn.',
+    { label: 'Draw lots every night from the whole watch roster', note: 'Anyone on the roster can come off the wall struck, and nobody knows who until the lot is drawn.', info: [['later', 'Whoever the lot falls on']],
       out: { text: (s, c) => `The lots go in a tin by the gate. Every night of the red week ${c.w} draws four names, and the four go up the ladder at dusk with a lamp and a whistle.`, fx: s => ({ tension: 2, do: s2 => { T(s2).watch = 'lots'; } }) } },
     { label: 'Put the struck on the wall: they\'ve seen it already', dark: true, show: (s, c) => c.tot > 0, note: 'The rest of the colony is spared the moon, and the struck stand under it again every night of the week.', info: [['yield', 'Nobody new on the wall'], ['danger', 'The struck']],
       out: { text: 'The struck go up the ladder at dusk with a lamp each and no rifles. They stand the whole night facing east, and talk to each other in low voices, and come down at dawn without being told.',

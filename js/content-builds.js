@@ -47,14 +47,14 @@ add({ id: 'bu.nolab', arc: 'bu_lab', view: 'colony', tone: 'pressure', title: 'N
   setup: s => { const f = nolabF(s); return { fid: f.id, name: f.name, Name: f.Name, med: s.machines.medbay.up ? 'up' : s.machines.medbay.lost ? 'lost' : 'here' }; },
   text: (s, c) => `A crew brought back a jar from ${c.name}, and ${N(s, 'xenobio')} wants it cultured. There's nowhere to do it. ${s.built.soillab ? 'The soil laboratory is full of seed trays' : 'The only clean bench is the seed bench in the stores'}, ${c.med === 'up' ? 'the autodoc is still aboard the ship' : c.med === 'lost' ? 'the autodoc is gone' : 'the autodoc is kept for the living'}, and the colony has no laboratory of its own.\n\n[[xenobio]] "It's the seed bench or nothing, I know that, I know there's wheat a hand's width away, but you haven't even held the jar up to the light yet, and once you have you'll stop asking me where."`,
   choices: [
-    { label: 'Work it on the seed bench, among next season\'s stock', note: 'It gets done this month, on the only clean bench there is, next to the seed for the next sowing.', info: [['yield', (s, c) => `What ${c.name} is`], ['danger', 'The seed stock']],
+    { label: 'Work it on the seed bench, among next season\'s stock', note: 'It gets done this month, on the only clean bench there is, next to the seed for the next sowing.', info: [['yield', (s, c) => `What ${c.name} is`], ['fail', 'The seed stock']],
       test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: (s, c) => `Three weeks of cultures between the seed trays, and nothing gets loose. The notes on ${c.name} fill a slate, and the seed is moved back onto its bench with nobody the worse.`, fx: (s, c) => ({ fops: [{ id: c.fid, insight: 22 }] }) },
       bad: { text: (s, c) => `Something from the jar gets into the seed trays. A third of next season's stock goes grey and has to be burned. The notes on ${c.name} are good, for what they cost.`, fx: (s, c) => ({ fops: [{ id: c.fid, insight: 12 }], yield: -0.05, morale: -2 }) } },
     { label: 'Give the jar to the three in the lock-up to handle bare-handed, and watch what it does to them', dark: true, note: 'Nobody needs a bench to see what a thing does to skin. The three in the lock-up are not asked.', info: [['yield', (s, c) => `What ${c.name} does to people`], ['danger', 'The three in the lock-up']],
       out: { text: (s, c) => `The three are given the jar and told to sort what's in it by hand. By the end of the week two have a rash to the elbow and one can't close a hand. ${Nc(s, 'xenobio')} has a page on ${c.name} nobody could have got any other way, and doesn't show it round.`,
         fx: (s, c) => ({ fops: [{ id: c.fid, insight: 32 }], pop: -1, stain: ['bu_bare', 1] }) } },
-    { label: 'Burn the jar. Put a laboratory on the build list', note: 'Nobody touches what nobody understands, and whoever meets it out there next meets it knowing nothing.', info: [['yield', 'A laboratory, sooner'], ['danger', (s, c) => `Whoever meets ${c.name} next`]],
+    { label: 'Burn the jar. Put a laboratory on the build list', note: 'Nobody touches what nobody understands, and whoever meets it out there next meets it knowing nothing.', info: [['yield', 'A laboratory, sooner'], ['later', (s, c) => `Whoever meets ${c.name} next`]],
       out: { text: (s, c) => `The jar goes in the stove. ${Nc(s, 'xenobio')} watches it go, says nothing for once, and is at the next build meeting with a drawing of benches.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: 5 }], morale: -1, flags: { lab_wanted: s.day } }) } },
   ] });
 LF.TAGS['bu.nolab'] = ['bold open', 'severe', 'cautious'];
@@ -64,7 +64,7 @@ add({ id: 'bu.lab', arc: 'bu_lab', view: 'colony', tone: 'opportunity', title: '
   setup: s => ({ wild: LF.lex(s, 'wild1') }),
   text: (s, c) => `${Nc(s, 'xenobio')} has slept in the laboratory most nights this month. In the incubator is a culture off the roots of ${c.wild}, and it fixes nitrogen into this soil faster than anything the ship brought.\n\n[[xenobio]] "It could feed the north field, or it could get loose and feed everything else, probably both, and the only way to find out which is to grow it on, which is the one thing you'd least like me to do, I know, I've been sleeping next to it, I know."`,
   choices: [
-    { label: 'Grow it on, in the cold room, under lock', note: 'A season of work for the laboratory, and one technician who handles it every day.', info: [['yield', 'Better harvests, if it holds'], ['danger', 'The technician who tends it']],
+    { label: 'Grow it on, in the cold room, under lock', note: 'A season of work for the laboratory, and one technician who handles it every day.', info: [['yield', 'Better harvests, if it holds'], ['fail', 'The technician who tends it']],
       test: { base: 50, mods: [R('xenobio', 10)] },
       ok: { text: 'A season in the cold room, a jar at a time. It holds, it feeds, and the north field gets a dressing of it in the spring.', fx: { yield: 0.06, morale: 1, flags: { lab_culture: true } } },
       bad: { text: 'The culture turns in the third month. The technician who tended it is in the clinic with lungs full of something, and the cold room is scrubbed with lye.', fx: { pop: -1, morale: -2 } } },
@@ -85,7 +85,7 @@ add({ id: 'bu.nocomms', arc: 'bu_comms', view: 'ship', tone: 'pressure', title: 
   choices: [
     { label: 'Wait for the next pass', note: (s, c) => `Nobody touches the ${c.mach} until ${c.first} can say it again, and it runs badly till then.`, info: (s, c) => [['danger', `The ${c.mach}`]],
       out: { text: (s, c) => `Nine hours with the ${c.mach} running rough. The next pass comes in clean and the figure is the one everyone feared. The fitting is done by dark.`, fx: (s, c) => ({ machine: { [c.id]: -6 }, morale: -1 }) } },
-    { label: 'Have the crew pick the likeliest valve', note: 'It is done tonight. If the guess is wrong, the crew at the valve find out first.', info: [['danger', 'The crew at the valve']],
+    { label: 'Have the crew pick the likeliest valve', note: 'It is done tonight. If the guess is wrong, the crew at the valve find out first.', info: [['fail', 'The crew at the valve']],
       test: { base: 50, mods: [R('engineer', 10)] },
       ok: { text: (s, c) => `They read the digit as a seven and it was a seven. ${c.first} confirms it on the next pass and sounds faintly put out.`, fx: { morale: 1 } },
       bad: { text: (s, c) => `It was the other valve. The one they opened was holding back a line at full pressure, and the fitter standing at it is carried to the clinic and not carried out.`, fx: (s, c) => ({ machine: { [c.id]: -12 }, pop: -1, morale: -3 }) } },
@@ -129,7 +129,7 @@ add({ id: 'bu.can', arc: 'bu_can', view: 'world', tone: 'opportunity', title: 'P
   setup: s => ({ wild: LF.lex(s, 'wild'), wild1: LF.lex(s, 'wild1') }),
   text: (s, c) => `${cap1(c.wild)} is in season out past the wire, more of it than anyone could eat fresh. With the cannery it can be boiled down and put up for the lean months. Picking it means crews out past the wire for most of a month.`,
   choices: [
-    { label: 'Send the pickers out with an escort', note: 'Most of a month out past the wire, and the escort can only watch so much ground.', info: [['yield', 'Jars for the lean months'], ['danger', 'The pickers']],
+    { label: 'Send the pickers out with an escort', note: 'Most of a month out past the wire, and the escort can only watch so much ground.', info: [['yield', 'Jars for the lean months'], ['fail', 'The pickers']],
       test: { base: 60, mods: [R('security', 10)] },
       ok: { text: (s, c) => `A month of picking, and the cannery boils day and night. The cold room fills with jars of ${c.wild1}, labelled in three different hands.`, fx: { food: 320, morale: 2 } },
       bad: { text: (s, c) => `The pickers come back with half of what they went for, two short. They were on the far side of the slope when it happened, and the escort was on this side.`, fx: { food: 150, pop: -2, morale: -3 } } },
@@ -163,13 +163,13 @@ add({ id: 'bu.watch', arc: 'bu_watch', view: 'world', tone: 'pressure', title: '
   setup: s => { const f = out(s); return { fid: f.id, name: f.name, Name: f.Name, are: are(f), folk: f.kind === 'natives' || f.kind === 'humans' }; },
   text: (s, c) => `At first light the east tower rings down. Out past the wire, at the edge of rifle range, ${c.folk ? `three of ${c.name} are sitting in the grass` : `one of ${c.name} is standing still`}, watching the colony wake. ${c.folk ? 'They\'ve' : 'It\'s'} been there since before dawn.\n\nThe tower has a clean shot, and wants to know whether to take it.`,
   choices: [
-    { label: 'Take the shot', dark: true, note: (s, c) => c.folk ? 'They have done nothing but watch. Whoever is on the far field when the rest answer will know why.' : 'It has done nothing but watch. The rest of them will learn what the towers are.', info: (s, c) => [['yield', 'It stops watching'], ['danger', c.folk ? 'Whoever is on the far field' : 'The far field crew']],
+    { label: 'Take the shot', dark: true, note: (s, c) => c.folk ? 'They have done nothing but watch. Whoever is on the far field when the rest answer will know why.' : 'It has done nothing but watch. The rest of them will learn what the towers are.', info: (s, c) => [['yield', 'It stops watching'], ['fail', c.folk ? 'Whoever is on the far field' : 'The far field crew']],
       test: { base: 60, mods: [R('security', 10)] },
       ok: { text: (s, c) => `One shot from the tower. ${c.folk ? 'The other two carry the third away, slowly, without looking back.' : 'It goes down where it stood.'} Nothing watches from that slope again.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -12, harm: 12, kills: 1, accord: -20 }], tension: -4, stain: ['bu_shot', c.folk ? 2 : 1] }) },
       bad: { text: (s, c) => `The shot goes wide. Whatever was watching is gone into the grass before the second. Three nights later the far field crew finds out how much it minded.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: 12, accord: -20 }], pop: -1, stain: ['bu_shot', 1] }) } },
-    { label: 'Ring the bell, so they know they\'ve been seen', note: 'Nobody is hurt this morning. Whatever it is learns where the towers are.', info: [['danger', 'The far field crew, later']],
+    { label: 'Ring the bell, so they know they\'ve been seen', note: 'Nobody is hurt this morning. Whatever it is learns where the towers are.', info: [['later', 'The far field crew']],
       out: { text: (s, c) => `The bell rings on all four towers. ${c.folk ? 'The three stand, take their time, and walk off along the ridge.' : 'It stands a moment longer, then goes.'} Something is back the next morning, further off.`, fx: (s, c) => ({ fops: [{ id: c.fid, threat: -5, insight: 6 }] }) } },
-    { label: 'Send two out from the tower to follow it home', note: 'Two people past the wire at dawn, on its ground.', info: [['yield', (s, c) => `Where ${c.name} live`], ['danger', 'The two who go']],
+    { label: 'Send two out from the tower to follow it home', note: 'Two people past the wire at dawn, on its ground.', info: [['yield', (s, c) => `Where ${c.name} live`], ['fail', 'The two who go']],
       test: { base: 50, mods: [R('security', 10), R('xenobio', 5)], kind: ['explore'] },
       ok: { text: (s, c) => `The two come back at dusk with a map: where ${c.name} sleep, where they drink, and how far off the colony they really keep.`, fx: (s, c) => ({ fops: [{ id: c.fid, insight: 25, threat: -4 }], survey: 6 }) },
       bad: { text: 'Only one of the two comes back, and won\'t say much about the other.', fx: (s, c) => ({ fops: [{ id: c.fid, insight: 8 }], pop: -1, morale: -2 }) } },
@@ -199,7 +199,7 @@ add({ id: 'bu.hall', arc: 'bu_hall', view: 'people', tone: 'pressure', title: 'A
   choices: [
     { label: 'Accept it', note: (s, c) => c.m === 'ladle' ? 'A month of full ladles, out of a store that can\'t spare it.' : 'The officers eat in the mess, and every complaint in the colony knows where to find them at supper.', info: (s, c) => [['yield', 'Morale'], ['danger', c.m === 'ladle' ? 'The store' : 'The officers\' nerve']],
       out: { text: (s, c) => c.m === 'ladle' ? 'Full ladles for a month. The hall cheers the first one. The store ledger takes it hard.' : 'The officers carry their trays to the long tables. The first week they hardly eat for being talked to.', fx: (s, c) => c.m === 'ladle' ? { morale: 5, food: -120, lift: 4 } : { morale: 4, off: [['command', 'mind', -4], ['crew', 'mind', -3]] } } },
-    { label: 'Go to the hall and say no, and why', note: 'You stand at the raised end and answer whatever comes. If they don\'t like it, they\'ll say so to your face.', info: [['danger', 'What is left of your standing in that room']],
+    { label: 'Go to the hall and say no, and why', note: 'You stand at the raised end and answer whatever comes. If they don\'t like it, they\'ll say so to your face.', info: [['fail', 'What is left of your standing in that room']],
       test: { base: 50, mods: [R('command', 10)] },
       ok: { text: 'You stand up there for two hours. At the end of it they vote again, and it fails by four hands.', fx: { morale: 1, tension: -4 } },
       bad: { text: 'You stand up there for two hours and they don\'t move. The motion passes again, louder, and this time they mean it.', fx: { morale: -5, tension: 6 } } },
@@ -252,7 +252,7 @@ opt('plan.harvest', { label: 'Through the cannery first, then the store', show: 
     fx: (s, c) => ({ food: Math.round(c.n * 1.12), morale: c.tight ? -4 : -2, flags: { reaped: s.day } }) } }, 'cautious order');
 line('pol.rations', s => has(s, 'cannery') ? '\n\nThe cold store has shelves of jars in it. A short ladle stings less when people can see what is being kept.' : '');
 opt('state.famine', { label: 'Open the cold store. Every jar', show: s => has(s, 'cannery') && !(s.flags.jars_eaten && s.day - s.flags.jars_eaten < LF.YEAR), hint: 'unknown',
-  note: 'The jars were put up for the lean months. Eat them now, and the lean months come with nothing on the shelves.', info: [['yield', 'Food'], ['danger', 'The next lean months']],
+  note: 'The jars were put up for the lean months. Eat them now, and the lean months come with nothing on the shelves.', info: [['yield', 'Food'], ['later', 'The next lean months']],
   out: { text: 'The cold room is emptied onto the mess tables a shelf a day. The queue at the stores door thins out. The shelves are bare by the end of the month, and stay bare.', fx: s => ({ food: 420, morale: -1, flags: { jars_eaten: s.day } }) } }, 'cautious');
 
 /* --- the watchtowers --- */
@@ -262,7 +262,7 @@ line('fer.raid', s => has(s, 'watch') ? ' The towers rang the moment the first o
 
 /* --- the meeting hall --- */
 opt('pol.mutiny', { label: 'Open the hall. Everyone in, the officers on the floor, and a vote', show: s => has(s, 'hall'), hint: 'unknown',
-  note: 'They get their say and their vote, in the room they built. The officers stand there and take it, and might lose.', info: [['yield', 'An answer they agreed to'], ['danger', 'The officers, if the vote goes against them']],
+  note: 'They get their say and their vote, in the room they built. The officers stand there and take it, and might lose.', info: [['yield', 'An answer they agreed to'], ['fail', 'The officers, if the vote goes against them']],
   test: { base: 40, mods: [R('command', 10), If(s => !!s.flags.council, 5, 'There is a lawful Council')] },
   ok: { text: (s, c) => `The hall is packed to the walls. ${c.name} speaks first and the officers answer, one at a time, for four hours. The vote is close. The officers keep their posts, and ${c.first} sits on the rota committee from next week.`, fx: (s, c) => ({ morale: 6, tension: -12, flags: { council: true }, do: s2 => { s2.lowMorale = 0; } }) },
   bad: { text: (s, c) => `Four hours in the hall, and the vote goes against them. The officers hand over their keys on the raised end, in front of everyone, and walk out through the middle. ${c.name}'s committee runs the colony from the morning.`,
