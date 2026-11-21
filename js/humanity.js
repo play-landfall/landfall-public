@@ -71,10 +71,8 @@ const low = (s, at) => LF.hum(s) < at;
 add({ id: 'hum.numbers', arc: 'hum', view: 'people', tone: 'pressure', title: 'Numbers', w: 3, repeat: 9999,
   when: s => low(s, 25) && s.day >= 150 && s.pop >= 16,
   setup: s => { const p = here(s, 'command') || here(s, 'security'); return Object.assign(ctxOf(p), { seat: p ? p.seat : null }); },
-  text: (s, c) => `The duty board in the mess hall has numbers on it now instead of names. Nobody ordered it. A crew lead started it to save chalk, and the others followed.\n\n${c.seat === 'command' ? `[[command]] "It's faster, and the roster's never run quicker." "Leave it the way it is, because names only slow it down."\n\n` : c.seat === 'security' ? `[[security]] "Numbers on the board instead of names, well, that's half my job done for me." "Nobody argues with a number, and when the stores go light I'll ask whose number had the key, and for once nobody can tell me they don't remember."\n\n` : 'Nobody you ask thinks it matters. '}Somebody has already written a number on the door of the nursery.`,
+  text: (s, c) => `The duty board in the mess hall has numbers on it now instead of names. Nobody ordered it. A crew lead started it to save chalk, and the others followed.\n\n${c.seat === 'command' ? `[[command]] "It's faster, and the roster's never run quicker."\n\n` : c.seat === 'security' ? `[[security]] "Numbers on the board instead of names, well, that's half my job done for me." "Nobody argues with a number, and when the stores go light I'll ask whose number had the key, and for once nobody can tell me they don't remember."\n\n` : 'Nobody you ask thinks it matters. '}Somebody has already written a number on the door of the nursery.`,
   choices: [
-    { label: 'Numbers on the board, names everywhere else', note: 'The roster runs faster. The line between the board and everywhere else is not one anybody will police.', hint: 'unknown', info: [['yield', 'A faster roster'], ['later', 'Whoever stops being a name first']],
-      out: { text: 'The board keeps its numbers. Names stay on the bunks and the graves. Within a month the children are calling each other by the board.', fx: { progress: 0.02, morale: -1, flags: { hum_numbers: 'board' } } } },
     { label: 'Numbers everywhere. A name is for the wall of the dead', dark: true, note: 'Rations, bunks, the clinic and the punishment book all go by number. It is quicker, and nothing has to be felt about a number.', hint: 'unknown', info: [['yield', 'Work, and order'], ['danger', 'Everyone, a little']],
       out: { text: 'The bunk plates are unscrewed and stamped. The clinic calls patients by number through the curtain. The first funeral after that, the reader has to look up the name.', fx: { progress: 0.05, morale: -2, tension: -6, stain: ['numbered', 2], flags: { hum_numbers: 'all' }, chron: 'The colony stopped using names for anyone still alive.' } } },
     { label: 'Wipe the board. Every name read out at muster, every night', note: 'The muster takes half an hour longer, every night, for as long as there is a colony. The crews will hear exactly why.', hint: 'unknown', info: [['danger', 'Half an hour of every evening'], ['danger', 'The crew leads, told off in front of everyone']],
@@ -89,8 +87,6 @@ add({ id: 'hum.game', arc: 'hum', view: 'people', tone: 'pressure', title: 'The 
   choices: [
     { label: 'Stop it, and tell them the truth about what was done', note: 'In the schoolroom, the whole of it, in words a child understands. Their parents will hear it again at supper.', hint: 'unknown', info: [['danger', 'Morale, at every supper table'], ['danger', 'What the children think of their parents']],
       out: { text: (s, c) => `${c.first || 'The teacher'} tells them in one long morning. Some cry. Most listen. One asks whether it will happen to them, and is told no, and does not believe it. The game stops.`, fx: { morale: -5, hum: 5, flags: { hum_told: true } } } },
-    { label: 'Let them play. It is only a game', dark: true, note: 'They are learning how the colony works. They will need to know.', hint: 'unknown', info: [['yield', 'Children who will not flinch'], ['danger', 'The children']],
-      out: { text: 'Nobody says anything to them. By the end of the season the game has a second officer, a doctor who signs a paper, and a rule for who gets the dead child\'s shoes.', fx: { morale: 1, stain: ['game', 1], flags: { hum_game: true } } } },
     { label: 'Make it lessons. They will hold the watch one day', dark: true, note: 'The watch takes the oldest in hand: how the List is made, how it is read, how a gate is held. They are good at it already.', hint: 'unknown', info: [['yield', 'The next watch, trained'], ['danger', 'The children, and whoever is on their list']],
       out: { text: (s, c) => `${N(s, 'security') === LF.seatWord(s, 'security') ? 'The watch' : N(s, 'security')} takes six of the oldest on the evening rounds. They are quiet, attentive and quick. One of them asks for a copy of the List to learn the names.`, fx: { tension: -6, stain: ['game_taught', 2], flags: { hum_game: 'taught' }, chron: 'The colony began training its children to keep the List.' } } },
   ] });
@@ -99,15 +95,11 @@ add({ id: 'hum.game', arc: 'hum', view: 'people', tone: 'pressure', title: 'The 
 const asker = s => here(s, 'works') || (LF.cast && LF.cast(s, { val: 'mercy', free: true })) || null;
 add({ id: 'hum.penance', arc: 'hum', view: 'people', tone: 'council', title: 'A Fast', w: 2.2, repeat: 360,
   when: s => low(s, 35) && s.day >= 200 && !!asker(s),
-  setup: s => { const p = asker(s); return Object.assign(ctxOf(p), { deed: LF.worst(s), friend: (s.factors.find(f => (f.kind === 'natives' || f.kind === 'humans') && f.stage >= 1 && !f.res) || {}).name || null, pen: s.flags.pen || 0 }); },
+  setup: s => { const p = asker(s); return Object.assign(ctxOf(p), { deed: LF.worst(s) }); },
   text: (s, c) => `${c.first} comes to you after the evening meal, which ${c.first} did not eat.\n\n[[${c.pid}]] "My grandmother fasted for things like this. A week. Everyone. You don't eat, and you say what was done, out loud, every night."\n\nA pause.\n\n[[${c.pid}]] "Nobody gets anything back. That isn't what it's for. I'm asking anyway."`,
   choices: [
     { label: 'A week of fasting, and the deeds said aloud every night', note: 'A week of half-strength crews, and everyone made to hear it again.', hint: 'unknown', info: [['yield', 'Food not eaten'], ['danger', 'A week of work'], ['danger', 'Everyone who would rather not hear it']],
       out: { text: (s, c) => `For seven nights the mess hall sits at empty tables and somebody reads from the record. ${cap1(c.deed)} is read on the first night and every night after. On the sixth night a crew lead stands up and says one more that was not on it.`, fx: { food: 80, progress: -0.06, morale: -4, hum: 9, chron: 'The colony fasted for a week and said aloud what it had done.' } } },
-    { show: (s, c) => !!c.friend || c.pen > 0, label: (s, c) => c.pen > 0 ? 'Open the pen and give them what was taken' : `Pay ${c.friend} for what was done, in grain`, note: (s, c) => c.pen > 0 ? `${cap1(num(c.pen))} people walk out with a month of food each, and they know every face inside the wire.` : 'Three months of food across the valley, to people who will not thank you for it.', hint: 'unknown',
-      info: [['yield', 'Something put right'], ['danger', 'The stores, by a great deal']],
-      out: { text: (s, c) => c.pen > 0 ? 'The gate of the pen is opened at noon. The ones inside come out slowly, as if it were a trick. Most go out past the wire with their sacks. Two stay, and ask for work, and nobody knows what to say to them.' : `The carts go over the river loaded. ${c.friend} take the grain and send the carts back with nothing on them, not even a word.`,
-        fx: (s, c) => ({ food: c.pen > 0 ? -40 * c.pen : -300, hum: 12, morale: -2, pen: c.pen ? -c.pen : 0, fops: c.friend && !c.pen ? [{ id: s.factors.find(f => f.name === c.friend).id, accord: 18, threat: -8 }] : [] }) } },
     { label: '"We did what kept us alive." No fast', dark: true, note: (s, c) => `${c.first} will not ask again, and will not forget being told no.`, hint: 'unknown', info: [['yield', 'Full plates and full crews'], ['danger', 'The last person still asking']],
       out: { text: (s, c) => `${c.first} nods, and goes, and eats the next day with everyone else. At the harvest ${c.first} leads the grace as usual and leaves out the part about forgiveness.`, fx: (s, c) => ({ morale: 1, stain: [null, 1], off: c.pid ? [[c.pid, 'mind', -12]] : [] }) } },
   ] });
@@ -121,9 +113,6 @@ add({ id: 'hum.pen', arc: 'hum', view: 'people', tone: 'crisis', title: 'Stock',
     { label: (s, c) => `Build the pen. The ${num(c.n)} on the list go in`, dark: true, note: 'They stop being colonists. They become something the colony spends instead of colonists.', hint: 'unknown', info: [['yield', 'Bodies to spend in place of your own'], ['danger', 'The ones on the list'], ['later', 'The next ones']],
       out: { text: (s, c) => `The pen goes up in four days behind the stores: wire, a roof, a trough. The ${num(c.n)} are walked in at dusk past the mess hall windows. Nobody at the tables gets up. By the end of the week the children have stopped looking.`,
         fx: (s, c) => ({ leave: c.n, stain: ['pen', 4], flags: { pen_asked: s.day, pen: c.n }, chron: 'The colony built a pen and put people in it to be used.' }) } },
-    { label: (s, c) => `Build the pen, and put the walkers in it too, the ones who left and the ones who will`, dark: true, note: 'Anyone who leaves is fetched back by the watch and goes in. Nobody will ever walk out again.', hint: 'unknown', info: [['yield', 'No more walkouts, and a fuller pen'], ['danger', 'Anyone who tries to leave']],
-      out: { text: (s, c) => `The pen is built twice the size. The watch goes out with dogs and rope and comes back with three of the ones who left last season, thinner, saying nothing. The next morning the gate is open as usual and nobody uses it.`,
-        fx: (s, c) => ({ leave: c.n, stain: ['pen_walkers', 5], flags: { pen_asked: s.day, pen: c.n + 3, pen_walkers: s.day }, chron: 'The colony built a pen, and hunted down the ones who had left to fill it.' }) } },
     { label: 'Tear the list up, in front of the watch', note: (s, c) => `${c.first || 'The watch captain'} won't forgive it, and the people the list kept in line will know nobody is watching them now.`, hint: 'unknown', info: [['danger', 'The watch'], ['danger', 'Order, and the stores']],
       out: { text: (s, c) => `You tear it in half and then in half again and put it in the stove. ${c.first || 'The captain'} watches it burn.\n\n[[${c.pid || 'x19'}]] "Right."\n\n${c.first || 'The captain'} leaves. That night two sacks of grain go missing from the store and nobody is looking for them.`,
         fx: (s, c) => ({ food: -60, tension: 8, hum: 6, flags: { pen_asked: s.day }, do: s2 => { const p = c.pid && byPid(s2, c.pid); if (p) p.loyal = clamp((p.loyal || 50) - 25, 0, 100); } }) } },
@@ -161,9 +150,6 @@ add({ id: 'hum.decent', arc: 'hum', view: 'ship', tone: 'crisis', title: 'The On
     { label: (s, c) => `Hang ${c.first || 'the leader'}. The others go in the pen`, dark: true, note: 'It ends here, in front of everyone, and nobody tries it again.', hint: 'unknown', info: [['yield', 'Nobody tries it again'], ['danger', 'The last ones who minded']],
       out: { text: (s, c) => `${c.name} is hanged from the lander gantry at first light. ${cap1(num(c.n - 1))} more go into the pen. That night the mess hall is full and loud, and it goes on being loud, as if the noise had been waiting for this.`,
         fx: (s, c) => ({ kill: c.pid ? [{ who: c.pid, cause: 'hanged for trying to tell the sleepers' }] : [], leave: c.pid ? c.n - 1 : c.n, pen: c.n - 1, stain: ['decent_hanged', 4], morale: 3, flags: { hum_decent: 'hanged' } }) } },
-    { label: 'Dose them, and let them go back to work', dark: true, note: (s, c) => `${N(s, 'doctor') === LF.seatWord(s, 'doctor') ? 'The clinic' : N(s, 'doctor')} can make them stop minding. They will be good workers, and never quite there.`, hint: 'unknown', info: [['yield', 'The hands kept, quiet'], ['danger', 'Whoever they were']],
-      out: { text: (s, c) => `The doses go into the morning water at the clinic for a month. ${c.name} is back on the fields by the second week, and works well, and smiles at things that are not funny. None of them asks about the record again.`,
-        fx: (s, c) => ({ stain: ['decent_dosed', 3], tension: -6, flags: { hum_decent: 'dosed' }, off: c.pid ? [[c.pid, 'mind', -40]] : [] }) } },
     { label: 'Stand with them. Read the record in the mess hall yourself', note: 'Everything, aloud, to everyone, and then you answer for it. Some of the colony will want a rope for you instead.', hint: 'unknown', info: [['yield', 'The truth, from you'], ['danger', 'The order that held the colony together']],
       out: { text: (s, c) => `You read it standing on a table. It takes most of an hour. When you finish, ${c.first || 'somebody'} starts clapping, slowly, alone, and stops. By the morning the watch has split down the middle and the stores are under two sets of locks.`,
         fx: (s, c) => ({ hum: 16, morale: -6, tension: 20, pen: -(s.flags.pen || 0), flags: { hum_decent: 'read' }, chron: 'The record of what the colony had done was read aloud in the mess hall.' }) } },
@@ -195,20 +181,19 @@ add({ id: 'hum.record', arc: 'hum', view: 'ship', tone: 'crisis', title: 'What t
   choices: [
     { label: 'Wipe the log, and the array with it', dark: true, note: 'The colony starts again from nothing on the record. Nobody will ever know, and nobody will ever come.', hint: 'unknown', info: [['yield', 'Nobody ever knows'], ['danger', 'Any hope of anyone coming']],
       out: { text: 'The log goes in eleven minutes. The array\'s core is pulled and dropped in the slag pit. The colony has no history now except what people remember, and they are already remembering it differently.', fx: { stain: ['log_wiped', 3], morale: 2, flags: { hum_record: 'wiped', no_record: true }, chron: 'The colony wiped the ship\'s log and destroyed the array.' } } },
-    { label: 'Rewrite it. Put the deeds on the dead', dark: true, note: 'The log is edited to say the officers who are gone gave every order. The living did as they were told.', hint: 'unknown', info: [['yield', 'A record that clears the living'], ['danger', 'The dead, and anyone who remembers']],
-      out: { text: 'The log is rewritten over a month by two people who are not allowed to talk to each other. When it is done, every order was given by someone in the burial ground. The living read it and find they believe it.', fx: { stain: ['log_lied', 2], tension: -6, flags: { hum_record: 'rewritten' } } } },
     { label: 'Let it go home as it is', note: 'The truth goes out with the next window. Whatever comes after, comes knowing.', hint: 'unknown', info: [['yield', 'The truth'], ['later', 'Whatever Earth does about it']],
       out: { text: 'The log goes out in the next window, all of it, at the speed of light. It will be forty years in transit. People go quiet for a few days, the way they do after a funeral, and then go back to work.', fx: { hum: 10, morale: -5, flags: { hum_record: 'sent' }, chron: 'The colony sent the whole of its record home.' } } },
   ] });
 
-LF.TAGS['hum.numbers'] = ['order', 'order severe', 'mercy'];
-LF.TAGS['hum.game'] = ['open mercy', 'severe', 'severe order'];
-LF.TAGS['hum.penance'] = ['mercy', 'mercy open', 'severe'];
-LF.TAGS['hum.pen'] = ['severe order', 'severe order closed', 'mercy'];
-LF.TAGS['hum.decent'] = ['open mercy', 'severe order', 'severe order', 'open mercy'];
+LF.TAGS['hum.numbers'] = ['order severe', 'mercy'];
+LF.TAGS['hum.game'] = ['open mercy', 'severe order'];
+LF.TAGS['hum.penance'] = ['mercy', 'severe'];
+LF.TAGS['hum.pen'] = ['severe order', 'mercy'];
+LF.TAGS['hum.decent'] = ['open mercy', 'severe order', 'open mercy'];
 LF.TAGS['hum.tribute'] = ['severe', 'mercy open', 'bold severe'];
-LF.TAGS['hum.record'] = ['closed severe', 'closed', 'open'];
+LF.TAGS['hum.record'] = ['closed severe', 'open'];
 LF.ARC_VIEW.hum = 'people';
+/* game, pen_walkers, decent_dosed and log_lied are set by nothing since the three-options pass (2026-11-21): kept for saved games. */
 Object.assign(LF.DEEDS || {}, {
   numbered: 'the names taken off the living and replaced with numbers',
   game: 'the children who played at hanging the List',

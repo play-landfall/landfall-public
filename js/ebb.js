@@ -79,10 +79,8 @@ add({ id: 'ebb.sand', arc: 'ebb', gap: 35, view: 'colony', tone: 'crisis', title
       out: { text: (s, c) => `The ${c.mn} is mended and a pair of guards stands at every hatch in the colony, round the clock, looking at their own neighbours.`, fx: (s, c) => ({ machine: { [c.m]: -10 }, progress: -0.1, tension: 5, morale: -1 }) } },
     { label: 'Lock up everyone who has said the colony is finished', dark: true, note: 'A list from the mess hall, the night shift and the clinic. Most of them only said it.', hint: 'unknown', info: [['yield', 'Nobody saying it any more'], ['danger', 'Everyone on the list']],
       out: { text: (s, c) => `${cap1(num(crowd(s, 0.08, 3, 9)))} people spend a month in a cargo pod with the door bolted. Nobody says GO HOME out loud after that. It appears on a wall, in chalk, about once a week.`, fx: (s, c) => ({ machine: { [c.m]: -10 }, stain: ['despair_locked', 2], tension: -10, morale: 3, progress: -0.03 }) } },
-    { label: 'Make an example: shift the whole night crew to the latrines for a season', dark: true, note: 'All of them, guilty or not, so the one who did it is among them.', hint: 'unknown', info: [['yield', 'Fear, which does the work of guards'], ['danger', 'A dozen who did nothing']],
-      out: { text: (s, c) => `The night crew digs latrines and carries waste until the season turns. Most of them did nothing, and they all know it, and so does everyone else. Nothing else is broken that season.`, fx: (s, c) => ({ machine: { [c.m]: -10 }, stain: ['punished_all', 1], tension: -4, morale: -2, flags: { crackdown: true } }) } },
   ] });
-LF.TAGS['ebb.sand'] = ['order', 'cautious', 'severe order', 'severe'];
+LF.TAGS['ebb.sand'] = ['order', 'cautious', 'severe order'];
 
 /* A petition to go back into the cryo banks until the colony is something worth waking up to. */
 const canSleep = s => s.sleepers >= 0 && !s.flags.qs_dark && !s.machines.lander.lost && !s.flags.lander_grounded && LF.canFly(s);
@@ -95,10 +93,8 @@ add({ id: 'ebb.sleep', arc: 'ebb', gap: 35, view: 'ship', tone: 'pressure', titl
       out: { text: (s, c) => `The lander goes up with ${num(c.n)} people who wave from the ramp. A week later the ship reports them under. The mess hall is quieter, and some of the quiet is envy.`, fx: (s, c) => ({ fly: 1, leave: c.n, sleepers: c.n, morale: 5, lift: 6, flags: { ebb_slept: (s.flags.ebb_slept || 0) + c.n } }) } },
     { label: 'No. Every hand is needed', note: (s, c) => `${c.first || 'The foreman'} will take it badly, and so will the other names on the list.`, hint: 'unknown', info: [['yield', 'Every hand kept'], ['danger', 'The petitioners'], ['danger', 'The mood']],
       out: { text: (s, c) => `You say no to ${c.first || 'the foreman'}'s face. Two of the names walk out past the wire that week instead. The rest go back to work and do the least they can.`, fx: (s, c) => ({ leave: 2, morale: -4, lift: -4, tension: 4 }) } },
-    { label: 'Fly them up, and put the troublemakers under with them, asked or not', dark: true, note: 'Three more who never signed. The colony will know the banks are a punishment now.', hint: 'unknown', info: [['yield', 'Quiet, and fewer mouths'], ['danger', 'Three who never asked'], ['later', 'Anyone who argues, next time']],
-      out: { text: (s, c) => `The lander goes up with ${num(c.n + 3)}. The three extra are walked on by the watch. One of them shouts the whole way up the ramp. Afterwards nobody argues with an officer where the watch can hear.`, fx: (s, c) => ({ fly: 1, leave: c.n + 3, sleepers: c.n + 3, stain: ['put_under', 2], tension: -10, morale: 3, lift: 4 }) } },
   ] });
-LF.TAGS['ebb.sleep'] = ['mercy free', 'order', 'severe order'];
+LF.TAGS['ebb.sleep'] = ['mercy free', 'order'];
 
 /* A preacher who says the planet is calling: a group means to walk out into the country at dawn, with nothing. */
 add({ id: 'ebb.walk', arc: 'ebb', gap: 35, view: 'world', tone: 'crisis', title: 'The Walk', w: 2.6, repeat: 320,
@@ -114,10 +110,8 @@ add({ id: 'ebb.walk', arc: 'ebb', gap: 35, view: 'world', tone: 'crisis', title:
       out: { text: (s, c) => `They take the packs, because you insist, and walk out holding hands at sunrise. Afterwards the pod lines are quiet at night. People sleep better, and are ashamed of it.`, fx: (s, c) => ({ leave: c.pid ? c.n - 1 : c.n, depart: c.pid ? [{ who: c.pid, cause: 'walked out at the head of the Walk, with a pack and a rifle' }] : [], food: -80, morale: 2, lift: 4, chron: `${cap1(num(c.n))} people walked out of the colony with ${c.name || 'a preacher'}.` }) } },
     { label: 'Break it up. The preacher goes in the cells', dark: true, note: 'The watch, at four in the morning, before they reach the wire.', hint: 'unknown', info: [['yield', 'Every hand kept'], ['danger', 'The preacher'], ['danger', 'What the followers decide you are']],
       out: { text: (s, c) => `The watch meets them in the pod lines with lamps and staves. It is short and loud and nobody is killed. ${c.name || 'The preacher'} spends the season in a cargo pod, and preaches through the door.`, fx: (s, c) => ({ stain: ['prophet_jailed', 1], tension: 8, morale: -2, mark: c.pid ? [c.pid, 'jailed', 'was locked up for preaching the Walk'] : null }) } },
-    { label: 'Let them go. Keep the children', dark: true, note: 'Nobody gets to take a child out to die. The parents can choose.', hint: 'unknown', info: [['yield', 'The children kept'], ['danger', 'The parents'], ['danger', 'The children, who will remember the gate']],
-      out: { text: (s, c) => `The watch takes the children at the gate. Most of the parents turn back for them; four do not. The children are put in the schoolroom bunks, and some of them watch the gate for a long time.`, fx: (s, c) => ({ leave: 4, stain: ['kept_children', 3], morale: -1, tension: 6 }) } },
   ] });
-LF.TAGS['ebb.walk'] = ['open mercy', 'free', 'order severe', 'severe order'];
+LF.TAGS['ebb.walk'] = ['open mercy', 'free', 'order severe'];
 
 /* The ones who walked out come back, thinner and armed, for what is in the stores. */
 add({ id: 'ebb.walkers', arc: 'ebb', gap: 35, view: 'world', tone: 'crisis', title: 'The Ones Who Left', w: 3, repeat: 320,
@@ -133,10 +127,8 @@ add({ id: 'ebb.walkers', arc: 'ebb', gap: 35, view: 'world', tone: 'crisis', tit
       bad: { text: (s, c) => `They come over the wire at dusk, and the watch hesitates, and that is enough. They are into the store and out again before the shooting starts properly.${c.name ? ` ${c.name} is killed on the wall.` : ''}`, fx: (s, c) => ({ food: -260, stain: ['walkers_shot', 1], kill: c.pid ? [{ who: c.pid, cause: 'killed on the wall when the ones who left came back for the store' }] : [], pop: c.pid ? 0 : -1, morale: -5, lift: -4 }) } },
     { label: 'Give them what they ask, and let them go', note: 'A quarter of the store, carried to the wire by the ones who stayed.', hint: 'unknown', info: [['yield', 'No blood'], ['danger', 'A quarter of the store'], ['later', 'Next time']],
       out: { text: 'The sacks are carried out to the wire and left. They take them without a word. People inside the wire watch them go, doing the sums on the next winter.', fx: s => Object.assign(grabbed(s, 0.25), { morale: -2, flags: { ebb_paid: (s.flags.ebb_paid || 0) + 1 } }) } },
-    { label: 'Take them back, and put the ringleaders in the cells for a year', dark: true, note: 'Most come in. Two do not get to come in as colonists.', hint: 'unknown', info: [['yield', 'Hands back, and order'], ['danger', 'The two in the cells']],
-      out: { text: (s, c) => `The gate opens. The watch takes the two at the front by the arms as they come through. The rest come in quietly, and eat quietly, and do not look at the cell door.`, fx: (s, c) => ({ pop: Math.max(0, c.n - 2), food: -100, stain: ['walkers_jailed', 1], morale: 2, lift: 3, tension: -2, do: s2 => { s2.deserted = Math.max(0, s2.deserted - c.n); } }) } },
   ] });
-LF.TAGS['ebb.walkers'] = ['mercy open', 'severe closed', 'mercy cautious', 'order'];
+LF.TAGS['ebb.walkers'] = ['mercy open', 'severe closed', 'mercy cautious'];
 
 /* ============================== THREATS: below a tenth ============================== */
 /* The long night: people taking their own lives, and the clinic asking what to do about it. */
@@ -149,12 +141,8 @@ add({ id: 'ebb.night', arc: 'ebb', gap: 35, view: 'people', tone: 'crisis', titl
       out: { text: 'The doors come off the pods. The watch walks the lines with lamps, all night, every night. Nobody dies that month. People are tired and short with each other, and alive.', fx: { progress: -0.08, morale: 2, lift: 6, tension: 3 } } },
     { label: 'Dose the water. A little, for everyone', dark: true, note: (s, c) => `Nobody is asked. ${c.seat === 'doctor' ? c.first + ' measures it out, and will carry that.' : 'The clinic measures it out.'}`, hint: 'unknown', info: [['yield', 'A calmer colony, quickly'], ['danger', 'Everyone, without asking'], ['danger', 'Whoever measures it']],
       out: { text: 'It goes into the water tank on a Tuesday. By the weekend the colony is calm and slow and a little vague, and people laugh at things in a way that is not quite right. Nobody else dies that season.', fx: (s, c) => ({ stain: ['dosed_all', 2], morale: 8, lift: 12, progress: -0.05, flags: { ebb_dosed: s.day }, off: c.pid && c.seat === 'doctor' ? [[c.pid, 'mind', -10]] : [] }) } },
-    { label: 'Say it plainly at muster, and read out their names', note: 'Everyone will hear the word nobody has been saying.', hint: 'unknown', info: [['yield', 'The truth said'], ['danger', 'One more, probably'], ['danger', 'Everyone who has to hear it']],
-      out: { text: 'You read the names at muster and say what happened to them. Nobody moves. Afterwards people stand around in twos and threes, which they have not done for months. There is one more before the season turns.', fx: { pop: -1, morale: -2, hum: 2, lift: 3 } } },
-    { label: 'Write them in the record as walkers, and keep the number off the board', dark: true, note: 'Nobody hears the count, so the count can\'t spread. The families know.', hint: 'unknown', info: [['yield', 'Nobody counting'], ['danger', 'The dead, and their families'], ['later', 'The next ones']],
-      out: { text: 'The record says they walked out. The board says nothing. The families are told what the record says, and say nothing back. Two more walk out that season, or something like it.', fx: { pop: -2, stain: ['hidden_dead', 1], morale: 3, lift: 2 } } },
   ] });
-LF.TAGS['ebb.night'] = ['mercy cautious', 'order severe', 'open', 'closed'];
+LF.TAGS['ebb.night'] = ['mercy cautious', 'order severe'];
 
 /* Knives in the mess hall: the colony turns on itself over a ladle. */
 add({ id: 'ebb.knives', arc: 'ebb', gap: 35, view: 'colony', tone: 'crisis', title: 'Knives in the Mess Hall', w: 3.6, repeat: 240,
@@ -166,32 +154,53 @@ add({ id: 'ebb.knives', arc: 'ebb', gap: 35, view: 'colony', tone: 'crisis', tit
       out: { text: 'The bins are opened and the cooks are told to keep going until people stop asking. They don\'t stop until two in the morning. Nobody mentions the knife again, and nobody forgets it.', fx: s => Object.assign(grabbed(s, 0.25), { morale: 9, lift: 10, tension: -8 }) } },
     { label: (s, c) => `Hang ${c.first || 'the one with the knife'} in the yard, tonight`, dark: true, note: 'It ends now. The colony learns how arguments end from here on.', hint: 'unknown', info: [['yield', 'It ends tonight'], ['danger', (s, c) => c.name || 'The one with the knife'], ['danger', 'Everyone who watches']],
       out: { text: (s, c) => `${c.name || 'The loader'} is hanged from the crane in the yard at midnight, by lamplight, with everyone made to watch. The hall is cleared in silence. Nobody raises a voice at a meal for a long time after.`, fx: (s, c) => ({ kill: c.pid ? [{ who: c.pid, cause: 'hanged in the yard for a knife in the mess hall' }] : [], pop: c.pid ? 0 : -1, stain: ['yard_hanging', 2], tension: -14, morale: 4, lift: 6, flags: { crackdown: true } }) } },
-    { label: 'Split the colony. The angry ones get their own camp and their own share', dark: true, note: 'A fence through the middle, and a share of the store on each side of it.', hint: 'unknown', info: [['yield', 'Peace, of a kind'], ['danger', 'Everyone who now has a fence between them'], ['danger', 'A fifth of the store']],
-      out: { text: (s, c) => `By the end of the week there is a fence of salvaged plate across the pod lines and ${num(c.n)} people on the far side of it, with their own fire and a fifth of the store. Families are split across it. Some talk through the fence at night.`, fx: s => Object.assign(grabbed(s, 0.2), { leave: crowd(s, 0.15, 5, 16), morale: 6, lift: 8, tension: -10, flags: { ebb_split: s.day }, chron: 'The colony split in two, with a fence between.' }) } },
     { label: 'Sit down in the hall with them, and stay until it is talked out', note: 'All night, with the doors shut and the knife on the table. It might go the other way.', hint: 'unknown', info: [['yield', 'A colony that has said it all out loud'], ['fail', 'You, and anyone near the knife']],
       test: { base: 40, mods: [R('command', 10), R('doctor', 5), If(s => !!s.flags.council, 5, 'There is a Council to answer to')] },
       ok: { text: 'You sit in the middle of the hall with the knife on the table in front of you, and let them shout. Around four in the morning the shouting turns into talking. By breakfast there is a list on the wall of what has to change, and it is not unreasonable.', fx: { morale: 7, lift: 10, tension: -10 } },
       bad: { text: 'They shout, and you listen, and around two in the morning somebody picks the knife up off the table. It is over in seconds. When the lamps are lit again there are two on the floor.', fx: { pop: -2, morale: -5, lift: -4, tension: 10 } } },
   ] });
-LF.TAGS['ebb.knives'] = ['mercy', 'severe order', 'free', 'open free'];
+LF.TAGS['ebb.knives'] = ['mercy', 'severe order', 'open free'];
 
 /* ============================== WAYS OUT ============================== */
-/* The council is asked straight out what would lift the colony, and every answer costs. Three ways are dealt from
-   what the colony has to spend, always one that costs a life; refusing is always there. */
-const WAYS = ['goat', 'lot', 'volunteer', 'feast', 'enemy', 'pit', 'truth', 'vote', 'wake'];
+/* The council is asked straight out what would lift the colony, and every answer costs. Three options at most
+   (2026-11-21), so three ways are on the card and nothing else: one from each of three pools, and from each pool the
+   way that fits the colony as it stands (`fit`, 0 to 3). The pools: a life (goat, lot, volunteer); something the
+   colony has to spend (feast, hall, vote, wake, truth: none of these is dark, and truth is always there); somebody to
+   turn on (enemy, pit, or the life not already dealt, a point down). A way the last council was offered
+   (`s.flags.ebb_ways`) counts two points less, so a second meeting hears something new; a tie goes to LF.spick.
+   "None of it" is only on the card when fewer than three ways could be dealt. The hall's option lives in
+   js/content-builds.js and shows when 'hall' is dealt. */
+const WAYS = ['goat', 'lot', 'volunteer', 'feast', 'enemy', 'pit', 'truth', 'vote', 'wake', 'hall'];
+const hm = s => (LF.hum ? LF.hum(s) : 100);
+const fit = {
+  goat: s => (s.tension >= 50 ? 2 : 1) + (hm(s) < 50 ? 1 : 0),          // an angry colony that has already gone hard wants a culprit
+  lot: s => (hm(s) < 50 ? 2 : 1) + (h.foodDays(s) < 40 ? 1 : 0) - (s.flags.ebb_rite ? 1 : 0),   // a hard, hungry one shares the risk out; one with a rite already has ebb.rite
+  volunteer: s => (hm(s) >= 50 ? 3 : 1),                                // a colony that is still itself has someone who offers
+  feast: s => (h.foodDays(s) > 120 ? 3 : h.foodDays(s) > 80 ? 2 : 1),   // full bins
+  hall: () => 2,                                                        // the hall stands
+  vote: s => (s.tension >= 50 ? 3 : 1),                                 // they are angry at the officers
+  wake: s => (s.pop < 50 ? 2 : 1),                                      // short of hands
+  truth: s => (hm(s) >= 60 && !s.flags.crackdown ? 2 : 1),              // they might still believe you
+  enemy: s => { const f = neighbour(s); return f && (f.threat >= 30 || f.accord < 0) ? 3 : 2; },   // a neighbour already feared
+  pit: s => (s.tension >= 50 ? 3 : 1),                                  // anger with nowhere to go
+};
 const goatOf = s => here(s, 'crew') || here(s, 'security') || here(s, 'engineer') || here(s, 'doctor') || here(s, 'scientist');
 const volOf = s => (LF.cast && LF.cast(s, { val: 'bold', free: true })) || someone(s);
 const canWay = {
   goat: s => !!goatOf(s), lot: s => s.pop >= 20, volunteer: s => !!volOf(s),
   feast: s => h.foodDays(s) > 50, enemy: s => !!neighbour(s), pit: s => s.pop >= 24,
   truth: () => true, vote: s => !s.flags.council && !s.flags.committee,
-  wake: s => s.sleepers >= 20 && canSleep(s),
+  wake: s => s.sleepers >= 20 && canSleep(s), hall: s => LF.has(s, 'hall'),
 };
 add({ id: 'ebb.ways', arc: 'ebb', urgent: true, view: 'people', tone: 'council', title: 'What Would Lift Them', w: 4, repeat: 150,
   when: s => low(s, 20) && !!s.flags.ebb_on && s.day - s.flags.ebb_on >= 45 && s.pop >= 16,
   setup: s => {
-    const ok = WAYS.filter(k => canWay[k](s)), take = (pool) => { const a = pool.filter(k => ok.includes(k) && !got.includes(k)); if (a.length) got.push(LF.spick(s, a)); };
-    const got = []; take(['goat', 'lot', 'volunteer']); take(['feast', 'truth', 'vote', 'wake']); take(['enemy', 'pit', 'goat', 'lot']);
+    const ok = WAYS.filter(k => canWay[k](s)), last = String(s.flags.ebb_ways || '').split(','), got = [];
+    const take = (pool, second) => { const a = pool.filter(k => ok.includes(k) && !got.includes(k)); if (!a.length) return;
+      const sc = k => fit[k](s) - (last.includes(k) ? 2 : 0) - (second && (k === 'goat' || k === 'lot') ? 1 : 0), top = Math.max(...a.map(sc));
+      got.push(LF.spick(s, a.filter(k => sc(k) === top))); };
+    take(['goat', 'lot', 'volunteer']); take(['feast', 'hall', 'vote', 'wake', 'truth']); take(['enemy', 'pit', 'goat', 'lot'], true);
+    s.flags.ebb_ways = got.join(',');
     const p = here(s, 'command') || here(s, 'crew'), g = goatOf(s), v = volOf(s), nb = neighbour(s);
     return Object.assign(ctxOf(p), { seat: p && p.seat, ways: got, gpid: g && g.id, gname: g && g.name, gfirst: g && g.first, gseat: g && g.seat, vpid: v && v.id, vname: v && v.name, vfirst: v && v.first, nb: nb && nb.id, nbName: nb && nb.name });
   },
@@ -230,7 +239,7 @@ add({ id: 'ebb.ways', arc: 'ebb', urgent: true, view: 'people', tone: 'council',
     { show: (s, c) => c.ways.includes('wake'), label: 'Wake new faces. Twenty down from orbit, now', note: 'New people, who haven\'t been through it, and twenty more mouths.', hint: 'unknown',
       info: [['yield', 'Fresh hands and fresh hope'], ['danger', 'The stores'], ['danger', 'The lander']],
       out: { text: 'The lander comes down full of people blinking at the sky, asking questions nobody has asked for a year. They are tiresome and cheerful and it is catching.', fx: { fly: 1, sleepers: -20, pop: 20, morale: 8, lift: 12 } } },
-    { label: 'None of it. Hold on and wait for better', note: 'Nothing is spent, and nothing changes. The colony will notice that too.', hint: 'unknown', info: [['danger', 'Everyone, for longer'], ['later', 'The ones who will walk']],
+    { show: (s, c) => c.ways.length < 3, label: 'None of it. Hold on and wait for better', note: 'Nothing is spent, and nothing changes. The colony will notice that too.', hint: 'unknown', info: [['danger', 'Everyone, for longer'], ['later', 'The ones who will walk']],
       out: { text: 'The meeting breaks up with nothing decided. By morning the whole colony knows there was a meeting and nothing came of it.', fx: { morale: -3, lift: -3 } } },
   ] });
 LF.TAGS['ebb.ways'] = ['severe order', 'severe', 'bold mercy', 'mercy free', 'closed', 'severe free', 'open', 'free', 'bold', 'cautious'];
@@ -241,7 +250,8 @@ add({ id: 'ebb.rite', arc: 'ebb', view: 'people', tone: 'pressure', title: 'The 
   setup: s => { const p = someone(s); return Object.assign(ctxOf(p), { pen: s.flags.pen || 0 }); },
   text: (s, c) => `The sack is hanging on the mess hall door again. Nobody admits to hanging it there. ${c.name || 'A crew lead'} comes to ask what everyone is asking: is it time.\n\n[[${c.pid || 'x41'}]] "It worked last time." "Everyone says it worked."`,
   choices: [
-    { label: 'Draw again', dark: true, note: 'It becomes what the colony does when it is frightened.', hint: 'unknown', info: [['yield', 'What worked last time'], ['danger', 'Whoever draws it'], ['later', 'Every lean season after this']],
+    // three options at most (2026-11-21), and two where the results are known: a colony with a pen draws from the pen (below), and this one is hidden
+    { show: (s, c) => !(c.pen > 0), label: 'Draw again', dark: true, note: 'It becomes what the colony does when it is frightened.', hint: 'unknown', info: [['yield', 'What worked last time'], ['danger', 'Whoever draws it'], ['later', 'Every lean season after this']],
       out: { text: 'They draw. The short straw is the oldest of the workshop crew, who seems almost relieved. The colony sings at the wire again, and knows the words this time.', fx: s => ({ pop: -1, stain: ['ebb_lot', 2], morale: 8, lift: 16, flags: { ebb_rite: s.day, ebb_rites: (s.flags.ebb_rites || 0) + 1 }, chron: 'The colony drew lots again.' }) } },
     { show: (s, c) => c.pen > 0, label: 'Draw from the pen, not from the colony', dark: true, note: 'The rite with nobody inside the wire at risk. Everyone will understand what the pen is for now.', hint: 'unknown', info: [['yield', 'The rite, at no cost to anyone who counts'], ['danger', 'The one from the pen']],
       out: { text: 'The sack is taken to the pen instead. The colony still walks the one who draws it to the wire, and sings, and the singing is louder than before.', fx: s => ({ pen: -1, stain: ['ebb_lot_pen', 2], morale: 6, lift: 12, flags: { ebb_rite: s.day } }) } },
@@ -250,10 +260,12 @@ add({ id: 'ebb.rite', arc: 'ebb', view: 'people', tone: 'pressure', title: 'The 
   ] });
 LF.TAGS['ebb.rite'] = ['severe', 'severe closed', 'mercy'];
 
-/* Phrases for the deeds above (LF.worst, the epilogue). */
+/* Phrases for the deeds above (LF.worst, the epilogue). punished_all, kept_children, walkers_jailed and hidden_dead are
+   set by nothing since the three-options pass (2026-11-21) and stay for saved games; put_under is gone from here with
+   its option, so the crossing's phrase for that key (js/content-limits.js) is no longer written over. */
 if (LF.DEEDS) Object.assign(LF.DEEDS, {
   wrong_one: 'confining the wrong person for sabotage', despair_locked: 'locking up the people who said the colony was finished',
-  punished_all: 'punishing a whole crew for one saboteur', put_under: 'putting people into the cryo banks against their will',
+  punished_all: 'punishing a whole crew for one saboteur',
   prophet_jailed: 'jailing a preacher', kept_children: 'taking the walkers\' children at the gate', walkers_shot: 'shooting the ones who came back',
   walkers_jailed: 'jailing the ones who came back', dosed_all: 'drugging the whole colony through the water', hidden_dead: 'hiding the colony\'s suicides',
   yard_hanging: 'a hanging in the yard', ebb_goat: 'hanging an officer to give the colony someone to blame', ebb_lot: 'sending people out to die by lot',

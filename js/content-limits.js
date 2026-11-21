@@ -494,6 +494,8 @@ const DEEDS = {
   false_dead: "the families on the watch reported dead",
   drafters: "the three who drafted a petition, put back into the cold",
 };
+/* Three options at most (2026-11-21): the options that set two_tables, kitchen_hand, clinic_room, unborn, bought_silence
+   and lim_starved_list were cut, and nothing sets them now. Their phrases stay for saved games that already carry them. */
 LF.DEEDS = DEEDS;
 for (const d of LF.DEEDS_LATE || []) Object.assign(DEEDS, d);   // deeds of threads that load before this file (js/thread-quiet.js)
 /* The deeds on the colony's record that have a name, most recent first. */
@@ -519,10 +521,6 @@ add({ id: 'lim.count', urgent: true, arc: 'lim.hunger', view: 'colony', tone: 'c
     { label: 'Feed the ones who dig. The rest get what is left', dark: true, info: [['yield', 'The work gets done'], ['danger', 'The ones who cannot dig']],
       out: { text: 'The field crews get the heavy ladle. The clerks, the medics, the old and the children get what is left. Three graves are dug within the month by people who ate well that morning. One is for a woman who had been giving half of every bowl to a child.',
         fx: { rations: 'tight', morale: -7, pop: -3, stain: ['ladle', 2], flags: { ration_by_work: true }, chron: 'In the first month the colony fed its diggers first. The first graves were for people who did not dig.' } } },
-    { label: 'Send twelve back up into the cold', fly: 1, dark: true, req: s => ok(s, 'lander'), reqText: 'Needs the Lander', note: 'Twelve fewer mouths until the harvest. Going under a second time kills about one in ten.', info: [['yield', 'Twelve fewer mouths'], ['danger', 'One of the twelve'], ['danger', 'The Lander']],
-      out: { text: s => `Twelve names are read out, chosen by ${N(s, 'quartermaster')} for what they cannot do this season. They are back in the pods nine days after waking. One of the pods shows a flat line before the lander has undocked.`,
-        fx: { sleepers: 11, machine: { lander: -8 }, morale: -4, chips: [['12 colonists back in the cold', false], ['1 dead', false]],
-          do: s => { s.pop = Math.max(0, s.pop - 12); s.deaths += 1; s.grief = Math.min(40, s.grief + 2); stain(s, 'refreeze', 1); }, chron: 'Nine days after landing, twelve colonists were put back into the cold to save the stores. One died of it.' } } },
     { label: 'Full plates. Nobody builds a colony hungry', info: [['danger', 'The bins'], ['later', 'Whoever is weakest when they run out']],
       out: { text: s => `${Nc(s, 'quartermaster')} asks for the order in writing and gets it. Everyone eats and the work goes fast. The stores go down faster than the slate allowed for, and ${N(s, 'quartermaster')} tells anyone who asks whose order that was.`,
         fx: { morale: 3, food: -80, do: s => regard(s, 'quartermaster', -12) } } },
@@ -570,10 +568,6 @@ add({ id: 'lim.straws', urgent: true, arc: 'lim.hunger', view: 'colony', tone: '
       out: { text: (s, c) => `${Num(c.n)} names come out of the drum in the mess hall, read aloud one at a time.${c.name ? ` ${c.name} is the last of them.` : ''} They are given the night with whoever they want. By the end of the month there is meat on the scales and ${num(c.n)} fewer at the tables.`,
         fx: (s, c) => ({ pop: -(c.n - (c.pid ? 1 : 0)), kill: c.pid ? [{ who: c.pid, cause: 'drew a short straw in the famine' }] : [], morale: -10, chips: [[`+${days(s, c.n * 60)} days of food`, true]],
           do: s2 => { s2.res.food += c.n * 60; stain(s2, 'lots', 2); fear(s2, 'lim.lots', 45, 200, 'everyone heard the names read out of the drum'); }, chron: `In the famine ${num(c.n)} colonists were chosen by lot and eaten.` }) } },
-    { label: 'No lots. The ones who cannot work', dark: true, info: [['yield', 'Food']],
-      out: { text: (s, c) => `${Nc(s, 'quartermaster')} already had the list. The old, the two with crushed legs, the blind, the ones the fever left slow. They are told in their bunks, at night, so that the crews will not have to watch.`,
-        fx: (s, c) => ({ pop: -c.n, morale: -7, flags: { ration_by_work: true }, chips: [[`+${days(s, c.n * 60)} days of food`, true]],
-          do: s2 => { s2.res.food += c.n * 60; stain(s2, 'cull', 2); }, chron: `In the famine ${num(c.n)} colonists who could not work were killed and eaten.` }) } },
     { label: 'The sleepers. Nobody down here has to be chosen', fly: 1, dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 15, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Food']],
       out: { text: s => `${Nwc(s, 'pilot')} flies it alone and will not let anyone help unload. Fifteen pods, opened on the pad before the thaw could begin. Nobody who was eaten ever knew there had been a famine.`,
         fx: { sleepers: -15, food: 900, machine: { lander: -12 }, morale: -5, do: s => stain(s, 'larder', 2), chron: 'Fifteen sleepers were brought down from orbit and eaten.' } } },
@@ -606,8 +600,6 @@ add({ id: 'lim.taste', arc: 'lim.hunger', view: 'people', tone: 'quiet', title: 
     { label: 'The famine is over, and so is this', info: [['danger', 'The dozen, and their dead']],
       out: { text: s => `The cold room is emptied and scrubbed, and the watch stands at the next two burials to see them through. The dozen are told that what kept them alive in the famine is a crime now. They stop coming to ${N(s, 'chaplain')}, and they bury their own at night.`,
         fx: { morale: -3, flags: { lim_table: false, lim_table_ended: true }, do: s => regard(s, 'chaplain', -10) } } },
-    { label: 'Leave it to each family', dark: true, info: [['danger', 'The children of both tables']],
-      out: { text: 'Some do and some do not. Within the year the hall has two ends, and the children of one are not let play with the children of the other.', fx: { morale: -2, flags: { lim_rite: 'family' }, do: s => stain(s, 'two_tables', 1) } } },
   ] });
 
 add({ id: 'lim.edible', arc: 'lim.hunger', view: 'world', tone: 'pressure', title: 'Edible', w: 3, gap: 14,
@@ -635,9 +627,6 @@ add({ id: 'lim.mouths', arc: 'lim.hunger', view: 'people', tone: 'pressure', tit
     { label: 'Put them out past the wire', dark: true, info: [['danger', 'Morale']],
       out: { text: 'They are given three days of meal and a tarpaulin. Two have to be carried. From the wire you can see their fire for four nights, and on the fifth there is no fire.',
         fx: (s, c) => ({ leave: c.n, food: 80, morale: -9, do: s2 => { stain(s2, 'cull', 2); fear(s2, 'lim.cull', 35, 160, 'people have seen what happens to those who cannot work'); }, chron: `${Num(c.n)} colonists who could not work were put out past the wire to die.` }) } },
-    { label: 'Quarter rations for the list. The crews eat first', dark: true, info: [['yield', 'Food'], ['danger', 'Lives']],
-      out: { text: 'Nobody is put out. They are fed last, from what is left, and there is not much left. Four of them are dead by the turn of the season, in their bunks, among people who watched them get thin.',
-        fx: { pop: -4, food: 150, morale: -5, flags: { ration_by_work: true, lim_starved_list: true }, do: s => stain(s, null, 1) } } },
     { label: 'They eat what everyone eats, and everyone eats less', info: [['danger', 'The crews']],
       out: { text: s => `The list goes into the stove, and ${N(s, 'quartermaster')} cuts every ladle to cover it. Two diggers go down in the rows before the season turns, on rations that would have held them if the list had been used.`, fx: { morale: 2, pop: -2 } } },
   ] });
@@ -652,9 +641,6 @@ add({ id: 'lim.bond', arc: 'lim.yoke', view: 'people', tone: 'opportunity', titl
         fx: { pop: 20, sleepers: -20, machine: { lander: -12 }, morale: -3, sched: [['lim.compound', 70, 130]], do: s => { s.flags.thralls = th(s) + 20; stain(s, 'bond', 1); }, chron: 'Twenty sleepers were woken as bonded labour, under a clause in their own contracts.' } } },
     { label: 'Wake twenty as colonists', info: [['danger', 'Twenty full ladles from bins that are short']],
       out: { text: 'Twenty people walk off the ramp and are handed a bowl and a shovel like everyone else. The bowl is the same size as everyone else\'s, and every bowl in the hall is smaller for it by the end of the month.', fx: { pop: 20, sleepers: -20, food: -150, machine: { lander: -12 }, morale: 2 } } },
-    { label: 'Wake the six with a trade. Strip the other fourteen pods for parts', dark: true, info: [['yield', 'Six skilled hands, and spares'], ['danger', 'Fourteen sleepers']],
-      out: { text: s => `${Nc(s, 'quartermaster')} goes down the manifest with a pencil. A machinist, two welders, a surgeon, a well-borer and a cook are woken and fed. The other fourteen pods are shut down in orbit, and their pumps and cells come down in the same flight.`,
-        fx: { pop: 6, sleepers: -20, parts: 6, machine: { lander: -12 }, morale: -2, stain: ['sorted', 2], chron: 'Six sleepers with trades were woken. The fourteen who came up beside them on the manifest were shut down for parts.' } } },
   ] });
 
 add({ id: 'lim.compound', chain: true, arc: 'lim.yoke', view: 'people', tone: 'pressure', title: 'Any Number',
@@ -670,10 +656,6 @@ add({ id: 'lim.compound', chain: true, arc: 'lim.yoke', view: 'people', tone: 'p
       ok: { text: 'It is done at the change of shift, so that both shifts see it. The compound does not ask about the number again.', fx: { morale: -3, flags: { lim_flogged: true }, do: s => stain(s, null, 1) } },
       bad: { text: 'The third stroke is the last one. The compound comes over the wire with shovels.',
         fx: { pop: -5, morale: -8, flags: { blood_spilled: true }, do: s => { s.flags.thralls = Math.floor(th(s) / 2); stain(s, null, 1); } } } },
-    { label: 'The autodoc can take out the part that argues', dark: true, req: s => ok(s, 'medbay'), reqText: 'Needs the Autodoc', info: [['yield', 'Hands that never stop']],
-      out: { text: s => `${Nwc(s, 'physician')} does the three who were caught and then, on your order, the one who talks for them. They are back on the ditch within the month. They work evenly and do not look up when their names are called.`,
-        fx: { morale: -6, chips: [['Four of the bonded harnessed', false]], sched: [['lim.harness3', 120, 200]],
-          do: s => { const n = Math.min(4, th(s)); s.flags.thralls = th(s) - n; take(s, n); s.flags.servitors = sv(s) + n; stain(s, 'servitor', 2); fear(s, 'lim.harness', 40, 200, 'four people went into the autodoc for arguing'); } } } },
   ] });
 
 add({ id: 'lim.harness', arc: 'lim.yoke', view: 'colony', tone: 'pressure', title: 'The Harness', w: 3, gap: 14,
@@ -699,12 +681,6 @@ add({ id: 'lim.harness2', chain: true, arc: 'lim.yoke', view: 'colony', tone: 'o
       out: { text: s => `Eight go into the autodoc over the month: thieves, two who struck the watch, three who had stopped turning out for shift. ${Nwc(s, 'security')} draws up the list, and it is longer than eight. Everybody turns out for shift now.`,
         fx: { morale: -9, chips: [['Eight colonists harnessed', false]], sched: [['lim.harness3', 110, 190]],
           do: s => { take(s, 8); s.flags.servitors = sv(s) + 8; stain(s, 'harness_many', 2); fear(s, 'lim.harness', 55, 260, 'the watch has a list of who goes into a harness next'); }, chron: 'Eight colonists were harnessed as punishment, and for the work.' } } },
-    { label: 'The sleepers. They have never been awake here', fly: 1, dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 10, reqText: 'Needs a flightworthy lander and sleepers in orbit', info: [['yield', 'Hands that never stop']],
-      out: { text: 'Ten pods come down and go straight into the autodoc bay. None of the ten opens their eyes on this world as a person. The colony finds that easier, as you thought it would.',
-        fx: { sleepers: -10, machine: { lander: -10 }, morale: -3, sched: [['lim.harness3', 110, 190]], do: s => { s.flags.servitors = sv(s) + 10; stain(s, 'harness_many', 2); }, chron: 'Ten sleepers were brought down and harnessed without being woken.' } } },
-    { label: 'Buy them from the dying, for rations to their families', dark: true, info: [['yield', 'Hands that never stop'], ['later', 'What hungry families will sell']],
-      out: { text: 'Three sign over the year, in return for double rations to whoever they leave behind. The third is not dying of anything the clinic can name.',
-        fx: { morale: -2, chips: [['Three of the dying harnessed', false]], sched: [['lim.harness3', 140, 220]], do: s => { take(s, 3); s.flags.servitors = sv(s) + 3; stain(s, null, 1); } } } },
     { label: 'One was already too many', info: [['danger', 'The people those jobs use up']],
       out: { text: s => `${Nc(s, 'engineer')} folds the drawing up. The smelter face and the wells go on being worked by people, and two of them are buried before the year is out.`, fx: { pop: -2 } } },
   ] });
@@ -755,9 +731,6 @@ add({ id: 'lim.jar2', chain: true, arc: 'lim.yoke', view: 'people', tone: 'press
     { label: 'Switch it off', info: [['later', 'The next thing that breaks']],
       out: { text: (s, c) => `It is done at the end of a shift, with the workshop empty. The next fault in the machines is diagnosed from the notebooks, and the diagnosis is wrong twice before it is right.`,
         fx: { morale: 2, machine: { fabricator: -6 }, do: s => { s.flags.lim_jar.off = s.day; const p = jarHeir(s); if (p) p.green = true; } } } },
-    { label: 'Not yet. Another year', dark: true,
-      out: { text: (s, c) => `The tank is told. It says nothing for two days. Then it starts answering questions again, more slowly, and some of the answers are wrong in ways that are only found out later.`,
-        fx: (s, c) => ({ machine: { fabricator: -8 }, flags: { lim_jar_kept: true }, do: s2 => stain(s2, null, c.consent ? 2 : 1) }) } },
     { label: 'Take the speaker out. It can still answer on the console', dark: true,
       out: { text: 'Now the answers come up as text and nobody has to hear it ask. For a while the console prints the same line at the start of every shift, and then somebody writes a filter for that.',
         fx: { flags: { lim_jar_kept: true, lim_jar_mute: true }, do: s => stain(s, null, 2) } } },
@@ -794,8 +767,6 @@ add({ id: 'lim.roster', arc: 'lim.yoke', view: 'people', tone: 'pressure', title
     { label: 'The sleepers can carry', dark: true, req: s => ok(s, 'lander') && ok(s, 'medbay') && s.sleepers >= 20 && LF.canFly(s), reqText: s => !LF.canFly(s) ? LF.flyWhy(s) : 'Needs the Lander, the Autodoc and sleepers in orbit', info: [['yield', 'More hands, in time'], ['danger', 'The Lander']],
       out: { text: s => `${Nc(s, 'physician')} ${LF.seatState(s, 'doctor') === 'orbit' ? 'gets the registry vials on the next flight up and does it aboard, with a cryo technician, over nine days' : 'goes up with the registry vials and a cryo technician and is gone nine days'}. Twenty of the women in bank B will carry to term without waking. The infants are to come down four at a time. What the mothers will be told if they are ever woken has not been decided.`,
         fx: { fly: 1, machine: { lander: -10 }, morale: -6, do: s => { stain(s, 'incubate', 3); s.flags.lim_inc_next = s.day + 110; s.flags.lim_inc_left = 5; }, chron: 'Twenty sleeping women were made to carry children for the colony, without being woken.' } } },
-    { label: 'No. The colony dwindles as it will', info: [['danger', 'Whether anyone is here in forty years']],
-      out: { text: s => `${Nc(s, 'physician')} takes the page back and has the refusal entered in the clinic log under your name. The count goes on falling, and the people doing the work of two start saying so.`, fx: { morale: -3, flags: { lim_roster: 'refused' }, do: s => regard(s, 'physician', -10) } } },
   ] });
 
 add({ id: 'lim.splice', arc: 'lim.yoke', view: 'colony', tone: 'opportunity', title: 'People to Find Out On', w: 3, gap: 14,
@@ -806,10 +777,6 @@ add({ id: 'lim.splice', arc: 'lim.yoke', view: 'colony', tone: 'opportunity', ti
       ok: { text: s => `Seven are taken from the lock-up and dosed in a locked ward. Four die in the first week, badly. ${Nc(s, 'xenobio')} changes two things and doses the other three again. They live, and each eats a bowl of boiled groundcover and keeps it down.`,
         fx: { pop: -4, morale: -5, flags: { native_food: true, lim_splice: true }, do: s => stain(s, 'trial', 2), chron: 'A gut splice that lets people eat what grows here was proved on prisoners. Four died of it.' } },
       bad: { text: s => `Seven are taken from the lock-up and dosed in a locked ward. All seven are dead within a fortnight, and nothing was learned that the dish had not already shown.`, fx: { pop: -7, morale: -8, do: s => stain(s, 'trial', 2) } } },
-    { label: 'Sleepers, woken on the table', dark: true, req: s => ok(s, 'lander') && s.machines.lander.hp > 15 && s.sleepers >= 12 && LF.canFly(s), reqText: s => !LF.canFly(s) ? LF.flyWhy(s) : 'Needs a flightworthy lander and sleepers in orbit', test: { base: 70, mods: [R('physician', 10), M('medbay', 5)] }, info: [['yield', 'Food from the ground, for good']],
-      ok: { text: 'Twelve pods. They are woken in the ward, dosed before they can ask where they are, and watched. Eight die. The method is sound by the ninth. The last four are told they were sick on arrival.',
-        fx: { fly: 1, sleepers: -12, pop: 4, machine: { lander: -8 }, morale: -3, flags: { native_food: true, lim_splice: true }, do: s => stain(s, 'trial', 2), chron: 'A gut splice that lets people eat what grows here was proved on twelve sleepers. Eight died of it.' } },
-      bad: { text: s => `Twelve pods are opened in the ward. None of the twelve lives a fortnight. ${Nc(s, 'xenobio')} fills a notebook and asks for twelve more.`, fx: { fly: 1, sleepers: -12, machine: { lander: -8 }, morale: -5, do: s => stain(s, 'trial', 2) } } },
     { label: 'Volunteers, told the odds', test: { base: 40, mods: [R('physician', 10)] }, info: [['yield', 'Food from the ground, for good'], ['danger', 'Lives']],
       ok: { text: 'Nine people put their names down. Three die. The other six can eat what grows here, and now the splice can be given to anyone at the cost of a week of fever.',
         fx: { pop: -3, morale: 4, flags: { native_food: true, lim_splice: true }, do: s => { LF.deed(s, null, 'drank the splice when it killed one in three, and lived', 'survivor'); }, chron: 'Volunteers proved a gut splice that lets people eat what grows here. Three died of it.' } },
@@ -831,10 +798,6 @@ add({ id: 'lim.goat', arc: 'lim.knife', view: 'people', tone: 'pressure', title:
       out: { text: (s, c) => `The hearing takes an afternoon. ${c.name} keeps saying the dates are wrong. They are, and the hearing does not check. It is done at dusk at the edge of the yard. That night the mess hall is louder than it has been in a season.`,
         fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'hanged for something nobody did' }], morale: 15, tension: -20, flags: { lim_goat_n: c.name, lim_goat_how: 'hanged' }, sched: [['lim.sheet', 90, 200]],
           do: s2 => { stain(s2, 'goat', 2); regard(s2, 'security', 15); }, chron: `${c.name} was hanged for sabotage. There had been no sabotage.` }) } },
-    { label: (s, c) => `A hearing, and the wire. ${c.first} can walk`, dark: true, info: [['yield', 'Morale'], ['danger', 'An innocent']],
-      out: { text: (s, c) => `${c.name} is found guilty in an afternoon and put out at dusk with a pack. ${c.first} stands at the wire a long time, looking back at the faces, before going.`,
-        fx: (s, c) => ({ morale: 8, tension: -12, flags: { lim_goat_n: c.name, lim_goat_how: 'exiled' }, sched: [['lim.sheet', 90, 200]], chips: [[`${c.name} exiled`, false]],
-          do: s2 => { gone(s2, c.pid, 'exiled for something nobody did'); stain(s2, 'goat', 1); }, chron: `${c.name} was exiled for sabotage. There had been no sabotage.` }) } },
     { label: 'Tell them the truth', info: [['danger', 'Whoever the hall picks for itself']],
       out: { text: (s, c) => `You tell them that nobody did it: things wear out, and people starve when there is no food. The hall does not accept it. Two nights later a stores clerk is found beaten to death behind the kiln by people who needed it to be somebody. ${c.name} never learns how close it was.`, fx: { morale: -6, tension: 8, pop: -1 } } },
     { label: 'It came from outside the wire', dark: true, show: s => !!outside(s), info: [['yield', 'Morale'], ['danger', 'Whoever is out there, and the truth']],
@@ -856,9 +819,6 @@ add({ id: 'lim.sheet', chain: true, arc: 'lim.knife', view: 'people', tone: 'cri
     { label: (s, c) => `${c.first} has an accident`, dark: true,
       out: { text: (s, c) => `The gantry rail gives way on the night shift. The sheet is not found among ${c.first}'s things, because the watch looked first.`,
         fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'fell from the gantry on the night shift' }], morale: -2, flags: { lim_goat_done: 'silenced' }, do: s2 => { stain(s2, null, 2); regard(s2, 'security', 10); } }) } },
-    { label: (s, c) => `Buy ${c.first} with a seat at the table`, dark: true, info: [['danger', 'Someone who now owns you']],
-      out: { text: (s, c) => `${c.first} wants ${c.g}'s name cleared in the record, if not in the mess hall, and a seat where decisions are made. You give both. The sheet goes into a drawer that ${c.first} keeps the key to, and from now on ${c.first} is asked before anything is decided.`,
-        fx: (s, c) => ({ stain: ['bought_silence', 1], flags: { lim_goat_done: 'held' }, mark: [c.pid, 'holds', 'holds a duty sheet in a locked drawer, and a seat because of it'] }) } },
   ] });
 
 add({ id: 'lim.house', arc: 'lim.knife', view: 'people', tone: 'pressure', title: 'The Armoury Annex', w: 3, gap: 14,
@@ -885,9 +845,6 @@ add({ id: 'lim.house2', chain: true, arc: 'lim.knife', view: 'people', tone: 'cr
   setup: s => ctxOf(P(s, 'security')),
   text: (s, c) => `One of the women from the annex is in the pump house with a kitchen knife and blood to the elbows. ${c.name} is dead in the annex bed. She walked out through the watch room while they were at cards.\n\nShe has not asked you for anything. The watch has found the body and is turning out the camp.`,
   choices: [
-    { label: 'Hide her, and give the watch somebody else', dark: true, info: [['danger', 'Whoever the watch is given']],
-      out: { text: 'The note in the clinic log says heart, and the watch does not believe it. They are given a kitchen hand who was seen near the annex that night, who goes out past the wire at dawn still saying where he was. She is on the field crew by the end of the month, under a name from the sleeper manifest. The other five walk out of the annex the morning after.',
-        fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'died in the armoury annex, by a hand nobody named' }], leave: 1, morale: 4, stain: ['kitchen_hand', 1], flags: { lim_house_over: 'hidden' } }) } },
     { label: 'Give her to the watch', dark: true,
       out: { text: 'They take her out of the pump house by the hair. There is a hearing of a kind the next day. The annex stays as it is, under whoever leads the watch next.',
         fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'killed in the armoury annex by one of the six' }], pop: -1, morale: -5, flags: { lim_house_over: 'given' }, do: s2 => stain(s2, null, 2) }) } },
@@ -954,10 +911,12 @@ add({ id: 'lim.camp', arc: 'lim.knife', view: 'world', tone: 'opportunity', titl
       out: { text: 'They come back roped in a line, carrying their own stores. The compound is ready for them. Talk of walking out stops inside the wire.',
         fx: (s, c) => ({ pop: c.n, food: c.hungry ? 600 : 0, morale: -3, flags: { lim_camp: 'bonded' }, sched: th(s) ? [] : [['lim.compound', 70, 130]],
           do: s2 => { s2.flags.thralls = th(s2) + c.n; stain(s2, 'bond', 2); fear(s2, 'lim.camp', 35, 200, 'the ones who walked out were brought back on a rope'); }, chron: `${Num(c.n)} who had left the colony were brought back roped, as bonded labour.` }) } },
-    { label: (s, c) => c.hungry ? 'Leave them be' : 'The gate stays shut',
+    // three options at most (2026-11-21): four are written and three show. A hungry colony is offered the raid (above) and
+    // a fed one the shut gate (here), never both: each has the opposite `show`.
+    { label: 'The gate stays shut', show: (s, c) => !c.hungry,
       info: [['danger', 'Whoever goes without']],
-      out: { text: (s, c) => c.hungry ? 'The count is filed. Their store stays where it is and the ladle here stays short, and one of the oldest in the colony is dead before the harvest.' : 'The answer goes back with their runner. Their roof does not see out the season, and neither do most of them.',
-        fx: (s, c) => c.hungry ? { pop: -1, morale: -1 } : { morale: -2, stain: ['shut_out', 2], flags: { lim_camp: 'shut' } } } },
+      out: { text: 'The answer goes back with their runner. Their roof does not see out the season, and neither do most of them.',
+        fx: { morale: -2, stain: ['shut_out', 2], flags: { lim_camp: 'shut' } } } },
   ] });
 
 add({ id: 'lim.ward', arc: 'lim.knife', view: 'colony', tone: 'crisis', title: 'All in One Building', w: 3, gap: 14,
@@ -985,8 +944,6 @@ add({ id: 'lim.born', arc: 'lim.knife', view: 'people', tone: 'pressure', title:
         fx: { morale: -8, do: s => { stain(s, 'expose', 3); LF.emit(s, 'grief', 'lim.expose', 45, 300, 'the birth register has been rewritten'); }, chron: 'The colony began putting out the infants it judged unfit.' } } },
     { label: 'Raise every one of them', info: [['danger', 'Food and hands, for years, from people who are short of both']],
       out: { text: 'A room is added to the clinic and four people are taken off the fields to staff it. The food comes out of the common pot for years. In the next short season the field crews say out loud whose bowls they are filling.', fx: { food: -120, morale: 1, flags: { lim_kept_kids: true }, sched: [['lim.born2', 280, 400]] } } },
-    { label: 'No more births. The clinic sees to the ones already on the way', dark: true, info: [['danger', 'The women already carrying']],
-      out: { text: s => `It is announced as a suspension until the water is understood. The five women already carrying are called to the clinic one at a time, and ${N(s, 'physician')} does what the order says. Two of them do not speak to anyone for the rest of the year.`, fx: { morale: -5, stain: ['unborn', 2], flags: { births: false, lim_kept_kids: 'none' } } } },
   ] });
 add({ id: 'lim.born2', chain: true, arc: 'lim.knife', view: 'people', tone: 'opportunity', title: 'The Clinic Room',
   when: s => s.flags.lim_kept_kids === true,
@@ -995,8 +952,6 @@ add({ id: 'lim.born2', chain: true, arc: 'lim.knife', view: 'people', tone: 'opp
     { label: 'Follow them round the fields and write down what they eat',
       info: [['yield', 'Food from the ground'], ['danger', 'What a child eats to find out']],
       out: { text: 'It takes a season of following four-year-olds with a notebook, and of letting them eat what they reach for. One of them reaches for the wrong thing in the second month and is buried. By the end there are nine local plants on the kitchen list.', fx: { yield: 0.12, morale: 3, pop: -1, flags: { native_food: true, lim_kids_teach: true }, chron: 'The children the colony had been advised not to raise taught it what could be eaten here.' } } },
-    { label: 'Keep them in the clinic room, on bread', dark: true, info: [['danger', 'The children']],
-      out: { text: 'The door of the clinic room is kept shut. They are fed bread, which they push around the plate, and they get thinner on it than the other children do. What they can eat out there stays unknown.', fx: { morale: -1, stain: ['clinic_room', 1] } } },
     { label: 'Give two of them to the lab', dark: true, info: [['yield', 'Food from the ground, sooner'], ['danger', 'Two children']],
       out: { text: s => `${Nwc(s, 'xenobio')} has two of them for a month, fed one plant at a time, with bloods taken twice a day. They are returned to the clinic room quieter than they left it. The kitchen list has nine local plants on it by the end of the season, and nobody had to follow a child round a field.`, fx: { yield: 0.12, stain: ['lab_children', 2], flags: { native_food: true } } } },
   ] });
@@ -1048,9 +1003,6 @@ add({ id: 'lim.coffle', arc: 'lim.out', view: 'world', tone: 'opportunity', titl
         fx: (s, c) => ({ food: 700, pop: 26, morale: -4, fops: [{ id: c.fid, threat: -40, accord: -100, harm: 60, kills: 6 }], sched: th(s) ? [] : [['lim.compound', 70, 130]],
           do: s2 => { s2.flags.thralls = th(s2) + 26; stain(s2, 'coffle', 3); stain(s2, 'bond', 0); }, chron: `The colony raided ${c.n}, and brought twenty-six of them back roped, to work.` }) },
       bad: { text: 'They had a watch after all. Five of yours are dead in their yard, and the ones who got back brought nothing.', fx: (s, c) => ({ pop: -5, morale: -7, fops: [{ id: c.fid, threat: 30, accord: -80 }], do: s2 => stain(s2, null, 1) }) } },
-    { label: 'Only the store', dark: true, test: { base: 60, mods: [R('security', 10)] }, info: [['yield', 'Food'], ['fail', 'Lives']],
-      ok: { text: 'The carts come back full. Behind them, forty people and their children have an empty store and the lean season coming.', fx: (s, c) => ({ food: 700, fops: [{ id: c.fid, threat: 15, accord: -70, harm: 30 }], flags: { lim_raid: true }, do: s2 => stain(s2, null, 1) }) },
-      bad: { text: 'The store was guarded by people with nothing left to lose. Three of the watch are dead.', fx: (s, c) => ({ pop: -3, morale: -5, fops: [{ id: c.fid, threat: 25, accord: -70 }] }) } },
     { label: 'Send them a cart of meal', cost: { food: 150 }, info: [['danger', 'Our own ladle']],
       out: { text: 'The cart goes out with a white rag on a pole. It comes back empty, with a jar of something they brew and a list of what they could trade. The meal on it was a week of somebody\'s ration here, and the crews know whose.', fx: (s, c) => ({ morale: -1, fops: [{ id: c.fid, threat: -15, accord: 30 }] }) } },
     { label: 'Leave them to their year', info: [['danger', 'Their children']],
@@ -1087,9 +1039,6 @@ add({ id: 'lim.count2', urgent: true, arc: 'lim.soul', view: 'people', tone: 'cr
         fx: (s, c) => ({ kill: [{ who: c.pid, cause: 'logged as a fall, the night of the list' }], morale: -4, do: s2 => { s2.flags.lim_bills = (s2.flags.lim_bills || 0) + 1; stain(s2, 'silenced', 2); fear(s2, 'lim.list', 55, 260, 'the one who read the list was not at breakfast'); } }) },
       bad: { text: (s, c) => `The hall does not clear. Benches go over, the watch is pushed back to the door, and four people are dead on the floor before it stops. ${c.name} is alive at the end of it, holding the sheet.`,
         fx: (s, c) => ({ pop: -4, morale: -10, flags: { blood_spilled: true }, do: s2 => { s2.flags.lim_bills = (s2.flags.lim_bills || 0) + 1; stain(s2, null, 1); allRegard(s2, -8); } }) } },
-    { label: (s, c) => `Anyone who cannot live with it can take a pack and go`, info: [['danger', 'The hands that leave']],
-      out: { text: (s, c) => `${c.first} looks at you for a while, and then at the people standing behind. ${Num(c.n + 1)} of them are gone by the end of the month with tools, seed and a tarpaulin. Everything on the sheet goes on, and now everyone who is left has chosen it.`,
-        fx: (s, c) => ({ leave: c.n, morale: 3, chips: [[`${c.name} goes with them`, false]], do: s2 => { s2.flags.lim_bills = (s2.flags.lim_bills || 0) + 1; s2.deserted = (s2.deserted || 0) + c.n + 1; gone(s2, c.pid, 'walked out with the ones who could not live with it'); } }) } },
   ] });
 
 /* ============================== CONSCIENCE ============================== */
@@ -1102,9 +1051,6 @@ add({ id: 'lim.refuse', arc: 'lim.soul', view: 'people', tone: 'pressure', title
     { label: (s, c) => `Let ${c.first} go`,
       out: { text: (s, c) => `${c.name} takes a bunk in the field crew's hut and a shovel. The office will go to someone who has not been keeping count.`,
         fx: (s, c) => ({ morale: -2, do: s2 => { const p = byPid(s2, c.pid); if (p) p.marks.refused = { d: s2.day, txt: 'gave up the office, and said why' }; demote(s2, c.pid, 'gave up the office over what the colony had done'); } }) } },
-    { label: 'Nobody resigns here', dark: true,
-      out: { text: (s, c) => `${c.first} goes back to work with one of the watch standing behind the chair. The work gets done, exactly and only.`,
-        fx: (s, c) => ({ do: s2 => { const p = byPid(s2, c.pid); if (p) { p.loyal = 5; p.marks.refused = { d: s2.day, txt: 'tried to resign, and works with a guard behind the chair' }; } stain(s2, null, 1); } }) } },
     { label: 'It stops here. Hold me to it',
       out: { text: (s, c) => `${c.first} picks the keys up again, slowly.\n\n[[${c.pid}]] "I'll hold you to it. So will everyone I tell. And I'm telling everyone."`,
         fx: (s, c) => ({ morale: 2, flags: { lim_vow_broken: false }, do: s2 => { s2.flags.lim_vow = s2.day; const p = byPid(s2, c.pid); if (p) { p.marks.refused = { d: s2.day, txt: 'was promised that it would stop' }; p.loyal = clamp(p.loyal + 25, 0, 100); } } }) } },
@@ -1117,8 +1063,6 @@ add({ id: 'lim.page', arc: 'lim.soul', view: 'people', tone: 'quiet', title: 'Th
   choices: [
     { label: 'All of it, and who gave the order', info: [['danger', 'What the children think of the people who raised them']],
       out: { text: 'It is written plainly, in the same hand as the harvest tallies. The first class to read it goes home and asks its parents which of them was there.', fx: { morale: -3, flags: { lim_page: 'true' }, do: s => allRegard(s, 4) } } },
-    { label: 'Write that there was no other way', dark: true, info: [['later', 'What the children will think is allowed']],
-      out: { text: s => `${Nc(s, 'teacher')} writes it that way and adds nothing. The children learn that these things are what a colony does when it has to, and they will decide for themselves when it has to.`, fx: { stain: ['rewritten', 1], flags: { lim_page: 'necessary' }, do: s => regard(s, 'teacher', -10) } } },
     { label: 'Leave those years out, and burn the ledgers', dark: true,
       out: { text: 'The ledgers burn in the kiln. The history jumps from the second year to the fourth harvest. The children who were alive for the missing years grow up knowing there is something they are not to ask about.',
         fx: { flags: { lim_page: 'burnt' }, do: s => { stain(s, null, 1); regard(s, 'teacher', -20); } } } },
@@ -1136,18 +1080,18 @@ add({ id: 'lim.page', arc: 'lim.soul', view: 'people', tone: 'quiet', title: 'Th
       fx: { sleepers: -10, food: 600, machine: { lander: -8 }, morale: -3, do: s => stain(s, 'larder', 1) } } }); }
 
 Object.assign(LF.TAGS, {
-  'lim.count': ['mercy', 'severe order', 'severe order', 'bold'], 'lim.count2': ['mercy free', 'severe order', 'severe order', 'free'], 'lim.meat': ['severe free', 'severe order', 'mercy'], 'lim.stew': ['free', 'severe order', 'mercy'], 'lim.straws': ['severe free', 'severe order', 'severe closed', 'mercy'],
-  'lim.larder': ['severe order', 'cautious', 'mercy'], 'lim.taste': ['open free', 'order', 'free'], 'lim.edible': ['severe closed', 'severe', 'mercy open'],
-  'lim.mouths': ['severe order', 'severe', 'mercy'], 'lim.bond': ['severe order', 'mercy free', 'cautious'], 'lim.compound': ['free', 'mercy free', 'severe order', 'severe order'],
-  'lim.harness': ['severe bold', 'mercy', 'mercy cautious'], 'lim.harness2': ['severe order', 'severe', '', 'mercy'], 'lim.harness3': ['severe', 'mercy', 'severe order'],
-  'lim.jar': ['free', 'severe order', 'mercy'], 'lim.jar2': ['mercy', 'severe', 'severe order'], 'lim.small': ['severe bold', 'cautious', 'cautious'],
-  'lim.roster': ['severe order', 'free', 'severe order', 'free'], 'lim.splice': ['severe order', 'severe', 'free bold', 'cautious'],
-  'lim.goat': ['severe order', 'severe order', 'mercy free', 'closed'], 'lim.sheet': ['free mercy', 'severe', 'severe order', ''],
-  'lim.house': ['mercy bold', 'cautious', 'severe order'], 'lim.house2': ['mercy', 'severe order', 'free mercy'], 'lim.shepherd': ['severe order', 'mercy free', 'severe order'],
+  'lim.count': ['mercy', 'severe order', 'bold'], 'lim.count2': ['mercy free', 'severe order', 'severe order'], 'lim.meat': ['severe free', 'severe order', 'mercy'], 'lim.stew': ['free', 'severe order', 'mercy'], 'lim.straws': ['severe free', 'severe closed', 'mercy'],
+  'lim.larder': ['severe order', 'cautious', 'mercy'], 'lim.taste': ['open free', 'order'], 'lim.edible': ['severe closed', 'severe', 'mercy open'],
+  'lim.mouths': ['severe order', 'mercy'], 'lim.bond': ['severe order', 'mercy free'], 'lim.compound': ['free', 'mercy free', 'severe order'],
+  'lim.harness': ['severe bold', 'mercy', 'mercy cautious'], 'lim.harness2': ['severe order', 'mercy'], 'lim.harness3': ['severe', 'mercy', 'severe order'],
+  'lim.jar': ['free', 'severe order', 'mercy'], 'lim.jar2': ['mercy', 'severe order'], 'lim.small': ['severe bold', 'cautious', 'cautious'],
+  'lim.roster': ['severe order', 'free', 'severe order'], 'lim.splice': ['severe order', 'free bold', 'cautious'],
+  'lim.goat': ['severe order', 'mercy free', 'closed'], 'lim.sheet': ['free mercy', 'severe', 'severe order'],
+  'lim.house': ['mercy bold', 'cautious', 'severe order'], 'lim.house2': ['severe order', 'free mercy'], 'lim.shepherd': ['severe order', 'mercy free', 'severe order'],
   'lim.shepherd2': ['order', 'free bold', 'free cautious'], 'lim.camp': ['mercy open', 'severe', 'severe order', 'closed'], 'lim.ward': ['severe order', 'severe cautious', 'mercy bold'],
-  'lim.born': ['severe order', 'mercy', 'cautious'], 'lim.born2': ['open', 'closed', 'severe order'], 'lim.organ': ['severe', 'mercy bold', 'free'],
-  'lim.nest': ['severe closed', 'severe closed', 'mercy open'], 'lim.coffle': ['severe closed', 'severe closed', 'mercy open', ''], 'lim.refuse': ['free', 'severe order', 'mercy'],
-  'lim.page': ['free open', 'order', 'order closed'],
+  'lim.born': ['severe order', 'mercy'], 'lim.born2': ['open', 'severe order'], 'lim.organ': ['severe', 'mercy bold', 'free'],
+  'lim.nest': ['severe closed', 'severe closed', 'mercy open'], 'lim.coffle': ['severe closed', 'mercy open', ''], 'lim.refuse': ['free', 'mercy'],
+  'lim.page': ['free open', 'order closed'],
 });
 for (const [id, t] of [['state.unrest', 'severe order'], ['state.famine', 'severe']]) if (LF.TAGS[id]) LF.TAGS[id].push(t);
 
