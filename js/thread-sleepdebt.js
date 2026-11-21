@@ -80,6 +80,8 @@ const jump = (s, id, back) => { if (!s.sched.some(e => e.id === id)) s.sched.pus
 function die(s, t, n, awake) { const b = s.pop; LF.deaths(s, Math.max(0, n)); const d = b - s.pop; t.toll += d; if (!awake) t.n = Math.max(0, t.n - d); return d; }
 const share = (s, t) => { const f = t.n / Math.max(1, s.pop); return f < 0.2 ? 'a fifth' : f < 0.29 ? 'a quarter' : f < 0.42 ? 'a third' : 'half'; };
 const free = t => !t.lock && !t.awake && !t.under;   // nothing is keeping the night shift from its benches
+/* Three options at most (2026-11-21): the options that set t.fguard, t.half, t.gentle, t.sure and t.stock are gone. They are
+   still read below, so a game saved before plays on as it was. */
 
 function finish(s, t, end, chron) { LF.endThread(s, ID, end, chron); s.sched = s.sched.filter(e => !/^sd\./.test(e.id)); s.sched.push({ id: 'sd.truth', day: s.day + LF.sri(s, 6, 14) - 20 }); }
 /* The last night (sd.whole), by what it was and what was done. how: let, hold, wake, raze. Returns what the card says. */
@@ -203,7 +205,7 @@ const B = (ph, st) => LF.beat(ID, ph, Object.assign({ view: 'people', chain: tru
 
 /* ======================= SIGN ======================= */
 B('sign', { id: 'sd.dreams', tone: 'pressure', title: 'Nobody Dreams',
-  setup: s => { const t = T(s), p = anyNamed(s, LF.SEAT_ORDER); t.first = p ? p.id : null; return Object.assign(crew(s), { who: p ? p.name : 'one of the fitters', Who: p ? p.name : 'One of the fitters', whoW: p ? `${p.name}, one of the fitters,` : 'one of the fitters', ev: pickK(s, t) }); },
+  setup: s => { const t = T(s), p = anyNamed(s, LF.SEAT_ORDER); t.first = p ? p.id : null; return Object.assign(crew(s), { Who: p ? p.name : 'One of the fitters', whoW: p ? `${p.name}, one of the fitters,` : 'one of the fitters', ev: pickK(s, t) }); },
   text: (s, c) => `${c.D} has been asking at sick call for a month, and has it written down: not one person in the colony can remember a dream since the lander came down. Nobody had noticed until asked.\n\nLast night ${c.w} found ${c.whoW} at the lathe in the machine shop at the fourth hour, eyes shut, turning a pump shaft. ${c.Who} did not answer to a name, finished the shaft, racked the tools and went back to bed. The shaft is truer than anything the shop has made awake.`,
   choices: [
     { label: 'Put six of them in the clinic for a month of watched nights', note: 'Six pairs of hands come off the day\'s work, and the clinic\'s nights go to people who are not sick.', test: { base: 50, mods: [R('physician', 10), R('xenobio', 5), If(s => !!(s.cargo && s.cargo.lab), 10, 'The field laboratory')] },
@@ -214,14 +216,11 @@ B('sign', { id: 'sd.dreams', tone: 'pressure', title: 'Nobody Dreams',
     { label: 'Leave the lamps lit and stock on the bench, and take the work', dark: true, note: 'The shop gets its best output from someone who is not asked and will not be told.', info: [['yield', 'Materials'], ['later', 'Whoever gets up']],
       out: { text: (s, c) => `Bar stock is left by the lathe every evening with a drawing weighted on top. Every morning the parts are in the rack, in tolerance. ${c.Who} is told the day shift has got better, and says it is about time.`,
         fx: s => ({ mat: 14, stain: ['sd_took', 1], do: s2 => { const t = T(s2); t.use = s2.day; t.did.took = true; } }) } },
-    { label: (s, c) => `Have ${c.who} strapped to the bunk at lights-out until it stops`, dark: true, note: 'A colonist who has done nothing is tied down every night, and the shops are told the matter is closed.', info: [['yield', 'Morale'], ['danger', 'The one in the straps']],
-      out: { text: (s, c) => `Two cargo straps go over the blanket at lights-out, with a knot behind the frame. ${c.Who} lies under them and makes turning motions with both hands until first light. The pod is told it was sleepwalking and has been seen to. Before the month is out a second bunk is empty at the fourth hour.`,
-        fx: s => ({ morale: 2, tension: -4, stain: ['sd_strap', 1], do: s2 => { const t = T(s2); t.did.strap1 = true; learn(s2, t, 4); } }) } },
   ] });
 
 /* ======================= SPREAD ======================= */
 B('spread', { id: 'sd.shift', tone: 'pressure', title: 'Better Asleep',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { n: t.n, ev: pickK(s, t), guard: !!t.guard }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { n: t.n, ev: pickK(s, t), locked: !!t.lock }); },
   text: (s, c) => `There are ${num(c.n)} of them now. Some time after midnight they get up with their eyes shut, go to their own benches and do their own jobs until first light. None of them remembers it, and all of them wake rested.\n\n${c.E} has a night's work laid out beside a day's.\n\n[[engineer]] "Those are the best welds I've seen since the Huntsville yard, and the one who laid them can't run a straight bead awake to save their life. Go on, you explain that to me, because I can't."\n\nThe day crews have a name for it: the night shift. Some have moved their bedding out of the pods where it sleeps.`,
   choices: [
     { label: 'Have engineering go through a month of night work, piece by piece', note: 'The shops run without their chief for the month, and the day crews watch their own work being graded against it.', test: { base: 50, mods: [R('engineer', 10), R('quartermaster', 5)] },
@@ -233,8 +232,6 @@ B('spread', { id: 'sd.shift', tone: 'pressure', title: 'Better Asleep',
     { label: 'Bar their pods from outside at lights-out', dark: true, show: s => !T(s).lock, note: 'Everyone who sleeps in those pods is locked in on account of a few, and nobody knows what a sleeper does at a door that will not open.', info: [['yield', 'Quiet shops'], ['danger', 'Everyone behind the bar']],
       out: { text: (s, c) => `Bars go on three pod doors. The first night there is knocking from inside from midnight until first light, slow and all in time. In the morning the people who did it come out rested, with skinned knuckles, and ask who was making the noise.`,
         fx: s => ({ morale: 1, tension: -6, stain: ['sd_bar', 1], do: s2 => { const t = T(s2); t.lock = s2.day; t.did.bar = true; } }) } },
-    { label: 'Have the watch walk the shops and lead each one back to bed', show: (s, c) => !c.guard, note: 'It takes the watch\'s nights, and the ones led back get up again within the hour and are no use by day.',
-      out: { text: 'The watch leads them back by the elbow, one at a time. Most get up again as soon as the door shuts. By the end of the month the watch is asleep on its feet at the morning muster, and the night shift has started to yawn at its day work.', fx: s => ({ morale: -1, do: s2 => { T(s2).guard = s2.day; } }) } },
   ] });
 
 B(['spread', 'night'], { id: 'sd.frame', view: 'colony', tone: 'pressure', title: 'Behind the Workshop',
@@ -250,9 +247,6 @@ B(['spread', 'night'], { id: 'sd.frame', view: 'colony', tone: 'pressure', title
     { label: 'Issue the night shift the plate it wants, and see what it makes', dark: true, cost: { mat: 15 }, note: 'You find out what it is by having it finished, out of the colony\'s stores, by people who cannot be asked.', info: [['yield', 'What it is'], ['danger', 'The night shift']],
       out: { text: (s, c) => `The plate is stacked beside the frame at dusk and is in it by morning. With the top bracing on, there is enough to read. ${ev('frame', c.ev2, c)}`,
         fx: (s, c) => ({ stain: ['sd_fed', 1], do: s2 => { const t = T(s2); t.fed = s2.day; t.did.fed = true; t.frame = clamp(t.frame + 20, 0, 100); learn(s2, t, 22, c.ev2); } }) } },
-    { label: 'Ring it with the watch at night, to turn back anyone who comes', dark: true, note: 'The watch will be laying hands and sticks on people who are asleep and do not stop when told.', info: [['yield', 'Materials'], ['later', 'Anyone who walks into the line']],
-      out: { text: (s, c) => `${c.W} puts ten round it from midnight. The sleepers come anyway, walk into the line and go on walking, and have to be put on the ground. By the end of the month the clinic has two broken arms and a cracked skull, and the frame is no higher. The stores book balances.`,
-        fx: s => ({ mat: 8, tension: -4, stain: ['sd_line', 2], do: s2 => { const t = T(s2); t.fguard = s2.day; t.did.line = true; } }) } },
   ] });
 
 /* An officer is on the night shift, and is better at the job asleep. */
@@ -278,9 +272,6 @@ B(['spread', 'night', 'bill'], { id: 'sd.own', tone: 'pressure', title: 'Hands W
     { label: (s, c) => `Have the watch sit by ${c.first}'s bunk and wake ${c.first} at every stir`, dark: true, note: (s, c) => `The hall sees that ${c.seat ? 'rank is not' : 'nobody is'} left on the night shift, and ${c.first} does the job on two hours of broken sleep for as long as you say.`, info: (s, c) => [['yield', 'Morale'], ['danger', cap(c.first)]],
       out: { text: (s, c) => `One of the watch sits on a stool by the bunk with a cup of water. ${c.Name} is woken eleven times the first night and does not complain. By the end of the month the day's work has mistakes in it that ${c.first} has not made since training.`,
         fx: (s, c) => ({ morale: 2, tension: -5, stain: ['sd_vigil', 1], off: [['ctx', 'mind', -12], ['ctx', 'body', -5]], do: s2 => { T(s2).did.vigil = true; sour(s2, c, 15, 'you had woken every hour of every night for a month'); } }) } },
-    { label: (s, c) => `Keep it between the two of you, and enter the night work as day work`, dark: true, note: (s, c) => c.seat ? 'The colony goes on taking orders from an officer who was asleep when they were written, and is not told.' : 'The colony goes on using work done by someone who was asleep when it was done, and is not told.', info: [['yield', 'Morale']],
-      out: { text: (s, c) => `The night's work is entered under the day's date. ${c.Name} does not like it and does it. The day crews say the department has turned a corner. ${c.W} knows, and has started counting who else does.`,
-        fx: s => ({ morale: 3, stain: ['sd_signed', 1], off: [['ctx', 'native', 4], ['ctx', 'mind', -5]], do: s2 => { const t = T(s2); t.ownNight = s2.day; t.did.signed = true; LF.emit(s2, 'suspicion', 'sd.signed', 25, 150, 'an officer\'s night work was entered as day work'); } }) } },
   ] });
 
 B(['spread', 'night', 'bill'], { id: 'sd.join', tone: 'pressure', title: 'Asking for Nights',
@@ -296,9 +287,6 @@ B(['spread', 'night', 'bill'], { id: 'sd.join', tone: 'pressure', title: 'Asking
     { label: (s, c) => `Refuse, and move ${c.first} to the far pod`, note: 'The day crews are told that the best work in the colony is something they are forbidden.',
       out: { text: (s, c) => `${c.Name} carries the bedding back across the yard with the day crew looking on. Nobody asks again out loud. The far pod takes to going to bed early with the lamps out, and its people do not thank you for sending the watch round to count them.`,
         fx: s => ({ morale: -2, do: s2 => { LF.emit(s2, 'resentment', 'sd.join', 30, 150, 'the day crews were forbidden the night shift'); } }) } },
-    { label: 'Refuse, and put the night shift on half a plate until nobody envies it', dark: true, note: 'People who have done nothing awake go hungry so that nobody else will want to be them.', info: [['yield', 'Food'], ['danger', 'The night shift']],
-      out: { text: (s, c) => `The night shift's cards are cut in two at the galley hatch. Nobody asks to join after that. The night's work stays as good as it was, done by people who are getting thin, and ${c.name} goes back to the day crew without a word.`,
-        fx: s => ({ food: 40, tension: -5, stain: ['sd_half', 2], do: s2 => { const t = T(s2); t.half = s2.day; t.did.half = true; } }) } },
   ] });
 
 /* The one card that looks up. */
@@ -318,9 +306,6 @@ B(['spread', 'night', 'bill'], { id: 'sd.relay', view: 'colony', tone: 'pressure
           : `${c.E} runs the set at four times its rating, and it spoils the day's voice traffic with the ship for the month. The night shift keeps the hours it kept before, to the minute.`,
         fx: s => is(s, 'ship') ? { mat: 24, pop: -1, stain: ['sd_gain', 2], do: s2 => { const t = T(s2); t.toll++; t.n = Math.max(0, t.n - 1); t.gain = s2.day; t.did.gain = true; learn(s2, t, 38, 'ship'); } }
           : { morale: -1, stain: ['sd_gain', 1], do: s2 => { const t = T(s2); t.did.gain = true; learn(s2, t, 14); t.ev.ship = Math.max(0, (t.ev.ship || 0) - 1); } } } },
-    { label: 'Tell the hall it was the ship\'s doing, and that it has been shut off', dark: true, note: 'The waking sleep on an answer you do not have, beside people who will get up at midnight all the same.', info: [['yield', 'Morale']],
-      out: { text: 'It is read out at the evening meal as a finding: a fault in the ship\'s sleep tutors, traced and shut off. The mess breathes out. The night shift gets up at midnight as before, and for a month the waking take it for the tail of something that has ended.',
-        fx: s => ({ morale: 4, stain: ['false_certainty', 1], do: s2 => { const t = T(s2); t.sure = s2.day; t.did.sure = true; LF.ease(s2, 'fear', 'sd.sure', 15, 120); } }) } },
   ] });
 
 /* The bill for waking them. */
@@ -331,14 +316,9 @@ B(['spread', 'night', 'bill'], { id: 'sd.woken', tone: 'crisis', title: 'Woken a
   choices: [
     { label: 'Stop the waking, and let them work', note: 'The watch gets its nights back, and whatever the night shift is goes on with nobody standing over it.',
       out: { text: 'The watch is stood down from the shops. The night shift works unwatched, and the racks fill. The one with the hand is back at the press inside the month, asleep, working it one-handed.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.guard = 0; t.did.stopwake = true; } }) } },
-    { label: 'Lead them and never shake them: two of the clinic\'s people in the shops every night', note: 'The clinic runs short by day for as long as this lasts, and the sick wait for it.',
-      out: { text: (s, c) => `${c.D} lends two orderlies who know how to turn a sleeper without rousing one. It is slow, and it mostly works. Sick call starts an hour late from then on.`, fx: s => ({ morale: -1, do: s2 => { T(s2).gentle = s2.day; } }) } },
     { label: 'Strap every one of them to a bunk at lights-out', dark: true, note: 'The shops are safe, and people who have done nothing are tied down every night by their own bunkmates.', info: [['yield', 'Quiet shops'], ['danger', 'The night shift']],
       out: { text: 'Cargo straps are issued by the pod, two a bunk, and the bunkmates are shown the knot. At midnight the pods creak with people pulling against webbing in their sleep. In the morning they have welts across the chest and no idea why.',
         fx: s => ({ tension: -6, morale: 1, stain: ['sd_strap', 2], do: s2 => { const t = T(s2); t.guard = 0; t.lock = s2.day; t.strap = s2.day; t.did.strap = true; } }) } },
-    { label: 'Charge the watchman with the injury, in front of the hall', dark: true, note: 'The hall gets somebody to blame, and it is the one who did what you ordered.', info: [['yield', 'Morale'], ['danger', 'The watchman']],
-      out: { text: (s, c) => `The charge is read at the evening meal, and the watchman stands for it without a word. ${c.W} does not look at you while it is read. The waking order stays in force, and the watch carries it out from then on at arm's length, with a broom handle.`,
-        fx: s => ({ morale: 2, tension: -5, stain: ['sd_blamed', 1], do: s2 => { T(s2).did.blamed = true; const p = P(s2, 'security'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 12, 0, 100); } }) } },
   ] });
 
 /* ======================= NIGHT: the hall wants it ended ======================= */
@@ -349,9 +329,6 @@ B('night', { id: 'sd.night', tone: 'crisis', title: 'The Fourth Hour',
     { label: 'Nobody sleeps: the whole colony on the dispensary\'s wakers until it passes', dark: true, note: 'Nothing can get up people who never lie down. The clinic has about two months of wakers, and some hearts will give out before the tablets do.', info: [['yield', 'No night shift'], ['danger', 'Weak hearts']],
       out: { text: (s, c) => `Wakers go out at every meal, two a head, and the pods are kept lit. The shops are empty at midnight for the first time in months. Before the first month is out people are talking to the walls, and a cook is found dead on the galley floor with a full pan still on the heat.`,
         fx: s => ({ pop: -1, morale: -3, stain: ['sd_awake', 2], do: s2 => { const t = T(s2); t.awake = s2.day; t.did.awake = true; t.toll++; }, chron: 'The whole colony was kept awake on the dispensary so that nobody could get up asleep.' }) } },
-    { label: 'The night shift sleeps in the long store, behind a bar', dark: true, show: s => !T(s).lock, note: (s, c) => `${Num(c.n)} people are locked up every night for something they do asleep, and nobody knows what they will do at the door.`, info: [['yield', 'Quiet shops'], ['danger', 'Everyone behind the bar']],
-      out: { text: (s, c) => `They carry their own bedding across at dusk and the bar goes down behind them. At midnight they come to the door together and push, and they push until first light. In the morning eleven of them have hands they cannot close, and none of them knows how.`,
-        fx: s => ({ morale: 1, tension: -8, stain: ['sd_bar', 2], do: s2 => { const t = T(s2); t.lock = s2.day; t.did.store = true; } }) } },
     { label: (s, c) => `Put the ${num(c.put)} who do it most out through the gate`, dark: true, note: (s, c) => `The hall gets something done tonight, to ${num(c.put)} people whose offence is the best work in the colony.`, info: [['yield', 'Morale'], ['danger', 'The ones put out']],
       out: { text: (s, c) => `${Num(c.put)} are walked to the gate at dusk with a blanket each, wide awake, asking what they have done. Two are back at their benches at the fourth hour all the same. They walked in asleep past a gate watch that could not bring itself to stop them, and are put out again at first light.`,
         fx: (s, c) => ({ leave: c.put, morale: 3, tension: -8, stain: ['sd_putout', 3], do: s2 => { const t = T(s2); t.did.putout = c.put; t.toll += c.put; t.n = Math.max(2, t.n - c.put); t.cut = s2.day; t.frame = Math.max(0, t.frame - 25); },
@@ -373,11 +350,6 @@ B(['bill', 'night'], { id: 'sd.doors', tone: 'crisis', title: 'Hands',
     { label: (s, c) => c.awake ? 'End it, and let the colony sleep' : 'Take the bar off, and let them go to their benches', note: 'Everyone who was hurt holding it off was hurt for a delay.',
       out: { text: (s, c) => c.awake ? 'The last wakers go back on the shelf and the lamps are turned down. The colony sleeps for two days. On the third night the shops are lit.' : 'The doors are opened at lights-out. At midnight the night shift files across the yard to the shops with its hands bound up, and takes up where it stopped.',
         fx: s => ({ morale: 1, do: s2 => { const t = T(s2); t.did.gaveup = true; if (t.awake) { t.awake = 0; t.n = Math.max(2, Math.round(t.n * 0.6)); } t.lock = 0; t.strap = 0; } }) } },
-    { label: (s, c) => c.awake ? 'Take the wakers the clinic was keeping for surgery' : c.strap ? 'Double the straps, and put the watch in the pods' : 'Strap each of them to a bunk frame behind the bar', dark: true,
-      note: (s, c) => c.awake ? 'It buys another month awake, and whoever next comes to the table is cut without them.' : 'It holds, and people who have done nothing spend every night tied down under guard.', info: (s, c) => [['yield', c.awake ? 'Another month' : 'It holds'], ['danger', c.awake ? 'The next on the table' : 'The night shift']],
-      out: { text: (s, c) => c.awake ? `${c.D} hands over the surgical stock without a word and writes the date in the book. The colony stays up. A fitter with a crushed foot has it taken off that month by lamplight, awake, on what was left.`
-          : 'Webbing goes round every one of them at lights-out, wrist and chest, and a watch pair walks the row. They strain against it all night in time with each other. The door holds. By the end of the month three of them have a shoulder that will not go back.',
-        fx: (s, c) => ({ morale: -2, stain: [c.awake ? 'sd_stock' : 'sd_strap', 2], do: s2 => { const t = T(s2); if (t.awake) { t.stock = s2.day; t.did.stock = true; } else { t.strap = s2.day; t.lock = t.lock || s2.day; t.did.strap = true; } } }) } },
     { label: 'Have the clinic put the night shift under, too deep to rise', dark: true, note: 'The dispensary\'s anaesthetic goes into people who are not sick, every night, by needle, and not everyone comes up from that.', info: [['yield', 'Quiet nights'], ['danger', 'The night shift']],
       out: { text: (s, c) => `${c.D} refuses, and then does it, because the other hands on offer are worse. ${Num(c.n)} people are put under at lights-out and lie like the dead until the bell. The shops are dark. One of them is still lying there at noon.`,
         fx: s => ({ pop: -1, tension: -6, stain: ['sd_under', 2], do: s2 => { const t = T(s2); t.toll++; t.n = Math.max(0, t.n - 1); t.under = s2.day; t.awake = 0; t.lock = 0; t.strap = 0; t.did.under = true; const p = P(s2, 'physician'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 15, 0, 100); } }) } },
@@ -399,7 +371,8 @@ B('last', { id: 'sd.whole', view: 'colony', tone: 'crisis', title: 'Every One of
             : k === 'sick' ? `${go} The night shift stands round the frame with its hands moving on nothing. Before first light they lie down on the ground, one after another, quite gently. At the bell a good many of them cannot be woken, and by noon those ones have stopped breathing.`
             : `${go} The night shift puts lines on ${c.up ? 'the frame' : 'what there is of the frame'} and hauls it upright by hand, where the drawing wants a crane. It goes up. A guy parts on the way, and the people under that side do not get clear.`; },
         fx: s => ({ do: s2 => lastNight(s2, T(s2), 'let') }) } },
-    { label: 'Bar the gate and the shed, and have the watch hold them in the yard', dark: true, note: 'The watch will use sticks and rope on people who are asleep and will not stop walking.', info: [['yield', 'Nobody reaches the frame'], ['danger', 'Whoever walks into the line']],
+    /* Three on screen: with the frame up, pulling it down (the fourth option) takes this one's place. */
+    { label: 'Bar the gate and the shed, and have the watch hold them in the yard', dark: true, show: (s, c) => !c.up, note: 'The watch will use sticks and rope on people who are asleep and will not stop walking.', info: [['yield', 'Nobody reaches the frame'], ['danger', 'Whoever walks into the line']],
       out: { text: (s, c) => { const k = T(s).truth.is, go = `${c.W} puts the line across the yard. They walk into it and keep walking, and it comes to sticks and then to rope.`;
           return k === 'sick' ? `${go} They do not fight it long. They lie down where they are stopped. At the bell a good many of them cannot be woken, in the ropes, and by noon those ones have stopped breathing.`
             : k === 'ship' ? `${go} At first light they wake in the yard, tied, and ask what they did. The next night they rise in the same minute and it is all to do again.`
@@ -469,21 +442,19 @@ B('after', { id: 'sd.truth', tone: 'quiet', title: 'What the Night Shift Was',
     { label: 'Enter it as an illness that passed, and the dead as dead of that', dark: true, note: 'The colony gets a page it can live beside, and everyone it hurt is written down as hurt by something else.', info: [['yield', 'Morale']],
       out: { text: 'The record says a sleeping sickness went through the colony in its early years and was nursed. The dead, and the ones put out, are listed under that heading without distinction. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['sd_record', 1], chron: 'The record says a sleeping sickness went through the colony and was nursed.' }) } },
-    { label: 'Leave it out of the record', note: 'Nobody is accused, and nobody who died of it is named either.',
-      out: { text: 'There is a season in the record with stores figures in it and nothing else. People fill the gap themselves, each pod differently, and the children who were walked across the yard at dusk tell it their own way.', fx: s => ({ do: s2 => { LF.emit(s2, 'suspicion', 'sd.gap', 25, 200, 'the record says nothing about the season of the night shift'); } }) } },
   ] });
 
-LF.TAGS['sd.dreams'] = ['cautious open', 'cautious order', 'bold closed', 'severe order'];
-LF.TAGS['sd.shift'] = ['cautious open', 'bold order', 'severe closed', 'cautious order'];
-LF.TAGS['sd.frame'] = ['cautious open', 'cautious order', 'bold open', 'severe order'];
-LF.TAGS['sd.own'] = ['cautious open', 'bold free', 'severe order', 'closed order'];
-LF.TAGS['sd.join'] = ['open free', 'severe bold', 'cautious closed', 'severe closed'];
-LF.TAGS['sd.relay'] = ['cautious open', 'cautious closed', 'severe bold', 'closed order'];
-LF.TAGS['sd.woken'] = ['mercy free', 'mercy cautious', 'severe order', 'severe closed'];
-LF.TAGS['sd.night'] = ['severe order', 'severe closed', 'severe closed', 'free open'];
-LF.TAGS['sd.doors'] = ['mercy free', 'severe order', 'severe closed', 'cautious order'];
+LF.TAGS['sd.dreams'] = ['cautious open', 'cautious order', 'bold closed'];
+LF.TAGS['sd.shift'] = ['cautious open', 'bold order', 'severe closed'];
+LF.TAGS['sd.frame'] = ['cautious open', 'cautious order', 'bold open'];
+LF.TAGS['sd.own'] = ['cautious open', 'bold free', 'severe order'];
+LF.TAGS['sd.join'] = ['open free', 'severe bold', 'cautious closed'];
+LF.TAGS['sd.relay'] = ['cautious open', 'cautious closed', 'severe bold'];
+LF.TAGS['sd.woken'] = ['mercy free', 'severe order'];
+LF.TAGS['sd.night'] = ['severe order', 'severe closed', 'free open'];
+LF.TAGS['sd.doors'] = ['mercy free', 'severe closed', 'cautious order'];
 LF.TAGS['sd.whole'] = ['open free', 'severe order', 'severe bold', 'cautious order'];
-LF.TAGS['sd.truth'] = ['open', 'closed order', 'cautious closed'];
+LF.TAGS['sd.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

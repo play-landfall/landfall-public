@@ -106,6 +106,8 @@ const flyWhy0 = LF.flyWhy; LF.flyWhy = (s, n) => s.flags.rust_cut ? 'The lander 
 
 /* How much of the chain has been broken (cargo), and whether the answer in place is the one this truth needed. */
 const broken = t => (t.did.purge ? 3 : 0) + (t.did.buried ? 1 : 0) + (t.did.store ? 1 : 0) + (t.quar || t.did.gang ? 1 : 0) + (t.did.racks ? 0.5 : 0) + (t.did.scrub ? 0.5 : 0) + (t.fed ? 0.5 : 0);
+/* Three options at most (2026-11-21): the options that set t.scrape and t.did.gang, goat, pin, scrub, seize are gone. They
+   are still read below, so a game saved before plays on as it was. */
 const working = t => ({ swarm: !!t.recall, native: !!(t.fed || t.stone), cargo: broken(t) >= 3, air: !!t.grease })[t.truth.is];
 
 function finish(s, t, end, chron) { LF.endThread(s, ID, end, chron); s.sched = s.sched.filter(e => !/^rst\./.test(e.id));
@@ -234,9 +236,6 @@ B('sign', { id: 'rst.plate', tone: 'pressure', title: 'Sound Last Month',
     { label: 'Put the bad plate under the glass for the month', note: 'The cutters stand idle while it is looked at, and the yard goes short of plate.', test: { base: 50, mods: [R('xenobio', 10), R('engineer', 5)] },
       ok: { text: (s, c) => `${cap(LF.sentName(s, 'xenobio'))} has the month with it. ${ev('glass', c.ev)}`, fx: (s, c) => ({ mat: -8, do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: 'The sample went on going after it was cut. By the time a lamp was rigged over it there was a tray of grey dust and a stain on the bench, and the bench vice has begun to pit.', fx: s => ({ mat: -8, parts: -2, do: s2 => { learn(s2, T(s2), 6); chain(s2, 1); } }) } },
-    { label: 'Keep cutting, send what looks sound to the yard, and enter the rest as weather damage', dark: true, note: 'The yard gets its plate this month, and nobody building with it is told what it was stacked against.', info: [['yield', 'Materials'], ['later', 'Whatever it is built into']],
-      out: { text: (s, c) => `The log says weather damage, with the date. The cutters work round the grey and the carts go down to the yard as usual. ${c.Q} signs for the plate without being told which stack it came off.`,
-        fx: s => ({ mat: 30, stain: ['rst_quiet', 1], do: s2 => { const t = T(s2); t.did.quiet = true; chain(s2, 2); LF.ease(s2, 'unexplained', 'rst.quiet', 12, 50); } }) } },
     { label: 'Rope off the aft end of the stage, and cut only from the far side', note: 'A third of what is left to salvage is given up where it stands.',
       out: { text: 'A line goes up across the stage amidships, with rags tied on it. The cutters start again at the bow end, where the plate is thinner and the frames are harder to get at.',
         fx: (s, c) => ({ mat: c.wreck ? 0 : -10, chips: c.wreck ? [['Less left to salvage', false]] : [], do: s2 => { const t = T(s2); if (s2.wreck > 0) s2.wreck = Math.max(1, Math.round(s2.wreck * 0.68)); t.did.roped = true; chain(s2, -1); } }) } },
@@ -255,9 +254,6 @@ B(['sign', 'found'], { id: 'rst.racks', tone: 'pressure', title: 'The Tool Racks
     { label: 'Burn out both racks, hooks and all, and bury the slag', note: 'The shops lose a third of their hand tools, and every job waits its turn for what is left.',
       out: { text: 'Both racks go into the kiln pit with everything on them, and the slag is carted out past the wire. For the rest of the month three crews share one set of spanners.',
         fx: s => ({ parts: -5, progress: -0.08, do: s2 => { const t = T(s2); t.did.racks = true; chain(s2, -2); } }) } },
-    { label: 'Charge the crib hand with neglect, and put the tool crib on short rations', dark: true, note: 'The shops get somebody to be angry with, and the tools go on hanging where they hang.', info: [['yield', 'Morale'], ['danger', 'The crib hand']],
-      out: { text: 'The charge is read at muster: tools left wet, racks not oiled. The crib hand says the racks were oiled, and is not believed. The shops feel better about it for most of the month.',
-        fx: s => ({ morale: 2, tension: -3, stain: ['rst_crib', 1], do: s2 => { T(s2).did.crib = true; } }) } },
     { label: 'Issue the pitted tools to the field crews, and keep the sound ones for the shops', dark: true, note: 'The shops lose nothing, and the people furthest from the clinic work with tools that may break in the hand.', info: [['yield', 'The shops keep their tools'], ['danger', 'The field crews']],
       out: { text: 'The field crews draw their tools from the bad racks from now on. Before the month is out a mattock head comes off on the swing in the outer field and opens a hauler\'s leg to the bone.',
         fx: s => ({ morale: -1, stain: ['rst_issue', 1], do: s2 => { const t = T(s2); t.did.issue = true; chain(s2, 2); } }) } },
@@ -283,9 +279,6 @@ B('found', { id: 'rst.bench', tone: 'pressure', title: 'Four Coupons',
     { label: 'Skip the trial, and put the month into grease: every housing, rack and bin', cost: { mat: 15 }, note: 'It answers nothing, and the crews lose the month to rags and drums.',
       out: { text: 'Every housing is wiped down and greased, every rack is oiled, and the bins are lined with waxed cloth. The shops smell of it. Nobody knows yet whether the grey minds.',
         fx: s => ({ progress: -0.06, do: s2 => { const t = T(s2); t.guard = s2.day + 120; t.did.greased = true; } }) } },
-    { label: 'Have three of the punishment detail work the grey bare-handed, then handle clean plate', dark: true, note: 'It shows whether hands carry it, using hands that were not offered.', info: [['yield', 'What it shows'], ['danger', 'The three']],
-      out: { text: (s, c) => `Three of the detail knead the grey for a shift a day and are then given clean coupons to hold. ${ev('bench', c.ev2)} All three have sores to the wrist by the end of the month, and one has lost the nails of a hand.`,
-        fx: (s, c) => ({ stain: ['rst_hands', 2], do: s2 => { const t = T(s2); learn(s2, t, 24, c.ev2); t.did.hands = true; } }) } },
   ] });
 
 B(['found', 'gate'], { id: 'rst.spares', tone: 'crisis', title: 'The Spares Store',
@@ -301,9 +294,6 @@ B(['found', 'gate'], { id: 'rst.spares', tone: 'crisis', title: 'The Spares Stor
     { label: 'Pass the store as sound, and fit what looks good while it lasts', dark: true, note: 'Every overdue repair is done this month, with spares nobody can vouch for and no word to the crews who run the machines.', info: [['yield', 'Repairs'], ['later', 'Whatever they are fitted to']],
       out: { text: 'The store is logged as inspected. The repair list that has been waiting since landfall is worked off in the month, and the machines run sweeter than they have all year. The fitters were told the spares had been checked.',
         fx: s => ({ stain: ['rst_fitted', 2], chips: [['Machines repaired', true]], do: s2 => { const t = T(s2); for (const id of downs(s2)) LF.hurt(s2, id, 7, 0); t.fitted = s2.day; t.did.fitted = true; chain(s2, 2); } }) } },
-    { label: 'Lock the three storehands in with it until every bin is sorted', dark: true, note: 'The sorting is done properly by people who cannot leave, and they eat and sleep in the grey.', info: [['yield', 'Spares'], ['danger', 'The storehands']],
-      out: { text: 'The door is barred from outside and food goes in through the hatch. They sort for the whole month. What comes out is good, bin by bin. Of the three, one has stopped speaking and one will not go back into the store for anything.',
-        fx: s => ({ parts: -Math.round(s.res.parts * 0.1), stain: ['rst_locked', 2], do: s2 => { const t = T(s2); t.did.sorted = true; t.did.locked = true; chain(s2, -1); LF.emit(s2, 'confinement', 'rst.locked', 25, 80, 'three storehands were locked in the spares store with the rust'); } }) } },
   ] });
 
 B(['found', 'gate'], { id: 'rst.bolts', tone: 'pressure', title: 'One Bolt in Three',
@@ -335,9 +325,6 @@ B('gate', { id: 'rst.housing', tone: 'crisis', title: 'In the Housing',
     { label: 'Shut down for good, cut the whole unit out, and bury it past the wire', note: (s, c) => c.bare ? 'The colony loses a machine it has nothing to replace, by its own order, while that machine still runs.' : 'The colony loses a working machine by its own order, and leans on what it built to follow it.', info: (s, c) => [['yield', 'Nothing it touches from now on'], ['danger', cap(c.mw)]],
       out: { text: (s, c) => `${cap(c.mw)} is run down for the last time, cut off its footings and dragged out past the wire on rollers. The pit is dug by hand. The crews who kept the unit running since landfall fill it in.`,
         fx: (s, c) => ({ machine: { [c.m]: -200 }, morale: -3, do: s2 => { const t = T(s2); t.did.buried = c.m; chain(s2, -2); }, chron: (s2, c2) => `The colony buried ${c2.mw} past the wire while it still ran.` }) } },
-    { label: 'Keep the unit running, and put the punishment detail inside the housing with scrapers every shift', dark: true, note: 'The grey is scraped back as fast as it comes, by people working inside a running machine.', info: (s, c) => [['yield', cap(c.mw)], ['danger', 'The detail in the housing']],
-      out: { text: (s, c) => `Two of the detail go in through the inspection hatch at every change of shift, with scrapers and a lamp, and the hatch is dogged behind them. ${cap(c.mw)} does not miss an hour.`,
-        fx: s => ({ stain: ['rst_scrape', 2], do: s2 => { const t = T(s2); t.scrape = s2.day; t.did.scrape = true; } }) } },
     { label: 'Bolt a jacket of scrap plate round the housing, and let the grey have that first', cost: { mat: 20 }, note: 'The yard gives up plate every month to keep the jacket whole, on a guess about what the grey prefers.',
       out: { text: (s, c) => `A second skin of scrap plate goes on round ${c.part}, bolted hard against it. By the end of the month the outer face of the jacket is soft, and a new sheet is cut for it.`,
         fx: s => ({ do: s2 => { const t = T(s2); t.jacket = s2.day; t.did.jacket = true; } }) } },
@@ -353,12 +340,6 @@ B(['gate', 'choice'], { id: 'rst.hands', view: 'people', tone: 'pressure', title
     { label: 'Put them in the old survey shelter outside the wire, with their tools, until it is known', dark: true, note: 'If hands carry it, it stops with them. If not, they sleep outside the wire for nothing.', info: (s, c) => [['yield', 'Nothing they touch comes inside'], ['danger', `The ${num(c.k)}`]],
       out: { text: (s, c) => `They are walked out through the gate at dusk with their bedding and their tool rolls. The survey shelter has a roof and three walls. Food is left at the last post each morning, and the bowls are not brought back in.`,
         fx: s => ({ tension: -4, stain: ['rst_quar', 2], do: s2 => { const t = T(s2); t.quar = s2.day; t.did.quar = true; chain(s2, -2); } }) } },
-    { label: 'Burn everything they own, shave them and scrub them with lye in the yard, and send them back to work', dark: true, note: 'The hall sees something done, and it is done to people in front of everyone they know.', info: (s, c) => [['yield', 'Morale'], ['danger', `The ${num(c.k)}`]],
-      out: { text: (s, c) => `It is done in the yard at noon with the crews turned out. Their kit burns in a drum. ${c.W} has the brushes used until the skin is raw. They are issued new coveralls and go back on shift, and they do not look at anyone.`,
-        fx: s => ({ morale: 2, tension: -4, parts: -2, stain: ['rst_scrub', 1], do: s2 => { const t = T(s2); t.did.scrub = true; chain(s2, -2); } }) } },
-    { label: 'Have the pin taken out of the hauler\'s leg', dark: true, note: 'It is surgery on a sound leg, done to settle the mess hall.', info: [['yield', 'Morale'], ['danger', 'The hauler']],
-      out: { text: 'The clinic does it under protest, with half the hall waiting outside. The pin comes out bright and clean, as it went in. The hauler will walk with a stick.',
-        fx: s => ({ morale: 1, tension: -5, stain: ['rst_pin', 2], do: s2 => { T(s2).did.pin = true; } }) } },
     { label: 'Say at muster that they are a salvage crew and nothing else, and sit at their bench', note: 'If hands do carry it, everything they touch from tonight is on your word.',
       out: { text: 'You say it once at muster and eat supper between two of them. The benches fill in again over the month, slowly. Their door has a new latch, of wood.',
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.vouch = s2.day; t.did.vouch = true; chain(s2, 2); LF.ease(s2, 'suspicion', 'rst.vouch', 20, 150); } }) } },
@@ -378,7 +359,8 @@ B('gate', { id: 'rst.ship', view: 'ship', tone: 'pressure', title: 'What Came Do
     { label: 'Keep the flights running, and tell the ship nothing', dark: true, show: (s, c) => c.lander, note: 'The colony gets its people and its machines down on time, and nobody aboard is told what the lander may be bringing up to them.', info: [['yield', 'The flights'], ['later', 'The ship, and whoever is aboard']],
       out: { text: 'The flight plan stands and the radio room is told to keep the grey out of the traffic. The lander\'s ramp is swept before each launch, with a yard broom.',
         fx: s => ({ morale: 1, stain: ['rst_silent', 2], do: s2 => { const t = T(s2); t.silent = s2.day; t.did.silent = true; } }) } },
-    { label: 'Leave the ship out of it, and keep the radio room on its ordinary traffic', note: 'Nobody loses a month to the question, and nobody learns whether the ship is clean.',
+    /* Three on screen: with a lander on the pad, saying nothing is the option above; this one is for a colony with none. */
+    { label: 'Leave the ship out of it, and keep the radio room on its ordinary traffic', show: (s, c) => !c.lander, note: 'Nobody loses a month to the question, and nobody learns whether the ship is clean.',
       out: { text: 'The passes go on carrying weather, stores returns and the sleepers\' telemetry. Nobody asks the ship about the grey, and the ship has no way to ask about it herself.',
         fx: s => ({ do: s2 => { T(s2).did.unasked = true; LF.emit(s2, 'unexplained', 'rst.unasked', 20, 120, 'nobody has asked the ship whether the rust is aboard her'); } }) } },
   ] });
@@ -394,9 +376,6 @@ B(['gate', 'choice', 'bill'], { id: 'rst.out', view: 'people', tone: 'pressure',
     { label: 'Leave them where they are until the grey is finished, one way or the other', dark: true, note: 'Nothing they have touched comes inside, and the shelter has three walls.', info: (s, c) => [['yield', 'Nothing they touch comes inside'], ['danger', `The ${num(c.k1)} outside`]],
       out: { text: 'The answer is given through the gate. They go back to the shelter. A second one of them is buried beside the first before the month is out, by the others, with a mess spoon for a spade.',
         fx: s => ({ pop: -1, stain: ['rst_left', 2], do: s2 => { const t = T(s2); t.toll++; t.did.left = true; } }) } },
-    { label: 'Make them the salvage gang for good: they live at the stage, cut plate, and never come inside', dark: true, note: 'The yard gets its plate cut by people the colony has decided it can do without.', info: (s, c) => [['yield', 'Materials'], ['danger', `The ${num(c.k1)} outside`]],
-      out: { text: 'They are told through the gate. A cart goes out each morning with food and comes back each evening with plate, and the carter does not get down. The crews call them the grey gang.',
-        fx: s => ({ mat: 35, stain: ['rst_gang', 3], do: s2 => { const t = T(s2); t.did.gang = true; LF.emit(s2, 'resentment', 'rst.gang', 25, 200, 'the salvage crew was put out for good to cut plate at the stage'); } }) } },
   ] });
 
 /* ======================= CHOICE: the order ======================= */
@@ -404,28 +383,28 @@ const RECALL = {
   yes: 'The tone goes out on the night pass. In the morning there is a fine grey drift at the foot of every bad sheet in the yard, and it does not move. Under the glass, every grain in it has folded its legs.',
   no: 'The tone goes out on the night pass. Aboard, the hull crawlers file into their racks and go still. On the ground nothing changes, and another stack in the yard is soft before the month is out.',
 };
+/* Three answers on screen (2026-11-21). Burning it out and the grease are always there. The third is to feed it, unless the
+   ship can be reached and what has been learned points at her at least as much as at the ground (c.rec): then the recall
+   takes its place. Laying the machines up (rst.gives) still starves either. */
 B('choice', { id: 'rst.choice', tone: 'crisis', title: 'What Touches What',
-  setup: s => { const t = T(s), c = crew(s); return Object.assign(c, { ship: shipOK(s), wreck: (s.wreck || 0) > 0, quar: !!t.quar }); },
-  text: (s, c) => `The yard has lost plate to the grey every month since the first sheet${c.mw ? `, and it is in the housing of ${c.mw}` : ''}. ${c.E} wants everything it has touched burned or buried in one day, machines included. ${c.Sc} wants to stop fighting it and feed it. ${c.ship ? `${c.Cm} wants the ship asked to call it off, on the chance that it is the ship's. ` : ''}${c.Q} wants grease, paint and a wire brush in every hand.\n\n${c.lean} The crews have been told there will be an order tonight.`,
+  setup: s => { const t = T(s), c = crew(s); return Object.assign(c, { rec: shipOK(s) && (t.ev.swarm || 0) > 0 && (t.ev.swarm || 0) >= (t.ev.native || 0), wreck: (s.wreck || 0) > 0, quar: !!t.quar }); },
+  text: (s, c) => `The yard has lost plate to the grey every month since the first sheet${c.mw ? `, and it is in the housing of ${c.mw}` : ''}. ${c.E} wants everything it has touched burned or buried in one day, machines included. ${c.rec ? `${c.Cm} wants the ship asked to call it off, on the chance that it is the ship's.` : `${c.Sc} wants to stop fighting it and feed it.`} ${c.Q} wants grease, paint and a wire brush in every hand.\n\n${c.lean} The crews have been told there will be an order tonight.`,
   choices: [
     { label: (s, c) => `Burn or bury everything it has touched in one day: the spares, the racks, ${c.mw ? c.mw + ', ' : ''}and ${c.quar ? 'keep' : 'put'} the salvage crew outside the wire`, dark: true, note: (s, c) => `If it travels by touch, this ends it. The colony loses ${c.mw ? 'a working machine and ' : ''}its spares, and ${num(c.k)} people sleep outside.`, info: (s, c) => [['yield', 'The chain broken'], ['danger', c.mw ? cap(c.mw) : 'The spares'], ['danger', `The ${num(c.k)}`]],
       out: { text: (s, c) => `It takes from first light until after dark. The kiln pit burns all day. ${c.mw ? `${cap(c.mw)} is cut off its footings and goes into a trench with the racks and the shelving. ` : ''}At dusk the salvage crew ${c.quar ? 'watches from the shelter' : 'is walked out through the gate with its bedding'}, and the gate is barred.`,
         fx: (s, c) => Object.assign({ mat: -20, parts: -Math.round(s.res.parts * 0.7), tension: -6, stain: ['rst_purge', 4], do: s2 => { const t = T(s2); t.did.purge = true; if (c.m) t.did.buried = c.m; t.did.store = true; if (!t.quar) t.quar = s2.day; chain(s2, -6); },
           chron: 'The colony burned and buried everything the rust had touched, and put the salvage crew outside the wire.' }, c.m ? { machine: { [c.m]: -200 } } : {}) } },
-    { label: (s, c) => c.wreck ? 'Give it the stage: pull the cutters back for good, and cart a load of plate out to it every month' : 'Feed it: cart a load of plate out to the stage every month, and leave it there', note: (s, c) => `The yard ${c.wreck ? 'gives up its best source of metal and ' : ''}pays plate every month from now on, on the theory that a fed thing stays where it is fed.`, info: [['yield', 'The machines, if it is a thing that feeds'], ['danger', 'The yard']],
+    { label: (s, c) => c.wreck ? 'Give it the stage: pull the cutters back for good, and cart a load of plate out to it every month' : 'Feed it: cart a load of plate out to the stage every month, and leave it there', show: (s, c) => !c.rec, note: (s, c) => `The yard ${c.wreck ? 'gives up its best source of metal and ' : ''}pays plate every month from now on, on the theory that a fed thing stays where it is fed.`, info: [['yield', 'The machines, if it is a thing that feeds'], ['danger', 'The yard']],
       out: { text: (s, c) => `${c.wreck ? 'The cutters come back from the stage with their gear and the track to it is roped off. ' : ''}The first cart goes out at noon with a load of good plate, and is tipped at the foot of the aft hold. By the end of the month the load is a grey heap.`,
         fx: s => ({ mat: -15, do: s2 => { const t = T(s2); t.fed = s2.day; t.did.fed = true; if (s2.wreck > 0) { s2.wreck = 0; s2.flags.wreck_out = s2.day; } },
           chron: 'The colony gave the descent stage up to the rust, and began carting plate out to it.' }) } },
-    { label: 'Have the ship send the recall on her maintenance band', show: (s, c) => c.ship, note: 'If the grey is the ship\'s own, it stops. The ship stops mending herself for as long as the tone runs, and what is still aboard pays for that.', info: [['yield', 'An end to it, if it is the ship\'s'], ['danger', 'Everything still aboard']],
+    { label: 'Have the ship send the recall on her maintenance band', show: (s, c) => !!c.rec, note: 'If the grey is the ship\'s own, it stops. The ship stops mending herself for as long as the tone runs, and what is still aboard pays for that.', info: [['yield', 'An end to it, if it is the ship\'s'], ['danger', 'Everything still aboard']],
       out: { text: (s, c) => RECALL[is(s, 'swarm') ? 'yes' : 'no'],
         fx: s => ({ do: s2 => { const t = T(s2); t.recall = s2.day; t.did.recall = true; for (const id of LF.aboard(s2)) LF.hurt(s2, id, -4, -4); if (t.truth.is === 'swarm') { learn(s2, t, 30, 'swarm'); learn(s2, t, 15, 'swarm'); } },
           chron: 'The colony had the ship recall her hull crawlers.' }) } },
     { label: 'Grease, paint and dry stores: every hand an hour a day with a wire brush', cost: { mat: 20 }, note: 'It is an hour a day out of every hand for as long as there is a colony, and it treats the thing as weather.', info: [['yield', 'The metal, if it is only the air'], ['danger', 'The crews\' hours']],
       out: { text: 'The order is read at muster and the brushes are issued from a cart. Every housing, rack, hinge and buckle in the colony is taken to bright metal and greased, and the stores go up onto boards with a stove under them. It is done again the next day.',
         fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.grease = s2.day; t.did.grease = true; } }) } },
-    { label: 'Call it sabotage, and hang the salvage foreman at the yard gate', dark: true, note: 'The crews get an answer tonight and somebody to hate, and the grey gets another season.', info: [['yield', 'Morale'], ['danger', 'The salvage foreman']],
-      out: { text: (s, c) => `The charge is sand in the stores and acid on the plate. ${c.W} finds a jar in the foreman's locker that could be anything. It is done at the yard gate before the morning shift, and the shift goes to work under it.`,
-        fx: s => ({ pop: -1, morale: 4, tension: -8, stain: ['rst_goat', 3], do: s2 => { const t = T(s2); t.toll++; t.did.goat = true; } }) } },
   ] });
 
 /* ======================= BILL: a month on ======================= */
@@ -443,9 +422,6 @@ B('bill', { id: 'rst.gives', tone: 'crisis', title: 'A Month On',
     { label: 'Put the salvage crew outside the wire, with everything they have touched', dark: true, show: (s, c) => !c.quar, note: 'If hands carry it, it stops with them. If not, they sleep outside the wire for nothing.', info: (s, c) => [['yield', 'Nothing they touch comes inside'], ['danger', `The ${num(c.k)}`]],
       out: { text: 'They are walked out through the gate at dusk with their bedding and their tool rolls, to the survey shelter. Food is left at the last post each morning.',
         fx: s => ({ tension: -4, stain: ['rst_quar', 2], do: s2 => { const t = T(s2); t.quar = s2.day; t.did.quar = true; chain(s2, -2); } }) } },
-    { label: 'Make the yard good out of the bunk rows: stoves, bed frames, lockers, anything of metal that anyone owns', dark: true, note: 'The yard gets a season\'s plate today, and people sleep on the floor and keep what they own in a sack.', info: [['yield', 'Materials'], ['danger', 'The bunk rows']],
-      out: { text: (s, c) => `${c.W} takes the watch through the bunk rows with a cart. Bed frames, lockers and stove plate go to the yard, and so do a wedding band and somebody's father's watch. The carts are full by noon.`,
-        fx: s => ({ mat: 45, morale: -2, stain: ['rst_seize', 1], do: s2 => { T(s2).did.seize = true; LF.emit(s2, 'resentment', 'rst.seize', 30, 150, 'the watch took every piece of metal out of the bunk rows for the yard'); } }) } },
   ] });
 
 /* ======================= AFTER: what it was ======================= */
@@ -485,23 +461,20 @@ B('after', { id: 'rst.truth', tone: 'quiet', title: 'What the Rust Was',
     { label: 'Enter it as sabotage, put down in good time', dark: true, note: 'The colony gets an account in which its losses were somebody\'s doing, and every hand who touched the grey stays under it.', info: [['yield', 'Morale']],
       out: { text: 'The record says that stores and machinery were interfered with in the first seasons, and that the matter was dealt with. No name is given, so every name on the salvage roster will do. It is the version the children will be taught.',
         fx: s => ({ morale: 3, stain: ['rst_record', 1], chron: 'The record says the colony\'s metal was sabotaged, and that the matter was dealt with.' }) } },
-    { label: 'Set a standing inspection: every housing opened, every month, for good', note: 'The shops give up a part of every month to looking for something they now understand.',
-      out: { text: (s, c) => `A sheet goes up in the shops with every housing, rack and bin on it and a box for each month. ${c.still ? 'The salvage crew is brought in to do the first round. ' : ''}The boxes are ticked. Nobody trusts a wrench without looking at the jaw first.`,
-        fx: s => ({ progress: -0.05, morale: 1, do: s2 => { const t = T(s2); t.quar = 0; LF.ease(s2, 'fear', 'rst.insp', 15, 200); } }) } },
   ] });
 
-LF.TAGS['rst.plate'] = ['cautious open', 'closed order', 'cautious closed', 'severe bold'];
-LF.TAGS['rst.racks'] = ['cautious open', 'cautious order', 'severe order', 'severe closed'];
-LF.TAGS['rst.bench'] = ['cautious open', 'bold closed', 'cautious order', 'severe open'];
-LF.TAGS['rst.spares'] = ['cautious open', 'cautious closed', 'bold closed', 'severe order'];
+LF.TAGS['rst.plate'] = ['cautious open', 'cautious closed', 'severe bold'];
+LF.TAGS['rst.racks'] = ['cautious open', 'cautious order', 'severe closed'];
+LF.TAGS['rst.bench'] = ['cautious open', 'bold closed', 'cautious order'];
+LF.TAGS['rst.spares'] = ['cautious open', 'cautious closed', 'bold closed'];
 LF.TAGS['rst.bolts'] = ['cautious order', 'severe bold', 'bold'];
-LF.TAGS['rst.housing'] = ['bold open', 'cautious closed', 'severe order', 'cautious'];
-LF.TAGS['rst.hands'] = ['cautious open', 'severe closed', 'severe order', 'severe', 'mercy open'];
+LF.TAGS['rst.housing'] = ['bold open', 'cautious closed', 'cautious'];
+LF.TAGS['rst.hands'] = ['cautious open', 'severe closed', 'mercy open'];
 LF.TAGS['rst.ship'] = ['cautious open', 'cautious closed', 'bold closed', 'closed'];
-LF.TAGS['rst.out'] = ['mercy open', 'severe closed', 'severe order'];
-LF.TAGS['rst.choice'] = ['severe closed', 'bold open', 'open', 'cautious order', 'severe order'];
-LF.TAGS['rst.gives'] = ['cautious', 'cautious closed', 'severe closed', 'severe order'];
-LF.TAGS['rst.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['rst.out'] = ['mercy open', 'severe closed'];
+LF.TAGS['rst.choice'] = ['severe closed', 'bold open', 'open', 'cautious order'];
+LF.TAGS['rst.gives'] = ['cautious', 'cautious closed', 'severe closed'];
+LF.TAGS['rst.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */
