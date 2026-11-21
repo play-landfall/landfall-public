@@ -85,6 +85,8 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     <button class="opt go" data-act="pre" data-v="seat0">Choose the command crew</button>
     <button class="opt go" data-act="pre" data-v="random">Randomise</button>
     <button class="pbtn back" data-act="pre" data-v="ship">Back to the ship</button></div>`;
+  if (st === 'legend') return legendHTML(`<button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
+    <button class="pbtn back" data-act="pre" data-v="review">Back to the crew</button>`);
   if (st === 'review') return `<div class="card enter dossier"><div class="lbl tone">The ${esc(a.ship)} · crew file</div><h2>Your command crew</h2>
     ${LF.SEAT_ORDER.map((k, i) => { const c = LF.CAST[k][pre.picks[k] || 0], d = LF.CAST[k][1 - (pre.picks[k] || 0)]; return `<div class="file small" style="--i:${i}">${castImg(c)}<div class="t"><span class="lbl sp sp-${k}">${esc(LF.SEATS[k].lead)}</span><b>${esc(c.first)} ${esc(c.last)}</b><span class="who">${esc(LF.SEATS[k].second)}: ${esc(d.first)} ${esc(d.last)}</span>${edgeHTML(c.key)}</div></div>`; }).join('')}
     <button class="opt go" data-act="pre" data-v="go">Begin the voyage</button>
@@ -96,7 +98,33 @@ function preHTML() { pre = pre || { step: 'ship', picks: {} }; const a = s.adrif
     ${LF.CAST[k].map((c, i) => seatCard(c, i, k, i === sel)).join('')}
     <button class="opt go" data-act="pre" data-v="pick${sel}">${esc(LF.CAST[k][sel].first)} as ${esc(S.lead)}</button>
     <button class="pbtn back" data-act="pre" data-v="${n ? 'seat' + (n - 1) : 'crew'}">Back</button></div>`; }
+/* How to read a card (Lachlan, 2026-11-21): the option icons and chips, and a sure choice against a roll. Once per device
+   before the first voyage (landfall.legend), and from the menu any time. The examples are drawn with the card's own classes. */
+const LEGEND_ROWS = [
+  ['good', 'Looks promising', 'The mark beside an option is a guess at how it will go. The world is not obliged.'],
+  ['bad', 'Looks costly', 'Expect it to hurt something: stores, morale, machines or people.'],
+  ['unknown', 'Hard to say', 'Could go either way, or what it costs is not the kind of thing a number shows.'],
+  ['difficulty', 'A roll', 'The chance it comes off, then Easy, Fair, Hard or Desperate.'],
+  ['good', 'What it can gain', 'Under an option, beside a word: materials, food, repairs.'],
+  ['danger', 'What it puts at risk', 'In red: lives, morale, a machine, or whoever does the work.'],
+  ['mat', 'What it costs', 'Stores spent up front, the moment you choose. Food, materials and spares have their own marks.'],
+  ['people', 'A party goes out', 'How many go, with the months they are away and how dangerous the trip is.'],
+  ['time', 'How long', 'Months of work or travel.'],
+  ['star', 'Cuts a cord', 'One step closer to a colony that no longer needs the ship.']];
+const legendHTML = btn => `<div class="card enter dossier legend"><div class="lbl tone">Before the voyage</div><h2>How to read a card</h2>
+  <p>Every month brings one decision. Some options are sure: what it says is what you get. Others are a roll.</p>
+  <div class="lgx"><div class="lbl">A roll</div>
+    <div class="opt roll">${ic('unknown')}<span class="b"><span class="l">Send a team down the ravine</span><em>Gold edge and gold title: this one is decided by chance.</em><span class="tips"><span>${ic('difficulty')}55% · Fair</span></span><div class="mods"><span>50% to start</span><span class="up">+5% the Chief Engineer, there in person</span></div></span></div>
+    <small>The percentage is the chance it goes your way. The line under it shows how it was worked out. Sending an officer adds to the odds, but they can be hurt or killed, and rest two months after.</small></div>
+  <div class="lgx"><div class="lbl">Sure</div>
+    <div class="opt">${ic('good')}<span class="b"><span class="l">Strip the wreck for parts</span><em>No gold edge and no percentage: no dice.</em><span class="tips"><span>${ic('good')}Materials</span><span class="hot">${ic('danger')}Morale</span></span></span></div>
+    <small>What it says happens. What comes of it later may still surprise you.</small></div>
+  <div class="lgx"><div class="lbl">The marks</div><div class="box">${LEGEND_ROWS.map(([i, b, t]) => `<div class="row">${ic(i)}<div class="t"><b>${esc(b)}</b><small>${esc(t)}</small></div></div>`).join('')}</div></div>
+  <p class="ask">You can read this again from the menu.</p>${btn}</div>`;
+const legendSeen = () => { try { return localStorage.getItem('landfall.legend') === '1'; } catch (e) { return true; } };
 function preGo(v) { pre = pre || { step: 'ship', picks: {} };
+  if (v === 'go' && pre.step !== 'legend' && !legendSeen()) { pre.step = 'legend'; window.scrollTo(0, 0); return render(); }
+  if (v === 'go' && pre.step === 'legend') try { localStorage.setItem('landfall.legend', '1'); } catch (e) {}
   if (v.startsWith('sel')) { const k = LF.SEAT_ORDER[+pre.step.slice(4)], i = +v.slice(3), S = LF.SEATS[k]; pre.sel = pre.sel || {}; pre.sel[k] = i;
     // a tile tapped: swap the titles and the button in place, so nothing replays its entrance or scrolls
     document.querySelectorAll('#view .file.pick').forEach(el => { const on = el.dataset.v === v; el.classList.toggle('on', on); el.setAttribute('aria-pressed', on); el.querySelector('.lbl').textContent = on ? S.lead : S.second; });
@@ -936,13 +964,15 @@ function render() {
   if (window.LFSound) LFSound.update(s, !!s.cur && !review && !surveying() && !(s.over && !s.over.cont));   // the bed, and a card's sound once the card itself is up
 }
 /* ---------- input ---------- */
-function menu(open) {
+function menu(open, page) {
   const sh = $('sheet'), opening = sh.hidden; sh.hidden = !open; if (!open) return;
   sh.classList.toggle('in', opening);
+  if (page === 'legend') { sh.innerHTML = legendHTML('<button class="opt go" data-act="menu">Close</button>').replace(' enter', '').replace('<div class="lbl tone">Before the voyage</div>', '').replace(/<p class="ask">[^<]*<\/p>/, ''); sh.scrollTop = 0; return; }
   sh.innerHTML = `<div class="box"><h3 style="margin-top:0">Landfall</h3>
     <div class="row"><div class="t"><b>Music</b><small>Quiet score and sound that follow how the colony is doing.</small></div><button class="pbtn" data-act="music">${window.LFMusic && LFMusic.on ? 'On' : 'Off'}</button></div>
     <div class="row" style="border:0;padding-bottom:2px"><div class="t"><b>Colours</b><small>${LFTheme.THEMES[LFTheme.current].name}</small></div></div>
     <div class="sws">${Object.entries(LFTheme.THEMES).map(([k, t]) => `<button data-act="theme" data-v="${k}" class="${k === LFTheme.current ? 'on' : ''}" style="background:${t.paper}" aria-label="${t.name}"><i style="background:${t.rust}"></i></button>`).join('')}</div>
+    <div class="row"><div class="t"><b>How to read a card</b><small>The marks on the options, and which ones are a roll.</small></div><button class="pbtn" data-act="legend">Open</button></div>
     <div class="row"><div class="t"><b>New colony</b><small>Abandon this one. The same ship, different candidates.</small></div><button class="pbtn" data-act="new">Start</button></div>
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
@@ -955,7 +985,7 @@ function act(a, v, el) {
   else if (a === 'sound') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); if (!$('sheet').hidden) menu(true); return; }
   else if (a === 'dossier') return dossierGo();
   else if (a === 'pre') return preGo(v);
-  else if (s.adrift && !s.cur && a !== 'menu' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
+  else if (s.adrift && !s.cur && a !== 'menu' && a !== 'legend' && a !== 'new' && a !== 'odds' && a !== 'music' && a !== 'theme') return;
   else if (a === 'early') { if (review && review.ready) bringCard(); return; }   // never before the bar is full (Lachlan, 2026-11-17)
   else if (a === 'spot') { spot = v; if (poiOpen) { poiOpen = ''; if (!ordOpen) resumeReview(); } }
   else if (a === 'poi') { poiOpen = poiOpen === v ? '' : v || ''; const p = poiOpen && LF.poi(s, poiOpen); spot = p ? p.name : '';   // a place opens under the map; the card waits while it is open
@@ -969,6 +999,7 @@ function act(a, v, el) {
     if (v === 'decide' && review && review.ready) return bringCard();   // the rust tab: the card comes up
     peek = v; window.scrollTo(0, 0); }
   else if (a === 'menu') return menu($('sheet').hidden);
+  else if (a === 'legend') return menu(true, 'legend');
   else if (a === 'theme') { LFTheme.set(v); menu(true); }
   else if (a === 'music') { if (window.LFMusic) LFMusic.toggle(); soundBtn(); menu(true); }
   else if (a === 'odds') { showOdds = !showOdds; try { localStorage.setItem('landfall.odds', showOdds ? '1' : '0'); } catch (e) {} menu(true); }

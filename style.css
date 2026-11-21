@@ -624,3 +624,11 @@ html.grim2 h2 { letter-spacing:.01em; }
 .pz.doors rect { fill:var(--card); stroke:var(--line); stroke-width:2; } .pz.doors .grown rect { fill:var(--bad); stroke:var(--bad); }
 .pz.doors .vent rect { fill:transparent; stroke-dasharray:4 4; } .pz.doors text { font-size:10px; fill:var(--dim); text-anchor:middle; font-weight:700; }
 .pz.doors text.n { font-size:14px; fill:var(--ink); } .pz.doors line { stroke:var(--line); stroke-width:3; } .pz.doors line.shut { stroke:var(--rust); stroke-width:5; }
+
+/* How to read a card (js/ui.js legendHTML; Lachlan, 2026-11-21): the two example options are drawn, never pressed. */
+.legend .lgx { margin:16px 4px 0; } .legend .lgx > .lbl { display:block; margin-bottom:2px; }
+.legend .lgx .opt { cursor:default; } .legend .lgx .opt:active { scale:1; }
+.legend .lgx > small { display:block; margin:8px 2px 0; font-size:14px; line-height:1.4; color:var(--dim); text-wrap:pretty; }
+.legend .lgx .box { margin-top:8px; } .legend .lgx .row > img { width:28px; height:28px; flex:none; }
+.legend .ask { margin-top:14px; }
+#sheet > .card.legend { width:100%; max-width:540px; max-height:90dvh; overflow:auto; margin:0; border-radius:26px 26px 0 0; padding-bottom:calc(18px + env(safe-area-inset-bottom)); }
