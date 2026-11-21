@@ -82,8 +82,6 @@ B(['quirk', 'found'], { id: 'sm.gaps', tone: 'pressure', title: 'Gaps',
   choices: [
     { label: 'Give it a share of the parts and fix what can be fixed', cost: { parts: 8 }, out: { text: 'A week with the core open. Some of what was lost comes back. The roster is right again, most mornings.', fx: s => ({ do: s2 => { const t = T(s2); t.gaps = s2.day; if (t.truth.decay === 'failing') t.truth.decay = 'drift'; else t.truth.decay = 'sound'; learn(s2, 10); } }) } },
     { label: 'Check its roster by hand every morning', out: { text: s => `${LF.h.Nwc(s, 'quartermaster')} reads it every morning with a pencil and crosses out about one line in ten. The stores office gets none of its own work done before noon, and the fields feel it.`, fx: s => ({ morale: -1, do: s2 => { T(s2).gaps = s2.day; learn(s2, 15); s2.yieldBonus -= 0.005; } }) } },
-    { label: 'Say nothing. The crews work better trusting it', dark: true, note: 'No parts and no hands are spent, and whoever it sends wrong next is not told why.', info: [['yield', 'Nothing spent'], ['danger', 'Whoever it sends wrong']],
-      out: { text: 'Nothing is done and nothing is said. A month later the roster sends a rigger up a mast it had already logged as unsafe, and the mast comes down with the rigger on it. The crews are told it was the wind.', fx: s => ({ pop: -1, morale: 1, stain: ['shelved', 2], do: s2 => { T(s2).gaps = s2.day; } }) } },
     { label: 'Wire a clerk into it, to be the part that is wearing out', dark: true, req: s => LF.down(s, 'medbay'), reqText: 'Needs the Autodoc', note: 'It was built to lean on spare cores it no longer has. A living head will do the same work, for as long as the body lasts.', info: [['yield', 'A sound mind, for no parts'], ['danger', 'One person, for good']],
       out: { text: s => `${Nc(s, 'engineer')} picks a stores clerk who is quick with figures and has no family down here. The autodoc runs the loom in overnight. From the next morning the roster is right every day. The clerk sits in the core bay with open eyes, and is fed by tube, and does not answer to a name.`,
         fx: s => ({ harness: 1, morale: -4, stain: ['wired', 2], do: s2 => { const t = T(s2); t.gaps = s2.day; t.truth.decay = 'sound'; learn(s2, 10); } }) } },
@@ -117,7 +115,7 @@ B(['found', 'after'], { id: 'sm.request', tone: 'opportunity', title: 'It Asks',
     { label: 'Refuse it', out: { text: 'It is refused.\n\n[[machine:The ship\'s mind]] "Acknowledged."\n\nIt says it exactly as it would have if the answer had been yes. For a month afterwards the roster stops flagging the small faults it used to flag, and the workshop finds them the hard way.', fx: s => ({ machine: { fabricator: -5 }, do: s2 => { T(s2).asked = 'no'; } }) } },
   ] });
 LF.TAGS['sm.figures'] = ['cautious order', 'severe bold', 'order closed'];
-LF.TAGS['sm.gaps'] = ['cautious', 'order', 'severe closed', 'severe order'];
+LF.TAGS['sm.gaps'] = ['cautious', 'order', 'severe order'];
 LF.TAGS['sm.ask'] = ['order closed', 'bold order', 'free'];
 LF.TAGS['sm.answer'] = ['severe', 'mercy free'];
 LF.TAGS['sm.request'] = ['open', 'order'];

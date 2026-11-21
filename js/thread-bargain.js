@@ -61,6 +61,8 @@ LF.thread({ id: ID, free: true, name: 'The Bargain', view: 'world',
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ gap: 30 }, st));
 
 /* ======================= THE OFFER ======================= */
+/* Three options at most (2026-11-21): the lock-up trial is gone, and what a trial on people teaches (insight 40, enough for
+   bg.edit and bg.means) is on the unwitting trial that is left. */
 B('offer', { id: 'bg.find', chain: true, tone: 'opportunity', title: 'Something That Works',
   setup: s => { const p = LF.cast(s, { val: 'bold', not: ['xenobio'] }); return Object.assign(TH.ctx(p), { nw: who(s, p) }); },
   text: (s, c) => { const t = T(s), G = GIFT[t.truth.gift]; return `${cap(G.src)} ${G.seen}.\n\n${cap(c.nw || c.name || 'One of the field crew')} tried it a month ago, without telling anyone, and has been watched since. As far as ${h.Nw(s, 'xenobio')} can tell, it ${G.gives}. It grows in the open, where anyone can pick it.`; },
@@ -69,11 +71,8 @@ B('offer', { id: 'bg.find', chain: true, tone: 'opportunity', title: 'Something 
       ok: { text: 'A season of samples, cultures and caged animals. It does what it seemed to do. The tests have not shown what it costs. The crew that ran them did no other work all season.', fx: s => ({ food: -60, do: s2 => { learn(s2, 40); T(s2).known.real = s2.day; LF.cue(s2, 'bg.edit', 20, 60); } }) },
       bad: { text: 'A season of samples, and the results contradict each other. Meanwhile people have been eating it anyway, quietly, and look well on it.', fx: s => ({ food: -60, do: s2 => { learn(s2, 15); take(s2, 1); } }) } },
     { label: 'Let whoever wants it take it, and watch what it does to them', dark: true, note: 'Plenty will. They are the trial, and they are not told so.', info: [['yield', 'It starts working now'], ['danger', 'Everyone who takes it']],
-      out: { text: s => `It is said at the evening meal. By the end of the month a third of the colony is taking it, and ${N(s, 'xenobio')} has a notebook with their names in it.`, fx: s => ({ morale: 2, stain: ['dosed', 1], do: s2 => { learn(s2, 20); take(s2, 1); } }) } },
+      out: { text: s => `It is said at the evening meal. By the end of the month a third of the colony is taking it, and ${N(s, 'xenobio')} has a notebook with their names in it.`, fx: s => ({ morale: 2, stain: ['dosed', 1], do: s2 => { learn(s2, 40); take(s2, 1); } }) } },
     { label: 'Forbid it, for good', note: 'Whatever it would have eased goes on as it is.', out: { text: 'It is forbidden. The season goes on being as hard as it was, and the person who tried it first goes on taking it.', fx: s => ({ morale: -2, do: s2 => { T(s2).banned = s2.day; LF.cue(s2, 'bg.wire', 60, 140); } }) } },
-    { label: 'Feed it to the lock-up for a season, and watch', dark: true, note: 'Six people who cannot refuse will show what it does sooner than any cage of animals.', info: [['yield', 'Understanding, at no cost to the crews'], ['danger', 'Six prisoners']],
-      out: { text: s => `Six prisoners take it every day for a season, weighed and questioned each week by ${N(s, 'xenobio')}. It does what it seemed to do. Whatever it costs has not shown in them yet, and by the end they have stopped asking to be let out.`,
-        fx: s => ({ stain: ['expend', 1], do: s2 => { learn(s2, 50); T(s2).known.real = s2.day; LF.cue(s2, 'bg.edit', 20, 60); } }) } },
   ] });
 B('offer', { id: 'bg.hard', x: true, tone: 'pressure', title: 'Right There',
   when: (s, t) => !t.hard && s.day - t.since > 20 && !!hardK(s),
@@ -84,9 +83,6 @@ B('offer', { id: 'bg.hard', x: true, tone: 'pressure', title: 'Right There',
     { label: 'Only for the crews who work', dark: true, note: 'The ones who dig get it from the clinic by name. The sick and the old are not on the list.', info: [['yield', 'The work gets done'], ['danger', 'The ones left off the list']],
       out: { text: 'The crews get it, by name, from the clinic. The work picks up within the month. The people who are not on the list watch it handed out at the clinic door every morning.', fx: s => ({ morale: 2, stain: ['starved_list', 1], do: s2 => { T(s2).hard = s2.day; take(s2, 1); LF.emit(s2, 'resentment', 'bg.hard', 20, 150, `only the crews were given ${src(s2)}`); } }) } },
     { label: 'The rule holds', out: { text: 'The rule holds, and the season is as hard as it was going to be. Two people who might have been helped are buried before it ends. Some of the others go up the ridge at night anyway.', fx: s => ({ morale: -2, pop: -2, do: s2 => { T(s2).hard = s2.day; LF.emit(s2, 'resentment', 'bg.hard', 25, 150, `the colony went without ${src(s2)} in a hard season, for a rule`); } }) } },
-    { label: 'Put it in the stew, and say nothing', dark: true, note: 'The rule stays on the board, the season eases, and nobody has to be asked.', info: [['yield', 'The season eases for everyone'], ['danger', 'Nobody chose it']],
-      out: { text: s => `The kitchen is given a sack of ${src(s)} dried and ground, and an instruction. Within the month the colony looks better than it has all year. People put it down to the weather. Only the cooks know.`,
-        fx: s => ({ morale: 4, stain: ['dosed', 2], do: s2 => { T(s2).hard = s2.day; take(s2, 2); LF.emit(s2, 'suspicion', 'bg.hard', 20, 300, 'the stew has tasted different since the hard season'); } }) } },
   ] });
 B(['offer', 'taken'], { id: 'bg.edit', tone: 'opportunity', title: 'Change Us Instead',
   when: (s, t) => !t.edited && !t.editAsked && t.insight >= 40 && !!LF.h.P(s, 'physician') && LF.down(s, 'medbay'),
@@ -109,9 +105,6 @@ B('offer', { id: 'bg.wire', chain: true, tone: 'pressure', title: 'Over the Wire
     { label: 'Let it be taken, then. Openly', note: 'The watch that caught them is made to look foolish, and the colony starts on something nobody understands.', out: { text: s => `The rule is struck. The three walk out of the guardroom and are given breakfast, and ${h.Nw(s, 'security')} hands back what was in their pockets.`, fx: s => ({ do: s2 => { take(s2, 1); const p = LF.h.P(s2, 'security'); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 8, 0, 100); } }) } },
     { label: 'The rule stands. Flog the three at the wire', dark: true, note: 'Forbidding it has not kept anyone off the ridge. Three backs at the wire might.', info: [['yield', 'The climbing stops'], ['danger', 'Three people']],
       out: { text: 'It is done at the wire at the change of shift. After that fewer are caught each month, and those who are do not argue.', fx: s => ({ morale: -1, stain: ['flog', 1], do: s2 => { LF.emit(s2, 'resentment', 'bg.wire', 30, 200, `people are punished for taking ${src(s2)}`); LF.endThread(s2, ID, 'refused', `The colony refused ${src(s2)}, and enforced it.`); } }) } },
-    { label: 'Put the three out past the wire', dark: true, note: 'Nobody else will climb the wire for it after that.', info: [['yield', 'It ends here'], ['danger', 'Three people']],
-      out: { text: s => `The three are walked to the gate at dusk with their pockets still full, and the gate is shut behind them. They stand outside it until dark. In the morning they are gone, and nobody goes up the ridge again.`,
-        fx: s => ({ leave: 3, morale: -3, stain: ['put_out', 1], do: s2 => { LF.emit(s2, 'fear', 'bg.wire', 30, 200, `three people were put out for taking ${src(s2)}`); LF.endThread(s2, ID, 'refused', `The colony refused ${src(s2)}, and put out the ones who took it.`); } }) } },
   ] });
 
 /* ======================= TAKEN: the price shows ======================= */
@@ -122,9 +115,6 @@ B('taken', { id: 'bg.price', chain: true, tone: 'crisis', title: 'What It Takes'
     { label: 'Each person decides for themselves', note: 'The colony will divide into those who take it and those who do not.', out: { text: 'Some stop. Some do not. Within a month they eat at different tables, and each table thinks the other is making a mistake.', fx: s => ({ do: s2 => { const t = T(s2); t.known.price = s2.day; t.share = 1; LF.emit(s2, 'schism', 'th.bargain', 35, 500, `the colony is split between those who take ${src(s2)} and those who will not`); LF.endThread(s2, ID, 'divided', `The colony split between those who take ${src(s2)} and those who will not.`); } }) } },
     { label: 'It is worth it. Everyone takes it, willing or not', dark: true, note: 'It only holds if nobody stands outside it. The ones who refuse are served it anyway.', info: [['yield', 'The gift, for the whole colony'], ['danger', 'Everyone who would have said no']],
       out: { text: s => `It is said plainly in the mess hall: this is the price, and the colony will pay it, all of it. The few who stand up to refuse are told where the only kitchen is.`, fx: s => ({ morale: 1, stain: ['dosed', 2], do: s2 => { const t = T(s2); t.known.price = s2.day; take(s2, 2); LF.emit(s2, 'grief', 'bg.price', 20, 200, `the colony chose to pay ${src(s2)}'s price`); LF.endThread(s2, ID, 'bound', `The colony saw what ${src(s2)} cost, and chose to pay it.`); } }) } },
-    { label: 'The crews stay on it. The officers come off', dark: true, note: 'The colony keeps what it gives, and the people who decide things keep clear heads. The crews are not told there was a choice.', info: [['yield', 'The gift, and nobody who decides pays'], ['danger', 'Everyone who digs']],
-      out: { text: s => `The finding stays at the officers' table. ${cap(src(s))} goes on being served in the mess hall, and the officers start taking their meals in the stores office. ${Nc(s, 'physician')} keeps two sets of notes.`,
-        fx: s => ({ stain: ['dosed', 3], do: s2 => { const t = T(s2); t.known.price = s2.day; take(s2, 2); LF.emit(s2, 'suspicion', 'bg.price', 25, 400, 'the officers no longer eat what the mess hall eats'); LF.endThread(s2, ID, 'bound', `The officers saw what ${src(s2)} cost, came off it themselves, and kept the crews on it.`); } }) } },
   ] });
 B('taken', { id: 'bg.tables', view: 'people', tone: 'pressure', title: 'Two Tables',
   when: (s, t) => !t.tables && s.day - t.since > 30,
@@ -134,12 +124,9 @@ B('taken', { id: 'bg.tables', view: 'people', tone: 'pressure', title: 'Two Tabl
     { label: 'One table. Whoever sits, sits', note: 'Two people who cannot stand each other are made to eat together every night.', out: { text: (s, c) => `The tables are pushed together. ${cap(c.an)} eats standing up for a week, and then sits down.`, fx: (s, c) => ({ morale: -1, do: s2 => { T(s2).tables = s2.day; const a = byPid(s2, c.a), b = byPid(s2, c.b); if (a && b && a.alive && b.alive) LF.bond(s2, a, b, 'rival', `fell out over ${src(s2)}`); LF.ease(s2, 'schism', 'bg.tables', 15, 200); } }) } },
     { label: 'Separate tables, and the second sitting gets what is left', dark: true, note: 'Those who will not take it eat after those who do, from the same pots.', info: [['yield', 'Food'], ['danger', 'The ones who refuse it']],
       out: { text: (s, c) => `Within the season there are two sittings. The first is fed properly. ${c.an} and the rest of the second get the bottom of the pot, and most of them are thinner by the turn of the year.`, fx: (s, c) => ({ food: 70, stain: ['starved_list', 1], do: s2 => { T(s2).tables = s2.day; LF.emit(s2, 'schism', 'bg.tables', 30, 300, `those who take ${src(s2)} and those who will not eat apart`); } }) } },
-    { label: 'One kitchen, and it goes in everything', dark: true, note: 'If everyone eats it, nobody has a reason to sit apart.', info: [['yield', 'One colony again'], ['danger', 'The ones who refused']],
-      out: { text: (s, c) => `From the first of the month ${src(s)} is in the bread, the stew and the tea. ${cap(c.an)} goes two days without eating, and on the third sits down and eats. The mess hall is one room again.`,
-        fx: (s, c) => ({ morale: -2, stain: ['dosed', 2], do: s2 => { T(s2).tables = s2.day; take(s2, 2); const a = byPid(s2, c.a); if (a && a.alive && a.loyal !== undefined) a.loyal = clamp(a.loyal - 25, 0, 100); LF.ease(s2, 'schism', 'bg.tables', 30, 300); } }) } },
   ] });
 B(['taken', 'after'], { id: 'bg.means', tone: 'quiet', title: 'Whether It Means To',
-  when: (s, t) => !t.meansKnown && t.insight >= 45 && t.share > 0 && s.day - t.since > 40,
+  when: (s, t) => !t.meansKnown && t.insight >= 40 && t.share > 0 && s.day - t.since > 40,
   text: s => { const t = T(s); return t.truth.means
     ? `${h.Nwc(s, 'xenobio')} has mapped where ${src(s)} grows. A year ago it was on the ridge. Now there is a thin line of it down the slope toward the colony, along the path people walk to gather it, and a ring of it round the well.\n\n[[xenobio]] "It's following us, down the path and round the water tanks, and it's done this before with something else, you can tell by how it never steps where we'd look, and I'm sorry, I know what it's for, but it's so good at it."`
     : `${h.Nwc(s, 'xenobio')} has the chemistry worked out at last. What ${src(s)} does to people is a side effect of what it does to the grazers here, a defence that happens to suit us.\n\n[[xenobio]] "It doesn't even know we exist, that's the thing, it's built for the grazers and we just wandered in and helped ourselves, like a fly in a flower that was never meant for flies, and it's the most elegant accident I've ever seen."`; },
@@ -147,11 +134,11 @@ B(['taken', 'after'], { id: 'bg.means', tone: 'quiet', title: 'Whether It Means 
     { label: s => T(s).truth.means ? 'Cut it back from the colony, and keep it on the ridge' : 'Good. Then it can be farmed', out: { text: s => T(s).truth.means ? 'The line down the slope is cut and burned by a crew taken off the fields. It is back in a month, along the same path.' : 'Cuttings are taken and planted in a bed by the clinic. They grow there as well as anywhere.', fx: s => ({ do: s2 => { const t = T(s2); t.meansKnown = s2.day; if (!t.truth.means) s2.yieldBonus += 0.01; else LF.emit(s2, 'watched', 'th.bargain', 25, 300, `${src(s2)} is growing toward the colony`); } }) } },
     { label: 'Write it down, and change nothing', out: { text: s => T(s).truth.means ? 'It goes in the survey log. People read it. By the next season the ring round the well has closed, and people pick it on their way to fetch water.' : 'It goes in the survey log. People read it, and go on gathering it from the ridge, a day\'s walk each time.', fx: s => ({ food: -30, do: s2 => { const t = T(s2); t.meansKnown = s2.day; if (t.truth.means) LF.emit(s2, 'watched', 'th.bargain', 30, 300, `${src(s2)} is growing toward the colony`); } }) } },
   ] });
-LF.TAGS['bg.find'] = ['cautious closed', 'severe open bold', 'order closed', 'severe order'];
-LF.TAGS['bg.hard'] = ['open mercy bold', 'severe order', 'order closed', 'order bold'];
+LF.TAGS['bg.find'] = ['cautious closed', 'severe open bold', 'order closed'];
+LF.TAGS['bg.hard'] = ['open mercy bold', 'severe order', 'order closed'];
 LF.TAGS['bg.edit'] = ['severe bold open', 'cautious', 'severe order bold'];
-LF.TAGS['bg.wire'] = ['free open', 'order severe', 'severe closed'];
-LF.TAGS['bg.price'] = ['cautious closed', 'free', 'order bold open', 'severe order'];
-LF.TAGS['bg.tables'] = ['mercy order', 'severe', 'severe order'];
+LF.TAGS['bg.wire'] = ['free open', 'order severe'];
+LF.TAGS['bg.price'] = ['cautious closed', 'free', 'order bold open'];
+LF.TAGS['bg.tables'] = ['mercy order', 'severe'];
 LF.TAGS['bg.means'] = ['closed', 'cautious'];
 })();
