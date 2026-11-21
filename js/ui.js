@@ -347,6 +347,37 @@ function readingHTML(r, reveal) {
     <div class="eb"><i style="left:${pc(r.lo)}%;width:${Math.max(1.5, pc(r.hi) - pc(r.lo))}%"></i>${reveal ? `<b class="${miss ? 'miss' : ''}" style="left:${pc(r.actual)}%"></b>` : ''}</div>
     <small>${reveal ? `<span class="${miss ? 'bad' : 'good'}">Actual: ${LF.fmt(r.k, r.actual)}${D.unit}${miss ? ' · outside the estimate' : ''}</span>` : `${esc(LF.gloss(r.k, r))} · confidence ${r.conf}%`}</small></div>`;
 }
+/* The telescope (Lachlan, 2026-11-21): each planet as the ship's array sees it, blown up from a few pixels. The source is the
+   planet's own picture (scope_<kind>, or the easy site's orbit picture until that is painted); it is drawn into a canvas a few
+   dozen pixels across, fewer the further the star, cut to a few levels a channel and dusted with sensor noise, then shown large
+   with image-rendering: pixelated. Seeded by the candidate, so it does not shimmer when the screen redraws. */
+let siteFor = -1;   // the planet whose two landing sites are open
+const scopeSrc = c => { const W = LF.WORLDS && LF.WORLDS[c.kind], sc = W && W.scope; return (LF.SCENES || []).includes(sc) ? sc : `orbit_${c.type}`; };
+const scopePx = c => Math.round(40 - 16 * c.j);
+function scopes() {
+  document.querySelectorAll('canvas.scope[data-src]').forEach(cv => {
+    const img = new Image(), n = cv.width, seed = +cv.dataset.seed || 1;
+    img.onload = () => { const g = cv.getContext('2d'), side = Math.min(img.width, img.height) * 0.96;
+      g.imageSmoothingEnabled = true; g.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, n, n);
+      let d; try { d = g.getImageData(0, 0, n, n); } catch (e) { cv.classList.add('lit'); return; }   // opened from file://: the picture is tainted, so it stays blocky but unquantised
+      const px = d.data; let x = seed >>> 0;
+      const rnd = () => { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; }, lv = 5, q = v => Math.round(v / 255 * (lv - 1)) / (lv - 1) * 255;
+      for (let i = 0; i < px.length; i += 4) { const nz = (rnd() - 0.5) * 34, dead = rnd() < 0.012;
+        for (let c = 0; c < 3; c++) px[i + c] = dead ? 0 : Math.max(0, Math.min(255, q(px[i + c] + nz))); }
+      g.putImageData(d, 0, 0); cv.classList.add('lit'); };
+    img.src = window.LFBoot && LFBoot.scene ? LFBoot.scene(cv.dataset.src) : `art/scenes/${cv.dataset.src}.webp`;
+  });
+}
+/* One reading as an error bar: whiskers at the two ends of the array's range, a tick at its middle. */
+const errBar = r => { const D = LF.PROPS[r.k], pc = v => Math.max(0, Math.min(100, 100 * (v - D.min) / (D.max - D.min)));
+  return `<div class="eb err"><i style="left:${pc(r.lo)}%;width:${Math.max(2, pc(r.hi) - pc(r.lo))}%"></i></div>`; };
+function siteHTML(c, i) {
+  if (!c.sites) return `<button class="opt go" data-act="embark" data-v="${i}">Burn for ${esc(c.star)}</button>`;
+  if (siteFor !== i) return `<button class="opt go" data-act="sites" data-v="${i}">Burn for ${esc(c.star)}</button>`;
+  return `<div class="sites"><p class="note">Two places on it would take a colony. Where the lander goes down decides what the colony lives on.</p>${c.sites.map((t, k) => { const T = LF.SITE_TERMS[t];
+    return `<button class="opt site" data-act="embark" data-v="${i}:${k}"><b>${esc(T.site.charAt(0).toUpperCase() + T.site.slice(1))}</b><span class="tag">${k ? 'Hard' : 'Easy'}</span><small>${esc(T.gives)} ${esc(T.costs)}</small></button>`; }).join('')}
+    <button class="opt back" data-act="sites" data-v="-1">Another star</button></div>`;
+}
 function adriftHTML() {
   const a = s.adrift, n = a.cands.length;
   let h = `<div class="banner"><img class="scene" src="art/adrift.webp" alt=""></div><div class="card"><div class="lbl tone">Forty-one years out</div><h2>Adrift</h2>
@@ -356,12 +387,14 @@ There is reaction mass for one more burn. The long-range array has found ${['', 
     <p class="note" style="padding:0">Each bar is the array's estimate, with its confidence: the chance the truth lies inside the bar. The truth is rarely in the middle. A longer burn costs sleepers, stores and machine life. The real survey waits until you arrive, and so does a name.</p></div>
     <h3>${ic('array', 'h3i')}Stars in reach · nearest first</h3>`;
   // Every reading on every candidate, straight away: opening them one by one was only button clicking.
-  a.cands.forEach((c, i) => { const R = LF.transitRisk(c);
+  a.cands.forEach((c, i) => { const R = LF.transitRisk(c), W = LF.WORLDS && LF.WORLDS[c.kind];
     h += `<div class="box cand"><div class="ch">${ic('world')}<span class="t"><b>${esc(c.star)}</b><small>${c.ly.toFixed(1)} light-years · ${c.years} years at the engine's rating</small></span></div>
-      <div class="mini">${c.readings.map(r => { const D = LF.PROPS[r.k], pc = v => 100 * (v - D.min) / (D.max - D.min);
-        return `<div><span>${D.name.split(' ').pop()} <em>${LF.fmt(r.k, r.lo)} to ${LF.fmt(r.k, r.hi)}${D.unit.trim()} · ${r.conf}%</em></span><div class="eb"><i style="left:${pc(r.lo)}%;width:${Math.max(2, pc(r.hi) - pc(r.lo))}%"></i></div></div>`; }).join('')}</div>
+      <div class="scan">${c.kind ? `<figure class="scope"><canvas class="scope" width="${scopePx(c)}" height="${scopePx(c)}" data-src="${scopeSrc(c)}" data-seed="${c.seed}" aria-label="The array's picture of the planet"></canvas><figcaption>${esc(W.name)}</figcaption></figure>` : ''}
+      <div class="mini">${c.readings.map(r => { const D = LF.PROPS[r.k];
+        return `<div><span>${r.k === 'tech' ? 'Tech' : D.name.split(' ').pop()} <em>${LF.fmt(r.k, r.lo)} to ${LF.fmt(r.k, r.hi)}${D.unit.trim()} · ${r.conf}%</em></span>${errBar(r)}</div>`; }).join('')}</div></div>
+      ${W ? `<small class="burn">${esc(W.blurb)}</small>` : ''}
       <small class="burn">The burn, at its rated pace: ${R.lo} to ${R.hi}% of the sleepers lost, ${R.wear} wear on every machine${c.j > 0.25 ? ', a few of the watch' : ''}. How the ship crosses is decided once it is under way.</small>
-      <button class="opt go" data-act="embark" data-v="${i}">Burn for ${esc(c.star)}</button></div>`; });
+      ${siteHTML(c, i)}</div>`; });
   return h;
 }
 /* The arrival (Lachlan, 2026-11-19): first the crossing report alone, then two tabs, the world (its picture and what the
@@ -877,6 +910,7 @@ function render() {
   const y = window.scrollY, was = document.querySelector('#view > .vw'), top0 = was && was.getBoundingClientRect().top;
   $('view').innerHTML = s.adrift ? (needCrew() ? preHTML() : dossier >= 0 ? dossierHTML() : s.cur ? proHTML() : adriftHTML()) : surveying() ? arrivalHTML() : playHTML();
   window.scrollTo(0, y);
+  if (s.adrift && !s.cur) scopes();
   // A card that arrives (or changes size as it resolves) pushes the view down: the view glides from where it was.
   const vw = document.querySelector('#view > .vw');
   if (reveal && was && vw && !vw.classList.contains('swap') && !reduced() && vw.animate) {
@@ -899,7 +933,8 @@ function menu(open) {
     <button class="opt go" data-act="menu">Close</button></div>`;
 }
 function act(a, v, el) {
-  if (a === 'embark' && s.adrift) { LF.embark(s, +v); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years` }); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
+  if (a === 'sites' && s.adrift) { siteFor = +v; return render(); }
+  if (a === 'embark' && s.adrift) { const [ci, si] = String(v).split(':'); siteFor = -1; LF.embark(s, +ci, +si || 0); log('embark', { detail: `${s.world.star}, ${s.world.transit.years} years${s.world.kind ? `, ${s.world.kind} world, ${s.world.site ? 'hard' : 'easy'} site (${s.world.type})` : ''}` }); naming = false; arrStep = 0; arrTab = 'world'; arrSeen = false; save(); window.scrollTo(0, 0); return s.cur ? arrive(true) : proceed(); }
   else if (a === 'arrive') { naming = true; window.scrollTo(0, 0); return arrive(true); }
   else if (a === 'arrnext') { arrStep = 1; arrTab = 'world'; window.scrollTo(0, 0); return render(); }
   else if (a === 'arrtab') { arrTab = v === 'report' ? 'report' : 'world'; if (arrTab === 'report') arrSeen = true; return render(); }

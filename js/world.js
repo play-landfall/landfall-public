@@ -7,42 +7,42 @@
 const { ri, pick, rand, clamp } = LF;
 
 LF.ARCHETYPES = {
-  barren: { name: 'Lichen world', cls: 'E', pts: 3, sv: { water: [2, 14], temp: [-10, 32], bio: [3, 14] }, bounty: 0, yield: 0.13, late: 0.35, mat: 45,
+  barren: { name: 'Lichen world', cls: 'E', pts: 3, sv: { water: [2, 14], temp: [-10, 32], bio: [3, 14] }, bounty: 0, yield: 0.13, late: 0.35, mat: 15, ore: 0.3,
     blurb: 'Rock, wind, and a grey-green crust on the lee side of stones. Nothing here will hurt you or feed you.',
     prefixes: ['scree', 'dust', 'ash', 'slate', 'wind', 'cinder'], climate: { flare: 3, winter: 1.5, storm: 1 },
     kinds: { flora: 2, ruin: 1.2, humans: 1.4, plague: 0.6, fauna: 0.3, natives: 0.15 },
     subs: { flora: ['mat', 'mat', 'bloom'], plague: ['rot', 'sleep'], fauna: ['delver'], natives: ['remnant', 'deep'], humans: ['splinter', 'claimants'] },
     lex: { cover: 'the low grey growth', under: 'the dust flats', top: 'dust', surface: 'dust', slump: 'The dust bank slumps over it', wild: 'the grey crust off the lee of the stones', wild1: 'grey crust', burnt: 'windburnt' },
     zones: { wet: 'the meltwater basin', high: 'the basalt shelf', deep: 'the rift canyon', near: 'the dust plain beside the anomaly' } },
-  ruin: { name: 'Graveyard world', cls: 'D', pts: 6, sv: { water: [14, 40], temp: [4, 26], bio: [14, 34] }, bounty: 1, yield: 0.07, late: 0.3, mat: 45,
-    blurb: 'From orbit the continents are scored with straight lines. Somebody built here once and is gone. The array cannot tell when they left, or why. Between the walls there is only dry rock, wind, and a grey-green crust in the lee of the stones.',
+  ruin: { name: 'Graveyard world', cls: 'D', pts: 6, sv: { water: [14, 40], temp: [4, 26], bio: [14, 34] }, bounty: 1, yield: 0.06, late: 0.3, mat: 70, ore: 0.38, wreck: 520,
+    blurb: 'From orbit the continent is scored with straight lines. Somebody built here once and is gone. The array cannot tell when they left, or why. Between the walls there is only dry rock, wind, and a grey-green crust in the lee of the stones.',
     prefixes: ['glass', 'slag', 'iron', 'bone', 'tomb', 'cable'], climate: { flare: 1.5, winter: 1, storm: 1 },
     kinds: { ruin: 4, natives: 0.8, humans: 1, fauna: 0.6, flora: 0.6, plague: 0.6 }, multi: ['ruin'],
     subs: { natives: ['remnant', 'hive'], humans: ['feral', 'claimants'], fauna: ['swarm', 'delver'], flora: ['mat', 'creeper'], plague: ['sleep', 'parasite'] },
     lex: { cover: 'the scrub', under: 'the rubble fields', top: 'rubble', surface: 'rubble', slump: 'The rubble slope slides over it', wild: 'the black moss off the old walls', wild1: 'wall moss', burnt: 'sunburnt' },
     zones: { wet: 'the canal basin', high: 'the terrace city', deep: 'the undercroft', near: 'the plaza beside the anomaly' } },
-  ice: { name: 'Ice world', cls: 'D', pts: 4, sv: { water: [6, 24], temp: [-48, -14], bio: [12, 32] }, bounty: 1, yield: 0.17, late: 0.4, mat: 30,
-    blurb: 'A white world with a thin green belt at the equator. The scans show liquid water under the ice, and warmth, in places, where there should be none.',
+  ice: { name: 'Ice world', cls: 'D', pts: 2, sv: { water: [6, 24], temp: [-48, -14], bio: [12, 32] }, bounty: 1, yield: 0.12, late: 0.4, mat: 90, ore: 0.5,
+    blurb: 'White to the horizon: ice sheets over frozen continents, and a thin green fringe where the ice meets the sea. The scans show liquid water under the ice, and warmth, in places, where there should be none.',
     prefixes: ['frost', 'rime', 'floe', 'hoar', 'drift', 'pale'], climate: { winter: 5, storm: 1 },
     kinds: { fauna: 1.5, ruin: 1.5, humans: 1, plague: 0.6, natives: 0.6, flora: 0.5 },
     subs: { fauna: ['giant', 'delver', 'pack'], ruin: ['nursery', 'engine', 'vault'], plague: ['sleep', 'wasting'], natives: ['deep', 'remnant', 'nomad'], flora: ['bloom', 'mat'] },
     lex: { cover: 'the snow', under: 'the ice', top: 'ice', surface: 'ice', slump: 'The ice face comes down over it', wild: 'the red weed from under the ice', wild1: 'red weed', burnt: 'windburnt' },
     zones: { wet: 'the thaw lake shore', high: 'the nunatak', deep: 'the ice cave', near: 'the moraine beside the anomaly' } },
-  drowned: { name: 'Ocean world', cls: 'C', pts: 8, sv: { water: [84, 97], temp: [12, 28], bio: [44, 70] }, bounty: 2, yield: -0.03, late: 0.4, mat: 0,
-    blurb: 'Nine-tenths water. Island chains, warm shallows, and a tide that moves the horizon. The array mapped the islands but could not see under the water.',
+  drowned: { name: 'Ocean world', cls: 'C', pts: 8, sv: { water: [84, 97], temp: [12, 28], bio: [44, 70] }, bounty: 2, yield: 0.13, late: 0.4, mat: -40, ore: 0.1,
+    blurb: 'Open sea round the middle of the world. Island chains, warm shallows, and a tide that moves the horizon. The array mapped the islands but could not see under the water.',
     prefixes: ['tide', 'reef', 'kelp', 'brine', 'squall', 'shoal'], climate: { storm: 5, flare: 1 },
     kinds: { fauna: 2, flora: 1.5, natives: 1.2, plague: 1, ruin: 0.8, humans: 0.6 },
     subs: { fauna: ['ambush', 'swarm', 'giant'], flora: ['bloom', 'creeper', 'choir'], natives: ['deep', 'hive'], ruin: ['vault', 'engine', 'archive'] },
     lex: { cover: 'the reed beds', under: 'the lagoon floor', top: 'silt', surface: 'water', slump: 'The reef wall comes down over it', wild: 'the brown wrack off the reef', wild1: 'reef wrack', burnt: 'sunburnt' },
     zones: { wet: 'the lagoon shore', high: 'the caldera rim', deep: 'the sea-cave harbour', near: 'the reef flat beside the anomaly' } },
-  jungle: { name: 'Hothouse world', cls: 'B', pts: 8, sv: { water: [54, 80], temp: [26, 42], bio: [78, 96] }, bounty: 3, yield: 0.04, late: 0.2, mat: 10,
-    blurb: 'Green from pole to pole and loud from orbit in every band the sensors have. Everything grows fast here, and most of it gets eaten.',
+  jungle: { name: 'Hothouse world', cls: 'B', pts: 8, sv: { water: [54, 80], temp: [26, 42], bio: [78, 96] }, bounty: 3, yield: -0.01, late: 0.2, mat: 60,
+    blurb: 'Green from coast to coast across the middle of the world, and loud from orbit in every band the sensors have. Everything grows fast here, and most of it gets eaten.',
     prefixes: ['vine', 'rot', 'canopy', 'fen', 'thorn', 'mire'], climate: { storm: 2.5, flare: 1, winter: 0.4 },
     kinds: { fauna: 3, flora: 2, plague: 2, natives: 1, ruin: 0.4, humans: 0.4 }, multi: ['fauna'],
     subs: { flora: ['creeper', 'spore', 'choir'] },
     lex: { cover: 'the undergrowth', under: 'the forest floor', top: 'soil', surface: 'canopy', slump: 'The bank slumps over it', wild: 'the white root from under the leaf litter', wild1: 'white root', burnt: 'sunburnt' },
     zones: { wet: 'the river clearing', high: 'the limestone tor', deep: 'the sinkhole floor', near: 'the burn scar beside the anomaly' } },
-  garden: { name: 'Garden world', cls: 'A', pts: 10, sv: { water: [44, 70], temp: [9, 22], bio: [58, 84] }, bounty: 4, yield: 0, late: 0.8, mat: 0,
+  garden: { name: 'Garden world', cls: 'A', pts: 10, sv: { water: [44, 70], temp: [9, 22], bio: [58, 84] }, bounty: 4, yield: 0.03, late: 0.8, mat: 0,
     blurb: 'Meadows, clear rivers, a sky the colour of the old photographs. It looks better than the array promised, and people cried at the first images.',
     prefixes: ['meadow', 'orchard', 'brook', 'honey', 'willow', 'lark'], climate: { storm: 1, winter: 1, flare: 1 },
     kinds: { flora: 1.5, plague: 1.5, natives: 1.2, ruin: 1.2, fauna: 1, humans: 1 },
@@ -53,9 +53,30 @@ LF.ARCHETYPES = {
 
 /* The world's own words for ground, for text that would otherwise assume one (a desert's dunes on an ice world). */
 LF.lex = (s, k) => LF.ARCHETYPES[s.world.type].lex[k];
-/* The kinds of world a new game is dealt (Lachlan, 2026-11-21): the Lichen world is folded into the Graveyard world, a dry dead
-   world of rock and old walls, and is no longer offered. Its entry stays above so a saved game on one plays on. */
-LF.DEALT = ['garden', 'jungle', 'ice', 'drowned', 'ruin'];
+/* The three planets (Lachlan, 2026-11-21; DESIGN.md "Worlds"): every game offers the same three kinds of world, each with
+   its own name, star and distance, and each with two landing sites. The easy site feeds the colony; the hard one grows food
+   worse and pays it back in plate, ore or salvage. The site is the archetype the colony is played on (s.world.type), so
+   everything written per archetype still holds. `scope` is the telescope's picture (art/requests until it is painted). */
+LF.WORLDS = {
+  water:  { name: 'A water world', scope: 'scope_water', sites: ['drowned', 'ice'],
+    blurb: 'Bright, blue and white: open sea round the middle, ice caps reaching down from both poles.' },
+  green:  { name: 'A green world', scope: 'scope_green', sites: ['garden', 'jungle'],
+    blurb: 'Green continents under cloud, temperate at the edges and a dark belt of something denser round the middle.' },
+  barren: { name: 'A barren world', scope: 'scope_barren', sites: ['barren', 'ruin'],
+    blurb: 'Dun and grey, dry from pole to pole. On one continent the array keeps finding straight lines.' },
+};
+/* What each site gives and costs, in the words the choice uses: the easy site first. */
+LF.SITE_TERMS = {
+  drowned: { site: 'the island chains', gives: 'Warm shallows, fish and weed to eat.', costs: 'Little stone and no metal above the waterline.' },
+  ice:     { site: 'the ice shelf', gives: 'Ore in the moraines and good stone.', costs: 'Short light and frozen ground: food is hard won.' },
+  garden:  { site: 'the temperate coast', gives: 'Soil that takes a seed, and clean water.', costs: 'Soft ground and little to build with.' },
+  jungle:  { site: 'the canopy belt', gives: 'Hardwood and fibre past counting.', costs: 'Most of what grows gets eaten, the crops first.' },
+  barren:  { site: 'the dust plains', gives: 'Bare ground, and nothing wild in it to fight the crops.', costs: 'Little plate, and a long walk for ore.' },
+  ruin:    { site: 'the dead city', gives: 'Old walls full of metal to cut and carry.', costs: 'Poisoned rubble where the fields should be.' },
+};
+LF.worldOf = type => Object.keys(LF.WORLDS).find(k => LF.WORLDS[k].sites.includes(type)) || null;
+/* Every archetype a game can be played on. Kept as a list for whatever picks one at random. */
+LF.DEALT = Object.values(LF.WORLDS).reduce((a, w) => a.concat(w.sites), []);
 
 /* What each kind of thing can be. Frames (frames.js) are written against these slots. */
 LF.KINDS = {
@@ -130,7 +151,7 @@ LF.makeWorld = function (s, c) {
   const key = c.type || pick(s, LF.DEALT), A = LF.ARCHETYPES[key], j = c.j || 0;
   let pts = Math.max(2, A.pts + (c.adj || 0) - Math.round(j * 2.5));
   s.yieldBonus = A.yield + 0.02;   // +0.02 for every world (2026-11-14): the variance the openings and drawn holds add, and the four minor threads (thread-small.js)
-  s.world = { type: key, cls: A.cls, j, threatPts: pts, planet: c.desig || c.name || pick(s, PLANETS), sid: c.name || '', star: c.star || '', climate: wpick(s, A.climate), arcs: [], mysteries: [] };
+  s.world = { type: key, kind: c.kind || LF.worldOf(key), site: c.site === undefined ? null : c.site, cls: A.cls, j, threatPts: pts, planet: c.desig || c.name || pick(s, PLANETS), sid: c.name || '', star: c.star || '', climate: wpick(s, A.climate), arcs: [], mysteries: [], grav0: c.grav || 0 };
   s.world.arcs.push(s.world.climate);
   s.factors = [];
   const names = [], kindsUsed = {};
@@ -166,7 +187,8 @@ function truth(s, A) {
   const w = s.world, sev = ks => s.factors.filter(f => ks.includes(f.kind)).reduce((a, f) => a + f.sev, 0);
   const water = ri(s, A.sv.water[0], A.sv.water[1]);
   const temp = ri(s, A.sv.temp[0], A.sv.temp[1]) - (w.climate === 'winter' ? 6 : 0);
-  const grav = Math.round((0.72 + rand(s) * 0.4 + rand(s) * 0.28) * 100) / 100;
+  let grav = Math.round((0.72 + rand(s) * 0.4 + rand(s) * 0.28) * 100) / 100;
+  if (w.grav0) grav = w.grav0;   // one planet, one gravity, whichever site (makeAdrift)
   const bio = clamp(ri(s, A.sv.bio[0], A.sv.bio[1]) + 3 * sev(['fauna', 'flora', 'plague']) + (w.mysteries.includes('understory') ? 6 : 0), 0, 100);
   // Technosignature: things that were made, plus whatever merely looks made from this far off.
   let made = 0;
@@ -255,15 +277,20 @@ LF.PREMISES = {
 };
 LF.premiseOf = seed => { const k = Object.keys(LF.PREMISES); let h = 2166136261; for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return k[(h >>> 0) % k.length]; };
 LF.makeAdrift = function (s) {
-  const types = LF.DEALT.slice(), names = PLANETS.slice(), n = 3, cands = [];   // three candidates: three of the kinds of world dealt (LF.DEALT), shuffled, so no two games offer the same choice
+  // three candidates, always the same three kinds of world (LF.WORLDS), shuffled, nearest first; names, stars and distances per game
+  const types = Object.keys(LF.WORLDS), names = PLANETS.slice(), n = 3, cands = [];
   for (let i = types.length - 1; i > 0; i--) { const q = ri(s, 0, i); [types[i], types[q]] = [types[q], types[i]]; }
   for (let i = 0; i < n; i++) {
+    const W = LF.WORLDS[types[i]];
     const j = clamp((i + 0.15 + 0.7 * rand(s)) / n, 0, 1), ly = Math.round((1.9 + 7.4 * j) * 10) / 10;
-    const c = { type: types[i], j, ly, years: Math.round(ly * 4.4), adj: ri(s, -1, 1), seed: (rand(s) * 2147483647) | 0, name: (names.splice(ri(s, 0, names.length - 1), 1), LF.planetName(`${s.seed}/${i}`, cands.map(x => x.name))) };
-    c.star = LF.starName(`${s.seed}/${i}`, cands.map(x => x.star)); c.desig = `${c.star} ${'bcde'[c.seed & 3]}`;   // a catalogue number is all anyone has until the ship is in orbit and somebody names the place   /* the old list is still drawn from, so the dice fall as before; the name is generated (planet.js) */
-    const x = { rng: c.seed, flags: {}, factors: [] }; LF.makeWorld(x, c);
-    c.readings = Object.keys(LF.PROPS).map(k => reading(s, k, x.world.truth[k], j));
-    c.readings[5].kind = x.world.hazKind;
+    const c = { kind: types[i], sites: W.sites.slice(), type: W.sites[0], j, ly, years: Math.round(ly * 4.4), adj: ri(s, -1, 1), seed: (rand(s) * 2147483647) | 0, name: (names.splice(ri(s, 0, names.length - 1), 1), LF.planetName(`${s.seed}/${i}`, cands.map(x => x.name))) };
+    c.star = LF.starName(`${s.seed}/${i}`, cands.map(x => x.star)); c.desig = `${c.star} ${'bcde'[c.seed & 3]}`;   // a catalogue number is all anyone has until the ship is in orbit and somebody names the place
+    // the telescope sees the whole planet: each reading is of both sites together, and the gravity is the planet's
+    const x = { rng: c.seed, flags: {}, factors: [] }; LF.makeWorld(x, c); c.grav = x.world.grav;
+    const y = { rng: c.seed, flags: {}, factors: [] }; LF.makeWorld(y, Object.assign({}, c, { type: W.sites[1] }));
+    const mix = k => { const v = (x.world.truth[k] + y.world.truth[k]) / 2; return LF.PROPS[k].dp ? Math.round(v * 100) / 100 : Math.round(v); };
+    c.readings = Object.keys(LF.PROPS).map(k => reading(s, k, mix(k), j));
+    c.readings[5].kind = x.world.truth.haz >= y.world.truth.haz ? x.world.hazKind : y.world.hazKind;
     cands.push(c);
   }
   // The ship's own stores are the same whichever world is chosen. What differs is how much survives the burn.
@@ -272,8 +299,9 @@ LF.makeAdrift = function (s) {
 LF.transitRisk = c => ({ lo: Math.round(100 * (0.02 + 0.15 * c.j) * 0.6), hi: Math.round(100 * (0.02 + 0.15 * c.j) * 1.4), wear: c.j < 0.34 ? 'light' : c.j < 0.67 ? 'moderate' : 'heavy' });
 /* Commit to one candidate. The burn costs sleepers, a few of those thawed for the landing, stores and machine life, in proportion
    to its length; never ruinously. */
-LF.embark = function (s, i) {
-  const c = s.adrift.cands[i], k = s.adrift.kit, j = c.j, A = LF.ARCHETYPES[c.type];
+LF.embark = function (s, i, site) {
+  const c0 = s.adrift.cands[i], k = s.adrift.kit, j = c0.j, si = c0.sites ? (site ? 1 : 0) : null;   // site: 0 the easy one, 1 the hard one
+  const c = Object.assign({}, c0, si === null ? {} : { type: c0.sites[si], site: si }), A = LF.ARCHETYPES[c.type];
   s.rng = c.seed; LF.makeWorld(s, c);
   const w = s.world; w.ship = s.adrift.ship; w.readings = c.readings; w.hydro = 0.96 - 0.05 * j;
   const lostS = Math.round(k.sleepers * (0.02 + 0.15 * j) * (0.6 + 0.8 * rand(s))), lostP = Math.round(5 * j * (0.4 + rand(s)));
@@ -311,7 +339,7 @@ const ORE_TXT = {
 const ZONE_SEE = { wet: 'open water and the greenest ground in view', high: 'bare rock, wind, and long sight lines', deep: 'walls of stone on three sides and a strip of sky', near: 'the one thing the survey cannot explain, close enough to walk to' };
 function orbitalReport(s) {
   const w = s.world, A = LF.ARCHETYPES[w.type];
-  const r0 = rand(s); w.oreBody = r0 < (w.type === 'ruin' || w.type === 'barren' ? 0.38 : 0.26) ? 'near' : r0 < 0.72 ? 'hills' : 'far';
+  const r0 = rand(s); w.oreBody = r0 < (A.ore || 0.26) ? 'near' : r0 < 0.72 ? 'hills' : 'far';
   // the report is right as often as it says it is
   const conf = { near: 90, hills: ri(s, 12, 16) * 5, far: ri(s, 7, 10) * 5 }[w.oreBody], ores = ['near', 'hills', 'far'];
   const said = rand(s) * 100 < conf ? w.oreBody : pick(s, ores.filter(o => o !== w.oreBody));
@@ -370,7 +398,8 @@ const FROM_ORBIT = { vault: 'a radar return too square to be geology', engine: '
 LF.briefing = function (s) {
   const A = LF.ARCHETYPES[s.world.type], w = s.world;
   const hint = LF.anomaly(s);
-  return `${w.planet}, from orbit: ${A.name.toLowerCase()}. ${A.blurb}\n\n${s.pop} of you are awake, and ${s.sleepers} sleep on aboard the ${w.ship}. The lander can set the reactor down once.`
+  const T = w.kind && w.site !== null && LF.SITE_TERMS[w.type], other = T && LF.SITE_TERMS[LF.WORLDS[w.kind].sites[1 - w.site]];
+  return `${w.planet}, from orbit: ${A.name.toLowerCase()}. ${A.blurb}${T ? ` The lander is bound for ${T.site}, not ${other.site}. ${T.gives} ${T.costs}` : ''}\n\n${s.pop} of you are awake, and ${s.sleepers} sleep on aboard the ${w.ship}. The lander can set the reactor down once.`
     + (hint ? ` The orbital pass flagged one anomaly: ${hint}.` : '')
     + `\n\nEarth is ${41 + w.transit.years} years behind you. Choose your ground.`;
 };

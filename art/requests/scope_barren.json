@@ -1,0 +1,12 @@
+{
+  "id": "scope_barren",
+  "kind": "other",
+  "size": "square",
+  "subject_in": "this file",
+  "subject": "a whole planet seen from space, centred in the frame with dark starry space all round it: a dry dun and lichen-grey rock world, wide dust plains and cracked basins, no seas, and across one continent the faint straight lines and grid of ruined cities, very faint, like scratches",
+  "card": "the adrift screen's telescope picture for a barren world (js/ui.js scopeSrc, LF.WORLDS in js/world.js)",
+  "setting": "planet",
+  "officers": [],
+  "notes": "One whole planet, round and centred, filling about 80% of a square frame, with plenty of dark space round it, so it still reads as a disc when the game pixelates it to 24-40 pixels across. It must show both of the planet's landing sites on one globe (see subject). Same screenprint-light style and palette as the orbit_<type> pictures. No ship, no lander, no text. The game crops a centred square, then pixelates and adds noise in the browser: do not pixelate or add noise in the painting.",
+  "requested": "2026-11-21, cloud session (three planets and the telescope)"
+}

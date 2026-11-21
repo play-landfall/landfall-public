@@ -104,6 +104,24 @@ main { flex:1; padding:6px 12px 40px; }
    screen, which Firefox then zooms out to fit (Lachlan's Pixel 9, 2026-11-16). The bars stay level along the bottom. */
 .mini { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:7px 14px; margin-top:10px; } .mini > div { min-width:0; display:flex; flex-direction:column; justify-content:flex-end; } .mini span { display:block; font:800 9.5px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--dim); overflow-wrap:anywhere; } .mini em { white-space:nowrap; } .mini em { font-style:normal; color:var(--ink); letter-spacing:.02em; font-variant-numeric:tabular-nums; } .mini .eb { height:6px; margin:2px 0 0; }
 .cand .burn { display:block; margin:10px 2px 0; line-height:1.3; } .cand .opt.go { margin-top:10px; }
+/* the telescope (Lachlan, 2026-11-21): a few dozen pixels blown up, with faint scan lines over them */
+.cand .scan { display:flex; gap:12px; align-items:flex-start; margin-top:10px; } .cand .scan .mini { flex:1; margin-top:0; min-width:0; }
+figure.scope { margin:0; flex:0 0 104px; text-align:center; }
+figure.scope canvas { display:block; width:104px; height:104px; border-radius:14px; background:var(--shade); image-rendering:pixelated; image-rendering:crisp-edges; opacity:0; transition:opacity .5s ease; }
+figure.scope canvas.lit { opacity:1; }
+figure.scope { position:relative; } figure.scope::after { content:''; position:absolute; left:0; top:0; width:104px; height:104px; border-radius:14px; pointer-events:none;
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, var(--hair) 2px 3px); mix-blend-mode:multiply; opacity:.7; }
+figure.scope figcaption { font:800 9.5px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
+@media (max-width:380px) { .cand .scan { flex-direction:column; align-items:center; } .cand .scan .mini { width:100%; } }
+.eb.err { background:none; height:10px; } .eb.err::before { content:''; position:absolute; left:0; right:0; top:50%; height:2px; margin-top:-1px; background:var(--track); border-radius:1px; }
+.eb.err i { background:none; opacity:1; border-radius:0; border-left:2px solid var(--ink); border-right:2px solid var(--ink); }
+.eb.err i::before { content:''; position:absolute; left:0; right:0; top:50%; height:2px; margin-top:-1px; background:var(--ink); }
+.eb.err i::after { content:''; position:absolute; left:50%; top:50%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:var(--rust); }
+.mini .eb.err { height:10px; margin:3px 0 0; }
+.cand .sites { margin-top:10px; } .cand .sites .note { padding:0 2px; margin:0 0 6px; }
+.cand .opt.site { display:block; text-align:left; margin-top:8px; } .cand .opt.site b { font-size:15px; } .cand .opt.site small { display:block; margin-top:3px; line-height:1.3; }
+.cand .opt.site .tag { float:right; font:800 9.5px var(--label); letter-spacing:.07em; text-transform:uppercase; color:var(--dim); margin-top:3px; }
+.cand .opt.back { margin-top:8px; }
 .rd small b { color:var(--ink); }
 
 /* notable colonists: the attach strip on a dilemma, and the roster */

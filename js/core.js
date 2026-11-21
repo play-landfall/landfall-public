@@ -419,7 +419,7 @@ LF.land = function (s) {
   const ids = Object.keys(LF.MACHINES), hurt = LF.pick(s, ids);
   s.machines[hurt].hp = 60; s.machines[hurt].cap = 82; s.world.landingDamage = hurt;
   // the wreck: what the salvage crews can cut from the pods and the lander's fairings before they must look further (LF.matIn)
-  s.wreck = s.world.type === 'ruin' ? 520 : 320;
+  s.wreck = (LF.ARCHETYPES[s.world.type] || {}).wreck || 320;   // a hard site's salvage (world.js)
   // Only the reactor goes down with the first flight for certain; the rest wait aboard (setup.sys picks one more).
   for (const id in s.machines) if (id !== 'reactor' && id !== 'lander') s.machines[id].up = true;
   s.fuel = 2;   // two flights after landfall, then the digester (Lachlan, 2026-11-16)

@@ -68,7 +68,7 @@ op('world', s => s.world.type === 'drowned' ? 1 : 0, { id: 'op.tide', view: 'wor
       ok: { text: 'Forty people stand waist deep in the dark and pass the lockers hand to hand up the beach. The last one comes out with the water at chest height. Nothing is lost that will be missed.', fx: { morale: 2, yield: 0.02, stain: ['roped', 1] } },
       bad: { text: 'The second surge comes in sideways and takes the bottom of the chain off its feet, and the rope takes the next four with it. The lockers are saved. Four of the people who saved them are found along the beach over the next three days.', fx: { pop: -4, morale: -3, yield: 0.01, stain: ['roped', 1] } } },
   ] });
-op('world', s => s.world.type === 'barren' || s.world.type === 'ruin' ? 1 : 0, { id: 'op.dust',   // the Graveyard world carries the Lichen world's dust (2026-11-21)
+op('world', s => s.world.type === 'barren' || s.world.type === 'ruin' ? 1 : 0, { id: 'op.dust',   // both sites of the barren planet, one dry world (2026-11-21)
   view: 'colony', tone: 'pressure', title: 'Dust in Everything',
   text: s => `The dust here is finer than flour and it gets everywhere: the filters, the bearings, people's lungs. ${Nwc(s, 'physician')} has eleven coughs in the clinic. ${Nwc(s, 'engineer')} has a ${LF.down(s, 'fabricator') ? 'fabricator' : 'coolant pump'} that sounds like a gravel pit.\n\n[[engineer]] "There's plate to skin the machines or plate to wall in the people, not both, and the way she's grinding in there I wouldn't promise you many more months of it. Don't look at me like I've hidden the rest, I didn't pack it."`,
   choices: [
