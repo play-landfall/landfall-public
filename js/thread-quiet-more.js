@@ -163,9 +163,6 @@ H('qs.count', { title: 'One Too Many', puzzle: 'manifest', when: s => up(s).leng
     { label: 'Have bank C thawed and counted by hand', note: 'The ones in bank C are woken early to be counted, and early waking goes badly for some.', hint: 'unknown', info: [['yield', 'A count by hand'], ['danger', 'The sleepers in bank C']],
       out: { text: (s, c) => `${c.first} thaws bank C one pod at a time over three passes and counts them by hand. Every pod holds who the manifest says it should. Two of them wake with their speech gone and do not get it back.${c.k === 'waker' ? ' The extra trace is gone from the monitor the night the first lid lifts, and something goes along the ducts overhead while ' + c.first + ' is kneeling at pod 31.' : ''}`,
         fx: (s, c) => ({ sleepers: -Math.min(2, s.sleepers), morale: -1, do: s2 => { hev(s2, 1); if (c.k === 'waker') trust(s2, -1); told(s2, 'qs.count'); } }) } },
-    { label: 'Seal bank C, and keep it sealed', note: 'Whatever is in there stays in there, and so do the sleepers in it, with nobody checking them.', hint: 'unknown', info: [['yield', 'Nobody goes near it'], ['danger', 'Bank C, unwatched']],
-      out: { text: (s, c) => `Bank C is sealed from the bridge. ${c.k === 'waker' ? `The extra trace stays on the monitor for two more nights, then drops off it. ${c.first} says the galley has been emptier since.` : 'The extra trace stays on the monitor, steady, behind the door.'}`,
-        fx: (s, c) => ({ sleepers: -Math.min(1, s.sleepers), do: s2 => { if (c.k === 'waker') trust(s2, -2); told(s2, 'qs.count'); } }) } },
     { label: (s, c) => `Bring ${c.first} down on the next flight`, req: s => canUp(s), reqText: s => LF.flyWhy(s) || 'The lander cannot fly', note: DOWN_NOTE, hint: 'unknown', info: [['yield', 'Nobody alone up there'], ['danger', 'The banks, unminded']],
       out: { text: (s, c) => `The lander goes up for ${c.first} and comes back with ${c.first} in the right-hand seat, looking at the ground the whole way down. The banks are left on automatic.`, fx: (s, c) => Object.assign(flyDown(s, c), { do: s2 => told(s2, 'qs.count') }) } },
     { label: (s, c) => `Tell ${c.first} to keep counting, and say nothing below`, note: 'Nobody is woken or sent for. One person is up there alone with a number that is one too many.', hint: 'unknown', info: (s, c) => [['yield', 'Nothing disturbed'], ['danger', c.first]],
@@ -215,8 +212,6 @@ H('qs.blame', { title: 'The Other One', when: s => up(s).length >= 2,
   choices: [
     { label: (s, c) => `Believe ${c.af}: ${c.bf} is shut in the infirmary`, dark: true, note: (s, c) => `${c.bf} is locked in by the one who accused them, on that one's word.`, hint: 'unknown', info: (s, c) => [['yield', 'One of them watched'], ['danger', c.bf]],
       out: { text: (s, c) => `${c.bf} goes into the infirmary without a fight and the door is locked from the bridge. ${c.af} reports every pass after that, very calmly.`, fx: (s, c) => ({ stain: ['qs_confined', 1], do: s2 => { mind(s2, c.b, -12); hev(s2, 2); told(s2, 'qs.blame'); } }) } },
-    { label: (s, c) => `Believe ${c.bf}: ${c.af} is shut in the infirmary`, dark: true, note: (s, c) => `${c.af} is locked in by the one who accused them, on that one's word.`, hint: 'unknown', info: (s, c) => [['yield', 'One of them watched'], ['danger', c.af]],
-      out: { text: (s, c) => `${c.af} goes into the infirmary without a fight and the door is locked from the bridge. ${c.bf} reports every pass after that, very calmly.`, fx: (s, c) => ({ stain: ['qs_confined', 1], do: s2 => { mind(s2, c.a, -12); hev(s2, 2); told(s2, 'qs.blame'); } }) } },
     { label: 'Bring one of them down on the next flight', req: s => canUp(s), reqText: s => LF.flyWhy(s) || 'The lander cannot fly', note: 'One seat. Whoever is left is alone up there with whatever it was.', hint: 'unknown', info: [['yield', 'One of them on the ground'], ['danger', 'The one left, and the banks']],
       out: { text: 'The lander goes up with one empty seat and comes down with it full. The one left aboard watches it go from the collar window.', fx: (s, c) => Object.assign(flyDown(s, c), { do: s2 => told(s2, 'qs.blame') }) } },
     { label: 'Tell them both to keep apart, and keep the passes', note: 'Two people on one ship, each sure of the other, told to sleep at opposite ends of her.', hint: 'unknown', info: [['yield', 'Nobody locked up'], ['danger', 'Both of them']],
@@ -305,11 +300,6 @@ B('boarding', { id: 'qs.nest', title: 'The Fortieth Row', tone: 'crisis', urgent
         fx: (s, c) => ({ pop: 1, sleepers: -Math.min(3, s.sleepers), morale: 3, flags: home, do: s2 => { const p = LF.makePerson(s2, null); p.known = s2.day; p.marks.qs_waker = { d: s2.day, txt: 'lived alone aboard the ship for years after a pod failed open on the voyage' }; down(s2, c.upIds); LF.chron(s2, `${p.name} came down from the ship after years alone aboard her.`); LF.endThread(s2, ID, 'coaxed'); } }) },
       bad: { text: 'On the second pass the one from the hold goes up into the ducts, fast, on hands and knees, and does not come down again. The party waits two more passes and leaves food at the hatch. It is gone in the morning.',
         fx: (s, c) => ({ sleepers: -Math.min(3, s.sleepers), flags: home, do: s2 => { down(s2, c.upIds); T(s2).keeper = s2.day; LF.endThread(s2, ID, 'keeper'); } }) } },
-    { label: 'Take them out by force, as gently as it can be done', note: 'Four of the watch against one frightened person who knows every duct in her.', hint: 'unknown', risky: true, test: { base: 50, mods: [R('security', 10)], aboard: true }, info: [['yield', 'Them, alive, whether they like it or not'], ['danger', 'Them, and the four']],
-      ok: { text: (s, c) => `It is over quickly, and it is ugly. They fight like an animal and then stop all at once and go limp, and are carried to the collar. On the ground they eat and sleep and do the work they are given, and do not speak to anyone for a season.`,
-        fx: (s, c) => ({ pop: 1, morale: -2, flags: home, do: s2 => { const p = LF.makePerson(s2, null); p.known = s2.day; p.mind = 20; p.marks.qs_waker = { d: s2.day, txt: 'was carried out of the ship\'s hold by force after years alone aboard her' }; down(s2, c.upIds); LF.endThread(s2, ID, 'seized'); } }) },
-      bad: { text: 'It goes wrong in the cargo lift shaft, in the dark. One of the watch falls. The one from the hold falls with them, and only one of them is moving at the bottom, and then neither.',
-        fx: (s, c) => ({ dead: 1, morale: -5, stain: ['qs_hunted', 2], flags: home, do: s2 => { down(s2, c.upIds); LF.endThread(s2, ID, 'hunted'); } }) } },
     { label: 'Seal the hold, and open it to vacuum', dark: true, note: (s, c) => `Certain, and quick. ${c.off ? `${c.offFirst} is taken out first, whatever ${c.offFirst} says about it.` : 'Nobody has to go near the wrench.'} Whatever they have hoarded in there is the colony's.`, hint: 'unknown', info: [['yield', 'The ship back, and their hoard'], ['danger', 'Them']],
       out: { text: (s, c) => `${c.off ? `${c.offFirst} is carried out of the hold between two of the watch, shouting. ` : ''}The hold door is sealed and the cargo lock opened. When it is shut again the party goes in for the crates: tools, spares, wire, all of it sorted and labelled in a careful hand.`,
         fx: (s, c) => ({ parts: 8, mat: 20, stain: ['qs_aired', 3], flags: home, do: s2 => { down(s2, c.upIds); if (c.off) mind(s2, c.off, -20); LF.endThread(s2, ID, 'hunted'); } }) } },
@@ -328,16 +318,12 @@ A('qs.tune', { title: 'The Tune', tone: 'pressure', when: (s, t) => !!s.flags.qs
       out: { text: 'They go into the store shed without much fuss and hum there, together, which is somehow worse. After a season it stops in all of them on the same night.', fx: (s, c) => ({ morale: -3, stain: ['qs_apart', 2] }) } },
     { label: 'Let them hum', note: 'Nobody is shut away. Everyone else has to listen.', hint: 'unknown', info: [['yield', 'Nobody shut away'], ['danger', 'Everyone\'s nerve']],
       out: { text: 'It goes on. Some people start humming it on purpose, to make it ordinary, and that helps more than anyone expected.', fx: (s, c) => ({ morale: -1, do: s2 => LF.emit(s2, 'unexplained', SRC, 30, 240, 'people hum the tune that came down from the quiet ship') }) } },
-    { label: 'Have the clinic keep a list of who hums', dark: true, note: 'Names in a book, checked every week, so the colony knows how far it has gone.', hint: 'unknown', info: [['yield', 'A count'], ['danger', 'Everyone on the list']],
-      out: { text: 'The list goes up in the clinic and gets longer for a month, and then shorter. People on it are not asked to the hall.', fx: (s, c) => ({ tension: 5, stain: ['qs_humlist', 1] }) } },
   ] });
 A('qs.keeper', { title: 'The Keeper\'s Voice', tone: 'pressure', when: (s, t) => t.end === 'keeper' && s.day - (t.endDay || 0) >= 120 && s.sleepers > 12,
   text: (s, c) => `The one who stayed aboard the ${ship(s)} has started to talk on the ship's channel, a little more each month. Tonight it is a question, asked carefully, as if it had been practised.\n\n[[unknown:The ship's channel]] "I can wake six. I know which six. Do you want them?"`,
   choices: [
     { label: 'Take whoever they send', note: 'Six more on the ground, chosen by somebody who has watched their pods for years and has reasons nobody below knows.', hint: 'unknown', info: [['yield', 'Six more people'], ['later', 'Whoever they chose, and why']],
       out: { text: 'Six come down in the cargo pod a month later, woken slow and careful. Two are the oldest in the banks. One is a child. Nobody can see what the six have in common, and the keeper will not say.', fx: (s, c) => ({ pop: 6, sleepers: -6, do: s2 => LF.emit(s2, 'unexplained', SRC, 25, 200, 'the keeper aboard the ship chose who woke') }) } },
-    { label: 'Tell them to wake nobody', note: 'The banks stay as they are. The one up there has asked for something, and been told no.', hint: 'unknown', info: [['yield', 'The colony decides who wakes'], ['danger', 'The keeper\'s goodwill']],
-      out: { text: 'The answer goes up. The ship\'s channel is silent for a month after it, and her running lights are dark at the dusk pass.', fx: (s, c) => ({ morale: -2 }) } },
     { label: 'Send up a list: who wakes, and who never does', dark: true, note: 'The colony picks the six it needs, and writes down which of the rest stay asleep for good.', hint: 'unknown', info: [['yield', 'The six the colony needs'], ['danger', 'Everyone on the second list']],
       out: { text: 'Two lists go up. The six on the first come down a month later. The keeper reads the second one back over the channel, every name, slowly, and then turns those pods down.', fx: (s, c) => ({ pop: 6, sleepers: -Math.min(16, s.sleepers), stain: ['qs_nevers', 2] }) } },
   ] });
@@ -352,8 +338,6 @@ A('qs.salvage', { title: 'What Was Left', tone: 'quiet', when: (s, t) => SALVAGE
   choices: [
     { label: 'Strip her of what can be carried down', req: s => canUp(s), reqText: s => LF.flyWhy(s) || 'The lander cannot fly', note: 'A flight, and a crew in her for a week with cutters, in the same corridors.', hint: 'unknown', info: [['yield', 'Spares and plate'], ['danger', 'The lander, and the crew\'s nerve']],
       out: { text: (s, c) => `The crew comes back with racks, cable, plate and a box of the ship's paper records nobody asked for. One page has been folded and put in a pocket. ${WHY[c.k] || WHY.gone}`, fx: s => ({ fly: 1, machine: { lander: -6 }, parts: 10, mat: 40 }) } },
-    { label: 'Bring down her log, and nothing else', req: s => canUp(s), reqText: s => LF.flyWhy(s) || 'The lander cannot fly', note: 'One flight, one person, an hour aboard. An answer, maybe.', hint: 'unknown', info: [['yield', 'An answer'], ['danger', 'A flight of fuel']],
-      out: { text: (s, c) => `The log comes down in a case and is read in the hall, aloud. ${WHY[c.k] || WHY.gone} People go home quiet.`, fx: s => ({ fly: 1, morale: 2, do: s2 => LF.chron(s2, 'The ship\'s log was brought down and read aloud in the hall.') }) } },
     { label: 'Leave her be', note: 'What is up there stays up there. The yard goes short of what it could have had.', hint: 'unknown', info: [['yield', 'Nobody goes back'], ['danger', 'The yard, short']],
       out: { text: 'Nobody goes. She crosses at dusk and people mostly do not look up any more.', fx: { morale: 1 } } },
   ] });
@@ -364,8 +348,6 @@ A('qs.fall', { title: 'Last Pass', tone: 'crisis', urgent: true, w: 6, when: (s,
   choices: [
     { label: 'Everyone to the ridge, with lamps', note: 'The whole colony out in the dark to watch her burn, and the work of tomorrow done tired.', hint: 'unknown', info: [['yield', 'Everyone sees her go'], ['danger', 'Everyone\'s grief at once']],
       out: { text: (s, c) => `The ridge is full. She burns across the whole sky in pieces, slowly, and lights the valley like a dawn${c.pid ? ', and the channel stays open until it is only noise' : ''}. Nobody says anything until the last piece is down past the hills.`, fx: (s, c) => fell(s, c, { morale: 2, griefWhy: 'the colony watched the ship burn from the ridge' }) } },
-    { label: 'The radio room only, with the door shut', note: (s, c) => `A few people to hear it properly${c.pid ? `, and to answer ${c.name}` : ''}. Everyone else hears about it in the morning.`, hint: 'unknown', info: [['yield', 'Somebody with them at the end'], ['danger', 'Everyone who was not there']],
-      out: { text: (s, c) => `Four people sit in the radio room with the lights off and the channel open.${c.pid ? ` They talk to ${c.name} until the signal breaks up, about nothing much.` : ''} In the morning the rest of the colony finds out she is gone from the ones who were there, and some of them do not forgive it.`, fx: (s, c) => fell(s, c, { morale: -1, griefWhy: 'the ship came down in the night' }) } },
     { label: 'Turn the radio off, and keep everyone in', note: (s, c) => `Nobody watches. Nobody hears ${c.pid ? `what ${c.name} says` : 'her go'}.`, hint: 'unknown', info: (s, c) => [['yield', 'Nobody has to watch'], ['danger', c.pid ? c.name : 'The colony\'s nerve']],
       out: { text: (s, c) => `The radio room is locked and the doors are shut. The light of her coming down goes across the shutters for a quarter of an hour, and then it is dark.`, fx: (s, c) => fell(s, c, { morale: -3, griefWhy: 'the ship came down and the colony was kept indoors' }) } },
   ] });
@@ -418,7 +400,8 @@ LF.PUZZLES.manifest = {
   draw: (s, pz) => ({ note: pz.rules.join('\n'), log: pz.done ? [pz.right ? `The line at ${pz.lines[pz.picked].t}. ${LOG_BAD[pz.k] ? LOG_BAD[pz.k][2] : ''}` : `The line at ${pz.lines[pz.picked].t} checks out against the rules, once somebody goes and looks.`] : ['Read it against the rules at the top. Mark the line that cannot be true.'] }),
   bot: (s, pz) => { const i = lcg(pz) < 0.7 ? pz.lines.findIndex(l => l.bad) : Math.floor(lcg(pz) * pz.lines.length); return 'L' + i; },
 };
-{ const st = LF.byId['qs.count']; st.choices.push(guard({ hint: 'unknown', show: (s, c) => !!(c && c.pz && c.pz.done), label: (s, c) => c.pz.right ? 'The log has given something away' : 'The wrong line', note: (s, c) => c.pz.right ? 'Something aboard is not keeping to the ship\'s rules.' : 'Somebody in bank C will be woken to be asked about it.',
+/* As puzzleOn does it: the card's own three options show only until a line of the log is marked, then the board's answer alone. */
+{ const st = LF.byId['qs.count']; for (const ch of st.choices) ch.show = (s, c) => !(c && c.pz && c.pz.turns); st.choices.push(guard({ hint: 'unknown', show: (s, c) => !!(c && c.pz && c.pz.done), label: (s, c) => c.pz.right ? 'The log has given something away' : 'The wrong line', note: (s, c) => c.pz.right ? 'Something aboard is not keeping to the ship\'s rules.' : 'Somebody in bank C will be woken to be asked about it.',
   info: (s, c) => c.pz.right ? [['yield', 'Evidence']] : [['danger', 'A sleeper, woken for nothing']],
   out: { text: (s, c) => c.pz.right ? `It is the line at ${c.pz.lines[c.pz.picked].t}. ${(LOG_BAD[c.k] || LOG_BAD.gone)[2]} ${c.first} reads it back over the radio twice, and goes quiet.` : `The line at ${c.pz.lines[c.pz.picked].t} is checked and holds. The sleeper it names is thawed to be asked about it, and wakes badly, and knows nothing.`,
     fx: (s, c) => c.pz.right ? { do: s2 => { hev(s2, 2); told(s2, 'qs.count'); } } : { sleepers: -Math.min(1, s.sleepers), morale: -2, do: s2 => told(s2, 'qs.count') } } }));
@@ -524,9 +507,7 @@ function facts(s, pz) {
   const out = [], w = s.world || {}, v = s.voyage || {}, pick = a => a[Math.floor(lcg(pz) * a.length)];
   if (w.star) out.push({ id: 'star', q: 'Which star did the ship come to?', a: w.star, f: w.star.replace(/(\d)(\d)$/, '$2$1') === w.star ? w.star + '-B' : w.star.replace(/(\d)(\d)$/, '$2$1') });
   if (w.sid) out.push({ id: 'name', q: 'What did the colony name the world?', a: w.sid, f: pick(OTHER_NAMES.filter(n => n !== w.sid)) });
-  if (v.mode && LF.CROSSING && LF.CROSSING[v.mode]) { const alt = (v.deal || Object.keys(LF.CROSSING)).filter(k => k !== v.mode && LF.CROSSING[k]); if (alt.length) out.push({ id: 'cross', q: 'How was the watch kept on the crossing?', a: LF.CROSSING[v.mode].short, f: LF.CROSSING[pick(alt)].short }); }
-  const inc = (v.incs || [])[0]; if (inc && LF.byId[inc] && typeof LF.byId[inc].title === 'string') { const alt = Object.keys(LF.byId).filter(k => /^voy\./.test(k) && k !== inc && k !== 'voy.plan' && typeof LF.byId[k].title === 'string'); out.push({ id: 'inc', q: 'What went wrong on the crossing?', a: LF.byId[inc].title.toLowerCase(), f: LF.byId[pick(alt)].title.toLowerCase() }); }
-  const zs = (w.zones || []).map(z => z.name), si = s.memo && s.memo['landfall.site'] ? s.memo['landfall.site'].i : null; if (si !== null && zs[si] && zs.length > 1) out.push({ id: 'site', q: 'Where did the lander come down?', a: zs[si], f: pick(zs.filter((z, i) => i !== si)) });
+  const inc = (v.incs || [])[0]; if (inc && LF.byId[inc] && typeof LF.byId[inc].title === 'string') { const alt = Object.keys(LF.byId).filter(k => /^voy\./.test(k) && k !== inc && typeof LF.byId[k].title === 'string'); out.push({ id: 'inc', q: 'What went wrong on the crossing?', a: LF.byId[inc].title.toLowerCase(), f: LF.byId[pick(alt)].title.toLowerCase() }); }
   if (s.premise && LF.PREMISES && LF.PREMISES[s.premise]) { const alt = Object.keys(LF.PREMISES).filter(k => k !== s.premise); out.push({ id: 'premise', q: 'What was wrong with the world the ship was sent to?', a: LF.PREMISES[s.premise].name.toLowerCase(), f: LF.PREMISES[pick(alt)].name.toLowerCase() }); }
   return out;
 }
@@ -609,12 +590,13 @@ LF.qsWaited = (s, t) => { if (t.waited === 1 && s.used['qs.ridge'] === undefined
 /* ======================= the rest ======================= */
 LF.THREADS[ID].chap.banks = t => 'The ship blinked for help. The party got heat back to the banks, and the ones who had woken aboard died waiting for air.';
 Object.assign(LF.TAGS, {
-  'qs.count': ['cautious', 'severe closed', 'cautious', 'open', ''], 'qs.cups': ['cautious', 'bold', 'mercy'], 'qs.late': ['cautious', 'severe order', 'open'],
-  'qs.blame': ['severe', 'severe', 'cautious', 'open'], 'qs.answer': ['open mercy', 'closed', 'bold'], 'qs.kettle': ['severe', 'cautious', 'open'], 'qs.collar': ['closed', 'cautious', 'open'],
-  'qs.ridge': ['open', 'order', 'mercy'], 'qs.kin': ['bold open', 'cautious', 'severe order'], 'qs.nest': ['mercy', 'severe', 'severe', 'mercy open'],
-  'qs.tune': ['severe closed', 'open', 'order'], 'qs.keeper': ['open', 'closed', 'severe'], 'qs.salvage': ['bold', 'cautious', 'cautious'], 'qs.fall': ['open', 'closed', 'closed'],
+  'qs.count': ['cautious', 'cautious', 'open', ''], 'qs.cups': ['cautious', 'bold', 'mercy'], 'qs.late': ['cautious', 'severe order', 'open'],
+  'qs.blame': ['severe', 'cautious', 'open'], 'qs.answer': ['open mercy', 'closed', 'bold'], 'qs.kettle': ['severe', 'cautious', 'open'], 'qs.collar': ['closed', 'cautious', 'open'],
+  'qs.ridge': ['open', 'order', 'mercy'], 'qs.kin': ['bold open', 'cautious', 'severe order'], 'qs.nest': ['mercy', 'severe', 'mercy open'],
+  'qs.tune': ['severe closed', 'open'], 'qs.keeper': ['open', 'severe'], 'qs.salvage': ['bold', 'cautious'], 'qs.fall': ['open', 'closed'],
 });
 // Loaded after js/content-builds.js (so the signals room's option on qs.lights keeps its place), long after LF.DEEDS is made.
+/* qs_hunted and qs_humlist can no longer be done (three options at most, 2026-11-21); the phrases stay for saved games. */
 Object.assign(LF.DEEDS, {
   qs_lockout: 'the officer aboard the ship locked out of her systems from the ground',
   qs_confined: 'the officer aboard the ship shut in the infirmary on the word of the other',

@@ -156,6 +156,9 @@ const TOLD = {
   grown: (s, c) => `The report comes in shouted. Something is in the hold, round the warm cradles, grown out of a cargo pod that went up from the ground: pale, ribbed, the size of a room and moving. ${c.up.length ? `${and(c.up)} ${c.up.length === 1 ? 'is' : 'are'} alive, shut in the cryo bay with the door welded from the inside.` : 'The cryo bay door has been welded from the inside.'} One of the party is already hurt.`,
   double: (s, c) => `[[x19]] "There's someone in the infirmary."\n\nIt is ${c.dbl}: thinner, tired, unshaven, sure of every date.\n\n[[${c.dblId || 'unknown:The one in the infirmary'}]] "I never came down. I gave the seat to nobody. I've been here keeping the banks alone since the flight."\n\nThe pod log agrees. It shows ${c.dblFirst}'s pod opened on the day of the flight, and a body walking out of it to the lander.`,
 };
+/* Three options at most (2026-11-21). Ten are written and each shows under one truth only: two for gone, three for changed,
+   three for grown, two for double. The same holds for qs.air (three before a year is up, two after) and qs.glass (three
+   before it has burned out, two after). node tools/quiet-check.js prints the most any qs.* card showed. */
 B('boarding', { id: 'qs.board', tone: 'crisis', title: 'Aboard', urgent: true, w: 9, repeat: 15,
   setup: s => { const t = T(s), p = dbl(s, t); return { is: t.truth.is, up: ups(s), upIds: LF.inOrbit(s).map(p => p.id), dbl: p ? p.name : t.dblName, dblFirst: p ? p.first : t.dblName.split(' ')[0], dblId: p ? p.id : null, n: s.sleepers, mo: moUp(s, t) }; },
   text: (s, c) => TOLD[c.is](s, c),
@@ -457,7 +460,8 @@ B('silent', { id: 'qs.lights', tone: 'pressure', title: 'Long and Short', urgent
     { label: 'Put a glass and the code book on the ridge, and read it', note: 'Four minutes a pass. Whoever reads it will be sure of what they read, right or wrong.', hint: 'unknown', info: [['yield', 'A reading'], ['later', 'A wrong one, believed']],
       out: { text: (s, c) => `Three evenings on the ridge with a glass and a slate. ${c.read === 'help' ? 'The slate reads H, E, L, P, then a figure that is a 6 or a 9, then the same again.' : 'The slate reads S, T, A, Y, a gap, A, W, A, Y, then the same again.'} The reader is certain of the letters. The reader was certain on the first evening too, and had it as something else.`,
         fx: (s, c) => ({ do: s2 => { T(s2).read = c.read; LF.emit(s2, 'unexplained', SRC, 40, 260, c.read === 'help' ? `the ${ship(s2)} is blinking for help` : `the ${ship(s2)} is blinking a warning to stay away`); LF.cue(s2, 'qs.silent', 16, 28); } }) } },
-    { label: 'Answer with the pad lamp, and ask who is sending', note: 'A month of passes to send one question and read one answer. The banks go unminded for it, and so does whoever is at that switch.', hint: 'unknown', info: [['yield', 'A surer reading'], ['danger', 'A month, and whoever has not got one']],
+    // the signals room's own way of asking (js/content-builds.js) takes this one's place once it stands: never a fourth option
+    { show: s => !LF.has(s, 'comms'), label: 'Answer with the pad lamp, and ask who is sending', note: 'A month of passes to send one question and read one answer. The banks go unminded for it, and so does whoever is at that switch.', hint: 'unknown', info: [['yield', 'A surer reading'], ['danger', 'A month, and whoever has not got one']],
       out: { text: (s, c) => c.msg === 'help' ? 'The pad lamp is turned up the sky and worked by hand, WHO, every pass for a month. On the last evening the answer comes back slowly, with long gaps: a name off the waking list, then AIR, then a single figure.' : 'The pad lamp is turned up the sky and worked by hand, WHO, every pass for a month. On the last evening the answer comes back fast, as if it had been waiting: SICK. Then NO, and NO again, and NO until she is below the ridge.',
         fx: (s, c) => ({ sleepers: -Math.min(4, s.sleepers), do: s2 => { const t = T(s2); t.read = c.msg; t.sure = true; t.waited++; LF.emit(s2, 'unexplained', SRC, 40, 260, c.msg === 'help' ? `someone aboard the ${ship(s2)} is running out of air` : `there is sickness aboard the ${ship(s2)}`); LF.cue(s2, 'qs.silent', 4, 10); } }) } },
     { label: 'Tell the colony her running lights have a fault', dark: true, note: 'Nobody climbs the ridge with a glass, and nobody lies awake working out letters. Whoever is at that switch goes on working it for nobody.', hint: 'unknown', info: [['yield', 'Morale'], ['later', 'Whoever is sending']],
@@ -529,9 +533,6 @@ B('silent', { id: 'qs.second', tone: 'pressure', title: 'A Second Light', urgent
     { label: 'Hail it, on every band the archive lists', note: 'Whoever is aboard learns there is a colony under them, and where.', hint: 'unknown', info: [['yield', 'An answer, perhaps'], ['later', 'Being found']],
       out: { text: 'The hail goes up on every pass for a week. On the last evening the second light shows a lamp of its own, once, pointed straight down at the ridge, and holds it there for the whole pass.',
         fx: s => ({ do: s2 => { T(s2).hailed = true; LF.emit(s2, 'watched', SRC, 45, 260, 'the second ship turned a lamp on the colony'); LF.cue(s2, 'qs.silent', 16, 28); } }) } },
-    { label: 'Say nothing. The colony has one ship to be afraid of already', dark: true, note: 'The ridge watch is sworn to it. Everyone else sees one light, a little brighter, and goes on believing the sky is empty.', hint: 'unknown', info: [['yield', 'Morale'], ['danger', 'Everyone who is not told']],
-      out: { text: 'The ridge watch is sworn and the log goes in a drawer. It holds for a month. Then somebody\'s grandmother, who has watched that light cross every evening since landfall, says at supper that it has grown a tail.',
-        fx: s => ({ morale: 1, stain: ['qs_hid', 1], do: s2 => { LF.emit(s2, 'suspicion', SRC, 35, 200, 'the second light was kept from the colony'); LF.cue(s2, 'qs.silent', 16, 28); } }) } },
   ] });
 
 B('boarding', { id: 'qs.guests', tone: 'crisis', title: 'The Other Lock', urgent: true, w: 9,
@@ -549,19 +550,18 @@ B('boarding', { id: 'qs.guests', tone: 'crisis', title: 'The Other Lock', urgent
     { label: 'Open the tunnel to vacuum while they are in it', dark: true, note: 'Every pod stays, with nobody left alive to wake it for themselves, and her hull is the colony\'s to strip.', hint: 'unknown', info: [['yield', 'The pods, her spares, her fuel'], ['danger', 'Thirty people']],
       out: { text: 'The party leader asks you to say it again, and you do. It takes one valve. Afterwards the four go through the old ship with torches. There are bunks in there a metre long, and a schoolroom.',
         fx: (s, c) => ({ parts: 16, mat: 60, morale: -5, stain: ['qs_tunnel', 4], flags: home, do: s2 => { s2.fuel = (s2.fuel || 0) + 1; LF.emit(s2, 'grief', SRC, 30, 200, 'there was a schoolroom aboard the second ship'); LF.endThread(s2, ID, 'tunnel'); } }) } },
-    { label: 'Offer them the ground', note: 'Thirty mouths who have never stood under a sky, and every pod comes back.', hint: 'unknown', info: [['people', 'About thirty'], ['danger', 'The stores, and what the colony makes of them']],
-      out: { text: 'It takes the old woman a long time to understand the drawing, and longer to believe it. They come down holding on to each other on the ramp. Most of them will not go out from under a roof for a month.',
-        fx: (s, c) => ({ pop: 28, morale: -2, machine: { lander: -8 }, flags: home, do: s2 => { LF.emit(s2, 'strangers', SRC, 55, 400, 'thirty people from another ship are living in the colony'); LF.endThread(s2, ID, 'joined'); } }) } },
   ] });
 LF.TAGS['qs.deep'] = ['bold', 'cautious', 'severe'];
 LF.TAGS['qs.walk'] = ['cautious', ''];
 LF.TAGS['qs.lights'] = ['cautious', 'open', 'closed order'];
 LF.TAGS['qs.air'] = ['mercy', 'bold', 'severe', 'cautious closed'];
 LF.TAGS['qs.glass'] = ['mercy cautious', 'bold', 'severe closed', 'open mercy', 'order'];
-LF.TAGS['qs.second'] = ['cautious', 'open bold', 'closed order'];
-LF.TAGS['qs.guests'] = ['open cautious', 'bold', 'severe closed', 'open mercy'];
+LF.TAGS['qs.second'] = ['cautious', 'open bold'];
+LF.TAGS['qs.guests'] = ['open cautious', 'bold', 'severe closed'];
 
 /* ======================= the double: two of them ======================= */
+/* Three options at most (2026-11-21): keeping one of the two outright is the answer of the card's own board (the three
+   questions, js/thread-quiet-more.js), and is no longer offered beside it. */
 B('two', { id: 'qs.two', tone: 'crisis', title: 'Two Chairs', urgent: true, w: 9, repeat: 6,
   setup: s => { const t = T(s), p = dbl(s, t); return { pid: p ? p.id : null, name: p ? p.name : t.dblName, first: p ? p.first : t.dblName.split(' ')[0], real: t.truth.real }; },
   text: (s, c) => `Two of ${c.name} at one table. The same scar on the same knuckle. The same way of holding a cup. Each knows the other's every answer before it is given, and each one looks at the other as if at something on the floor.\n\n[[unknown:One ${c.first}]] "I came down on the flight."\n\n[[unknown:The other ${c.first}]] "I never left the ship."\n\n${(h.P(s, 'doctor') || {}).id === c.pid ? 'The clinic' : Nwc(s, 'doctor')} has taken blood from both, and the blood is the same.`,
@@ -570,10 +570,6 @@ B('two', { id: 'qs.two', tone: 'crisis', title: 'Two Chairs', urgent: true, w: 9
       ok: { text: (s, c) => `It takes most of the night. In the end it is a small thing, a dog's name from a childhood, and one of them has to think about it for a second too long. ${c.real === 'ground' ? 'It is the one from the ship.' : 'It is the one who came down.'} The other ${c.first} takes the seat back. The one who hesitated is walked to the lock, and goes without a word.`,
         fx: (s, c) => ({ morale: 2, do: s2 => { const t = T(s2); t.kept = t.truth.real; LF.endThread(s2, ID, 'one'); } }) },
       bad: { text: (s, c) => `Every question, both answer, perfectly, at once. By dawn the room has stopped asking. The two of them are still sitting there, not looking at each other.`, fx: (s, c) => ({ morale: -3, do: s2 => LF.cue(s2, 'qs.two', 8, 16) }) } },
-    { label: (s, c) => `Keep the one who came down. The other goes out of the lock`, dark: true, note: 'The one the colony has been taking orders from. The other is put out of the ship\'s lock on the next flight.', hint: 'unknown', info: [['yield', 'An end to it'], ['danger', 'Whichever one is the real one']],
-      out: { text: (s, c) => `The second ${c.first} is flown back up and put out of the lock with a blanket over the face. The ${c.first} who stays says nothing about it, ever, and goes back to work the same afternoon.`, fx: (s, c) => ({ stain: ['double_spaced', 2], do: s2 => { const t = T(s2), p = byPid(s2, c.pid); t.kept = 'ground'; if (p && t.truth.real !== 'ground') { p.qsFalse = s2.day; LF.cue(s2, 'qs.tell', 120, 220); } LF.endThread(s2, ID, 'one'); } }) } },
-    { label: (s, c) => `Keep the one from the ship. The one who came down goes out of the lock`, dark: true, note: 'The one who never left is the one who stayed at the post. Whatever came down in the lander was not.', hint: 'unknown', info: [['yield', 'An end to it'], ['danger', 'Whichever one is the real one']],
-      out: { text: (s, c) => `The ${c.first} who came down goes up the ramp without being made to, and is put out of the lock. The one from the ship sits in the empty chair that evening and asks to see the duty roster.`, fx: (s, c) => ({ stain: ['double_spaced', 2], do: s2 => { const t = T(s2), p = byPid(s2, c.pid); t.kept = 'ship'; if (p) { p.native = Math.max(0, (p.native || 0) - 20); if (t.truth.real !== 'ship') { p.qsFalse = s2.day; LF.cue(s2, 'qs.tell', 120, 220); } } LF.endThread(s2, ID, 'one'); } }) } },
     { label: 'Shoot both. The seat stays empty', dark: true, note: (s, c) => `Nobody has to guess. Nobody gets ${c.first} back either.`, hint: 'unknown', info: [['yield', 'Certainty'], ['danger', 'The real one, and the seat']],
       out: { text: (s, c) => `It is done behind the lander shed, both at once, by two of the watch who were not told which was which. The seat at the table stays empty. Nobody sits in it.`, fx: (s, c) => ({ stain: ['double_shot', 3], kill: c.pid ? [{ who: c.pid, cause: 'shot, with the other one, because nobody could tell them apart' }] : [], do: s2 => LF.endThread(s2, ID, 'both') }) } },
     { label: 'Keep them both. Two of them can do two jobs', note: 'Nobody has to be wrong. Everybody has to live with it.', hint: 'unknown', info: [['yield', 'An extra pair of hands that knows the work'], ['danger', 'Everyone who has to look at them']],
@@ -587,8 +583,6 @@ LF.add({ id: 'qs.tell', arc: 'th.' + ID, view: 'people', tone: 'pressure', title
   setup: s => { const p = fake(s), w = anyNamed(s, [p.seat]); return { pid: p.id, name: p.name, first: p.first, title: LF.title(p), w: w ? w.first : 'Someone', wn: w ? (w.role ? w.name : `${w.name}, one of the colonists`) : 'Someone', wid: w ? w.id : null }; },
   text: (s, c) => `${c.wn || c.w} comes to you about ${c.first}. Small things. ${c.first} doesn't sleep; the bunk is never warm. ${c.first} eats when someone is watching. Lately, asked about the crossing, ${c.first} described the view from a window on the side of the ship where there are no windows.\n\n[[${c.wid || 'x23'}]] "It's doing the job better than the real one ever did." "That's what scares me."`,
   choices: [
-    { label: (s, c) => `Leave ${c.first} at the post. The work is good`, note: 'Whatever it is, it is on the colony\'s side, so far.', hint: 'unknown', info: [['yield', 'An officer who never tires'], ['later', 'Whatever it wants']],
-      out: { text: (s, c) => `${c.first} stays. The department has never run better. ${c.w} asks to be moved to a different crew, and is.`, fx: (s, c) => ({ morale: -1, do: s2 => { const p = byPid(s2, c.pid); if (p) { p.qsFalse = -1; p.native = Math.min(100, (p.native || 0) + 20); } } }) } },
     { label: (s, c) => `Take ${c.first} out past the wire at night, and come back without`, dark: true, note: 'It will go quietly. It went quietly the last time.', hint: 'unknown', info: [['yield', 'An end to it'], ['danger', 'The seat, and the chance it was real after all']],
       out: { text: (s, c) => `${c.first} walks out with the watch and doesn't ask where they are going. They come back at dawn without, and they will not say what they saw it do at the end.`, fx: (s, c) => ({ stain: ['double_spaced', 1], kill: [{ who: c.pid, cause: 'taken out past the wire, for not being who it said' }] }) } },
     { label: (s, c) => `Ask ${c.first} straight out, in front of the council`, note: 'Whatever it says, everyone hears.', hint: 'unknown', info: [['yield', 'An answer, of a kind'], ['later', 'What the colony does with it']],
@@ -597,8 +591,8 @@ LF.add({ id: 'qs.tell', arc: 'th.' + ID, view: 'people', tone: 'pressure', title
 
 LF.TAGS['qs.silent'] = ['bold', 'cautious', 'closed severe'];
 LF.TAGS['qs.board'] = ['cautious closed', 'order', 'open mercy', 'closed severe', 'cautious', 'bold', 'severe', 'bold', 'open', 'closed severe'];
-LF.TAGS['qs.two'] = ['cautious', 'severe', 'severe', 'severe order', 'open mercy'];
-LF.TAGS['qs.tell'] = ['open', 'severe', 'open'];
+LF.TAGS['qs.two'] = ['cautious', 'severe order', 'open mercy'];
+LF.TAGS['qs.tell'] = ['severe', 'open'];
 // LF.DEEDS is made in js/content-limits.js, which loads after this file: it takes these in when it is made.
 (LF.DEEDS_LATE = LF.DEEDS_LATE || []).push({
   ship_cut: 'the ship cut loose with people still aboard her',
@@ -607,7 +601,7 @@ LF.TAGS['qs.tell'] = ['open', 'severe', 'open'];
   double_spaced: 'the one put out of the lock for being the wrong one',
   double_shot: 'the two shot because nobody could tell them apart',
   qs_fault: 'the lamp on the ship that was called a fault in her lights',
-  qs_hid: 'the second light that was kept from the colony',
+  qs_hid: 'the second light that was kept from the colony',   // cut with its option on 2026-11-21; the phrase stays for saved games
   qs_left: 'the one left alone in a corridor of the ship',
   qs_seats: 'the ones who woke aboard, left for a machine in the seats',
   qs_glass: 'the sick left behind the infirmary glass',

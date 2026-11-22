@@ -233,7 +233,8 @@ const fnOf = (v, s, c) => typeof v === 'function' ? v(s, c) : v;
     c0.info = (s, c) => has(s, 'comms') ? [['danger', `${c.dept}, short of its officer for good`]] : fnOf(i0, s, c);
     c0.out.text = (s, c) => has(s, 'comms') ? `${c.first} keeps the chair. ${cap1(c.crew)} take their orders from the signals room at any hour, from someone who has never stood where they are standing.` : fnOf(t0, s, c);
     const c2 = S.choices[2]; if (c2 && c2.test) c2.test.mods.push(If(s => has(s, 'comms'), 10, 'The signals room, talking the drop')); } }
-opt('qs.lights', { label: 'Call her from the signals room, every pass, until something answers', req: s => has(s, 'comms'), reqText: 'Needs the signals room', hint: 'unknown',
+/* Three options at most (2026-11-21): it is on the card only once the signals room stands, and it takes the place of the pad lamp (js/thread-quiet.js). */
+opt('qs.lights', { label: 'Call her from the signals room, every pass, until something answers', show: s => has(s, 'comms'), hint: 'unknown',
   note: 'The dish can hold her the whole pass, not four minutes. The room does nothing else for a week, and every party out goes unheard for it.', info: [['yield', 'A sure reading'], ['danger', 'Any party out, unheard']],
   out: { text: (s, c) => c.msg === 'help' ? 'The dish holds her from ridge to ridge and the operator keys WHO until the light changes. On the sixth evening the answer comes back slowly, with long gaps: a name off the waking list, then AIR, then a single figure.' : 'The dish holds her from ridge to ridge and the operator keys WHO until the light changes. On the fourth evening the answer comes back fast, as if it had been waiting: SICK. Then NO, and NO again, until she is below the ridge.',
     fx: (s, c) => ({ morale: -1, do: s2 => { const t = LF.T(s2, 'quiet'); if (!t) return; t.read = c.msg; t.sure = true; t.waited = (t.waited || 0) + 1;

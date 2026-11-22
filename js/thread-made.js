@@ -55,6 +55,9 @@ const speaker = (s, t) => { let p = t.voice && byPid(s, t.voice);
   return { pid: p.id, name: p.name, first: p.first }; };
 
 /* ---------- the proposal: the last step of the empty cradles ---------- */
+/* Three options at most (2026-11-21): four are written and three show. The second sheet (the faces of the children in the
+   burial ground) is on the bench only when children have died here (c.lost), and it takes the place of the embryo-bank
+   story, which is offered only when none have. */
 add({ id: 'gen.made', arc: 'gen.cradle', view: 'people', tone: 'opportunity', title: 'Something for the Schoolroom', w: 5, gap: 20,
   when: s => { const f = s.flags, x = X(s); if ((s.threads && s.threads[ID]) || f.gn_made || !LF.down(s, 'fabricator') || s.pop < 24 || yr(s) < 3) return false;
     return (few(s) && !!f.gn_bank && s.day - (f.gn_bank_d || 0) >= 8 * MONTH) || ((x.lost || 0) >= 2 && s.morale < 50 && yr(s) >= 4) || (LF.cradlesEmpty(s) && !!f.gn_asked && yr(s) >= 6); },
@@ -67,7 +70,7 @@ add({ id: 'gen.made', arc: 'gen.cradle', view: 'people', tone: 'opportunity', ti
     { label: 'Build them with the faces of the children who died, for the parents who ask', dark: true, show: (s, c) => c.lost, cost: { mat: 20, parts: 6 }, info: [['yield', 'Grief, eased'], ['later', 'The parents']],
       out: { text: (s, c) => `${Num(c.k)} are built from the clinic's scans and carried at night to the houses that asked. In the morning there are children at tables that had an empty place. The parents are happier than anyone has seen them since the landing. The neighbours went to those burials, and do not know what to call what they see through the window.`,
         fx: (s, c) => ({ lift: 8, morale: 4, stain: ['gn_faces', 2], flags: { gn_made: 'faces' }, do: s2 => { begin(s2, 'faces', c.k); s2.grief = Math.max(0, s2.grief - 15); }, chron: 'The colony built children with the faces of its dead ones.' }) } },
-    { label: 'Build twenty, and tell the colony they came from the embryo bank', dark: true, cost: { mat: 30, parts: 8 }, info: [['yield', 'A colony that believes it has children'], ['later', 'The day one of them is hurt in public']],
+    { label: 'Build twenty, and tell the colony they came from the embryo bank', dark: true, show: (s, c) => !c.lost, cost: { mat: 30, parts: 8 }, info: [['yield', 'A colony that believes it has children'], ['later', 'The day one of them is hurt in public']],
       out: { text: 'They are brought out of the clinic one at a time over a season, as if lifted from the incubators, and placed in the school. Four people know. The colony believes it has twenty children and behaves like a colony that has: the crib comes out of the stores.',
         fx: () => ({ lift: 10, morale: 5, stain: ['gn_passed', 2], flags: { gn_made: 'lie' }, do: s2 => begin(s2, 'lie', 20), chron: 'Twenty children were brought out of the clinic and put in the school.' }) } },
     { label: 'Take it apart. Nobody builds another', info: [['danger', 'A school with no children in it']],
@@ -123,9 +126,6 @@ B({ id: 'made.hurt', view: 'colony', tone: 'pressure', title: 'Under the Cart',
     { label: 'Mend it in the workshop, with the door open', cost: { parts: 4 }, info: [['danger', 'Spares the machines will not get']],
       out: { text: 'It is carried in on a door and mended in front of whoever wants to watch, and a good many do. It walks out of the workshop with a limp nobody there can account for, and goes back to school.',
         fx: () => ({ morale: 1, do: s2 => { const t = T(s2); exposed(s2, t); t.hurt = s2.day; t.care++; } }) } },
-    { label: 'Bury it in the burial ground, under a plate with its name', info: [['danger', 'The families of the dead already there']],
-      out: { text: 'It is switched off by the one who built it and buried in the row under a plate. Most of the school comes. Two families with a child in that ground stay away, and one of them asks you afterwards, civilly, what else is going to be buried there.',
-        fx: () => ({ morale: -2, tension: 4, do: s2 => { const t = T(s2); exposed(s2, t); t.hurt = s2.day; t.n--; t.care++; } }) } },
     { label: (s, c) => `Strip it for spares. The other ${c.rest} will need them`, dark: true, info: [['yield', 'Spares'], ['danger', 'Whatever it was']],
       out: { text: 'It is carried to the workshop and the door is shut. It goes on talking until the lattice is unplugged. The parts are binned by size. The others pass the workshop on the way to school the next morning, and every one of them turns its head to the door.',
         fx: () => ({ parts: 6, stain: ['gn_stripped', 2], do: s2 => { const t = T(s2); exposed(s2, t); t.hurt = s2.day; t.n--; } }) } },
@@ -165,9 +165,6 @@ TEN('real', { id: 'made.grown', title: 'The Same Height',
     { label: 'A roll of their own. They work, they are kept, and they do not vote', dark: true, info: [['yield', 'Food and materials, and a quiet hall'], ['danger', 'Them']],
       out: { text: (s, c) => `A third roll is opened. They are issued tools, and the hall is told they are a class of their own. They accept it with the patience they were built with, or grew. ${c.name} asks to see the page, reads it twice, and signs.`,
         fx: () => ({ food: 80, mat: 30, stain: ['gn_third_roll', 3], flags: { gn_made_kin: true }, do: s2 => LF.endThread(s2, ID, 'kept', 'The made children were given a roll of their own, below the colonists\'.') }) } },
-    { label: 'The equipment roll. They were built in a workshop', dark: true, info: (s, c) => [['yield', 'The founders\' peace of mind'], ['danger', `About ${num(c.go)} of them, gone`]],
-      out: { text: (s, c) => `The clerk enters them under the fabricator, by serial. ${c.name} watches it done. Within the month ${num(c.go)} of them have walked out past the wire in the night, taking their tools. The rest go on working, and speak when they are spoken to.`,
-        fx: () => ({ morale: -4, hum: -4, stain: ['gn_equipment', 3], do: s2 => LF.endThread(s2, ID, 'tools', 'The made children were entered on the equipment roll.') }) } },
   ] });
 TEN('hollow', { id: 'made.same', title: 'Five Years Old',
   setup: s => { const t = T(s); return { n: t.n, h: Math.max(2, Math.round(t.n * 0.6)) }; },
@@ -179,9 +176,6 @@ TEN('hollow', { id: 'made.same', title: 'Five Years Old',
     { label: 'Switch them off, with a burial for any house that wants one', info: [['danger', 'The keepers']],
       out: { text: 'It is done over a month, a house at a time, with whoever built them and whoever kept them in the room. Most houses want the burial. The clinic sees more of those keepers in the season after than it did in the ten years before.',
         fx: () => ({ morale: -5, parts: 10, hum: 1, do: s2 => { s2.grief = Math.min(40, s2.grief + 10); LF.endThread(s2, ID, 'ended', 'The made children were switched off, and most were buried.'); } }) } },
-    { label: 'Call it a fault in the lattice. Collect them for repair, and do not bring them back', dark: true, info: [['yield', 'Spares and materials'], ['danger', 'The keepers, who will go on asking']],
-      out: { text: 'They are collected for repair in one morning. The houses wait a season for them, and are then told the fault could not be mended. The lattices go back on the spares shelf. Some of the keepers still stop at the workshop door to ask.',
-        fx: () => ({ parts: 16, mat: 20, morale: -2, stain: ['gn_melted', 2], do: s2 => LF.endThread(s2, ID, 'melted', 'The made children were taken for repair and not returned.') }) } },
   ] });
 TEN('more', { id: 'made.more', title: 'The Shed Behind the Workshop',
   setup: s => { const t = T(s); return Object.assign(speaker(s, t), { n: t.n, m: Math.max(6, t.extra || 0) }); },
@@ -201,10 +195,11 @@ TEN('more', { id: 'made.more', title: 'The Shed Behind the Workshop',
   ] });
 
 Object.assign(LF.TAGS, {
-  'gen.made': ['bold', 'mercy bold', 'closed bold', 'cautious'], 'made.ask': ['mercy', 'severe order', 'bold severe'], 'made.hurt': ['open mercy', 'mercy', 'severe'],
-  'made.six': ['severe order', 'mercy', 'severe cautious'], 'made.grown': ['open mercy', 'order', 'closed severe'], 'made.same': ['mercy', 'open', 'closed'],
+  'gen.made': ['bold', 'mercy bold', 'closed bold', 'cautious'], 'made.ask': ['mercy', 'severe order', 'bold severe'], 'made.hurt': ['open mercy', 'severe'],
+  'made.six': ['severe order', 'mercy', 'severe cautious'], 'made.grown': ['open mercy', 'order'], 'made.same': ['mercy', 'open'],
   'made.more': ['open bold', 'cautious order', 'severe closed'],
 });
+/* gn_equipment and gn_melted can no longer be done (three options at most, 2026-11-21); the phrases stay for saved games. */
 Object.assign(LF.DEEDS || {}, {
   gn_faces: 'the made children given the faces of dead ones',
   gn_passed: 'the made children passed off as born',

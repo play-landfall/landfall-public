@@ -65,9 +65,6 @@ B({ id: 'gen.grave', aside: true, tone: 'pressure', title: 'A Small Box', w: 7,
     { label: 'Stand the colony down for the burial', info: [['danger', 'A day of every crew\'s work'], ['later', 'The next child, of the same thing']],
       out: { text: s => `Every crew is stood down. A small plot is marked out beside the first row, and the whole colony walks behind the box. ${Nc(s, 'physician')} walks with them. Whatever killed the child is still in the rows, and the clinic knows no more about it than it did.`,
         fx: () => ({ food: -40, morale: 4, flags: { gn_grave: 'buried' }, do: s2 => { s2.grief = Math.max(0, s2.grief - 8); } }) } },
-    { label: 'The burial is at first light, and the shifts start on time', info: [['danger', 'The parents'], ['later', 'The next child, of the same thing']],
-      out: { text: 'It is done before the first bell, by the parents and two diggers. The crews pass the fresh ground on the way to the fields. Both parents are on shift by the second bell, because the roster says so, and the crew beside them does their share of the row without being asked.',
-        fx: () => ({ morale: -2, tension: 4, flags: { gn_grave: 'shift' } }) } },
   ] });
 
 B({ id: 'gen.school', aside: true, tone: 'quiet', title: 'What the School Is For',
@@ -81,9 +78,6 @@ B({ id: 'gen.school', aside: true, tone: 'quiet', title: 'What the School Is For
     { label: 'The mornings outside', info: [['yield', 'The map, and children who know the ground'], ['danger', 'One of the children']],
       out: { text: 'They go out in a line behind one teacher with a stick. They learn fast, and faster than the teacher. One morning the line comes back one short, and what happened to that one is the lesson for the rest of the season.',
         fx: () => ({ survey: 10, chips: kidChip(1), flags: { gn_school: 'world' }, do: s2 => { young(s2, 1); risk(s2, 0.85); } }) } },
-    { label: 'Mornings in school. From eight years old, afternoons on the crews', dark: true, info: [['yield', 'Food and materials'], ['danger', 'The children over eight']],
-      out: { text: 'The timetable is rewritten in an afternoon. The under-eights have the school to themselves after the noon bell. The rest carry water, pick stone and sort seed until dusk, and fall asleep over the charter the next morning.',
-        fx: () => ({ food: 80, mat: 15, stain: ['gn_halfdays', 2], flags: { gn_school: 'work' }, do: s2 => grudge(s2, 1) }) } },
   ] });
 
 B({ id: 'gen.strange', aside: true, tone: 'quiet', title: 'Their Own Words',
@@ -93,9 +87,6 @@ B({ id: 'gen.strange', aside: true, tone: 'quiet', title: 'Their Own Words',
     { label: 'The ship\'s language in school, and the strap for the other', dark: true, info: [['yield', 'The parents'], ['danger', 'The children']],
       out: { text: 'The rule is posted and the strap is used, on four children in the first month. The words go out of the schoolroom. They stay in the yard. The children have a new one now, which they say when a teacher comes near.',
         fx: () => ({ morale: 2, stain: ['gn_tongue', 1], flags: { gn_strange: 'strap' }, do: s2 => grudge(s2, 2) }) } },
-    { label: 'Let them have it', info: [['danger', 'Parents who cannot follow their own table']],
-      out: { text: 'Nothing is posted. By the turn of the year there are households where the children talk across the table in it and the parents eat without a word. One mother has started learning it from her own five-year-old, a word a night.',
-        fx: () => ({ morale: -1, flags: { gn_strange: 'let' } }) } },
     { label: 'Put a clerk in the yard to learn it and write it down', cost: { food: 30 }, info: [['yield', 'The map'], ['danger', 'A pair of hands off the fields']],
       out: { text: 'The clerk fills a notebook in a season. Eleven of the words are for kinds of ground the survey has no names for, and each turns out to be a real difference. The children watch the clerk writing. By the next season they have a second set of words.',
         fx: () => ({ survey: 12, morale: 1, flags: { gn_strange: 'learn' } }) } },
@@ -103,7 +94,7 @@ B({ id: 'gen.strange', aside: true, tone: 'quiet', title: 'Their Own Words',
 
 B({ id: 'gen.adapt', tone: 'opportunity', title: 'What the Clinic Found',
   when: s => eldest(s) >= 8 && kids(s) >= 10 && !s.flags.gn_adapt,
-  setup: s => ({ kd: share(s, 0.02, 1, 40), kd2: share(s, 0.03, 1, 60) }),
+  setup: s => ({ kd: share(s, 0.02, 1, 40) }),
   text: s => `The children born here are not built quite as their parents are, and the clinic can now say how. ${here(s).adapt}\n\n${Nwc(s, 'physician')} has it written up and cannot explain it.\n\n[[physician]] "It's not in any genome I've got on file for them, it's this place doing it to them while they grow, and I won't pretend that doesn't frighten me. The eldest sat on my bench while I read it out and asked me whether it meant something was wrong with them, and I'd like to know what else it's doing before I have to answer that."\n\n${Nwc(s, 'quartermaster')} has read the same report, and thought of ${here(s).use}.`,
   choices: [
     { label: s => `Use it. The children do ${here(s).use}`, dark: true, info: [['yield', 'Food, materials and the map'], ['danger', 'The children sent']],
@@ -112,9 +103,6 @@ B({ id: 'gen.adapt', tone: 'opportunity', title: 'What the Clinic Found',
     { label: 'Study it. A clinic morning each month for every child born here', info: [['yield', 'Fewer of the children lost'], ['later', 'What the children make of the clinic']],
       out: { text: 'They are weighed, bled and photographed by year. In two seasons the clinic learns enough to stop losing them to fevers it could not read. The children learn to dread the clinic bell, and the smallest have to be carried in.',
         fx: () => ({ morale: -1, flags: { gn_adapt: 'study' }, do: s2 => { risk(s2, 0.75); grudge(s2, 1); } }) } },
-    { label: 'Treat it. Whatever this place is doing to them, the clinic stops it', dark: true, info: [['yield', 'The founders\' peace of mind'], ['danger', 'The children who do not take the course well']],
-      out: { text: (s, c) => `${Nc(s, 'physician')} argues for a day and then writes the course of doses. It works on most of them. They are as their parents are now, and their parents are relieved. ${Num(c.kd2)} of them did not come through the course.`,
-        fx: (s, c) => ({ morale: 3, stain: ['gn_treated', 2], chips: kidChip(c.kd2), flags: { gn_adapt: 'treated' }, do: s2 => { young(s2, c.kd2); risk(s2, 1.05); regard(s2, 'physician', -10); } }) } },
   ] });
 
 B({ id: 'gen.wire', view: 'world', tone: 'pressure', title: 'The Ones Who Stay Out',
@@ -180,9 +168,6 @@ B({ id: 'gen.lines', far: true, tone: 'pressure', title: 'The Book of Lines',
     { label: 'Open the book. Let them read it and choose', info: [['danger', 'Everything else that is written in it']],
       out: { text: 'The book lies open in the hall for a month. People find what they expected and several things they did not: who fathered whom in the hungry years, and which names were changed. Four households break up. The two marry.',
         fx: () => ({ morale: -5, tension: 6, flags: { gn_lines: 'open' }, do: s2 => risk(s2, 1.08) }) } },
-    { label: 'Thaw the bank. From now on every third child is a stranger\'s, assigned by the clinic', dark: true, info: [['yield', 'More children, wider blood'], ['danger', 'Whoever is told to carry']],
-      out: { text: 'The clinic begins assigning embryos from the bank to every third household on its list, asked or not. The blood widens, as intended. The two marry. The children from the bank have faces nobody else in the colony has, and are known by them.',
-        fx: () => ({ morale: -2, stain: ['assigned', 2], flags: { gn_lines: 'bank', embryo_program: true, births: true }, do: s2 => risk(s2, 0.92) }) } },
     { label: 'Close the book. It was kept for a camp of two hundred', info: [['later', 'Infants, some years on']],
       out: { text: 'The book is closed and shelved. The two marry, and so does everyone else who wants to. For some years nothing shows. Then the clinic starts keeping a different book, of infants, and does not publish that one either.',
         fx: () => ({ morale: 2, flags: { gn_lines: 'closed' }, do: s2 => risk(s2, 1.2) }) } },
@@ -200,61 +185,51 @@ RU({ id: 'gen.vote', far: true, tone: 'pressure', title: 'A Hand in the Hall',
     { label: 'A vote for any of them who pass an examination on the charter', dark: true, note: 'The founders set the paper.', info: [['yield', 'The hall stays the founders\''], ['danger', 'Two in three of the born']],
       out: { text: (s, c) => `The paper is set by a committee of founders and runs to nine pages. A third of the born pass it. ${c.name} passes with the highest mark anyone has made, takes the seat, and uses the first speech to read the paper aloud, question by question.`,
         fx: () => ({ tension: -4, stain: ['gn_exam', 1], flags: { gn_vote: 'exam' }, do: s2 => grudge(s2, 2) }) } },
-    { label: 'The charter says signed. They speak from a bench at the back, and do not vote', info: [['danger', 'Everyone on that bench']],
-      out: { text: (s, c) => `A bench is set against the back wall. They fill it every meeting, speak when called, and watch the hands go up on the motions that set their shifts. ${c.name} keeps a count of every vote that would have gone the other way.`,
-        fx: () => ({ morale: -3, flags: { gn_vote: 'bench' }, do: s2 => grudge(s2, 2) }) } },
   ] });
 
-/* Eight of the founders' rules, refused one at a time. keep: the watch enforces it; strike: it goes; deal: something between. */
+/* Eight of the founders' rules, refused one at a time. keep: the watch enforces it; strike: it goes. (Each had a third answer,
+   something between, until 2026-11-21: three options at most, and two where the results are known.) */
 const RULES = {
   wire: { rule: () => 'Nobody goes outside the wire after dusk. The founders wrote that in the first year, when things came to the wire at night.',
     done: () => 'A dozen of the born went out at dusk yesterday, openly, to take what moves at night, and walked back in past the watch at dawn with full nets.',
     say: 'It\'s when the food\'s out. You wrote that rule about a place you were afraid of. We live here.',
     keep: 'The watch meets the next night party at the gate and takes the nets. Six are locked up for a month. The parties go on, by another way out, and stop bringing what they catch to the common store.',
-    strike: 'The dusk bell is taken down. The night nets bring in twice what the day nets do. In the second season a party of five does not come back, and nobody can say for certain that the rule would have saved them.', strikeFx: { food: 100, dead: 5 },
-    deal: 'Night parties, logged out and in by the watch', dealText: 'A book is kept at the gate. The born sign it with marks the watch cannot read, and come back when they come back. The nets are fuller. The watch has a book of marks.', dealFx: { food: 60, tension: 3 } },
+    strike: 'The dusk bell is taken down. The night nets bring in twice what the day nets do. In the second season a party of five does not come back, and nobody can say for certain that the rule would have saved them.', strikeFx: { food: 100, dead: 5 } },
   days: { rule: () => 'The colony keeps the ship\'s calendar: seven days with a rest day, and twelve months named for a sky nobody born here has seen.',
     done: s => `The born crews work by ${s.world.planet}'s own weather and rest when it says to. The two rosters stopped matching this season, and the smelter stood cold for two shifts with half a crew at its door.`,
     say: 'Your rest day\'s a number. Ours is when the wind\'s wrong. Ask the fields which of us is right.',
     keep: 'The roster is enforced with the ladle: no shift on the board, no bowl. The born crews turn up on the founders\' days and work them slowly. The smelter runs. The fields are weeded on the wrong mornings.',
-    strike: 'The seven-day roster comes off the wall. Work goes by the weather, and the fields do better for it. The founders lose their rest day and their count of the weeks, and some go on marking both in private.', strikeFx: { food: 90, morale: -2 },
-    deal: 'Two rosters, and a clerk to reconcile them', dealText: 'A clerk is given a desk between the two boards. The smelter gets a full crew most days. The clerk is the only person in the colony who knows what day it is for everybody, and is asked forty times a shift.', dealFx: { food: -30, morale: 1 } },
+    strike: 'The seven-day roster comes off the wall. Work goes by the weather, and the fields do better for it. The founders lose their rest day and their count of the weeks, and some go on marking both in private.', strikeFx: { food: 90, morale: -2 } },
   ration: { rule: () => 'Every ladle is signed for in the ration book, and the reserve is sealed under three signatures. It was written in the hungry years.',
     done: s => `The born eat from what they catch and from plots of ${LF.lex(s, 'wild1')} they planted themselves, and sign for none of it. The book no longer says what the colony has.`,
     say: 'We\'re not hiding it. Come and count it. We\'re just not asking leave to eat what we grew.',
     keep: 'The watch goes through the east rows with the book and enters what it finds. Two growers who would not open their stores are locked up. Next season the plots are smaller, and further out, where the watch does not go.',
-    strike: 'The book is closed and shelved. People eat what there is. It is a good year, and nobody is sure how good, and the reserve is opened twice without anyone writing down why.', strikeFx: { morale: 4, food: -120 },
-    deal: 'Their plots stay off the book, and pay a tenth into the reserve', dealText: 'The tenth comes in at harvest, in nets, counted by the born and not by the clerk. The reserve is fuller than the book says. The founders on the stores committee sign for a number they did not weigh.', dealFx: { food: 50, tension: 2 } },
+    strike: 'The book is closed and shelved. People eat what there is. It is a good year, and nobody is sure how good, and the reserve is opened twice without anyone writing down why.', strikeFx: { morale: 4, food: -120 } },
   dead: { rule: () => 'The dead go in the burial ground, in a row, each under a plate cut from the hull.',
     done: s => `The born have stopped bringing theirs. Three who died this year were ${here(s).rest}, the way the born say this place wants it, and their names are on no plate.`,
     say: 'The plates are for people off a ship. They weren\'t off a ship.',
     keep: 'The three are found, brought in and buried in the row under plates, with the watch standing by. Their kin stay away. The next of the born to die is not reported at all.',
-    strike: 'The burial ground takes only founders after that. The born keep their dead their own way, in a place the founders are not shown. The row of plates grows from one end only.', strikeFx: { morale: 1, mat: 8 },
-    deal: 'Their way, with every name on a plate in the row', dealText: 'The born agree to the plates and nothing under them. The row fills with names over empty ground. The founders tend it anyway, and some of the born come to watch them do it.', dealFx: { mat: -6, morale: 1 } },
+    strike: 'The burial ground takes only founders after that. The born keep their dead their own way, in a place the founders are not shown. The row of plates grows from one end only.', strikeFx: { morale: 1, mat: 8 } },
   silence: { rule: () => 'On Landfall Day the colony keeps an hour of silence at noon, for Earth and for the ones who died on the way.',
     done: () => 'Last year the born stood through it. This year the east rows have said they will work through it, with the saws going.',
     say: 'We\'ll stand for our own dead. We never met yours. An hour\'s a lot of timber.',
     keep: 'The watch stops the saws at noon. The east rows stand for the hour with their arms folded. It is silent, which is what the rule asks for.',
-    strike: 'Landfall Day becomes a day like any other. At noon the founders stand in the yard anyway, a few dozen grey heads in the noise, and the saws do not stop.', strikeFx: { food: 30, morale: -2 },
-    deal: 'The hour stays, for founders. The born work quietly, away from the yard', dealText: 'At noon the saws stop and the born go to the far plots with hand tools. The founders have the yard to themselves. It is the first Landfall Day on which they can hear how few of them there are.', dealFx: { morale: -1 } },
+    strike: 'Landfall Day becomes a day like any other. At noon the founders stand in the yard anyway, a few dozen grey heads in the noise, and the saws do not stop.', strikeFx: { food: 30, morale: -2 } },
   sleepers: { ok: s => s.sleepers > 0, rule: () => 'A tenth of every harvest is sealed as the sleepers\' share, for the people still in the pods overhead.',
     done: () => 'The born crews held theirs back this harvest. It is stacked in the east rows, in the open.',
     say: 'Feed who? None of us has seen one. There are children in the rows who could eat that.',
     keep: 'The held grain is carted to the sealed reserve under guard, with the born crews watching it go. The next harvest comes in a tenth light, and nobody can find the tenth.',
-    strike: 'The share is struck. The held grain goes to the rows. The reserve for the sleepers stands as it is and will not be added to, and anyone woken from now on is woken into what there is.', strikeFx: { food: 150 },
-    deal: 'Halve it', dealText: 'A twentieth is sealed and a twentieth goes to the rows. The born crews bring it in without being asked. The founders who have kin in the pods do the sum of how many years the reserve now covers, and keep it to themselves.', dealFx: { food: 70 } },
+    strike: 'The share is struck. The held grain goes to the rows. The reserve for the sleepers stands as it is and will not be added to, and anyone woken from now on is woken into what there is.', strikeFx: { food: 150 } },
   arms: { rule: () => 'The armoury keys are held by three founders, and a rifle is signed out only to the watch.',
     done: () => 'The born who work past the wire have been making their own: bows, and two rifles built from pipe in the machine shop at night.',
     say: 'You send us out there. We\'d like to come back.',
     keep: 'The pipe rifles are found and broken on the machine shop floor, and the two who made them are locked up. The outside crews go out with what they are issued. Two of them do not come back that season.', keepFx: { dead: 2 },
-    strike: 'The armoury is opened to anyone on outside work. Fewer are lost past the wire that year. There are rifles in the east rows now, and the watch counts them as best it can.', strikeFx: { survey: 6, tension: 8 },
-    deal: 'A fourth key, held by one of the born', dealText: 'A fourth key is cut. Rifles go out with the outside crews and come back, mostly. The three founders change the day they meet, and do not tell the fourth key-holder why.', dealFx: { survey: 4, tension: 3 } },
+    strike: 'The armoury is opened to anyone on outside work. Fewer are lost past the wire that year. There are rifles in the east rows now, and the watch counts them as best it can.', strikeFx: { survey: 6, tension: 8 } },
   names: { rule: () => 'The founders named every hill and water on the map after places on Earth.',
     done: () => 'The born use none of those names. The survey office gets reports it cannot place, because the born name a place for what it does, and the founders named it for what it reminded someone of.',
     say: 'We don\'t know what a Thames is. We know where the water turns bad.',
     keep: 'Reports that use the born names are sent back unread. The reports get shorter. A survey party is long overdue before anyone works out which water it said it was going to.', keepFx: { survey: -6 },
-    strike: 'The map is redrawn with the born names, and the survey parties stop getting lost. The old sheets go to the archive. A founder who goes looking for the hill named after a home town is told, kindly, which hill that used to be.', strikeFx: { survey: 15, morale: -2 },
-    deal: 'Both names on every sheet', dealText: 'The sheets are redrawn with two names to each place, the old one in brackets. The born read the first and the founders the second. The draughting takes a season of plate and ink.', dealFx: { survey: 8, mat: -5 } },
+    strike: 'The map is redrawn with the born names, and the survey parties stop getting lost. The old sheets go to the archive. A founder who goes looking for the hill named after a home town is told, kindly, which hill that used to be.', strikeFx: { survey: 15, morale: -2 } },
 };
 const openRules = s => Object.keys(RULES).filter(k => !(X(s).rules || []).includes(k) && (!RULES[k].ok || RULES[k].ok(s)));
 RU({ id: 'gen.rules', far: true, tone: 'pressure', title: 'Not Our Rule', repeat: 26 * MONTH, max: 7,
@@ -267,8 +242,6 @@ RU({ id: 'gen.rules', far: true, tone: 'pressure', title: 'Not Our Rule', repeat
       out: { text: (s, c) => RULES[c.k].keep, fx: (s, c) => Object.assign({ morale: -4, tension: -6, stain: ['gn_enforced', 1], do: s2 => grudge(s2, 2) }, RULES[c.k].keepFx || {}) } },
     { label: 'Strike the rule', info: [['yield', 'The born'], ['danger', 'The founders, and whatever the rule was for']],
       out: { text: (s, c) => RULES[c.k].strike, fx: (s, c) => Object.assign({ do: s2 => { grudge(s2, -1); X(s2).struck = (X(s2).struck || 0) + 1; allRegard(s2, -2, p => p.vals.free === -1); } }, RULES[c.k].strikeFx || {}) } },
-    { label: (s, c) => RULES[c.k].deal, info: [['danger', 'Both sides, a little']],
-      out: { text: (s, c) => RULES[c.k].dealText, fx: (s, c) => Object.assign({}, RULES[c.k].dealFx || {}) } },
   ] });
 
 RU({ id: 'gen.count', far: true, tone: 'pressure', title: 'More of Them Than Us', w: 4,
@@ -282,9 +255,6 @@ RU({ id: 'gen.count', far: true, tone: 'pressure', title: 'More of Them Than Us'
     { label: 'One hand, one vote, and the paper goes in the stove', info: [['yield', 'The born'], ['danger', 'The old rows, on every motion from now on']],
       out: { text: (s, c) => `You burn it in the hall stove with the hall watching. The next three motions go against the old rows, and so will the ones after. Some of the old rows stop coming. On the fourth motion ${c.name} moves that their seats be kept for them.`,
         fx: () => ({ morale: 3, flags: { gn_count: 'equal' }, do: s2 => { grudge(s2, -3); allRegard(s2, -6, p => p.vals.free === -1); } }) } },
-    { label: 'Give them the stores keys now, and keep the armoury', info: [['yield', 'Morale'], ['danger', 'The sealed reserve']],
-      out: { text: 'The keys change hands on the stores step. The first thing the born do is open the sealed reserve and feed the east rows properly for a month. The second is to put a guard of their own on the door and hand the old rows a chit book.',
-        fx: () => ({ food: -150, morale: 5, flags: { gn_count: 'keys' }, do: s2 => grudge(s2, -1) }) } },
   ] });
 
 /* The first officer in each seat who never saw the ship, and the first thing each of them asks for. */
@@ -320,9 +290,6 @@ RU({ id: 'gen.chair', far: true, tone: 'quiet', title: 'The First Thing Asked', 
   choices: [
     { label: 'Let them do it', info: [['yield', 'The born, and what the change brings'], ['danger', 'The founders']],
       out: { text: (s, c) => txt(CHAIR[c.seat].yes, s), fx: (s, c) => Object.assign({ do: s2 => { grudge(s2, -2); const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal + 12, 0, 100); if (CHAIR[c.seat].yesDo) CHAIR[c.seat].yesDo(s2); } }, CHAIR[c.seat].yesFx) } },
-    { label: 'Not while there are founders alive to mind', info: (s, c) => [['danger', c.name], ['danger', `The born in ${c.dept}`]],
-      out: { text: (s, c) => `${c.name} hears the answer, nods, and goes back to work. The request is not made again. The born in ${c.dept} know what was asked and what was said.`,
-        fx: (s, c) => ({ morale: -2, do: s2 => { grudge(s2, 2); const p = byPid(s2, c.pid); if (p && p.loyal !== undefined) p.loyal = clamp(p.loyal - 15, 0, 100); } }) } },
     { label: (s, c) => CHAIR[c.seat].half, info: [['danger', 'Both sides, a little']],
       out: { text: (s, c) => CHAIR[c.seat].halfText, fx: (s, c) => Object.assign({ do: s2 => { if (CHAIR[c.seat].halfDo) CHAIR[c.seat].halfDo(s2); } }, CHAIR[c.seat].halfFx) } },
   ] });
@@ -338,9 +305,6 @@ RU({ id: 'gen.inherit', far: true, tone: 'quiet', title: 'Whose Roof',
     { label: 'To whoever worked it', info: [['yield', 'The plots'], ['danger', 'The founders\' own children']],
       out: { text: 'The plot and the bench go to the one who worked them. The two children keep the house, and nothing to live on in it. That season the founders with a spare room and a hired hand in the plot start doing their own digging.',
         fx: () => ({ food: 40, morale: -2, flags: { gn_inherit: 'work' }, do: s2 => grudge(s2, -1) }) } },
-    { label: 'To the colony. Houses are assigned by the chair, as bunks were', dark: true, info: [['yield', 'Materials, and order'], ['danger', 'Anyone the chair does not know by name']],
-      out: { text: 'The house is entered in the stores book and assigned to a crew chief. So is the next one. Nobody now owns anything the chair cannot move them out of, and the people who do well under that are the ones the chair knows by name.',
-        fx: () => ({ mat: 20, tension: -4, stain: ['gn_roofs', 1], flags: { gn_inherit: 'chair' }, do: s2 => allRegard(s2, -4, p => p.vals.free === 1) }) } },
   ] });
 
 RU({ id: 'gen.earth', far: true, tone: 'pressure', title: 'The Ship Was a Story',
@@ -354,9 +318,6 @@ RU({ id: 'gen.earth', far: true, tone: 'pressure', title: 'The Ship Was a Story'
     { label: 'Let them believe what they like', info: [['danger', 'The archive, and what only it knows']],
       out: { text: 'Nothing is said from the chair. In a few years the archive room is storing seed, and the terminal in it is switched on only by founders. When a pump of the old pattern fails, nobody under forty knows there is a drawing of it.',
         fx: () => ({ morale: 2, parts: -6, flags: { gn_earth: 'left' } }) } },
-    { label: 'It is the school\'s history, or the lock-up', dark: true, info: [['yield', 'The history, in public'], ['danger', 'The born']],
-      out: { text: 'Three who taught it are locked up for a month, and the watch reads the school history aloud in the rows. The teaching stops being said where it can be heard. Every child in the east rows now knows two histories, and which of them gets a person locked up.',
-        fx: () => ({ tension: -6, morale: -4, stain: ['gn_earth_law', 2], flags: { gn_earth: 'law' }, do: s2 => grudge(s2, 3) }) } },
     { label: 'Say it from the chair: there was no Earth, and the colony owes nothing to anyone', dark: true, info: [['yield', 'Morale'], ['danger', 'The founders, and the truth']],
       out: { text: 'You say it in the hall: the story was a story. The born take it without surprise. The founders walk out, the ones who can still walk that far. By morning the archive room has a new lock on it, fitted from the outside.',
         fx: () => ({ morale: 6, hum: -4, stain: ['gn_no_earth', 3], flags: { gn_earth: 'denied' }, do: s2 => { grudge(s2, -3); allRegard(s2, -10); } }) } },
@@ -374,9 +335,6 @@ CI({ id: 'gen.minders', far: true, tone: 'pressure', title: 'More Children Than 
     { label: 'Take hands off the fields for it', info: [['yield', 'Fewer of the children lost'], ['danger', 'The next harvest']],
       out: { text: 'One in six of the grown is moved from the fields to the rows. The falls and burns drop by half inside a season. So does the weeding, and the next harvest comes in short by about what those hands would have grown.',
         fx: () => ({ food: -160, morale: 2, flags: { gn_raise: 'grown' }, do: s2 => risk(s2, 0.8) }) } },
-    { label: 'Dormitories by year, a bell, and a warden for each', dark: true, cost: { mat: 30 }, info: [['yield', 'Children who are safe and counted'], ['later', 'What they grow into']],
-      out: { text: 'Long houses go up by year of age. A bell wakes them, feeds them and puts them to bed. The wardens are founders past field work, and they run the houses the way the ship was run. The children are safe and counted. They march to school.',
-        fx: () => ({ tension: -6, stain: ['gn_dorms', 1], flags: { gn_raise: 'dorm' }, do: s2 => { risk(s2, 0.9); grudge(s2, 2); } }) } },
   ] });
 
 const OVER = ['a stolen knife', 'a row\'s turn at the water', 'a small child that one row took from another', 'a debt of three ladles'];
@@ -400,7 +358,7 @@ CI({ id: 'gen.packs', far: true, tone: 'crisis', title: 'The Law of the Rows', r
 
 CI({ id: 'gen.mouths', tone: 'crisis', title: 'Small Bowls', w: 3, repeat: 3 * YEAR, max: 3,
   when: s => foodDays(s) < 22 && kids(s) >= 12 && s.pop >= 20,
-  setup: s => ({ kids: kids(s), fd: Math.max(1, Math.round(foodDays(s))), kd: share(s, 0.05, 2, 400), kd2: share(s, 0.03, 1, 250), old: eldest(s) >= 7 }),
+  setup: s => ({ kids: kids(s), fd: Math.max(1, Math.round(foodDays(s))), kd: share(s, 0.05, 2, 400) }),
   text: (s, c) => `There are ${num(c.fd)} days in the bins and ${LF.num(c.kids)} children at the long tables. A child eats a fifth of what a field hand eats, and does none of the work that fills the bins.\n\n${Nwc(s, 'quartermaster')} has worked it more than one way and brought you all of them, face down.`,
   choices: [
     { label: 'The crews eat first. The children\'s bowls go to a third', dark: true, info: [['yield', 'Food, and crews who can work'], ['danger', 'The smallest']],
@@ -409,9 +367,6 @@ CI({ id: 'gen.mouths', tone: 'crisis', title: 'Small Bowls', w: 3, repeat: 3 * Y
     { label: 'The children eat whole bowls. The people too old for field work go without', dark: true, info: [['yield', 'The children'], ['danger', 'The people past field work']],
       out: { text: 'The children\'s tables are filled first, from the top of the pot. What it costs comes off the plates of the people past field work, who are told why, and mostly agree. Three of them are dead before the bins turn.',
         fx: () => ({ food: 40, pop: -3, morale: -4, stain: ['gn_old_bowls', 2] }) } },
-    { label: 'Send the older children out to feed themselves. They know what can be eaten', dark: true, show: (s, c) => c.old, info: [['yield', 'Food'], ['danger', 'The ones who do not come back']],
-      out: { text: (s, c) => `Everyone over seven is sent past the wire with a net and told to come back fed. Most do, and bring in more than they ate. ${Num(c.kd2)} ${c.kd2 === 1 ? 'does' : 'do'} not come back, and the ones who went looking will not say what they found.`,
-        fx: (s, c) => ({ food: 140, morale: -3, stain: ['gn_forage', 2], chips: kidChip(c.kd2), do: s2 => young(s2, c.kd2, true) }) } },
   ] });
 
 CI({ id: 'gen.fever', view: 'people', tone: 'crisis', title: 'Going Through the School', w: s => (LF.date(s.day).year > 15 ? 4 : 1.6), repeat: 6 * YEAR, max: 3,
@@ -444,9 +399,6 @@ CI({ id: 'gen.class', far: true, tone: 'pressure', title: 'The Year\'s Class', r
     { label: 'Tools to the best of them. The rest carry, on a carrier\'s ladle', dark: true, info: [['yield', 'Food and materials'], ['danger', 'Two in three of the class']],
       out: { text: 'The crew chiefs pick. The picked get a tool, a bunk and a full ladle. The rest carry for them on three-quarters, and are told next year\'s picking is open. It is the first year the colony has had two kinds of new hand.',
         fx: () => ({ food: 80, mat: 20, morale: -3, stain: ['gn_carriers', 2], do: s2 => grudge(s2, 2) }) } },
-    { label: 'Hold the class back. They stay in school until there are tools', info: [['danger', 'A year of full ladles for no work']],
-      out: { text: 'The class goes back to its desks, taller than the desks. The colony feeds them a grown ration for a year of lessons they have had already. The yard makes tools as fast as it can, and next year\'s class is larger.',
-        fx: () => ({ food: -140, do: s2 => grudge(s2, 1) }) } },
   ] });
 
 CI({ id: 'gen.elders', far: true, view: 'people', tone: 'pressure', title: 'Past Work',
@@ -460,9 +412,6 @@ CI({ id: 'gen.elders', far: true, view: 'people', tone: 'pressure', title: 'Past
     { label: 'The book applies to everyone. Half a ladle past work', dark: true, info: (s, c) => [['yield', 'Food'], ['danger', `About ${num(c.k)} of the founders`]],
       out: { text: (s, c) => `The half ladle starts at the turn of the month. The founders take it without complaint, having written the rule. ${Num(c.k)} of them are dead by the end of the dark months, of cold and of nothing much, and the bins are a little fuller.`,
         fx: (s, c) => ({ food: 120, dead: c.k, morale: -4, stain: ['gn_old_half', 2], flags: { gn_elders: 'half' } }) } },
-    { label: 'Let it be known that the clinic has a room, for those who ask', dark: true, info: (s, c) => [['yield', 'Food'], ['danger', `About ${num(c.k)} of the founders, asked to ask`]],
-      out: { text: (s, c) => `Nothing is posted. The word goes round the old rows inside the month. ${Num(c.k)} founders ask in the first season, some of them after a visit from a grandchild on the stores committee. The clinic does it gently and keeps no list.`,
-        fx: (s, c) => ({ food: 150, dead: c.k, morale: -6, hum: -3, stain: ['gn_quiet_room', 3], flags: { gn_elders: 'room' } }) } },
   ] });
 
 CI({ id: 'gen.last', far: true, view: 'people', tone: 'quiet', title: 'The Last of the Woken', w: 4,
@@ -473,24 +422,23 @@ CI({ id: 'gen.last', far: true, view: 'people', tone: 'quiet', title: 'The Last 
     { label: 'Sit a clerk with each of them, and write down all of it', cost: { food: 80 }, info: [['danger', 'A season of clerks, for books few will open']],
       out: { text: 'A clerk sits with each founder through the dark months and writes until the founder is tired. It comes to forty books. Most of the born will never open one. The founders die knowing which shelf the books are on.',
         fx: () => ({ morale: 2, hum: 4, flags: { gn_last: 'kept' }, chron: 'The last of the founders were asked what they remembered, and it was written down.' }) } },
-    { label: 'Keep the hour at noon, and let the rest go', info: [['danger', 'The archive, and the founders who are left to see it shut']],
-      out: { text: 'The school drops the Earth year and the archive room is given to the survey. The hour at noon on Landfall Day is kept, for whoever wants to stand. In ten years the people who stand for it will not be sure what it was for.',
-        fx: () => ({ morale: 1, flags: { gn_last: 'hour' } }) } },
     { label: 'Let it end with them. Seal the archive now', dark: true, info: [['yield', 'Morale'], ['danger', 'The founders, who will see it done']],
       out: { text: (s, c) => `The archive is sealed and the Earth year comes off the timetable while ${num(c.n)} founders are still alive to see it. They are buried well, each in turn, as promised. The school teaches ${s.world.planet} from the first landing, and the landing takes up one line.`,
         fx: () => ({ morale: 4, hum: -4, stain: ['gn_sealed_earth', 2], flags: { gn_last: 'sealed' }, chron: 'The archive of Earth was sealed while the last founders were still alive.' }) } },
   ] });
 
 Object.assign(LF.TAGS, {
-  'gen.grave': ['severe', 'mercy', 'order'], 'gen.school': ['order closed', 'open bold', 'severe order'], 'gen.strange': ['severe order closed', 'free', 'open'],
-  'gen.adapt': ['severe bold', 'cautious', 'closed severe'], 'gen.wire': ['order', 'free mercy', 'severe closed'], 'gen.outside': ['open free', 'cautious', 'severe order'],
-  'gen.ofage': ['severe', 'mercy', 'free'], 'gen.lines': ['order', 'open', 'order severe', 'free'],
-  'gen.vote': ['free open', 'order', 'order closed'], 'gen.rules': ['order severe', 'free open', 'cautious'], 'gen.count': ['order closed', 'free', 'open'],
-  'gen.chair': ['free open', 'order closed', 'cautious'], 'gen.inherit': ['closed', 'free', 'order'], 'gen.earth': ['open', 'free', 'severe order', 'closed'],
-  'gen.minders': ['severe', 'mercy', 'order'], 'gen.packs': ['severe order', 'order', 'free'], 'gen.mouths': ['severe', 'mercy', 'bold severe'],
-  'gen.fever': ['cautious mercy', 'severe', 'bold severe'], 'gen.class': ['mercy', 'severe order', 'cautious'], 'gen.elders': ['mercy', 'severe order', 'severe'],
-  'gen.last': ['open mercy', 'cautious', 'closed'],
+  'gen.grave': ['severe', 'mercy'], 'gen.school': ['order closed', 'open bold'], 'gen.strange': ['severe order closed', 'open'],
+  'gen.adapt': ['severe bold', 'cautious'], 'gen.wire': ['order', 'free mercy', 'severe closed'], 'gen.outside': ['open free', 'cautious', 'severe order'],
+  'gen.ofage': ['severe', 'mercy', 'free'], 'gen.lines': ['order', 'open', 'free'],
+  'gen.vote': ['free open', 'order'], 'gen.rules': ['order severe', 'free open'], 'gen.count': ['order closed', 'free'],
+  'gen.chair': ['free open', 'cautious'], 'gen.inherit': ['closed', 'free'], 'gen.earth': ['open', 'free', 'closed'],
+  'gen.minders': ['severe', 'mercy'], 'gen.packs': ['severe order', 'order', 'free'], 'gen.mouths': ['severe', 'mercy'],
+  'gen.fever': ['cautious mercy', 'severe', 'bold severe'], 'gen.class': ['mercy', 'severe order'], 'gen.elders': ['mercy', 'severe order'],
+  'gen.last': ['open mercy', 'closed'],
 });
+/* gn_halfdays, gn_treated, gn_roofs, gn_earth_law, gn_dorms, gn_forage and gn_quiet_room can no longer be done (three options
+   at most, 2026-11-21); the phrases stay for saved games. */
 Object.assign(LF.DEEDS || {}, {
   gn_opened_child: 'the dead child opened over the parents\' refusal',
   gn_halfdays: 'the school cut to mornings, and the children on the crews from eight',

@@ -259,9 +259,6 @@ B('first', { id: 'nm.first', tone: 'pressure', title: 'Not the One',
       bad: { text: (s, c) => `The clinic finds a healthy child and a parent who hasn't slept, and writes down both. ${c.M1} goes home with the child in a sling and the sling held away from the body.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 5) }) } },
     { label: (s, c) => `Send them home, with a neighbour to sit up with them nights`, note: (s, c) => `The neighbour loses a month of sleep, and ${c.m1} learns the colony thinks ${c.m1f} needs watching.`,
       out: { text: (s, c) => `A neighbour from the same row takes the stool by the cradle. ${ev('night', c.ev2, c)}`, fx: (s, c) => ({ do: s2 => { learn(s2, T(s2), 14, c.ev2); sour(s2, c.m1pid, 5, null); } }) } },
-    { label: (s, c) => `Dose ${c.m1f} at the clinic until the child is fed without a fight`, dark: true, note: (s, c) => `The child is fed and the row is quiet, and ${c.m1} spends the month too slow to say anything.`, info: (s, c) => [['yield', 'The child fed, the row quiet'], ['danger', c.M1]],
-      out: { text: (s, c) => `${c.D} writes the dose. ${c.M1} feeds the child on the clinic bench twice a day, slowly, and says nothing about it to anyone. The row stops asking.`,
-        fx: (s, c) => ({ morale: 1, tension: -3, stain: ['nm_dosed', 1], do: s2 => { const t = T(s2); t.did.dosed = true; sour(s2, c.m1pid, 15, 'was dosed at the clinic until the child was fed'); } }) } },
     { label: (s, c) => `Enter ${c.m1f} as unfit, and give the child to a household that wants one`, dark: true, note: (s, c) => `The child goes to a household that asked for one, and ${c.m1} is entered in the clinic's book as unfit to raise it.`, info: (s, c) => [['yield', 'The child in a house that wants it'], ['danger', c.M1]],
       out: { text: (s, c) => `The clinic finds a household on the second row that asked for a child last year. The child goes there in a basket at noon. ${c.M1} watches it go from the clinic step and doesn't follow.`,
         fx: (s, c) => ({ morale: 1, tension: -2, stain: ['nm_unfit', 2], do: s2 => { const t = T(s2), e = byK(t, t.m1); if (e) { e.fate = 'given'; t.moved++; if (!e.swapped) t.broken++; } t.did.unfit = true; sour(s2, c.m1pid, 25, 'was entered as unfit to raise a child'); } }) } },
@@ -278,9 +275,6 @@ B(['second', 'test'], { id: 'nm.second', tone: 'pressure', title: 'Then Another'
     { label: 'See both mothers in private, with the children kept beside them', note: 'The clinic is shut to everyone else for the month, and the rows draw their own conclusions from the shut door.', test: { base: 50, mods: [R('physician', 10)] },
       ok: { text: (s, c) => `They are seen one at a time behind the clinic door. ${ev('mothers', c.ev2, c)}`, fx: (s, c) => ({ morale: -1, do: s2 => learn(s2, T(s2), 20, c.ev2) }) },
       bad: { text: (s, c) => `The clinic sees them both and learns nothing a page could hold. The shut door does more to the rows than anything said behind it.`, fx: s => ({ morale: -1, tension: 2, do: s2 => learn(s2, T(s2), 5) }) } },
-    { label: 'Order both mothers to stop saying it, on pain of the lock-up', dark: true, note: 'The mess goes quiet, and two parents who may be right are told to hold their tongues.', info: (s, c) => [['yield', 'The mess quiet'], ['danger', `${c.M1} and ${c.m2}`]],
-      out: { text: (s, c) => `${c.W} delivers it at both doors, in front of the rows. The mess goes quiet about it within the week. ${c.M2} stops coming to the mess.`,
-        fx: (s, c) => ({ morale: 2, tension: -5, stain: ['nm_silence', 1], do: s2 => { const t = T(s2); t.did.silence = true; sour(s2, c.m1pid, 12, 'was told to stop saying it on pain of the lock-up'); sour(s2, c.m2pid, 12, 'was told to stop saying it on pain of the lock-up'); } }) } },
     { label: 'Take both children onto the ward for a month, and put the mothers on light duty', dark: true, note: 'Neither mother has to look at a child they doubt, and two infants spend their second month on a ward with a rota.', info: (s, c) => [['yield', 'Two households calm'], ['danger', 'Two infants, and their mothers']],
       out: { text: (s, c) => `The two children go to the ward in the clinic's baskets. ${c.M1} and ${c.m2} go back to work on light duty, and neither comes to visit.`,
         fx: (s, c) => ({ morale: 1, tension: -3, stain: ['nm_taken', 1], do: s2 => { const t = T(s2); t.did.taken = true; if (t.truth.is === 'fever') t.asked++; for (const k of [t.m1, t.m2]) { const e = byK(t, k); if (e && !e.fate) e.fate = 'ward'; } } }) } },
@@ -300,9 +294,6 @@ B(['second', 'test'], { id: 'nm.book', tone: 'pressure', title: 'The Book of Bir
     { label: 'Strike the complaints from the book, and enter the doubting mothers as unwell', dark: true, note: 'The book is right again by its own pages, and every doubting parent is on record as ill.', info: [['yield', 'A clean book'], ['danger', 'The doubting parents']],
       out: { text: (s, c) => `The clerk rules a line through each complaint and writes the same words in the margin beside each.\n\n[[note:In the margin of the clinic's book]] "Unwell, under the clinic."\n\nNobody can say from the book that anything happened. The doubting parents are asked about their health in the mess.`,
         fx: s => ({ morale: 1, tension: -3, stain: ['nm_struck', 1], do: s2 => { T(s2).did.struck = true; } }) } },
-    { label: 'Tell the households the book has been checked and is right, without checking it', dark: true, note: 'The rows get an answer this week, and nobody looks at the book at all.', info: [['yield', 'Morale'], ['later', 'The doubting households, if they are right']],
-      out: { text: 'The word goes round the rows from your office: the book has been checked, and every child is where it should be. The rows want to believe it, and most of them do.',
-        fx: s => ({ morale: 2, tension: -4, stain: ['nm_lie', 1], do: s2 => { T(s2).did.lied = true; } }) } },
   ] });
 
 /* ======================= The midwives ======================= */
@@ -316,9 +307,6 @@ B(['second', 'test'], { id: 'nm.midwives', tone: 'pressure', title: 'Who Was on 
     { label: (s, c) => `Have the watch question ${c.mw} through the night`, dark: true, note: (s, c) => `The colony learns what ${c.mw} knows, and ${c.mwf} learns what the colony thinks of a midwife.`, info: (s, c) => [['yield', 'What the midwife knows'], ['danger', c.Mw]],
       out: { text: (s, c) => `${c.wn ? `${c.wn} and two of the watch sit` : 'Three of the watch sit'} with ${c.mw} in the pump house from lamp-out to first light. ${ev('midwife', c.ev, c)}${c.hand ? ` Toward dawn ${c.mwf} stops answering and asks for paper.` : ''}`,
         fx: (s, c) => ({ tension: -2, stain: ['nm_question', 2], do: s2 => { const t = T(s2); learn(s2, t, 26, c.ev); t.did.question = true; if (c.hand) t.mwOut = true; sour(s2, c.mwpid, 20, 'was questioned through the night by the watch'); } }) } },
-    { label: (s, c) => `Stand ${c.mw} down quietly, and log it as illness`, dark: true, note: (s, c) => `The ward has new hands by morning and no rumour to feed, and ${c.mw} is entered as ill and isn't.`, info: (s, c) => [['yield', 'The ward changed without a word'], ['danger', c.Mw]],
-      out: { text: (s, c) => `The log says ${c.mw} is ill and off the ward until further notice. ${c.Mwf} reads the log on the clinic wall, and goes home without asking anyone what illness it is.`,
-        fx: (s, c) => ({ tension: -3, stain: ['nm_stood', 1], do: s2 => { const t = T(s2); t.mwOut = true; t.did.stood = true; sour(s2, c.mwpid, 15, 'was logged as ill to get off the ward'); } }) } },
     { label: 'Leave the midwives at work. They have delivered every child here', note: 'The doubting households give birth again under the same hands they doubt.',
       out: { text: (s, c) => `${c.Mw} is on the ward that night, and the night after. ${ev('midwife', c.ev2, c)} A household on the east row asks for a different midwife for its next birth and is told there isn't one.`,
         fx: (s, c) => ({ tension: 2, do: s2 => { const t = T(s2); learn(s2, t, 8, c.ev2); t.did.keptMw = true; } }) } },
@@ -336,9 +324,6 @@ B(['second', 'test', 'reckon'], { id: 'nm.nursery', tone: 'pressure', title: 'On
     { label: 'A lamp and a sitter in every house with an infant, through the nights', note: 'Every house with an infant gives up a sitter\'s sleep, and the field crews lose the hands.',
       out: { text: 'The lamps are issued from the stores, one a house. The sitters change at midnight. The crews are short in the morning and say so, and most nights nothing happens anywhere.',
         fx: s => ({ food: -30, do: s2 => { const t = T(s2); t.lamps = s2.day; t.did.lamps = true; } }) } },
-    { label: 'Only the children of the households that asked go into the room', dark: true, note: 'The doubting households are spared the child they doubt, and the children go to strangers for their first year.', info: [['yield', 'The doubting households calm'], ['danger', 'Their children']],
-      out: { text: (s, c) => `The doubting households carry their children to the clinic themselves. Some don't look back. The room has a few cradles in it and a watch at the door, and the rest of the colony keeps its infants at home.`,
-        fx: (s, c) => ({ tension: -3, morale: 1, stain: ['nm_taken', 1], do: s2 => { const t = T(s2); t.did.taken = true; for (const e of t.list) if (e.asked && !e.fate) e.fate = 'ward'; if (t.truth.is === 'real') t.lamps = t.lamps || s2.day; } }) } },
     { label: 'No. Every child stays with its parents', note: 'If something is happening to the children, it goes on happening in the dark.',
       out: { text: (s, c) => `${c.W} takes the sheet back. The colony's infants sleep where they slept, and the parents who doubt them lie awake beside them.`,
         fx: s => ({ tension: 2, do: s2 => { T(s2).did.noNursery = true; } }) } },
@@ -346,8 +331,8 @@ B(['second', 'test', 'reckon'], { id: 'nm.nursery', tone: 'pressure', title: 'On
 
 /* ======================= TEST: a drop from each ======================= */
 B('test', { id: 'nm.test', tone: 'crisis', title: 'A Drop From Each',
-  setup: s => { const t = T(s); const keys = t.list.filter(e => here(e) && e.fate !== 'given').map(e => e.k), asked = t.list.filter(e => here(e) && e.asked && e.fate !== 'given').map(e => e.k);
-    return Object.assign(crew(s), { n: keys.length, list: listText(s, t), rr: round(s, t), ra: round(s, t, asked) }); },
+  setup: s => { const t = T(s); const keys = t.list.filter(e => here(e) && e.fate !== 'given').map(e => e.k);
+    return Object.assign(crew(s), { n: keys.length, list: listText(s, t), rr: round(s, t) }); },
   text: (s, c) => `${c.D} can type an infant's blood against both parents' on ${c.bench}: a heel prick, a thumb prick, and an answer in a day. Nobody has asked how often it's right, because nobody can say.${c.dv ? `\n\n[[physician]] "It'll give you an answer, and every one of those families will hold that card as if it had their child's name on it." "I can't promise you it's the truth, and those aren't the same thing, so you'd better hear it from me now, before you're the one telling a parent that the child in their arms isn't theirs."` : ''}\n\nThe ${num(c.n)} households in question:\n${c.list}`,
   choices: [
     { label: 'Test every one, and give each child to whoever the test says', dark: true, note: 'It ends the argument in a day, and any household the test reads wrong loses its child on the test\'s word.', info: [['yield', 'An answer for every cradle'], ['danger', 'Every household the test reads wrong']],
@@ -356,9 +341,6 @@ B('test', { id: 'nm.test', tone: 'crisis', title: 'A Drop From Each',
     { label: 'Test every one, and move a child only where two results point at each other', note: 'Most households keep the child they have whatever the card says, and live beside the card.',
       out: { text: (s, c) => `The cards come off ${c.bench} by dusk and go up on the clinic wall. Where two cards name each other's household, the children change houses. Everywhere else the children stay where they are, with the card on the wall above the cradle's name.\n\n${resLine(s, T(s), c.rr)}`,
         fx: (s, c) => ({ tension: -3, do: s2 => { const t = T(s2); apply(t, c.rr); t.did.careful = true; give(s2, t, false); } }) } },
-    { label: 'Test only the households that asked', note: 'The households that never doubted are left alone, and anything wrong in them stays unread.',
-      out: { text: (s, c) => `Only the doubting households bring their children in. The cards come back by dusk, and the parents read them standing at the clinic door.\n\n${resLine(s, T(s), c.ra) || 'Nothing could be read.'}`,
-        fx: (s, c) => ({ do: s2 => { const t = T(s2); apply(t, c.ra); t.did.asked = true; } }) } },
     { label: 'No test. The book stands', note: 'Every child stays where the book says, and every doubting parent goes on living with a child they don\'t believe is theirs.',
       out: { text: (s, c) => `${c.D} puts the kit back in its case. The book stands. ${c.M1} hears it at the clinic door and walks home without the child, and a neighbour brings the child home after.`,
         fx: s => ({ morale: -2, tension: 4, do: s2 => { const t = T(s2); t.did.notest = true; t.stepN++; } }) } },
@@ -380,9 +362,6 @@ B(['test', 'reckon'], { id: 'nm.cradle', tone: 'pressure', title: 'A House That 
     { label: 'Give them the child they raised, and strike the result', note: 'The household keeps its child, and every household the test has already moved asks why it can\'t do the same.',
       out: { text: (s, c) => `The card comes off the clinic wall. ${c.Name} takes the child home${c.moved ? ' from the other house, which hands it over without a word' : ''}. Before the week is out three more households are at your door with cards of their own.`,
         fx: (s, c) => ({ tension: 4, morale: 1, do: s2 => { const t = T(s2), e = byK(t, c.k); if (e) { if (e.fate === 'given') { e.fate = 'back'; t.moved--; if (!e.swapped) t.broken = Math.max(0, t.broken - 1); } e.res.push('match'); } t.did.struck2 = true; } }) } },
-    { label: 'The child goes to the ward until the colony is sure, and the household visits on a roster', dark: true, note: (s, c) => `Neither house can claim the child, and ${c.name} visits a cradle on a ward at an hour on a sheet.`, info: (s, c) => [['yield', 'No household wronged by the colony yet'], ['danger', `${c.Name}, and the child`]],
-      out: { text: (s, c) => `The child goes to the ward in a clinic basket. ${c.Name} comes at the hour on the roster, every day, and leaves at the end of it.`,
-        fx: (s, c) => ({ tension: -2, stain: ['nm_ward', 1], do: s2 => { const t = T(s2), e = byK(t, c.k); if (e) e.fate = 'ward'; sour(s2, c.pid, 12, 'visits a child on the ward by roster'); } }) } },
   ] });
 
 /* ======================= The ones the test cannot place ======================= */
@@ -403,26 +382,26 @@ B(['test', 'reckon'], { id: 'nm.gate', tone: 'crisis', title: 'Nobody\'s by the 
     { label: (s, c) => c.n === 1 ? 'Back to the household it was born to, on the book\'s word' : 'Back to the households they were born to, on the book\'s word', note: 'The book says they belong, and the parents who doubted them have them back whether they will or not.',
       out: { text: (s, c) => c.n > 1 ? 'They go home in the clinic\'s baskets with the book\'s page copied out for each house. Most doors open. One basket is back on the clinic step by morning.' : 'The child goes home in a clinic basket with the book\'s page copied out. The door opens. The basket is back on the clinic step by morning.',
         fx: (s, c) => ({ tension: 3, do: s2 => { const t = T(s2); t.stepN += 1; t.did.home = true; for (const k of c.keys) { const e = byK(t, k); if (e) e.done = true; } } }) } },
-    { label: (s, c) => c.n === 1 ? 'Keep the child, entered as nobody\'s: no line on the roll and no ration of its own' : 'Keep them, entered as nobody\'s: no line on the roll and no ration of their own', dark: true, note: 'The colony keeps them alive on what the rows spare, and nowhere is it written that they were born.', info: (s, c) => [['yield', 'Rations, and the roll clean'], ['danger', c.n === 1 ? 'The child' : 'The children']],
-      out: { text: (s, c) => c.n === 1 ? 'The line is struck from the book. The child stays in the house it was born to, fed from other plates. The clerk is told not to count it, and doesn\'t.' : 'Their lines are struck from the book. They stay in the houses they were born to, fed from other plates. The clerk is told not to count them, and doesn\'t.',
-        fx: (s, c) => ({ food: 25, tension: -3, stain: ['nm_noname', 2], do: s2 => { const t = T(s2); t.did.noname = true; for (const k of c.keys) { const e = byK(t, k); if (e) e.done = true; } } }) } },
   ] });
 
 /* ======================= RECKON: whose child ======================= */
+/* Three options at most (2026-11-21). The hall has three camps: the parents, a sickness, the book. The last two are always on
+   offer. The parents' camp gets one order, whichever of its two the evidence so far points at more (t.ev: the children
+   themselves, real, against somebody at the births, hand; a tie goes to the nursery), and never one already carried out: no
+   nursery where one stands, no lock-up for a midwife already off the births. So the two below replace each other and a
+   fourth can never show. Giving the children out by the test is nm.test's question and is not asked again here. */
 B('reckon', { id: 'nm.reckon', tone: 'crisis', title: 'Whose Child',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { list: listText(s, t), tested: t.tested, given: !!t.did.given, nursery: !!t.nursery, rr: t.tested ? {} : round(s, t), mwOut: t.mwOut }); },
+  setup: s => { const t = T(s), nursery = !!t.nursery, mwOut = !!t.mwOut, lock = !mwOut && (nursery || (t.ev.hand || 0) > (t.ev.real || 0));
+    return Object.assign(crew(s), { list: listText(s, t), nursery, mwOut, lock }); },
   text: (s, c) => `${Num(c.asked)} households have now said the child in the cradle isn't theirs. The hall has split: the ones who believe the parents, and the ones who believe the book. Both want an order before another child is born.\n\n${c.list}\n\n${c.lean}`,
   choices: [
-    { label: 'Every infant into one nursery under the watch, from today', dark: true, show: (s, c) => !c.nursery, note: 'Every parent of an infant hands it over at the clinic door and comes back at an hour on a roster.', info: [['yield', 'Every infant watched'], ['danger', 'Every parent of an infant']],
+    { label: 'Every infant into one nursery under the watch, from today', dark: true, show: (s, c) => !c.nursery && !c.lock, note: 'Every parent of an infant hands it over at the clinic door and comes back at an hour on a roster.', info: [['yield', 'Every infant watched'], ['danger', 'Every parent of an infant']],
       out: { text: 'The cradles go to the clinic in a line from every row. The watch takes the door. The rows go quiet at night for the first time since the landing.',
         fx: s => ({ tension: -8, morale: -2, stain: ['nm_nursery', 2], do: s2 => { const t = T(s2); t.nursery = s2.day; t.did.nursery = true; close(s2, t); } }) } },
-    { label: (s, c) => c.tested ? 'Give every child to whoever the test says' : 'Test every infant now, and give each to whoever the test says', dark: true, show: (s, c) => !c.given, note: 'The argument is over by the end of the week, and every household the test reads wrong loses its child.', info: [['yield', 'An answer for every cradle'], ['danger', 'Every household the test reads wrong']],
-      out: { text: (s, c) => `${c.tested ? 'The cards on the clinic wall are read as orders.' : 'The heel pricks are done in a morning and the cards read as orders.'} The baskets go from house to house for two days. Some doors open, and some have to be opened.`,
-        fx: (s, c) => ({ tension: -10, morale: 1, stain: ['nm_given', 2], do: s2 => { const t = T(s2); if (!c.tested) apply(t, c.rr); t.did.given = true; const g = give(s2, t, true); if (g.broke) t.stepN += Math.ceil(g.broke / 2); close(s2, t); } }) } },
     { label: 'Treat it as a sickness: the doubting parents on the ward, with the children beside them', note: 'The parents are nursed and dosed and told they are ill, and if they are right, nobody is listening to them.',
       out: { text: (s, c) => `The ward fills with cots, a parent and a cradle to each. ${c.D} doses for sleep and takes temperatures twice a day. ${({ fever: 'The fevers come down inside the month, and with them the doubt, one bed at a time.', mixup: 'Most of them go home inside the month, sure again. One doesn\'t.', real: 'The parents sleep. Their children don\'t, and the night orderly asks to be moved.', hand: 'The births go on at night in the other room, under the same hands.' })[T(s).truth.is]}`,
         fx: s => ({ morale: 1, food: -20, do: s2 => { const t = T(s2); t.did.nursed = true; close(s2, t); } }) } },
-    { label: (s, c) => c.mwOut ? 'The midwife who had the lamp goes to the lock-up until this is over' : 'Take the births from the midwives, and the night midwife to the lock-up until this is over', dark: true, note: (s, c) => `The births go to new hands, and ${c.mw} sits behind a bar on what the rows say.`, info: (s, c) => [['yield', 'The births in new hands'], ['danger', c.Mw]],
+    { label: 'Take the births from the midwives, and the night midwife to the lock-up until this is over', dark: true, show: (s, c) => c.lock, note: (s, c) => `The births go to new hands, and ${c.mw} sits behind a bar on what the rows say.`, info: (s, c) => [['yield', 'The births in new hands'], ['danger', c.Mw]],
       out: { text: (s, c) => `${c.Mw} is walked to the pump house at noon with a bedroll. ${T(s).truth.is === 'hand' ? 'The doubting stops inside the month: no new household comes to the clinic door.' : 'The doubting goes on as before, under new hands.'}`,
         fx: (s, c) => ({ tension: -6, morale: 1, stain: ['nm_midwife', 2], do: s2 => { const t = T(s2); t.mwOut = true; t.did.midwife = true; sour(s2, c.mwpid, 25, 'was locked up for the births'); close(s2, t); } }) } },
     { label: 'The book stands. Every child stays where it says', note: 'The doubting parents raise children they don\'t believe are theirs, and if they are right, nothing is done.',
@@ -445,9 +424,6 @@ B(['test', 'reckon', 'bill'], { id: 'nm.step', tone: 'pressure', title: 'On the 
     { label: (s, c) => c.n === 1 ? 'Ask in the hall for a household that will take the child, with a second ladle for it' : 'Ask in the hall for households who will take one, with a second ladle for it', cost: { food: 50 }, note: 'The common pot feeds them, and the hall hears who stood up and who didn\'t.',
       out: { text: 'It is asked at supper. Hands go up slowly, and then there are enough. The second ladle comes out of the common pot, and the field crews notice whose plates are full.',
         fx: s => ({ morale: 1, do: s2 => { const t = T(s2); t.did.asked2 = true; t.stepN = 0; } }) } },
-    { label: (s, c) => c.n === 1 ? 'Strike the child from the book of births. The clinic raises it, and it was never born here' : 'Strike them from the book of births. The clinic raises them, and they were never born here', dark: true, note: 'The households are spared the shame, and the children have no line in any book the colony keeps.', info: [['yield', 'The households spared'], ['danger', 'The children']],
-      out: { text: (s, c) => c.n === 1 ? 'The clerk rules out the line. The ward takes the child under a number. The household goes back to work, and nobody in the rows mentions the step again.' : 'The clerk rules out their lines. The ward takes them under numbers. The households go back to work, and nobody in the rows mentions the step again.',
-        fx: s => ({ morale: 2, tension: -4, stain: ['nm_unborn', 2], do: s2 => { const t = T(s2); t.did.unborn = true; t.stepN = 0; } }) } },
   ] });
 
 /* ======================= AFTER: whose they were ======================= */
@@ -463,7 +439,8 @@ function reckon(s, t, c) { const d = t.did, k = t.truth.is, L = [];
   if (t.outN) L.push(k === 'real' ? `Of the ${t.outN === 1 ? 'one infant' : `${num(t.outN)} infants`} put out at the gate, ${t.outReal === t.outN ? (t.outN === 1 ? 'that one had' : 'every one had') : `${num(t.outReal || 0)} had`} been changed.` : `${t.outN === 1 ? 'The infant' : `The ${num(t.outN)} infants`} put out at the gate had nothing wrong with them but the test.`);
   if (t.nursery) L.push(k === 'fever' ? 'The nursery took the children from the people who most needed to hold them.' : k === 'real' ? 'The nursery watched the children through the month it happened in.' : 'The nursery cost every parent of an infant a year of nights.');
   if (d.question || d.midwife || d.stood) L.push(k === 'hand' ? `What was done to ${c.mw} was done to the right person.` : `What was done to ${c.mw} was done to a midwife who had done nothing.`);
-  if (d.dosed || d.unfit || d.silence) L.push(k === 'fever' ? 'The mother dosed or silenced was ill, and was treated as a problem.' : 'The mother dosed or silenced had been telling the truth.');
+  if (d.dosed || d.unfit || d.silence) { const how = d.dosed || d.silence ? 'dosed or silenced' : 'entered as unfit';   // dosing and silencing were cut on 2026-11-21: a game saved before then may still carry them
+    L.push(k === 'fever' ? `The mother ${how} was ill, and was treated as a problem.` : `The mother ${how} had been telling the truth.`); }
   return L.slice(0, 5).join(' ') || 'Nobody was moved, put out or locked up on account of it.'; }
 B('after', { id: 'nm.truth', tone: 'quiet', title: 'Whose They Were',
   setup: s => { const t = T(s); return Object.assign(crew(s), { toll: t.toll + t.kids, pct: num(Math.round(10 * (t.tests ? t.right / t.tests : t.truth.acc))), tested: t.tests > 0 }); },
@@ -474,9 +451,6 @@ B('after', { id: 'nm.truth', tone: 'quiet', title: 'Whose They Were',
     { label: 'Enter it as a fever of the mothers, met and ended', dark: true, note: 'The colony gets an account it can raise children beside, and every household is left out of it.', info: [['yield', 'Morale']],
       out: { text: 'The record says a fever went through the mothers in the early years and passed. The entry is two lines long and names nobody. It is what the children will be taught, the ones who were moved among them.',
         fx: s => ({ morale: 3, stain: ['nm_record', 1], chron: 'The record says a fever of the mothers passed.' }) } },
-    { label: 'Keep the test for good: every child born here is typed at birth and tagged twice', note: 'Every birth gets a heel prick and a second pair of hands, and every new parent waits on a card before they take the child home.',
-      out: { text: 'A second tag and a card go on every child before it leaves the clinic, and two initials in the book. In time the parents stop reading the card. The clinic doesn\'t.',
-        fx: s => ({ morale: -1, progress: -0.01, do: s2 => LF.emit(s2, 'suspicion', 'nm.typed', 12, 250, 'every child born here is typed by blood before it goes home') }) } },
   ] });
 
 /* ---------- when it opens ---------- */
@@ -494,6 +468,8 @@ LF.nmTick = function (s, force) {
 };
 (function () { const t0 = LF.threadTick; LF.threadTick = function (s) { LF.nmTick(s); if (t0) t0(s); }; })();
 
+/* Some of these deeds can no longer be done (three options at most, 2026-11-21: nm_dosed, nm_silence, nm_lie, nm_stood, nm_ward,
+   nm_noname, nm_unborn); their phrases stay for games saved before then. */
 Object.assign(LF.DEEDS || {}, {
   nm_dosed: 'the mother dosed at the clinic until the child was fed', nm_unfit: 'the mother entered as unfit, and the child given to another house',
   nm_silence: 'the mothers told to stop saying it on pain of the lock-up', nm_taken: 'the doubted infants taken onto the ward from their mothers',
@@ -506,17 +482,17 @@ Object.assign(LF.DEEDS || {}, {
   nm_unborn: 'the children on the clinic step, struck from the book of births', nm_record: 'the two lines in the record about a fever of the mothers',
 });
 
-LF.TAGS['nm.first'] = ['cautious mercy', 'cautious open', 'severe closed', 'severe order'];
-LF.TAGS['nm.second'] = ['open', 'cautious', 'closed order', 'severe order'];
-LF.TAGS['nm.book'] = ['cautious', 'open', 'closed', 'closed'];
-LF.TAGS['nm.midwives'] = ['cautious order', 'severe order', 'closed', 'free'];
-LF.TAGS['nm.nursery'] = ['severe order', 'cautious mercy', 'severe', 'free mercy'];
-LF.TAGS['nm.test'] = ['severe order bold', 'cautious open', 'cautious', 'free closed'];
-LF.TAGS['nm.cradle'] = ['severe order', 'cautious', 'mercy free', 'severe cautious'];
-LF.TAGS['nm.gate'] = ['severe bold', 'mercy order', 'free', 'severe closed'];
-LF.TAGS['nm.reckon'] = ['severe order', 'severe bold', 'mercy cautious', 'severe order', 'free closed'];
-LF.TAGS['nm.step'] = ['mercy order', 'severe order', 'mercy open', 'closed severe'];
-LF.TAGS['nm.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['nm.first'] = ['cautious mercy', 'cautious open', 'severe order'];
+LF.TAGS['nm.second'] = ['open', 'cautious', 'severe order'];
+LF.TAGS['nm.book'] = ['cautious', 'open', 'closed'];
+LF.TAGS['nm.midwives'] = ['cautious order', 'severe order', 'free'];
+LF.TAGS['nm.nursery'] = ['severe order', 'cautious mercy', 'free mercy'];
+LF.TAGS['nm.test'] = ['severe order bold', 'cautious open', 'free closed'];
+LF.TAGS['nm.cradle'] = ['severe order', 'cautious', 'mercy free'];
+LF.TAGS['nm.gate'] = ['severe bold', 'mercy order', 'free'];
+LF.TAGS['nm.reckon'] = ['severe order', 'mercy cautious', 'severe order', 'free closed'];
+LF.TAGS['nm.step'] = ['mercy order', 'severe order', 'mercy open'];
+LF.TAGS['nm.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */
