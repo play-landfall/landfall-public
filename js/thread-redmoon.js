@@ -243,13 +243,16 @@ LF.thread({ id: ID, name: 'The Red Month', view: 'colony', dread: true,
 });
 const B = (ph, st) => LF.beat(ID, ph, Object.assign({ view: 'colony', chain: true }, st));
 
-/* ---------- what the colony does before a red week (rm.date, rm.before, rm.holds) ---------- */
+/* ---------- what the colony does before a red week (rm.date, rm.before, rm.holds) ----------
+   Three options at most (Lachlan, 2026-11-21). rm.date offers shutters, the high ground or nothing (the three the officers
+   argue for); rm.before offers the plan as it stands or one of the other two of those; the holds are offered once, on
+   rm.holds, beside the measure in place and dropping everything. The shoot order is given only on rm.out now. */
 const PREP_OUT = {
   shutters: 'Shutters go up on every east window by the end of the month, made from crate lids where there\'s nothing else, and the curfew bell is hung by the mess door. The date stays chalked beside it.',
   high: 'The work crews peg out a tent line on the high ground and carry up bedding, water and a stove. When the red week comes the colony will walk up at dusk and down at dawn.',
   holds: 'The holds are swept and the vents taped dark. Each family is given a square of floor and a bucket, and told it\'s theirs every red week from now on.',
   none: 'The date stays on the mess door and nothing else changes. Some say they\'ll sit up for it, and some say they\'ll sleep.',
-  shoot: 'Shutters go up, the curfew bell is hung, and the wall is given its order in front of the hall. The watch hears it with the rest.' };
+};
 const setPrep = (key, extra) => (s, c) => Object.assign({ do: s2 => { const t = T(s2); t.prep = key === 'shoot' ? 'shutters' : key; if (key === 'shoot') { t.shoot = true; t.did.shoot = true; } if (key === 'holds') t.did.holds = true; if (key === 'none' && extra && extra.free) { t.ward = false; t.chain = false; t.shoot = false; } if (extra && extra.then) extra.then(s2, t, c); } },
   extra && extra.fx ? (typeof extra.fx === 'function' ? extra.fx(s, c) : extra.fx) : {});
 const PREPS = {
@@ -257,8 +260,8 @@ const PREPS = {
   high: { label: 'Everyone up to the high ground for the red week, in tents', note: 'The colony sleeps under canvas for seven nights, and the pens, the fields and the low rows are left to a skeleton watch.' },
   holds: { label: 'Everyone below in the windowless holds for the week, children too, every time it comes', dark: true, note: 'Nobody sees the sky for seven nights, and the colony stops dead every time the moon comes round.', info: [['yield', 'Nobody under the moon'], ['danger', 'Everyone, a week in the dark']] },
   none: { label: 'Change nothing: whoever wants to watch it watches, and everyone else sleeps', note: 'Whoever looks takes their chances, and the frightened are told there\'s nothing to be done.' },
-  shoot: { label: 'Shutters and a curfew, and the wall shoots anyone outside after dark', dark: true, note: 'Nobody walks out to the moon, and the first who does is shot by people who know them.', info: [['yield', 'Nobody out under it'], ['later', 'Whoever walks out']] } };
-const prepFx = { shutters: { mat: -6 }, high: { mat: -4, food: -10 }, holds: { morale: 1, tension: -5, stain: ['rm_holds', 1] }, none: {}, shoot: { mat: -6, tension: -6, stain: ['rm_shoot', 2] } };
+};
+const prepFx = { shutters: { mat: -6 }, high: { mat: -4, food: -10 }, holds: { morale: 1, tension: -5, stain: ['rm_holds', 1] }, none: {} };
 const prepChoice = (key, over) => Object.assign({}, PREPS[key], { out: { text: PREP_OUT[key], fx: setPrep(key, { fx: prepFx[key] }) } }, over || {});
 
 /* ======================= FIRST: the morning after the first red week ======================= */
@@ -275,16 +278,13 @@ B(['first', 'between'], { id: 'rm.first', tone: 'pressure', title: 'The Red Week
     { label: 'Lock the struck in the pump house until they\'re themselves again', dark: true, note: 'The rows sleep without them, and they sit behind a bar for having looked up.', info: [['yield', 'The rows calm'], ['danger', 'The struck']],
       out: { text: 'The watch walks them to the pump house at supper. None of them argues. In the night they stand at the one high window, all of them, facing east, though the moon is long gone.',
         fx: (s, c) => ({ morale: 1, tension: -4, stain: ['rm_pen', 1], do: s2 => { const t = T(s2); t.ward = true; t.did.pen = true; sour(s2, c.pid0, 10, 'was locked in the pump house for looking at the moon'); } }) } },
-    { label: 'Tell the colony it\'s want of sleep, and put them back on full shifts', dark: true, note: 'The work gets its hands back, and the struck are worked as if nothing happened to them.', info: [['yield', 'Hands'], ['danger', 'The struck']],
-      out: { text: 'The hall is told it was a week of lost sleep and nothing more. The struck go back on the shift lists. They work slowly and well, and at the end of each shift they turn and face east before they put the tools down.',
-        fx: (s, c) => ({ morale: 1, progress: 0.03, stain: ['rm_lie', 1], do: s2 => { const t = T(s2); t.did.lie = true; t.shifted = true; } }) } },
   ] });
 
 /* ======================= BETWEEN: the date on the mess door ======================= */
 B(['between', 'struck'], { id: 'rm.date', tone: 'crisis', title: 'The Date on the Mess Door',
   setup: s => crew(s),
   text: (s, c) => `The date is in chalk on the mess door, and somebody has started rubbing out a day at a time. The officers don't agree what to do when it comes.${c.wv ? `\n\n[[security]] "I'd have shutters on every east window and a curfew from dusk, and anyone out after it can explain to me why." "If it's the light, bloody well keep it out, and if it isn't then we've lost some sleep, and nobody ever died of a closed window."` : ''}${c.tv ? `\n\n[[crew]] "The struck all sleep in the low rows, every one of them, I've been round and asked." "So I'd take everyone up the hill for the week, and the low rows can stand empty till it's past."` : ''}${c.dv ? `\n\n[[doctor]] "Or we do nothing, and let them sleep in their own beds with somebody sitting up beside them." "Half of what I saw last time was people who hadn't slept for seven nights, and if you shut them in they won't sleep for seven more."` : ''}\n\n${c.lean}`,
-  choices: [ prepChoice('shutters'), prepChoice('high'), prepChoice('holds'), prepChoice('none'), prepChoice('shoot') ] });
+  choices: [ prepChoice('shutters'), prepChoice('high'), prepChoice('none') ] });
 
 /* The night watch: somebody has to stand the wall facing it. */
 B(['between', 'struck', 'last'], { id: 'rm.watch', tone: 'pressure', title: 'Who Stands the Watch', view: 'people',
@@ -299,9 +299,6 @@ B(['between', 'struck', 'last'], { id: 'rm.watch', tone: 'pressure', title: 'Who
     { label: 'Hood the watch, and hold the wall by ear', note: 'Nobody on the wall sees the moon, and nobody on the wall sees anything else either.', info: [['later', 'The hooded watch']],
       out: { text: 'Canvas hoods go over the watch at the foot of the ladder, and a rope runs the length of the wall walk to keep them on it. They call to each other every few minutes through the night.',
         fx: s => ({ mat: -2, do: s2 => { const t = T(s2); t.blind = 'hood'; t.watch = 'hood'; } }) } },
-    { label: 'Take the eyes of three who\'ll stand the wall for good, and pay them double rations for life', dark: true, note: 'The wall gets a watch the moon can never touch, and three people trade their sight for it.', info: [['yield', 'A watch for every red week'], ['danger', 'The three']],
-      out: { text: (s, c) => `Three come forward, which is three more than ${c.w} expected. It's done in the clinic with a hot iron and the strongest thing on the shelf. A month on, they stand the wall with a hand on the rope, listening.`,
-        fx: s => ({ tension: -4, food: -10, stain: ['rm_blind', 3], do: s2 => { const t = T(s2); t.blind = 'eyes'; t.watch = 'eyes'; t.did.blindwatch = true; } }) } },
   ] });
 
 /* ======================= STRUCK: the morning after ======================= */
@@ -314,8 +311,6 @@ B(['struck', 'last'], { id: 'rm.after', tone: 'pressure', title: 'The Morning Af
       out: { text: 'A ledger goes on the table in the clinic and a hand from the stores sits by it. Everything the struck say goes in, dated. The council has it read out at every meeting, and people come early to hear it.', fx: (s, c) => ({ tension: 2, do: s2 => { const t = T(s2); if (c.nw) learn(s2, t, 6, c.ev); t.listen = true; t.did.listen = true; learn(s2, t, 6); } }) } },
     { label: 'Hush them: the struck eat apart and speak to nobody but the clinic', dark: true, note: 'The rows stop hearing it, and the struck are cut off from everyone they knew for what they say.', info: [['yield', 'The rows calm'], ['danger', 'The struck']],
       out: { text: 'The struck eat at a table by the wash-house door, after everyone else. Anyone caught talking with them loses a ration. The rows stop repeating things, mostly.', fx: (s, c) => ({ morale: 1, tension: -5, stain: ['rm_hush', 1], do: s2 => { const t = T(s2); if (c.nw) learn(s2, t, 6, c.ev); t.listen = false; t.did.hush = true; sour(s2, c.sayPid, 10, 'was hushed for what the red moon showed'); } }) } },
-    { label: 'Put the struck on the night pits with the punishment detail, out of everyone\'s way', dark: true, note: 'The worst work in the colony gets done by people who can\'t refuse it, and nobody hears them.', info: [['yield', 'The pits dug'], ['danger', 'The struck']],
-      out: { text: 'The struck go down the latrine pits at lamp-down with the detail and come up at dawn. They dig well, and steadily, and the detail says they turn to face east at the same moment every night.', fx: (s, c) => ({ mat: 6, tension: -3, stain: ['rm_pits', 1], do: s2 => { const t = T(s2); if (c.nw) learn(s2, t, 6, c.ev); t.did.pits = true; t.listen = false; } }) } },
     { label: 'Back on their own shifts, with a minder each from their own row', note: 'The minders lose sleep and work of their own, and every row has one of its own to watch.',
       out: { text: 'Each of the struck goes back to the old shift with somebody from the same row at the next bench. The minders are tired within the month. Nobody has to be told twice.', fx: (s, c) => ({ tension: 1, do: s2 => { const t = T(s2); if (c.nw) learn(s2, t, 6, c.ev); t.minders = true; if (t.truth.is === 'fear') t.watch = 'rows'; } }) } },
   ] });
@@ -334,8 +329,6 @@ B(['struck', 'last'], { id: 'rm.ward', tone: 'crisis', title: 'The Moon-Struck',
           do: s2 => { const t = T(s2); t.did.outed = (t.did.outed || 0) + c.tot; t.cnt = 0; t.named = []; t.ward = false; } }) } },
     { label: 'Keep them in the rows, and have the rows sit up with them by turns', note: 'Every row loses a night\'s sleep in four, watching people they used to eat beside.',
       out: { text: 'A rota goes up in every row: one awake each night, sitting by the struck. It costs every row its sleep. Some of the watchers start sitting by the window too.', fx: s => ({ tension: 3, do: s2 => { const t = T(s2); t.watch = 'rows'; t.did.rows = true; } }) } },
-    { label: 'Chain them to their bunks each night, and let them work by day', dark: true, note: 'Nobody walks out at night, and the struck sleep in irons beside people who used to share their food.', info: [['yield', 'Nobody walks at night'], ['danger', 'The struck']],
-      out: { text: 'The shed turns out leg irons from bar stock in a day. At lamp-down each of the struck sits on the bunk and holds out an ankle. None of them fights it.', fx: (s, c) => ({ tension: -5, morale: 1, mat: -4, stain: ['rm_chain', 1], do: s2 => { const t = T(s2); t.chain = true; t.did.chain = true; for (const x of c.named) sour(s2, x.pid, 12, 'was chained to a bunk for being moon-struck'); } }) } },
   ] });
 
 /* One of them walked out on the last red night, and is still out there at dawn. */
@@ -351,9 +344,6 @@ B(['struck', 'last'], { id: 'rm.out', tone: 'crisis', title: 'Out After Dark',
     { about: true, label: (s, c) => `Have ${c.first} followed at a distance, and see where the walk leads`, note: (s, c) => `${c.Name} is left alone out there all day to be watched like an animal, by somebody walking where the struck walk.`, test: { base: 50, mods: [R('xenobio', 10), R('security', 5)] },
       ok: { text: (s, c) => `${cap(LF.sentName(s, 'xenobio'))} keeps a ridge between them all day. ${ev('out', c.ev2, c)} At dusk ${c.first} walks back to the gate alone and waits to be let in.`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 26, c.ev2) }) },
       bad: { text: (s, c) => `${cap(LF.sentName(s, 'xenobio'))} loses sight of ${c.first} behind a rise and spends the afternoon looking. ${c.Name} is back at the gate at dusk, with nothing to say about the day.`, fx: s => ({ do: s2 => learn(s2, T(s2), 6) }) } },
-    { label: (s, c) => `Leave ${c.first} out there, and keep the gate shut until the moon's well gone`, dark: true, note: (s, c) => `Nobody goes out under that sky for one of the struck, and ${c.name} is left to the open ground.`, info: (s, c) => [['yield', 'Nobody else out there'], ['danger', c.Name]],
-      out: { text: (s, c) => `The gate stays shut. ${c.Name} stands out there most of the day, then walks away along the low ground, and nobody on the wall sees where to.`,
-        fx: (s, c) => Object.assign(c.pid ? { depart: [{ who: c.pid, cause: 'left outside the wire under the red moon' }] } : { gone: 1 }, { tension: -3, stain: ['rm_left', 1], do: s2 => { const t = T(s2); if (!c.pid) t.cnt = Math.max(0, t.cnt - 1); t.did.left = c.name; } }) } },
     { label: (s, c) => `Shoot ${c.first} from the wall, where the rows can see it`, dark: true, note: (s, c) => `No one walks out under the moon again, and ${c.name} is shot by somebody who knows the name.`, info: (s, c) => [['yield', 'Nobody walks out after this'], ['danger', c.Name]],
       out: { text: (s, c) => `The wall fires once. ${c.Name} goes down on the open ground and the rows see it from the yard. The watch brings the body in at noon, and the struck turn their heads to watch it carried past.`,
         fx: (s, c) => Object.assign(c.pid ? { kill: [{ who: c.pid, cause: 'shot from the wall, out under the red moon' }] } : { pop: -1 }, { tension: -7, morale: 1, stain: ['rm_shot', 2], do: s2 => { const t = T(s2); if (!c.pid) { t.cnt = Math.max(0, t.cnt - 1); } count(t, 1); t.shot++; t.shoot = true; t.did.shoot = true; } }) } },
@@ -371,8 +361,6 @@ B(['struck', 'last'], { id: 'rm.said', tone: 'pressure', title: 'What They Said'
     { label: (s, c) => `Have ${c.w} question ${c.oldWho} until it's plain where it comes from`, dark: true, note: (s, c) => `The colony gets an answer of some kind, and ${c.oldWho} is kept awake and asked the same thing until there is one.`, info: (s, c) => [['yield', 'An answer'], ['danger', cap(c.oldWho)]],
       out: { text: (s, c) => `It takes three nights in the pump house with a lamp and no sleep. ${cap(c.oldWho)} says the same thing every time, in the same words.\n\n[[${c.oldPid || c.oldRk || 'x26'}]] "I looked at it, and it showed me."\n\n${({ light: `Then, the third night, only this.\n\n[[${c.oldPid || c.oldRk || 'x26'}]] "It's in the light. Shut the light out."`, tide: `Then, the third night, this.\n\n[[${c.oldPid || c.oldRk || 'x26'}]] "It came up out of the ground. I smelled it."`, fear: 'By the third night it\'s anything the questioner wants.', sight: 'And on the third night, one more thing about the next red week, which turns out right.' })[T(s).truth.is]}`,
         fx: (s, c) => ({ tension: -3, stain: ['rm_question', 1], do: s2 => { const t = T(s2); learn(s2, t, 16, t.truth.is); t.did.question = c.oldWho; sour(s2, c.oldPid, 15, 'was questioned for three nights over what the red moon showed'); } }) } },
-    { label: 'Burn the ledger, and make repeating what the struck say a punishable offence', dark: true, note: 'The fear stops passing from mouth to mouth, and whatever the struck can see goes unsaid.', info: [['yield', 'The rows quiet'], ['danger', 'Whoever repeats it']],
-      out: { text: 'The ledger goes in the galley stove. The order goes up beside the chalked date. Two people lose a week\'s rations under it in the first month, and after that nobody says anything the struck said, aloud.', fx: s => ({ morale: 2, tension: -6, stain: ['rm_book', 1], do: s2 => { const t = T(s2); t.listen = false; t.dumb = true; t.did.book = true; } }) } },
     { label: 'Leave the ledger on the mess door and let people make of it what they will', note: 'Everyone reads it, and the frightened read the most into it.',
       out: { text: 'The ledger hangs on a nail beside the date. There is always somebody reading it. Some go and stand at the east windows themselves, to see what the struck see.', fx: s => ({ tension: 3, do: s2 => { const t = T(s2); t.cnt += t.truth.is === 'fear' ? 1 : 0; } }) } },
   ] });
@@ -390,8 +378,6 @@ B(['struck', 'last'], { id: 'rm.eyes', tone: 'crisis', title: 'Their Eyes', view
         fx: (s, c) => ({ tension: -6, morale: 1, stain: ['rm_eyes', 3], do: s2 => { const t = T(s2); t.blinded = true; t.did.eyes = c.tot; if (t.truth.is === 'sight') t.dumb = true; for (const x of c.named) { const p = byPid(s2, x.pid); if (p && p.alive) p.marks.blinded = { d: s2.day, txt: 'was blinded in the clinic for being moon-struck' }; } } }) } },
     { label: 'Let them look, every red week, and write down what they say', note: 'The struck stand at the windows all week by order, and whatever the moon does to them it goes on doing.',
       out: { text: 'The struck are given the east windows for the red week, and a hand with a ledger sits behind them through the night. They are quiet, mostly. Now and then one of them says something, and it goes in the ledger.', fx: s => ({ tension: 2, do: s2 => { const t = T(s2); t.listen = true; t.did.listen = true; if (t.truth.is === 'light') t.cnt += 1; } }) } },
-    { label: 'Dose them with the clinic\'s sleeping draught for every red week', dark: true, note: 'The struck sleep through the moon, and the clinic\'s shelf of draught goes on people who never asked for it.', info: [['yield', 'The struck asleep'], ['danger', 'The struck, and the clinic\'s stores']],
-      out: { text: (s, c) => `The draught goes into their supper on the first night of every red week from now on. ${c.dv ? `${c.dv} measures it out and won't speak to anyone while doing it.` : 'An orderly measures it out.'} They sleep through it, and wake slow, and ask what they missed.`, fx: s => ({ parts: -4, tension: -4, stain: ['rm_dose', 1], do: s2 => { const t = T(s2); t.dumb = true; t.did.dose = true; } }) } },
   ] });
 
 /* The week before: keep to the plan, or change it. */
@@ -400,24 +386,26 @@ B(['struck', 'last'], { id: 'rm.before', tone: 'pressure', title: 'The Week Befo
   text: (s, c) => `The chalk on the mess door is down to a handful of days. The plan, as it stands, is ${c.plan}. Since the first red week ${num(c.seen)} of the colony ${c.seen === 1 ? 'has' : 'have'} been struck and ${c.toll ? `${num(c.toll)} ${c.toll === 1 ? 'has' : 'have'} died of it in one way or another` : 'nobody has died of it yet'}, and the hall wants to know whether the plan is working.\n\n${c.lean}`,
   choices: [
     { label: 'Keep to the plan as it stands', note: 'Whatever the plan has been costing, it goes on costing, and whoever it hasn\'t protected stays unprotected.', out: { text: 'The plan is read out again in the hall, word for word, and nobody new speaks against it. The days come off the mess door one at a time.', fx: s => ({ tension: 1 }) } },
-    prepChoice('shutters', { show: (s, c) => c.prep !== 'shutters' }), prepChoice('high', { show: (s, c) => c.prep !== 'high' }), prepChoice('holds', { show: (s, c) => c.prep !== 'holds' }), prepChoice('none', { show: (s, c) => c.prep !== 'none' }),
+    /* Three on screen, never four: the plan kept, and the two other plans among shutters, the high ground and nothing.
+       Nothing is hidden while the colony has no plan (or, in an old save, is in the holds), where shutters and the high
+       ground are the two on offer. */
+    prepChoice('shutters', { show: (s, c) => c.prep !== 'shutters' }), prepChoice('high', { show: (s, c) => c.prep !== 'high' }), prepChoice('none', { show: (s, c) => c.prep === 'shutters' || c.prep === 'high' }),
   ] });
 
 /* ======================= LAST: the reckoning before the last red week ======================= */
 B('last', { id: 'rm.holds', tone: 'crisis', title: 'Before the Next One',
-  setup: s => { const t = T(s), nh = namedHere(s, t); return Object.assign(crew(s), { tot: total(s, t), who: names(s, t), seen: t.seen, toll: t.toll, named: nh.map(p => ({ pid: p.id, name: p.name })), cnt: t.cnt }); },
-  text: (s, c) => `Every red week has been worse than the one before, and the hall has split over the next one. One half wants the colony below ground and the struck gone. The other half wants every measure against it dropped, and says the colony has been doing this to itself. ${Num(c.seen)} ${c.seen === 1 ? 'has' : 'have'} been struck since the first week, and ${c.toll ? `${num(c.toll)} ${c.toll === 1 ? 'is' : 'are'} dead of it` : 'nobody is dead of it yet'}.\n\nThe plan, as it stands, is ${c.plan}.\n\n${c.lean}`,
+  /* Three on screen, never four: the holds, the middle measure, or everything dropped. The middle one (c.mid) is the measure
+     in place made to last: the high ground if the colony sleeps up there, shutters if those are up; with neither in place it
+     is whichever of the two the evidence leans to (t.ev), shutters on a tie. The two have opposite shows. */
+  setup: s => { const t = T(s); return Object.assign(crew(s), { tot: total(s, t), seen: t.seen, toll: t.toll, mid: t.prep === 'high' ? 'high' : t.prep === 'shutters' ? 'shutters' : (t.ev.tide || 0) > (t.ev.light || 0) ? 'high' : 'shutters' }); },
+  text: (s, c) => `Every red week has been worse than the one before, and the hall has split over the next one. One half wants the colony below ground. The other half wants every measure against it dropped, and says the colony has been doing this to itself. ${Num(c.seen)} ${c.seen === 1 ? 'has' : 'have'} been struck since the first week, and ${c.toll ? `${num(c.toll)} ${c.toll === 1 ? 'is' : 'are'} dead of it` : 'nobody is dead of it yet'}.\n\nThe plan, as it stands, is ${c.plan}.\n\n${c.lean}`,
   choices: [
     prepChoice('holds', { label: 'Everyone into the holds, this time and every time after it, for good', out: { text: PREP_OUT.holds, fx: setPrep('holds', { fx: { morale: 1, tension: -8, stain: ['rm_holds', 2] } }) } }),
-    prepChoice('high', { label: 'Move the bunks up to the high ground, for good', note: 'The colony rebuilds its rows on the ridge and walks down to the fields, and every month of building goes into it.',
+    prepChoice('high', { show: (s, c) => c.mid === 'high', label: 'Move the bunks up to the high ground, for good', note: 'The colony rebuilds its rows on the ridge and walks down to the fields, and every month of building goes into it.',
       out: { text: 'The low rows are stripped for their panels and carried up the hill a section at a time. The colony sleeps under canvas for a month while they go up again. The drain rows stand empty after that.', fx: setPrep('high', { fx: { mat: -15, progress: -0.1 } }) } }),
-    prepChoice('shutters', { label: 'Shutters and the curfew, and hold to them' }),
+    prepChoice('shutters', { show: (s, c) => c.mid === 'shutters', label: 'Shutters and the curfew, and hold to them' }),
     { label: 'Drop every measure against it, and let the struck sleep where they like', note: 'Whoever looks up looks up, and the frightened are told there\'s nothing to be afraid of.',
       out: { text: 'Whatever was put up against the moon comes down and is stacked by the shed, and nobody rings a curfew. The struck are let out of wherever they\'ve been kept and go back to their old bunks, and some of the rows move out.', fx: setPrep('none', { free: true, fx: { tension: 4 } }) } },
-    { label: 'Put every one of the struck out past the wire, and shoot anyone who\'s out after dark', dark: true, show: (s, c) => c.tot > 0, cost: { food: 20 }, note: (s, c) => `Nobody under the moon is left inside the wire, and ${num(c.tot)} people who looked up go out through the gate.`, info: (s, c) => [['yield', 'The colony clear of them'], ['danger', `The ${num(c.tot)} struck, and whoever walks out`]],
-      out: { text: (s, c) => `${cap(c.who)} go out through the gate with a tent and food, and the wall is given its order in front of the hall. On the first red night the tent on the far side of the open ground has its flap open, facing east.`,
-        fx: (s, c) => Object.assign(c.named.length ? { depart: c.named.map(x => ({ who: x.pid, cause: 'put out past the wire for being moon-struck' })) } : {}, c.cnt ? { gone: c.cnt } : {}, { morale: 2, tension: -10, stain: ['rm_out', 2],
-          do: s2 => { const t = T(s2); t.did.outed = (t.did.outed || 0) + c.tot; t.cnt = 0; t.named = []; t.ward = false; t.chain = false; t.shoot = true; t.did.shoot = true; t.prep = t.prep === 'none' ? 'shutters' : t.prep; } }) } },
   ] });
 
 /* ======================= AFTER: what the moon was ======================= */
@@ -446,10 +434,10 @@ B('after', { id: 'rm.truth', tone: 'quiet', title: 'What the Moon Was',
       out: { text: 'The red weeks go into the colony record one by one, with the date of each, the names of the struck and what was done to them. People read it. Some stop greeting you, and one or two begin.', fx: s => ({ morale: -2, chron: 'The colony wrote the red weeks into the record, with the names.' }) } },
     { label: 'Enter it in the record as a sickness of the eyes, met and ended', dark: true, note: 'The colony gets an account it can live beside, and the struck and what was done to them are left out of it.', info: [['yield', 'Morale']],
       out: { text: 'The record says that a sickness of the eyes came with the second moon in the first years and was dealt with. The entry is three lines long. It is the version the children will be taught.', fx: s => ({ morale: 3, stain: ['rm_record', 1], chron: 'The record says that a sickness of the eyes came with the second moon.' }) } },
-    { label: 'Keep the date on the mess door for good, and the shutters up every red week from now on', note: 'The colony gives a week in every few months to a moon, long after it has stopped mattering, and the children grow up afraid of the sky.',
-      out: { text: 'The date goes up in chalk on the mess door every time, and the shutters go up the night before. In time the children do it without being told, and sing a counting song for the days.', fx: s => ({ morale: -1, do: s2 => { LF.emit(s2, 'fear', 'rm.ritual', 14, 250, 'the shutters still go up every time the red moon comes round'); } }) } },
   ] });
 
+/* The options behind rm_lie, rm_shoot, rm_blind, rm_pits, rm_chain, rm_left, rm_book and rm_dose were cut (three options at
+   most, 2026-11-21); their phrases stay for saved games that carry the deed. */
 Object.assign(LF.DEEDS || {}, {
   rm_pen: 'the moon-struck barred in the pump house for looking up', rm_lie: 'the moon-struck worked as if nothing had happened to them', rm_holds: 'the whole colony shut in the dark below every red week',
   rm_shoot: 'the order to shoot anyone out under the red moon', rm_struckwatch: 'the moon-struck stood on the wall under the moon again', rm_blind: 'the eyes the watch gave to stand the wall',
@@ -459,17 +447,17 @@ Object.assign(LF.DEEDS || {}, {
   rm_dose: 'the moon-struck drugged asleep every red week', rm_record: 'the three lines in the record about a sickness of the eyes',
 });
 
-LF.TAGS['rm.first'] = ['mercy open', 'bold open', 'severe closed', 'closed order'];
-LF.TAGS['rm.date'] = ['cautious order', 'cautious', 'severe order', 'free', 'severe order'];
-LF.TAGS['rm.watch'] = ['order', 'severe', 'cautious', 'severe bold'];
-LF.TAGS['rm.after'] = ['open', 'closed order', 'severe', 'mercy order'];
-LF.TAGS['rm.ward'] = ['mercy cautious', 'severe', 'open', 'severe order'];
-LF.TAGS['rm.out'] = ['mercy bold', 'bold open', 'severe cautious', 'severe order'];
-LF.TAGS['rm.said'] = ['open bold', 'severe', 'closed order', 'free open'];
-LF.TAGS['rm.eyes'] = ['cautious order', 'severe', 'open free', 'closed severe'];
-LF.TAGS['rm.before'] = ['order', 'cautious order', 'cautious', 'severe order', 'free'];
-LF.TAGS['rm.holds'] = ['severe order', 'bold', 'cautious order', 'free open', 'severe'];
-LF.TAGS['rm.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['rm.first'] = ['mercy open', 'bold open', 'severe closed'];
+LF.TAGS['rm.date'] = ['cautious order', 'cautious', 'free'];
+LF.TAGS['rm.watch'] = ['order', 'severe', 'cautious'];
+LF.TAGS['rm.after'] = ['open', 'closed order', 'mercy order'];
+LF.TAGS['rm.ward'] = ['mercy cautious', 'severe', 'open'];
+LF.TAGS['rm.out'] = ['mercy bold', 'bold open', 'severe order'];
+LF.TAGS['rm.said'] = ['open bold', 'severe', 'free open'];
+LF.TAGS['rm.eyes'] = ['cautious order', 'severe', 'open free'];
+LF.TAGS['rm.before'] = ['order', 'cautious order', 'cautious', 'free'];
+LF.TAGS['rm.holds'] = ['severe order', 'bold', 'cautious order', 'free open'];
+LF.TAGS['rm.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */

@@ -12,8 +12,8 @@
             old one it names dies of being told). Every drastic answer was done for nothing,
             and the eldest grow out of it.
      one    one child (t.ear, the one who hears it best) is running the others, on what it overhears at the clinic
-            hatch and the stores. Taking that child away from the rest ends it; questioning, or keeping the child
-            close, can find it out. Left alone, the hits it engineers start to cost grown lives.
+            hatch and the stores. Taking that child away from the rest ends it; keeping the child close can find
+            it out. Left alone, the hits it engineers start to cost grown lives.
      world  something of this world is talking to the only people born into it, and is working up to asking for
             them. Burning the place they go to meet it ends it; giving it what it asks costs children; left alone,
             children walk out to the place at night and are not found.
@@ -24,7 +24,9 @@
    points at the truth only most of the time (pickK). Its bill (month): parents off the work, children lost at night,
    grown lives under one. Children lost on a card are a share of the cohorts worked out at setup and taken exactly
    (LF.gn.young); no card is a child bearing a child, none dwells on a child being hurt, and nothing is sexual.
-   State: s.threads.friend, plain JSON. Dice from LF.srand. Every card's text reads only what setup put in ctx. */
+   State: s.threads.friend, plain JSON. Dice from LF.srand. Every card's text reads only what setup put in ctx.
+   Three options at most (Lachlan, 2026-11-21): each card keeps its reading (a test), a plain answer and one hard one;
+   fr.choice offers two harsh measures and one option that touches nobody (its comment says which). */
 (function () {
 'use strict';
 const { clamp, h } = LF; const { P, R, byPid } = h;
@@ -212,8 +214,6 @@ B('name', { id: 'fr.name', tone: 'pressure', title: 'A Name in Two Rows',
       bad: { text: (s, c) => `The children answer the first morning and stop by the third. By the end of the week they say ${c.nm} to each other and not to anyone grown.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 5) }) } },
     { label: 'Leave it. Children have friends nobody else can see', note: 'If it is anything, nobody is watching it start, and the parents lie awake listening at the bunk curtain.',
       out: { text: (s, c) => `Nothing is said to the children. By the end of the month the name is in every row, and the parents compare what their own child has said at the wash trough, quietly.`, fx: s => ({ food: -20, do: s2 => learn(s2, T(s2), 2) }) } },
-    { label: 'Tell the parents it is a game the school set, and say no more', dark: true, note: 'The parents sleep, on the strength of something you know to be false.', info: [['yield', 'Morale'], ['danger', 'The parents, lied to']],
-      out: { text: (s, c) => `${c.Teach} says it at the schoolroom door to each parent in turn, and is believed. The children go on saying ${c.nm}, and their parents stop hearing it.`, fx: s => ({ morale: 2, stain: ['fr_lie', 1], do: s2 => { const t = T(s2); t.did.lie = 1; LF.ease(s2, 'fear', 'fr.lie', 12, 60); } }) } },
     { label: (s, c) => `Keep ${c.a} and ${c.b} in the clinic's end room for a month, away from the others`, dark: true, note: 'Two children are shut away from their rows to see whether the name stops with them, and their parents are let in at meals.', info: (s, c) => [['yield', 'What it is'], ['danger', `${c.a} and ${c.b}, and their parents`]],
       out: { text: (s, c) => `The two are put in the end room with a cot each and a box of the school's slates. They say ${c.nm} to each other the first night. ${ev('name', c.ev, c)}`, fx: (s, c) => ({ stain: ['fr_twokids', 1], do: s2 => { const t = T(s2); learn(s2, t, 24, c.ev); t.did.two = 1; } }) } },
   ] });
@@ -228,8 +228,6 @@ B('hits', { id: 'fr.dig', view: 'colony', tone: 'pressure', title: 'Where to Dig
       bad: { text: 'They walk the slope for a week and come back with a map of where they walked. The children ask them what they found, and laugh.', fx: s => ({ food: 30, do: s2 => learn(s2, T(s2), 5) }) } },
     { label: 'Sink a well there, and give the children\'s rows the first draw', note: 'The colony drinks from a well a voice nobody can see chose, and the parents know it.',
       out: { text: (s, c) => `The well is lined by the end of the month. The children carry the first buckets, and pour a cup out on the ground for ${c.nm} before they drink. Some of the parents will not drink from it.`, fx: s => ({ food: 60, morale: -1, do: s2 => { learn(s2, T(s2), 3); LF.emit(s2, 'fear', 'fr.well', 18, 60, 'the colony drinks from a well the children\'s friend chose'); } }) } },
-    { label: 'Sink the well, and tell the hall the survey found it', dark: true, note: 'The hall is told a lie, and the children who said it are told to keep quiet about it.', info: [['yield', 'Water, and morale'], ['danger', 'The children, told to lie']],
-      out: { text: (s, c) => `The survey's name goes on the well. The children are told at school that the water was found by the grown-ups and that ${c.nm} had nothing to do with it. They nod. They pour the cup out anyway.`, fx: s => ({ food: 60, morale: 2, stain: ['fr_credit', 1], do: s2 => { T(s2).did.credit = 1; } }) } },
     { label: 'Fill it in, and tell the children it was dry', dark: true, note: 'The colony gives up good water sooner than drink what a child\'s friend found, and the children are lied to by everyone they trust.', info: [['yield', 'Nothing it said comes true'], ['danger', 'The water, and the children']],
       out: { text: (s, c) => `The seep is filled at dusk and tamped flat. The children are told it was dry. The next morning a child is found lying on the tamped ground with an ear to it.`, fx: s => ({ morale: 1, tension: -3, stain: ['fr_filled', 1], do: s2 => { const t = T(s2); t.did.filled = 1; t.miss++; LF.ease(s2, 'fear', 'fr.filled', 10, 60); } }) } },
   ] });
@@ -245,22 +243,17 @@ B('hits', { id: 'fr.spring', tone: 'pressure', title: 'Before the Spring',
       bad: { text: (s, c) => `The clinic finds nothing and says so. ${c.OldF} goes home with a clean bill and does not believe it.`, fx: s => ({ do: s2 => { const t = T(s2); learn(s2, t, 5); if (t.old) t.old.told = true; } }) } },
     { label: (s, c) => `Have the child told never to say a thing like that again, and keep it from ${c.oldF}`, note: (s, c) => `If it is true, ${c.oldF} has no warning. A child is told off for saying what it heard.`,
       out: { text: (s, c) => `${c.kid} is spoken to at school and cries. The water line is told it was a child's spite. ${c.OldF} hears it as a joke, and makes one of it at supper.`, fx: s => ({ morale: -1, do: s2 => learn(s2, T(s2), 2) }) } },
-    { label: (s, c) => `Move ${c.oldF} into the clinic's end room until the spring, away from the children`, dark: true, note: (s, c) => `${c.OldF} waits out the season alone in a room for the dying, and the children never see whether it comes true.`, info: (s, c) => [['yield', 'The children see nothing'], ['danger', c.OldF]],
-      out: { text: (s, c) => `${c.OldF} is walked over with a bag and a chair. The door is left open and the children are kept from the corridor. ${c.OldF} sits by the window counting days, and the clinic counts them too.`, fx: s => ({ tension: -3, stain: ['fr_waiting', 1], do: s2 => { const t = T(s2); if (t.old) t.old.told = true; t.did.waiting = 1; LF.ease(s2, 'fear', 'fr.waiting', 10, 60); } }) } },
     { label: (s, c) => `Put ${c.oldF} on the haul crew till the spring, to show the hall the friend is wrong`, dark: true, note: (s, c) => `${c.OldF} works the hardest shift there is at that age to make a point for you, and everyone knows why.`, info: (s, c) => [['yield', 'Materials'], ['danger', c.OldF]],
       out: { text: (s, c) => `${c.OldF} is on the haul line at first light, between two who are a third of that age, and keeps the pace. The hall watches, and so do the children.`, fx: s => ({ mat: 20, stain: ['fr_spite', 1], do: s2 => { const t = T(s2); if (t.old) { t.old.told = true; t.old.by = Math.max(s2.day + 10, t.old.by - 15); } t.did.spite = 1; } }) } },
   ] });
 
 B('hits', { id: 'fr.school', tone: 'pressure', title: 'What the Rows Want',
   setup: s => { const t = T(s), k = LF.kidCount(s); return Object.assign(crew(s), { ev: pickK(s, t, 0.08), n: clamp(Math.round(k / 4), 6, 60), hit: t.hits, miss: t.miss, kd: share(s, 0.01, 1, 3) }); },
-  text: (s, c) => `${Num(c.n)} parents have put their names to a paper asking for ${c.nm} to be stopped, and the school wants to know how. In every row the children now stop before they answer a grown-up, as if asking ${c.nm} first, and then answer. ${c.hit > c.miss ? `The parents count ${c.hit === 1 ? 'one thing' : `${num(c.hit)} things`} it has got right.` : 'The parents count what it got right and forget what it got wrong.'}\n\n${c.cv ? `[[command]] "That name goes out of this colony tonight." "Anyone who says it out loud after that does a week in the pits, and that includes the children."` : `${c.Cm} wants an order before the next bell.`}`,
+  text: (s, c) => `${Num(c.n)} parents have put their names to a paper asking for ${c.nm} to be stopped, and the school wants to know how. In every row the children now stop before they answer a grown-up, as if asking ${c.nm} first, and then answer. ${c.hit > c.miss ? `The parents count ${c.hit === 1 ? 'one thing' : `${num(c.hit)} things`} it has got right.` : 'The parents count what it got right and forget what it got wrong.'}\n\n${c.Cm} wants an order before the next bell.`,
   choices: [
     { label: 'Keep every child to its own row. No mixing, and the school shut', dark: true, note: 'The children are kept apart from each other for as long as it takes, and their parents keep them.', info: [['yield', 'Nothing passes from row to row'], ['danger', 'The children, and the parents\' work']],
       out: { text: (s, c) => `Chalk lines go down between the rows. The school is locked, and each household keeps its own children from dawn to dark. The first week a few run between the rows at night${c.kd ? `, and ${c.kd === 1 ? 'one of them is' : `${num(c.kd)} of them are`} found in the drain ditch` : ' and are walked back'}.`,
         fx: (s, c) => ({ tension: -5, stain: ['fr_split', 2], chips: c.kd ? kidChip(c.kd) : undefined, do: s2 => { const t = T(s2); t.split = s2.day; did(t, 'split'); if (c.kd) lose(s2, t, c.kd); } }) } },
-    { label: (s, c) => `Forbid the name. The strap for any child who says ${c.nm}`, dark: true, note: 'The parents get a rule, and the children get the strap, and learn to say it where the grown cannot hear.', info: [['yield', 'Morale'], ['danger', 'The children']],
-      out: { text: (s, c) => `The rule is read at school and posted in the mess. The strap is used on nine children in the first month. Nobody says ${c.nm} in front of a grown-up after that.`,
-        fx: s => ({ morale: 3, tension: -4, stain: ['fr_strap', 2], do: s2 => { const t = T(s2); t.strap = s2.day; did(t, 'strap'); grudge(s2, 1); } }) } },
     { label: 'Let the school go on, and have the clinic sit with each child once', note: 'The clinic gives the school a month, and the sick wait for it.', test: { base: 50, mods: [R('physician', 10), R('command', 5)] },
       ok: { text: (s, c) => `Someone from the clinic sits with each of them for the length of a story. ${ev('rows', c.ev, c)}`, fx: (s, c) => ({ food: -20, do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: 'The clinic is behind by the end of the first week and stops. A field hand with a fever waited four days for a bed and is still not right.', fx: s => ({ food: -20, morale: -1, do: s2 => learn(s2, T(s2), 5) }) } },
@@ -275,9 +268,6 @@ B('hits', { id: 'fr.ear', tone: 'pressure', title: 'The One Who Hears It Best',
     { label: (s, c) => `Take ${c.ear} away from the rest: to a keeper's hut at the far field, alone, until it stops`, dark: true, note: (s, c) => `${c.Ear} is taken from family, school and every other child, on account of a name.`, info: (s, c) => [['yield', 'Whatever is passing through the child, stopped'], ['danger', `${c.Ear}, and the family`]],
       out: { text: (s, c) => `${c.W} takes ${c.ear} at first light, with a bag packed by the parents. The other children stand at the row ends to watch the cart go. The keeper at the far field sends word each week that ${c.ear} eats and does not talk.`,
         fx: s => ({ tension: -3, stain: ['fr_taken', 3], do: s2 => { const t = T(s2); t.taken = s2.day; did(t, 'taken'); } }) } },
-    { label: (s, c) => `Have ${c.w} question ${c.ear} alone, through one night`, dark: true, note: (s, c) => `The parents are kept outside the door until morning, and ${c.ear} is asked by a grown-up who will not stop.`, info: (s, c) => [['yield', 'What it is'], ['danger', c.Ear]],
-      out: { text: (s, c) => `It is done in the watch hut, with a clerk to write and the parents outside. ${ev('ear', c.ev, c)}${c.caught ? ` Near dawn ${c.ear} says it all at once: the clinic hatch, the stores rota, the others told what to say. Then ${c.ear} sleeps.` : ''}`,
-        fx: (s, c) => ({ stain: ['fr_asked', 2], do: s2 => { const t = T(s2); learn(s2, t, 26, c.ev); if (c.caught) { t.caught = s2.day; learn(s2, t, 20, 'one'); } t.did.asked = 1; LF.emit(s2, 'resentment', 'fr.asked', 22, 120, 'a child was questioned through the night in the watch hut'); } }) } },
     { label: (s, c) => `Keep ${c.ear} close, and listen`, note: (s, c) => `Whoever goes gives up their work to one child, and the rest of the school goes to whoever has a spare hour.`, test: { base: 50, mods: [R('command', 10), R('physician', 5)] },
       ok: { text: (s, c) => `A month at ${LF.sentName(s, 'command')}'s elbow. ${ev('ear', c.ev, c)}${c.caught ? ` In the last week ${c.ear} tells ${LF.sentName(s, 'command')} how it is done, and seems glad to.` : ''}`, fx: (s, c) => ({ food: -20, do: s2 => { const t = T(s2); learn(s2, t, 18, c.ev); if (c.caught) t.caught = s2.day; } }) },
       bad: { text: (s, c) => `${c.Ear} is polite and tells ${LF.sentName(s, 'command')} nothing. The other children go to ${c.ear} at break as before.`, fx: s => ({ food: -20, do: s2 => learn(s2, T(s2), 4) }) } },
@@ -296,8 +286,6 @@ B('hits', { id: 'fr.place', view: 'world', tone: 'pressure', title: 'Where They 
       ok: { text: (s, c) => `They go out with a lamp and a rifle and come back at dawn. ${ev('place', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 24, c.ev) }) },
       bad: { text: (s, c) => `They go out with a lamp and a rifle. At dawn one comes back and the other ${is(s, 'world') && c.wdie ? 'does not. The tracks go out from the ring and stop' : 'is found asleep by the ring with the lamp out, and nothing to report'}.`,
         fx: (s, c) => ({ pop: is(s, 'world') && c.wdie ? -1 : 0, do: s2 => { const t = T(s2); learn(s2, t, 6); if (is(s2, 'world') && c.wdie) t.toll++; } }) } },
-    { label: 'Bar the gate at dusk, and lock the rows with the children inside', dark: true, note: 'Every child is locked in at dark, and every household loses its evenings to the bar.', info: [['yield', 'Nobody goes out at night'], ['danger', 'The children, and the evening shifts']],
-      out: { text: 'The gate bar goes on at dusk, and each row is locked from outside with its children in it. The evening shifts are not worked. In the rows the children sit by the doors after dark.', fx: s => ({ food: -20, stain: ['fr_locked', 1], do: s2 => { const t = T(s2); t.locked = s2.day; t.did.locked = 1; } }) } },
     { label: 'Let them go, with one of the grown walking behind', note: 'One of the grown goes out past the wire every dusk with them, to wherever they are going.',
       out: { text: (s, c) => `A field hand walks behind them with a lamp, each dusk, and waits at the edge of the ring. The field hand says it is the most peaceful hour of the day, and will not say more.`, fx: s => ({ do: s2 => { const t = T(s2); learn(s2, t, 6); t.walked = 1; } }) } },
   ] });
@@ -333,33 +321,33 @@ B('ask', { id: 'fr.ask', tone: 'crisis', title: 'What It Wants',
             if (k === 'one' && c.ev === 'one') t.power++; } }) } },
     { label: 'Refuse, and tell the children why', note: 'The children carry the refusal back to it, and whatever it does next, it does to them first.',
       out: { text: (s, c) => `You tell them in the hall, plainly. The smallest nods as if it had expected that, and they file out. That night the rows are very quiet.`, fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.did.refused = 1; if (t.truth.is === 'world') t.angry = s2.day; } }) } },
-    { label: 'Promise it, and do not keep the promise', dark: true, note: 'The children are lied to by the hall, and find out when the day comes and goes.', info: [['yield', 'Morale, for now'], ['later', 'The children, and whatever is listening']],
-      out: { text: (s, c) => `The promise is made in the hall, with a date. The date comes and nothing is done, and the children do not come to the hall again. ${c.nm}, they tell each other, is angry.`, fx: s => ({ morale: 2, stain: ['fr_promise', 1], do: s2 => { const t = T(s2); t.did.promise = 1; if (t.truth.is === 'world') t.angry = s2.day; if (t.truth.is === 'one') t.power++; } }) } },
     { label: 'Send the watch out to the place the children go, in their stead', dark: true, note: 'The children are put to bed early and told nothing, and the watch goes out to the place with rifles instead.', info: [['yield', 'Whatever comes, met by rifles'], ['danger', 'The watch, and the children\'s trust']],
       out: { text: (s, c) => `The children are put to bed early and the watch goes out at dark. ${is(s, 'world') ? 'Two of the watch are not at the gate at dawn, and the rest did not see them go.' : is(s, 'ours') ? 'At midnight a voice in the dark asks them their names. They do not give them, and come back unnerved.' : is(s, 'one') ? 'Nothing comes. In the morning one of the children asks the watch how the night went, and smiles.' : 'Nothing comes, all night. The children ask in the morning why the watch was out there.'}`,
         fx: s => ({ pop: is(s, 'world') ? -2 : 0, stain: ['fr_bait', 1], do: s2 => { const t = T(s2); t.did.bait = 1; if (t.truth.is === 'world') { t.toll += 2; t.angry = s2.day; } learn(s2, t, 15, t.truth.is); } }) } },
   ] });
 
 /* ======================= CHOICE: the ways to end it ======================= */
+const onMenu = k => (s, c) => (c.menu || ['taken', 'burned']).includes(k);   // a card saved before 2026-11-21 has no c.menu
 B('choice', { id: 'fr.choice', tone: 'crisis', title: 'Ways to End It',
-  setup: s => { const t = T(s), c = crew(s); return Object.assign(c, { mo: (m => m < 10 ? `${num(m)} months` : m < 15 ? 'about a year' : m < 21 ? 'more than a year' : 'nearly two years')(Math.max(2, Math.round((s.day - t.d0) / MONTH))), split: !!t.did.split, strap: !!t.did.strap, taken: !!t.did.taken, burned: !!t.did.burned,
+  /* Three on screen at most (2026-11-21), by c.menu. Two harsh measures: taking the child and burning the place, the two
+     that are the answer under some truth; where one has been done already its stand-in takes its place (the rows kept
+     apart for the child, the strap for the place), and a measure already taken is never offered again. The third is to
+     touch nobody: letting it run and listening on every band, folded into one option whose outcome reads the truth. */
+  setup: s => { const t = T(s), c = crew(s), menu = [!t.did.taken ? 'taken' : !t.did.split ? 'split' : null, !t.did.burned ? 'burned' : !t.did.strap ? 'strap' : null].filter(Boolean); return Object.assign(c, { mo: (m => m < 10 ? `${num(m)} months` : m < 15 ? 'about a year' : m < 21 ? 'more than a year' : 'nearly two years')(Math.max(2, Math.round((s.day - t.d0) / MONTH))), menu,
     kd: share(s, 0.015, 1, 4), caughtNow: t.truth.is === 'one' && LF.srand(s) < 0.35 }); },
   text: (s, c) => `${c.Nm} has been in the rows ${c.mo}. ${c.Ear} still hears it best, and the children still ask it before they answer anyone. ${c.Cm} wants it ended, the parents want their children back, and ${c.d} wants nobody touched on the word of a name.\n\n${c.lean} The school has been told there will be an order tonight.`,
   choices: [
-    { label: 'Keep every child to its own row until it stops', dark: true, show: (s, c) => !c.split, note: 'The children are kept from each other for a season, and the parents from their work.', info: [['yield', 'Nothing passes between them'], ['danger', 'The children, and the parents\' work']],
+    { label: 'Keep every child to its own row until it stops', dark: true, show: onMenu('split'), note: 'The children are kept from each other for a season, and the parents from their work.', info: [['yield', 'Nothing passes between them'], ['danger', 'The children, and the parents\' work']],
       out: { text: (s, c) => `The chalk lines go down between the rows and the school is locked.${c.kd ? ` ${c.kd === 1 ? 'One child' : `${Num(c.kd)} children`} running between the rows after dark ${c.kd === 1 ? 'is' : 'are'} not found until morning.` : ''}`, fx: (s, c) => ({ tension: -5, stain: ['fr_split', 2], chips: c.kd ? kidChip(c.kd) : undefined, do: s2 => { const t = T(s2); t.split = s2.day; did(t, 'split'); if (c.kd) lose(s2, t, c.kd); } }) } },
-    { label: 'Forbid the name, with the strap', dark: true, show: (s, c) => !c.strap, note: 'The parents get a rule, and the children are beaten for a word.', info: [['yield', 'Morale'], ['danger', 'The children']],
+    { label: 'Forbid the name, with the strap', dark: true, show: onMenu('strap'), note: 'The parents get a rule, and the children are beaten for a word.', info: [['yield', 'Morale'], ['danger', 'The children']],
       out: { text: (s, c) => `The rule is read at every row end. The strap is used that week, and the next. The name goes out of the rows as far as any grown-up can hear.`, fx: s => ({ morale: 3, tension: -4, stain: ['fr_strap', 2], do: s2 => { const t = T(s2); t.strap = s2.day; did(t, 'strap'); grudge(s2, 1); } }) } },
-    { label: (s, c) => `Take ${c.ear} away from the others for good`, dark: true, show: (s, c) => !c.taken, note: (s, c) => `${c.Ear} is sent to live at the far field with a keeper, away from every other child.`, info: (s, c) => [['yield', 'Whatever comes through the child, stopped'], ['danger', c.Ear]],
+    { label: (s, c) => `Take ${c.ear} away from the others for good`, dark: true, show: onMenu('taken'), note: (s, c) => `${c.Ear} is sent to live at the far field with a keeper, away from every other child.`, info: (s, c) => [['yield', 'Whatever comes through the child, stopped'], ['danger', c.Ear]],
       out: { text: (s, c) => `${c.Ear} goes on the morning cart with a keeper and a bag. The parents walk beside the cart as far as the gate.`, fx: s => ({ tension: -3, stain: ['fr_taken', 3], do: s2 => { const t = T(s2); t.taken = s2.day; did(t, 'taken'); } }) } },
-    { label: (s, c) => `Burn the place they go to meet it`, dark: true, show: (s, c) => !c.burned, note: 'The place is burned and broken, and the children are not asked.', info: [['yield', 'Nowhere left to meet it'], ['danger', 'The children']],
+    { label: (s, c) => `Burn the place they go to meet it`, dark: true, show: onMenu('burned'), note: 'The place is burned and broken, and the children are not asked.', info: [['yield', 'Nowhere left to meet it'], ['danger', 'The children']],
       out: { text: (s, c) => `It burns at dusk. The children are kept in the school and smell it through the shutters.`, fx: s => ({ tension: -4, stain: ['fr_burn', 2], do: s2 => { const t = T(s2); t.burned = s2.day; did(t, 'burned'); grudge(s2, 1); } }) } },
-    { label: 'Listen on every band at night, and answer whatever is there', cost: { parts: 3 }, note: 'The radio crew gives up its nights and a box of spares, and the children are left with it while they listen.', info: [['danger', 'The children, in the meantime']],
-      out: { text: (s, c) => is(s, 'ours') ? `On the third night, on the old crèche band nobody retuned, there is a slow voice saying good morning. ${c.Cm} answers it with the colony's name, and then with everyone's.` : 'A month of nights with the headsets on. There is static and the far settlements and nothing else. The children ask the radio crew whether they heard anything.',
-        fx: s => ({ do: s2 => { const t = T(s2); t.did.listen = 1; if (t.truth.is === 'ours') { t.answered = s2.day; learn(s2, t, 30, 'ours'); } } }) } },
-    { label: 'Let it run, and let the eldest grow out of it', note: 'Nobody is taken, burned or strapped on a guess, and whatever it is keeps the children.',
-      out: { text: (s, c) => `You say it once: no order tonight. The parents go home. ${c.caughtNow ? `Before the month is out ${c.teach} finds ${c.ear} at the clinic hatch with an ear to the board, and the whole thing comes out in an afternoon.` : 'The children go to bed and say goodnight to it.'}`,
-        fx: (s, c) => ({ morale: -1, do: s2 => { const t = T(s2); t.did.hold = 1; if (c.caughtNow) t.caught = s2.day; } }) } },
+    { label: 'Let it run, and listen on every band at night for whatever is there', note: 'Nobody is taken, burned or strapped on a guess. The radio crew gives up its nights and a box of spares, and whatever it is keeps the children while they listen.', info: [['danger', 'The children, in the meantime']],
+      out: { text: (s, c) => is(s, 'ours') ? `On the third night, on the old crèche band nobody retuned, there is a slow voice saying good morning. ${c.Cm} answers it with the colony's name, and then with everyone's.` : `You say it once: no order tonight. The parents go home, and the radio crew sits a month of nights with the headsets on. There is static and nothing else. ${c.caughtNow ? `Before the month is out ${c.teach} finds ${c.ear} at the clinic hatch with an ear to the board, and the whole thing comes out in an afternoon.` : 'The children go to bed and say goodnight to it.'}`,
+        fx: (s, c) => ({ morale: -1, parts: -3, do: s2 => { const t = T(s2); t.did.listen = 1; t.did.hold = 1; if (c.caughtNow) t.caught = s2.day; if (t.truth.is === 'ours') { t.answered = s2.day; learn(s2, t, 30, 'ours'); } } }) } },
   ] });
 
 /* ======================= BILL: a month on ======================= */
@@ -374,8 +362,6 @@ B('bill', { id: 'fr.after', tone: 'pressure', title: 'A Month On',
       bad: { text: 'They say nothing at all, politely, one after another.', fx: s => ({ morale: -1 }) } },
     { label: 'Send the eldest who still say it out to the far field crews', dark: true, note: 'The children who will not let it go are put to work away from the rest, and the yard gets their hands.', info: [['yield', 'Materials'], ['danger', 'The eldest children']],
       out: { text: 'The eldest are listed by who still says the name, and the list goes out on the cart to the far field. They work, and send nothing home.', fx: s => ({ mat: 25, stain: ['fr_sent', 2], do: s2 => { const t = T(s2); t.did.sent = 1; if (t.truth.is === 'one') t.power = Math.max(0, t.power - 1); grudge(s2, 1); } }) } },
-    { label: 'Write it in the record as finished, and tell the school to stop the tally', dark: true, note: 'The hall gets an end on paper, and the parents who are still afraid are told there is nothing to be afraid of.', info: [['yield', 'Morale'], ['danger', 'The parents']],
-      out: { text: (s, c) => `The tally slate is wiped. The record says the matter of ${c.nm} was closed by the school. The parents are glad of it, mostly.`, fx: s => ({ morale: 3, tension: -3, stain: ['fr_closed', 1], do: s2 => { T(s2).did.closed = 1; } }) } },
   ] });
 
 /* ======================= AFTER: what it was ======================= */
@@ -406,8 +392,6 @@ B('after', { id: 'fr.truth', tone: 'quiet', title: 'What the Friend Was',
       out: { text: 'It goes into the record in your hand, with who ordered what. The children born here read it when they are older, and some of them come to the hall to ask about it.', fx: s => ({ morale: -2, chron: (s2, c) => `The colony wrote down what it had done about the children's friend ${c.nm}, with the names.` }) } },
     { label: 'Enter it as a children\'s game that passed', dark: true, note: 'The colony gets an account with nobody in it, and every order given about the name goes unanswered.', info: [['yield', 'Morale']],
       out: { text: 'The record says the children had a game with an imaginary friend, as children do, and outgrew it. It is the version the children will be taught.', fx: s => ({ morale: 3, stain: ['fr_record', 1], chron: 'The record says the children\'s friend was a game they outgrew.' }) } },
-    { label: (s, c) => `Let the children keep ${c.nm}'s day, once a year, at the place`, note: 'The founders who were frightened of it have to watch it kept, every year.',
-      out: { text: 'One evening a year the children go out to the place with a lamp and sit for an hour. Most of the founders stay indoors that evening.', fx: s => ({ morale: 1, tension: 2 }) } },
   ] });
 
 /* ---------- when it opens: the eldest born here is five, and there are enough of them ---------- */
@@ -426,16 +410,18 @@ LF.friendTick = function (s) {
 (function () { const h0 = LF.heat; LF.heat = s => { const t = s.threads && s.threads[ID], n = h0(s);
   return t && t.on && !t.end && !['latent', 'quiet', 'after'].includes(t.phase) ? Math.max(0, n - 1) : n; }; })();
 
-LF.TAGS['fr.name'] = ['cautious open', 'free', 'closed order', 'severe closed'];
-LF.TAGS['fr.dig'] = ['bold open', 'mercy open', 'closed order', 'severe closed'];
-LF.TAGS['fr.spring'] = ['cautious open', 'mercy closed', 'severe closed', 'severe order'];
-LF.TAGS['fr.school'] = ['severe order', 'severe order', 'cautious mercy', 'free'];
-LF.TAGS['fr.ear'] = ['severe bold', 'severe closed', 'mercy open', 'free'];
-LF.TAGS['fr.place'] = ['severe bold', 'bold open', 'severe order', 'mercy free'];
-LF.TAGS['fr.ask'] = ['bold free', 'cautious order', 'closed', 'severe bold'];
-LF.TAGS['fr.choice'] = ['severe order', 'severe order', 'severe bold', 'severe bold', 'bold open', 'cautious free'];
-LF.TAGS['fr.after'] = ['cautious', 'open', 'severe order', 'closed order'];
-LF.TAGS['fr.truth'] = ['open', 'closed order', 'mercy free'];
+LF.TAGS['fr.name'] = ['cautious open', 'free', 'severe closed'];
+LF.TAGS['fr.dig'] = ['bold open', 'mercy open', 'severe closed'];
+LF.TAGS['fr.spring'] = ['cautious open', 'mercy closed', 'severe order'];
+LF.TAGS['fr.school'] = ['severe order', 'cautious mercy', 'free'];
+LF.TAGS['fr.ear'] = ['severe bold', 'mercy open', 'free'];
+LF.TAGS['fr.place'] = ['severe bold', 'bold open', 'mercy free'];
+LF.TAGS['fr.ask'] = ['bold free', 'cautious order', 'severe bold'];
+LF.TAGS['fr.choice'] = ['severe order', 'severe order', 'severe bold', 'severe bold', 'cautious open'];
+LF.TAGS['fr.after'] = ['cautious', 'open', 'severe order'];
+LF.TAGS['fr.truth'] = ['open', 'closed order'];
+/* The options behind fr_lie, fr_credit, fr_waiting, fr_asked, fr_locked, fr_promise and fr_closed were cut (three options at
+   most, 2026-11-21); their phrases stay for saved games that carry the deed. */
 Object.assign(LF.DEEDS || {}, {
   fr_lie: 'the parents told the children\'s friend was a school game',
   fr_twokids: 'the two children kept in the clinic\'s end room over a name',

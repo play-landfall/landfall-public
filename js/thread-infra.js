@@ -17,7 +17,10 @@
    of them, the reactor, the line of posts) points at the truth only most of the time (pickK); the camp, the stake, the
    burst ears and the shaft cannot mislead, and they are the cruel or the dangerous ones. Moving the colony is a cost
    (labour, materials, yield, morale, the road's dead, s.progress) and a flag (s.flags.inf_moved); s.built is untouched.
-   Nothing here knows any other thread. Every card's text reads only what setup put in ctx. */
+   Nothing here knows any other thread. Every card's text reads only what setup put in ctx.
+   Three options at most (Lachlan, 2026-11-21): each card keeps its reading (a test), the plain answer and one hard one.
+   Whether to Leave is move, stay and shut everything down, or stay and hold: one for the ground or the thing under it,
+   one for the machines, one for no sound at all. */
 (function () {
 'use strict';
 const { clamp, h } = LF; const { P, R, byPid } = h;
@@ -235,9 +238,6 @@ B('sign', { id: 'inf.teeth', tone: 'pressure', title: 'In the Teeth',
     { label: 'Put everyone who is up at night on a night shift, and get a second day out of them', dark: true, note: 'The work goes on round the clock, and the people who cannot sleep are not let rest either.', info: [['yield', 'Materials'], ['danger', 'The sleepless']],
       out: { text: 'The shop and the plate yard run lamps all night. The sleepless work them, slow and quiet, and the yard has never turned out so much. By the end of the month two of them have the shakes.',
         fx: s => ({ mat: 12, stain: ['inf_nights', 1], do: s2 => { const t = T(s2); t.did.nights = true; act(s2, t, 'noise'); act(s2, t, 'harm', 0.5); t.level += 0.08; } }) } },
-    { label: 'Have the watch take down the names of whoever talks about it, and dock them a ration', dark: true, note: 'The talk stops in the mess, and the ones who feel it learn to feel it quietly.', info: [['yield', 'Quiet in the rows'], ['danger', 'Whoever speaks of it']],
-      out: { text: 'The watch keeps a list on a board by the mess door. After the first five names go on it, nobody mentions the floor at supper.',
-        fx: s => ({ tension: -3, food: 5, stain: ['inf_dock', 1], do: s2 => { const t = T(s2); t.did.dock = true; act(s2, t, 'talk', -0.4); } }) } },
   ] });
 
 /* ======================= NIGHTS: the bleeds, and the trace ======================= */
@@ -250,8 +250,6 @@ B('nights', { id: 'inf.blood', view: 'people', tone: 'pressure', title: 'Noseble
       bad: { text: 'The chart fills with marks and no shape. Half the people on it gave the wrong bunk, for fear of being moved.', fx: s => ({ do: s2 => learn(s2, T(s2), 5) }) } },
     { label: 'Give everyone who bleeds a sleeping draught from the clinic\'s stores', note: 'They sleep, and the clinic\'s stores of it are gone before anyone else needs them.',
       out: { text: 'The draught goes out at lamp-down in paper twists. The bleeders sleep heavily and wake slow, and the clinic\'s shelf is bare by the end of the month.', fx: s => ({ parts: -2, do: s2 => act(s2, T(s2), 'calm') }) } },
-    { label: 'Keep the bleeders at work, and have the clinic sign nobody off for it', dark: true, note: 'The work goes on at full strength, and the people bleeding into their collars do it.', info: [['yield', 'Hands'], ['danger', 'The bleeders']],
-      out: { text: 'The clinic sends them back with cotton in their noses. One of them faints on the plate yard ladder and comes down with a broken wrist. The work gets done.', fx: s => ({ mat: 6, stain: ['inf_unfit', 1], do: s2 => { const t = T(s2); act(s2, t, 'harm', 0.5); t.did.unfit = true; } }) } },
     { label: 'Keep the sleeping draught for the officers and the work crews', dark: true, note: 'The people running the colony sleep, and the bleeders are told there is none.', info: [['yield', 'The officers sleep'], ['danger', 'Everyone else']],
       out: { text: 'The draught goes into a locked box in the command pod. The officers sleep. The bleeders are told the shelf is empty, and one of them has seen it is not.',
         fx: s => ({ stain: ['inf_draught', 2], do: s2 => { nerveAll(s2, 4); T(s2).did.draught = true; LF.emit(s2, 'resentment', 'inf.draught', 22, 120, 'the officers keep the sleeping draught for themselves'); } }) } },
@@ -266,8 +264,6 @@ B('nights', { id: 'inf.needle', tone: 'pressure', title: 'Some Nights',
       bad: { text: 'Half the sensors are kicked loose or rained on, and the other half disagree. The log fills a notebook and settles nothing.', fx: s => ({ do: s2 => learn(s2, T(s2), 6) }) } },
     { label: 'Stop every machine and every hammer for one night, and listen', note: 'The colony loses a night\'s power and a day\'s work, and the clinic\'s frail lie cold in the dark.',
       out: { text: (s, c) => `Everything is switched off at dusk. The colony sits in the dark and listens. ${ev('needle', c.ev2, c)}`, fx: (s, c) => ({ mat: -4, morale: -1, do: s2 => { const t = T(s2); learn(s2, t, 16, c.ev2); act(s2, t, 'quiet', 0.5); } }) } },
-    { label: 'Post the nights it did not show on the mess door, and keep the rest in the lab', dark: true, note: 'The rows are given half the trace, and whoever feels it on a blank night is told it is in their head.', info: [['yield', 'Morale'], ['danger', 'Whoever still feels it']],
-      out: { text: 'The sheet goes up with the blank nights on it and the rest in a drawer. Some of the rows sleep better for it. The ones who do not are looked at sideways in the mess.', fx: s => ({ morale: 2, stain: ['inf_trace', 1], do: s2 => act(s2, T(s2), 'talk', -0.35) }) } },
     { label: 'Use the sleepless as the instrument: wake whoever hears it every hour, and log what they say', dark: true, note: 'The log gets a reading every hour of every night, and the people who give it get no sleep at all.', info: [['yield', 'A reading every night'], ['danger', 'The sleepless']],
       out: { text: (s, c) => `The watch goes round the rows with a lamp and a slate every hour. ${ev('needle', c.ev2, c)} By the end of the month three of the ones woken have stopped answering at all.`,
         fx: (s, c) => ({ stain: ['inf_wake', 2], do: s2 => { const t = T(s2); learn(s2, t, 26, c.ev2); t.level += 0.1; act(s2, t, 'harm'); t.did.wake = true; } }) } },
@@ -291,8 +287,6 @@ B('loss', { id: 'inf.lost', view: 'people', tone: 'crisis', title: 'Lost',
     { label: 'Send everyone carrying out to a camp at the far edge of the fields, whether they will or not', dark: true, note: 'They sleep away from the colony and whatever is under it, in tents, with a guard, and nobody asks them.', info: [['yield', 'Distance from it'], ['danger', 'The carrying']],
       out: { text: (s, c) => `The watch walks them out at dusk with their bedding. ${CAMP[T(s).truth.is]}`,
         fx: s => ({ stain: ['inf_camp', 2], do: s2 => { const t = T(s2), k = t.truth.is; learn(s2, t, 26, k); t.did.camp = true; if (k === 'ours') t.ward = true; act(s2, t, 'harm'); } }) } },
-    { label: 'Log the losses as ordinary, and say nothing to the rows', dark: true, note: 'The rows are spared it, and the next one carrying is not warned.', info: [['yield', 'Morale'], ['danger', 'The ones carrying']],
-      out: { text: 'The clinic log calls them early losses, which is what such things are called. The ward is told to say nothing, and does.', fx: s => ({ morale: 2, stain: ['inf_hide', 1], do: s2 => { T(s2).did.hide = true; } }) } },
   ] });
 
 const STAKE = {
@@ -307,8 +301,6 @@ B('loss', { id: 'inf.facing', view: 'world', tone: 'pressure', title: 'Facing th
     { label: 'Send the lab out among them to see what they face', note: 'The lab walks out past the wire among a field of animals nobody understands.', test: { base: 60, mods: [R('xenobio', 10), R('security', 5)] },
       ok: { text: (s, c) => `${c.Sc} walks the field of them with a compass and a notebook. ${ev('facing', c.ev, c)}`, fx: (s, c) => ({ do: s2 => learn(s2, T(s2), 22, c.ev) }) },
       bad: { text: 'They get up and scatter when the lab walks in among them, and lie down again further off. The compass readings are taken from a long way away and disagree.', fx: s => ({ do: s2 => learn(s2, T(s2), 5) }) } },
-    { label: 'Keep everyone inside the wire until they go', note: 'Nobody goes out among them, and the field crews lose the outer plots for the month.',
-      out: { text: 'The gate stays shut. They lie there most of the month, and then one morning they are gone, all at once.', fx: s => ({ food: -15, do: s2 => learn(s2, T(s2), 4) }) } },
     { label: 'Kill them where they lie and bring them in for the pot', note: 'The stores fill with meat, and nobody knows what is in it or what it was lying down for.',
       out: { text: 'They do not run. The crews go along the rows of them with bars, and the carts come in loaded. Some of the rows will not eat it.', fx: s => ({ food: 40, morale: -2 }) } },
     { label: 'Stake one of the sleepless out among them overnight, and see if they turn too', dark: true, note: 'You learn whether a person turns the way they do, from someone too tired to refuse.', info: [['yield', 'What they face'], ['danger', 'The one staked out']],
@@ -321,8 +313,6 @@ const SED = { ours: 'They lie quiet. One of them does not come up when the dose 
   alive: 'They lie quiet. One of them does not come up when the dose is lowered.', ears: 'They lie quiet. Two of them do not come up when the dose is lowered, and the rest come up hearing it.' };
 const DEAF = { ours: 'They are deaf by evening. They still feel it in the teeth, every one, and can no longer hear anybody tell them it will pass.', fault: 'They are deaf by evening. They still feel it in the teeth, every one, and can no longer hear anybody tell them it will pass.',
   alive: 'They are deaf by evening. They still feel it in the teeth, every one, and can no longer hear anybody tell them it will pass.', ears: 'They are deaf by evening, and every one of them still hears it, louder than before.' };
-const TENT = { ours: 'Out past the wire, away from the machines, three of them sleep through the first night.', fault: 'Out past the wire they are no better, and lie with their ears pressed to the ground.',
-  alive: 'Out past the wire they are better on quiet nights and worse when the colony works late.', ears: 'Out past the wire, alone, they are worse, and one of them walks off into the dark and does not come back.' };
 B('rising', { id: 'inf.worst', view: 'people', tone: 'crisis', title: 'The Worst of Them',
   setup: s => { const p = who(s, 'one of the riggers', 'the rigger'); return Object.assign(crew(s), { ev: pickK(s, T(s), 0.1), pt: p.name, Pt: cap(p.name), ptt: p.title }); },
   text: (s, c) => `A handful of the colony have stopped sleeping altogether. ${c.Pt}${c.ptt ? `, ${c.ptt},` : ''} was found at the water butt before dawn, pouring water into one ear to drown it out. The rest of them sit up together in the mess with their hands over their jaws, and the rows will not have them back.\n\n${c.dv ? `[[doctor]] "I can put them under, and they'd thank me for it tonight, because they'll take anything that makes it stop." "I don't want to, because you don't know what a season under does to a person, so if you want it, you ask me out loud and then I'll do it."` : `${c.D} can put them under for the season, and has said what that costs.`}`,
@@ -336,8 +326,6 @@ B('rising', { id: 'inf.worst', view: 'people', tone: 'crisis', title: 'The Worst
     { label: 'Burst their eardrums, so there is nothing for it to get in by', dark: true, note: 'If it comes in by the ears it stops, and they are deaf for good either way.', info: [['yield', 'Maybe an end of it, for them'], ['danger', 'The worst of them']],
       out: { text: (s, c) => `${c.dv ? `${c.D} refuses, and the watch does it with a steel needle.` : 'The watch does it with a steel needle.'} ${DEAF[T(s).truth.is]}`,
         fx: s => ({ morale: -2, stain: ['inf_deaf', 3], do: s2 => { const t = T(s2); learn(s2, t, 24, t.truth.is); t.did.deaf = true; act(s2, t, 'harm', 1.2); } }) } },
-    { label: 'Send them to sleep in tents outside the wire, away from the machines', note: 'They sleep in the open, and whatever is out there at night has them first.',
-      out: { text: (s, c) => TENT[T(s).truth.is], fx: s => ({ pop: T(s).truth.is === 'ears' ? -1 : 0, do: s2 => { const t = T(s2); learn(s2, t, 14, t.truth.is); if (t.truth.is === 'ears') { t.toll++; act(s2, t, 'harm', 0.5); } } }) } },
   ] });
 
 B('rising', { id: 'inf.reactor', tone: 'pressure', title: 'Under the Reactor',
@@ -353,9 +341,6 @@ B('rising', { id: 'inf.reactor', tone: 'pressure', title: 'Under the Reactor',
     { label: 'Shut her down for a season', note: 'Everything stops for a season, the heat, the pumps and the clinic\'s machines with it, and the frail go cold.', info: [['yield', 'Silence under the colony'], ['danger', 'The frail']],
       out: { text: 'The reactor goes cold at dusk. The colony runs on the lander\'s cells and whatever can be burned. By the end of the first month the clinic has lost one of its oldest to the cold.',
         fx: s => ({ pop: -1, morale: -3, do: s2 => { const t = T(s2); t.toll++; act(s2, t, 'shut'); t.did.shut = true; } }) } },
-    { label: 'Keep her at full, and move whoever complains into the rows against the housing', dark: true, note: 'The colony keeps its power, and the people who speak up sleep beside the thing they blame.', info: [['yield', 'Full power'], ['danger', 'Whoever complains']],
-      out: { text: 'The watch moves a dozen bunks at lamp-down. The ones moved lie with their backs to the housing wall, and the rest of the colony stops complaining aloud.',
-        fx: s => ({ morale: 1, tension: -3, stain: ['inf_wall', 2], do: s2 => { const t = T(s2); act(s2, t, 'talk', -0.4); act(s2, t, 'harm', 0.6); t.did.wall = true; if (t.truth.is === 'ours') t.level += 0.1; } }) } },
   ] });
 
 const SHAFT = {
@@ -363,7 +348,6 @@ const SHAFT = {
   fault: c => 'At thirty metres the shaft cuts a seam of crushed rock, warm to the hand. After the charge, the walls of the shaft go on cracking for a day, and the cracks run toward the bunk rows.',
   alive: c => 'At thirty metres the bit comes up wet and warm. After the charge the hum stops dead for an hour. Then the whole site lifts, once, and the shaft is full of water to the brim by morning.',
   ears: c => 'Thirty metres of plain rock, dry and cold. The blast shakes the colony for a moment, and that night the rows sleep better than they have in months, believing it done.' };
-const DETAIL = { ours: 'The detail come up dusty and whole.', fault: 'One of the detail is caught in the shaft when the walls go, and is dug out dead.', alive: 'The two of the detail still on the winch line are not in the shaft when the water goes down again.', ears: 'The detail come up dusty and whole.' };
 B('rising', { id: 'inf.shaft', tone: 'crisis', title: 'Sink a Shaft',
   setup: s => Object.assign(crew(s), { ev: pickK(s, T(s), 0.12) }),
   text: (s, c) => `${c.Sc} wants a shaft sunk in the middle of the site, down to whatever is ringing, and a charge set at the bottom. ${c.E} says the drill can make thirty metres in a month. The shaft would go down beside the plate yard, among the bunk rows.\n\n${c.sv ? `[[scientist]] "Thirty metres and a charge." "And then we'd know, wouldn't you want to know, it's right under us, it's been under us the whole time, and we're all lying on top of it asking what it is when we could just go down and ask it."\n\n` : `${c.Sc}'s notes on it end in a question mark. `}${c.lean}`,
@@ -371,37 +355,24 @@ B('rising', { id: 'inf.shaft', tone: 'crisis', title: 'Sink a Shaft',
     { label: 'Sink the shaft and set the charge', cost: { mat: 10 }, note: 'The drill crew go down it, and whatever the charge wakes or breaks is under the bunk rows.', info: [['yield', 'An answer, of one kind or another'], ['danger', 'The drill crew, and the rows']],
       out: { text: (s, c) => `The shaft goes down through the month, and the charge is fired at noon with the colony at the wire. ${SHAFT[T(s).truth.is](c)}`,
         fx: s => { const k = T(s).truth.is; return { pop: k === 'alive' ? -2 : k === 'fault' ? -1 : 0, do: s2 => { const t = T(s2); learn(s2, t, 30, k); act(s2, t, 'blast'); t.did.blast = true; if (k === 'alive') t.toll += 2; if (k === 'fault') t.toll++; } }; } } },
-    { label: 'Sink it with the punishment detail on the drill', dark: true, note: 'The shaft goes down faster and cheaper, worked by people who were not asked, and they are at the bottom when the charge is set.', info: [['yield', 'The shaft, at no cost to the crews'], ['danger', 'The detail']],
-      out: { text: (s, c) => `The detail work the drill in shifts, roped to the winch line. ${SHAFT[T(s).truth.is](c)} ${DETAIL[T(s).truth.is]}`,
-        fx: s => { const k = T(s).truth.is; return { mat: -4, pop: k === 'alive' ? -2 : k === 'fault' ? -1 : 0, stain: ['inf_detail', 2], do: s2 => { const t = T(s2); learn(s2, t, 30, k); act(s2, t, 'blast'); t.did.blast = true; t.did.detail = true; if (k === 'alive') t.toll += 2; if (k === 'fault') t.toll++; } }; } } },
     { label: 'Lay a line of listening posts instead, and drill nothing', note: 'It takes the lab a season, and the rows go on not sleeping while it does.', test: { base: 50, mods: [R('xenobio', 10), R('engineer', 5)] },
       ok: { text: (s, c) => `The posts go in a line across the site and out past the wire. ${ev('line', c.ev, c)}`, fx: (s, c) => ({ mat: -4, do: s2 => learn(s2, T(s2), 20, c.ev) }) },
       bad: { text: 'The posts are set too shallow, and every one of them reads the bunk rows turning over in their sleep, or not sleeping.', fx: s => ({ mat: -4, do: s2 => learn(s2, T(s2), 5) }) } },
     { label: 'Silence the colony after dark: no hammers, no machines, no night shifts', note: 'Every hour of night work is lost, and the colony builds by daylight for as long as it lasts.',
       out: { text: 'The shop shuts at dusk, the pumps run low, and the yard is dark. The nights are very quiet. Some of the rows say they can feel it better now.', fx: s => ({ do: s2 => { const t = T(s2); t.quiet = s2.day; act(s2, t, 'quiet'); } }) } },
-    { label: 'Forbid any talk of it at all, on pain of the punishment detail', dark: true, note: 'The rows stop speaking of it, and whoever cannot stop is put on the detail.', info: [['yield', 'Quiet in the rows'], ['danger', 'Whoever speaks of it']],
-      out: { text: 'The order is read at muster. Three are on the detail by the end of the month, one of them for talking in their sleep.', fx: s => ({ morale: 1, tension: -4, stain: ['inf_gag', 2], do: s2 => { const t = T(s2); act(s2, t, 'talk', -0.6); t.did.gag = true; } }) } },
   ] });
 
 /* ======================= CHOICE: whether to leave ======================= */
-const DOSE = { ours: 'One of the oldest does not wake in the first month.', fault: 'One of the oldest does not wake in the first month.', alive: 'One of the oldest does not wake in the first month.',
-  ears: 'Two of the oldest do not wake in the first month, and the ones who heard it still hear it in their sleep.' };
 B('choice', { id: 'inf.leave', tone: 'crisis', title: 'Whether to Leave',
-  setup: s => { const t = T(s); return Object.assign(crew(s), { behind: Math.max(3, Math.round(LF.sized(s) * 0.03)), off: t.off > s.day || t.derate }); },
+  setup: s => { const t = T(s); return Object.assign(crew(s), { off: t.off > s.day || t.derate }); },
   text: (s, c) => `The rows want an answer: stay on this site, or go. ${c.Cm} has a second site picked on higher ground past the fields, and says a season of hauling would put the colony down on it with most of what it owns. Whatever is half built here stays half built.\n\n${c.mv ? `[[command]] "I see two headings from here, and there isn't a third." "We pack and haul for a season and lose whatever we can't carry, or we stay and stop asking about it, and I want one of those by tonight."\n\n` : 'The officers have put it to you by tonight. '}${c.lean}`,
   choices: [
     { label: 'Move the colony to the new site', note: 'A season on the road: the half-built is lost, the old and the carrying haul with everyone else, and some of them will not get there.', info: [['yield', 'Off this ground'], ['danger', 'The old and the carrying, on the road']],
       out: { text: 'The hauling starts at first light and goes on all season. What can be unbolted goes on the carts; what cannot is left standing with its doors open. The old site is empty by the end of it.',
         fx: s => ({ mat: -20, food: -30, morale: -4, pop: -2, progress: -1, do: s2 => { const t = T(s2); t.toll += 2; move(s2, t); } }) } },
-    { label: 'Move, and leave behind the ones who cannot walk it', dark: true, note: (s, c) => `The haul goes twice as fast, and the old, the sick and the worst of the sleepless stay on the old site with a month of food.`, info: [['yield', 'A quick move'], ['danger', 'Everyone left behind']],
-      out: { text: 'The carts go with the strong. The ones left behind stand at the old gate, or sit. A month of food is stacked by the door for them.',
-        fx: (s, c) => ({ mat: -8, food: -10, morale: -2, leave: c.behind, progress: -1, stain: ['inf_behind', 3], do: s2 => { const t = T(s2); t.did.behind = c.behind; move(s2, t); t.road = s2.day - 45; } }) } },
     { label: (s, c) => c.rx ? 'Stay, and shut the reactor down for a season to see if it stops' : 'Stay, and stop every pump and engine for a season to see if it stops', note: 'The colony keeps its site and spends a season cold and dark, and the frail pay for the cold.',
       out: { text: (s, c) => `${c.rx ? 'The reactor goes cold' : 'The pumps and engines stop'} at dusk. The rows sleep in their coats. By the end of the first month the clinic has lost one of its oldest to the cold.`,
         fx: s => ({ pop: -1, morale: -3, do: s2 => { const t = T(s2); t.toll++; act(s2, t, 'shut'); t.did.shut = true; t.did.stay = true; } }) } },
-    { label: 'Stay, and dose the whole colony to sleep every night from the clinic', dark: true, note: 'Everyone sleeps, the clinic\'s stores go, and some of the oldest do not wake.', info: [['yield', 'A colony that sleeps'], ['danger', 'The old and the frail']],
-      out: { text: (s, c) => `The draught goes into the evening pot. The rows sleep like stones and wake slow. ${DOSE[T(s).truth.is]}`,
-        fx: s => ({ pop: T(s).truth.is === 'ears' ? -2 : -1, morale: 2, parts: -3, stain: ['inf_dose', 2], do: s2 => { const t = T(s2); t.toll += t.truth.is === 'ears' ? 2 : 1; t.did.dose = true; t.did.stay = true; nerveAll(s2, 3); act(s2, t, 'harm', 1.2); if (t.truth.is !== 'ears') t.level = Math.max(0.3, t.level - 0.3); } }) } },
     { label: 'Stay, and hold to what has been done', note: 'Nobody hauls, nobody is drugged, and the carrying and the sleepless go on paying for it.',
       out: { text: 'You say it at muster: the colony stays. The rows go back to their bunks. The clinic keeps the far room ready.', fx: s => ({ morale: -1, do: s2 => { const t = T(s2); t.did.hold = true; t.did.stay = true; } }) } },
   ] });
@@ -416,8 +387,6 @@ B('bill', { id: 'inf.road', tone: 'pressure', title: 'The New Site',
       out: { text: 'The pods go up in rows on the new pad. The fields are staked out and dug, and the first rows go in before the carts are empty.', fx: s => ({ mat: -8, morale: 1, do: s2 => { T(s2).did.settle = true; } }) } },
     { label: 'Send the slowest back to the old site to strip what was left', dark: true, note: 'The colony gets its plate and wire back, and the ones sent back live on the old site for as long as it takes.', info: [['yield', 'Materials'], ['danger', 'The ones sent back']],
       out: { text: 'A handful of the slowest go back with a cart. They strip the old pods to the frames and send back wire and plate all month.', fx: s => ({ mat: 20, stain: ['inf_strip', 2], do: s2 => { T(s2).strip = true; } }) } },
-    { label: 'Put the old and the sick on half rations until the new fields are in', dark: true, note: 'The workers eat, and the ones who cannot work go hungry first.', info: [['yield', 'Food'], ['danger', 'The old and the sick']],
-      out: { text: 'The ladle goes half full for the clinic and the old rows. By the end of the month two of the old are in the clinic and do not come out.', fx: s => ({ food: 30, pop: -1, stain: ['inf_half', 2], do: s2 => { T(s2).toll++; } }) } },
     { label: 'Go back to the old site: this one is worse', note: 'Another haul, and whatever made the colony leave is waiting there.',
       out: { text: 'The carts go back the way they came. The old pods are cold and empty and still standing, and the rows go back into them without a word.', fx: s => ({ mat: -6, morale: -4, do: s2 => { const t = T(s2); t.did.back = true; delete s2.flags.inf_moved; } }) } },
   ] });
@@ -434,9 +403,6 @@ B('bill', { id: 'inf.still', tone: 'pressure', title: 'Still Here',
         fx: s => ({ mat: -30, food: -40, morale: -6, pop: -3, progress: -1, do: s2 => { const t = T(s2); t.toll += 3; move(s2, t, true); } }) } },
     { label: 'Put the worst of the sleepless out of the colony for good', dark: true, note: 'The rows are rid of the ones who keep them awake, and those put out go with a cart and no way back.', info: [['yield', 'Quiet rows'], ['danger', 'The worst of the sleepless']],
       out: { text: 'They go at dawn with a cart, a tent and a month of food. The rows sleep a little better, or say so.', fx: s => ({ leave: 3, morale: 2, tension: -4, stain: ['inf_out', 2], do: s2 => { const t = T(s2); t.did.out = true; act(s2, t, 'talk', -0.4); act(s2, t, 'harm', 0.5); } }) } },
-    { label: 'Put the colony back on full shifts, sleep or none, and dock the ration of anyone who falls behind', dark: true, note: 'The work catches up, and the sleepless are worked until they drop.', info: [['yield', 'Materials'], ['danger', 'The sleepless']],
-      out: { text: 'The shifts go back to full. The yard is loud from dawn to the second watch. Two of the sleepless fall behind and lose their ration, and one of them falls off the scaffold.',
-        fx: s => ({ mat: 15, pop: -1, stain: ['inf_shifts', 2], do: s2 => { const t = T(s2); t.toll++; act(s2, t, 'noise', 2); act(s2, t, 'harm'); } }) } },
   ] });
 
 /* ======================= AFTER: what it was ======================= */
@@ -474,11 +440,11 @@ B('after', { id: 'inf.truth', tone: 'quiet', title: 'What the Hum Was',
       out: { text: 'It goes into the colony record in full, in your hand, with who ordered what. People read it. Some of the rows stop greeting you, and one or two start.', fx: s => ({ morale: -2, chron: 'The colony wrote down what it had done about the Hum, with the names.' }) } },
     { label: 'Enter it as a bad season for sleep, and nothing more', dark: true, note: 'The colony gets an account with nobody in it, and every order given about the Hum goes unanswered.', info: [['yield', 'Morale']],
       out: { text: 'The record says the colony slept badly in its early years and came through. The site is not mentioned. It is the version the children will be taught.', fx: s => ({ morale: 3, stain: ['inf_record', 1], chron: 'The record says the colony slept badly in its early years, and came through.' }) } },
-    { label: 'Make it a standing rule: a cup of water on every new floor, and somebody to watch it', note: 'The colony keeps a watch it may never need, and pays a hand a night to keep it.',
-      out: { text: 'The rule goes up in the mess. There is a cup of water on a shelf in every pod now, and somebody on the night watch whose job is to look at it.', fx: s => ({ mat: 4, morale: 1, do: s2 => LF.ease(s2, 'fear', 'inf.rule', 15, 200) }) } },
   ] });
 
-/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). */
+/* The deeds these cards can add to the colony's record (content-limits.js DEEDS). Three options at most (2026-11-21): the
+   options behind inf_dock, inf_unfit, inf_trace, inf_hide, inf_wall, inf_detail, inf_gag, inf_behind, inf_dose, inf_half and
+   inf_shifts were cut; their phrases stay for saved games that carry the deed. */
 Object.assign(LF.DEEDS || {}, {
   inf_nights: 'the sleepless worked through the nights because they could not sleep anyway',
   inf_dock: 'a ration docked from anyone who spoke of the hum',
@@ -503,18 +469,18 @@ Object.assign(LF.DEEDS || {}, {
   inf_record: 'the account of the Hum that called it a bad season for sleep',
 });
 
-LF.TAGS['inf.teeth'] = ['cautious open', 'closed', 'severe bold', 'severe closed'];
-LF.TAGS['inf.blood'] = ['cautious open', 'mercy', 'severe order', 'severe closed'];
-LF.TAGS['inf.needle'] = ['cautious open', 'bold open', 'closed order', 'severe open'];
-LF.TAGS['inf.lost'] = ['mercy cautious', 'cautious open', 'severe order', 'closed order'];
-LF.TAGS['inf.facing'] = ['bold open', 'cautious', 'bold', 'severe open'];
-LF.TAGS['inf.worst'] = ['mercy', 'severe order', 'severe bold', 'bold'];
-LF.TAGS['inf.reactor'] = ['cautious open', 'cautious', 'bold', 'severe order'];
-LF.TAGS['inf.shaft'] = ['bold open', 'severe bold', 'cautious open', 'cautious order', 'severe closed'];
-LF.TAGS['inf.leave'] = ['bold', 'severe bold', 'cautious', 'severe order', 'cautious'];
-LF.TAGS['inf.road'] = ['cautious', 'severe order', 'severe order', 'bold'];
-LF.TAGS['inf.still'] = ['cautious', 'bold', 'severe closed', 'severe order'];
-LF.TAGS['inf.truth'] = ['open', 'closed order', 'cautious order'];
+LF.TAGS['inf.teeth'] = ['cautious open', 'closed', 'severe bold'];
+LF.TAGS['inf.blood'] = ['cautious open', 'mercy', 'severe closed'];
+LF.TAGS['inf.needle'] = ['cautious open', 'bold open', 'severe open'];
+LF.TAGS['inf.lost'] = ['mercy cautious', 'cautious open', 'severe order'];
+LF.TAGS['inf.facing'] = ['bold open', 'bold', 'severe open'];
+LF.TAGS['inf.worst'] = ['mercy', 'severe order', 'severe bold'];
+LF.TAGS['inf.reactor'] = ['cautious open', 'cautious', 'bold'];
+LF.TAGS['inf.shaft'] = ['bold open', 'cautious open', 'cautious order'];
+LF.TAGS['inf.leave'] = ['bold', 'cautious', 'cautious'];
+LF.TAGS['inf.road'] = ['cautious', 'severe order', 'bold'];
+LF.TAGS['inf.still'] = ['cautious', 'bold', 'severe closed'];
+LF.TAGS['inf.truth'] = ['open', 'closed order'];
 
 /* Its places on the World view (js/places.js, T2-4): what the colony has seen out there, as it stands. A place never says
    what the thing is; T2-5 lets a party go and look. */
